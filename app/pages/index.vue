@@ -46,6 +46,44 @@ const isSubaccount = computed(() => store.user?.role === 'subaccount')
 const isIndividual = computed(() => store.user?.role === 'individual')
 const isQQBotMode = computed(() => store.user?.mode === 'qq_bot')
 
+// 格式化首页 Bot 连接时长
+function formatHomeDuration(seconds: number): string {
+  if (seconds < 0) return '-'
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  if (h > 0) return `${h}时${m}分`
+  if (m > 0) return `${m}分${s}秒`
+  return `${s}秒`
+}
+
+// QQ机器人生状态（仅 QQ 频道模式加载）
+const botConfigured = ref(false)
+const botAppIdMasked = ref('')
+const botChannelId = ref('')
+const homeConnectionStatus = ref('not_configured')
+const homeConnectedDuration = ref(-1)
+
+// 加载机器人状态
+async function loadBotStatus() {
+  if (!isQQBotMode.value) return
+  try {
+    const data = await $fetch<{
+      configured: boolean; appId: string | null; channelId: string | null
+      connectionStatus: string; connectedDuration: number
+    }>('/api/bot/status', {
+      headers: { Authorization: `Bearer ${store.token}` },
+    })
+    botConfigured.value = data.configured
+    botAppIdMasked.value = data.appId || ''
+    botChannelId.value = data.channelId || ''
+    homeConnectionStatus.value = data.connectionStatus
+    homeConnectedDuration.value = data.connectedDuration
+  } catch (_e: unknown) {
+    // 静默失败，bot 状态非关键
+  }
+}
+
 // 根据模式自动确定可选角色列表
 const availableRoles = computed(() => {
   switch (userForm.mode) {
@@ -232,6 +270,8 @@ async function loadAdminDashboard() {
     if (teamId) {
       tournaments.value = await getTournaments(teamId)
     }
+    // 同时加载机器人状态
+    loadBotStatus()
   } catch (e: any) {
     toast.add({ title: e?.statusMessage || '加载失败', color: 'error' })
   } finally { loadingTournaments.value = false }
@@ -559,12 +599,30 @@ onMounted(() => {
 
       <!-- QQ机器人状态 -->
       <UCard v-if="isQQBotMode" class="mb-6">
-        <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-bot" class="w-6 h-6 text-green-500" />
-          <div>
-            <div class="font-medium">QQ机器人状态</div>
-            <div class="text-sm text-gray-500">机器人功能即将开放</div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <UIcon name="i-lucide-bot" class="w-6 h-6" :class="homeConnectionStatus === 'connected' ? 'text-green-500' : homeConnectionStatus === 'connecting' ? 'text-blue-500' : 'text-gray-400'" />
+            <div>
+              <div class="font-medium">QQ机器人</div>
+              <div class="text-sm text-gray-500">
+                <template v-if="homeConnectionStatus === 'connected'">
+                  <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block mr-1" />
+                  在线 · 已运行 {{ formatHomeDuration(homeConnectedDuration) }}
+                </template>
+                <template v-else-if="homeConnectionStatus === 'connecting'">
+                  连接中...
+                </template>
+                <template v-else-if="homeConnectionStatus === 'disconnected' || homeConnectionStatus === 'error'">
+                  <span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block mr-1" />
+                  离线 · {{ botAppIdMasked }}
+                </template>
+                <template v-else>
+                  尚未配置 · 请前往机器人管理页面配置
+                </template>
+              </div>
+            </div>
           </div>
+          <UButton color="primary" variant="outline" size="xs" to="/bot">管理</UButton>
         </div>
       </UCard>
 

@@ -8,18 +8,21 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  password  String
-  teamId    String?
-  role      String   @default("individual")
-  mode      String   @default("individual")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(uuid())
+  username     String   @unique
+  password     String
+  teamId       String?
+  role         String   @default("individual")
+  mode         String   @default("individual")
+  tokenVersion Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   team              Team?             @relation(fields: [teamId], references: [id])
   teamMemberships   TeamMember[]
   standaloneMatches StandaloneMatch[]
+  loginSessions     UserLoginSession[]
+  timerProjects     DebateTimerProject[]
 }
 
 model Team {
@@ -64,11 +67,12 @@ model Tournament {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  team    Team              @relation(fields: [teamId], references: [id])
-  teams   TournamentTeam[]
-  judges  TournamentJudge[]
-  matches Match[]
-  timerTemplate TimerTemplate?
+  team              Team                @relation(fields: [teamId], references: [id])
+  teams             TournamentTeam[]
+  judges            TournamentJudge[]
+  matches           Match[]
+  timerTemplate     TimerTemplate?
+  timerProject      DebateTimerProject? // 关联到计时器配置项目
 }
 
 model TournamentTeam {
@@ -175,4 +179,71 @@ model TimerTemplate {
   updatedAt    DateTime @updatedAt
 
   tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+}
+
+model UserLoginSession {
+  id           String   @id @default(uuid())
+  userId       String
+  tokenVersion Int
+  deviceInfo   String   // 浏览器/设备信息（如 "Chrome on Windows"）
+  ipAddress    String?
+  userAgent    String?
+  isActive     Boolean  @default(true)  // 当前会话是否仍有效
+  loggedInAt   DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+  loggedOutAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isActive])
+}
+
+// ==================== 辩论赛计时器 ====================
+// 计时器项目：存储比赛配置（标题、队伍、辩题、环节列表）
+model DebateTimerProject {
+  id               String            @id @default(uuid())
+  userId           String
+  tournamentId     String?           @unique // 关联到赛事（tournaments 中的配置，一对一）
+  name             String            // 项目名称（后台管理用）
+  title            String            // 比赛标题（显示用，如"三社联合辩论赛"）
+  positiveTopic    String?           // 正方辩题
+  negativeTopic    String?           // 反方辩题
+  teamPositiveName String?           // 正方队伍名称
+  teamNegativeName String?           // 反方队伍名称
+  uiConfig         String?           // JSON 字符串的 UI 配置（界面元素样式）
+  skinConfig       String?           // JSON 字符串的背景配置（背景类型、图片路径等）
+  audioConfig      String?           // JSON 字符串的提示音配置（自定义提示音文件路径）
+  teamLogoConfig   String?           // JSON 字符串的队徽配置（队伍Logo图片路径）
+  stages           DebateTimerStage[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  user           User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tournament     Tournament?     @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tournamentId])
+}
+
+// 计时器环节：每个项目包含多个环节
+model DebateTimerStage {
+  id               String   @id @default(uuid())
+  projectId        String
+  name             String   // 环节名称
+  duration         Int      // 主时长（秒）
+  type             String   // 'speech' | 'question' | 'summary' | 'special' | 'dual-timer'
+  description      String?
+  orderIndex       Int      // 排序顺序
+  positiveDuration Int?     // 双计时器：正方时长
+  negativeDuration Int?     // 双计时器：反方时长
+  allowedRoles     String?  // JSON 字符串：允许的角色/选手
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project DebateTimerProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
 }

@@ -639,14 +639,6 @@ export type MatchUncheckedUpdateManyWithoutTournamentNestedInput = {
   deleteMany?: Prisma.MatchScalarWhereInput | Prisma.MatchScalarWhereInput[]
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type MatchCreateNestedManyWithoutStandaloneMatchInput = {
   create?: Prisma.XOR<Prisma.MatchCreateWithoutStandaloneMatchInput, Prisma.MatchUncheckedCreateWithoutStandaloneMatchInput> | Prisma.MatchCreateWithoutStandaloneMatchInput[] | Prisma.MatchUncheckedCreateWithoutStandaloneMatchInput[]
   connectOrCreate?: Prisma.MatchCreateOrConnectWithoutStandaloneMatchInput | Prisma.MatchCreateOrConnectWithoutStandaloneMatchInput[]

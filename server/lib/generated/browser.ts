@@ -72,3 +72,18 @@ export type MemberAssignedMatch = Prisma.MemberAssignedMatchModel
  * 
  */
 export type TimerTemplate = Prisma.TimerTemplateModel
+/**
+ * Model UserLoginSession
+ * 
+ */
+export type UserLoginSession = Prisma.UserLoginSessionModel
+/**
+ * Model DebateTimerProject
+ * 
+ */
+export type DebateTimerProject = Prisma.DebateTimerProjectModel
+/**
+ * Model DebateTimerStage
+ * 
+ */
+export type DebateTimerStage = Prisma.DebateTimerStageModel

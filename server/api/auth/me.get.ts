@@ -1,9 +1,11 @@
+// GET /api/auth/me — 获取当前用户信息（含单设备登录 session 校验）
 import { prisma } from '../../lib/prisma'
-import { getUserFromEvent } from '../../utils/auth'
+import { getUserFromEventWithSession } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = getUserFromEvent(event)
+    // 使用带 session 校验的认证（tokenVersion 不匹配 → 401 被踢下线）
+    const user = await getUserFromEventWithSession(event, prisma)
 
     const dbUser = await prisma.user.findUnique({
       where: { id: user.userId },
@@ -20,11 +22,7 @@ export default defineEventHandler(async (event) => {
       role: dbUser.role,
       mode: dbUser.mode,
       team: dbUser.team
-        ? {
-            id: dbUser.team.id,
-            name: dbUser.team.name,
-            mode: dbUser.team.mode,
-          }
+        ? { id: dbUser.team.id, name: dbUser.team.name, mode: dbUser.team.mode }
         : null,
     }
   } catch (error: any) {

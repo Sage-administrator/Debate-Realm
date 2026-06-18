@@ -1,20 +1,288 @@
+<!--
+  timing.vue - 计时器环节配置页面
+  功能：
+  - 左侧 TimerPreview 实时预览计时器效果
+  - 右侧配置计时器环节（名称、类型、时长等）
+  - 支持环节的增删改、排序、上下移动
+  - 配置修改实时同步到数据库（timer-config API）
+  - 移除导入/导出功能，仅保留配置管理
+-->
 <script setup lang="ts">
-// 计时器环节配置页面 — 按 计时器环节UI.md 双栏布局：左侧预览 + 右侧配置
+// ═══════════ 导入 ═══════════
+import { computed, ref, onMounted, watch } from 'vue'
+import TimerPreviewCard from '~/components/TimerPreviewCard.vue'
+import StageForm from '~/components/StageForm.vue'
+
+// ═══════════ 类型定义 ═══════════
+interface Stage {
+  id: number | string
+  name: string
+  duration: number
+  type: 'speech' | 'question' | 'summary' | 'special' | 'dual-timer' | 'single_speech' | 'single_question' | 'bilateral_debate' | 'free_debate' | 'no_timer' | 'single_timer' | 'double_timer' | 'ppt_replace' | string
+  description?: string
+  order?: number
+  positiveDuration?: number
+  negativeDuration?: number
+  // 新增：角色相关
+  speaker?: string        // 单方发言的发言方（如 "正方·一辩"）
+  questioner?: string     // 发问人
+  responder?: string      // 接受人
+  firstSpeaker?: string   // 率先发言方
+  protectionTime?: number // 保护时间
+}
+
+// ═══════════ 基础工具 ═══════════
 const route = useRoute()
 const toast = useToast()
-const { getTournament } = useTournament()
+const authStore = useAuthStore()
 
+// ═══════════ 数据模型 ═══════════
 const tournament = ref<any>(null)
 const loading = ref(true)
+const saving = ref(false)
 const tournamentId = computed(() => route.params.id as string)
 
-// 左侧预览用的环节数据（简单模拟，实际取自 TimerConfig 的 phases）
-const phases = ref<any[]>([])
+// 预览当前环节索引
+const previewStageIndex = ref(0)
 
-async function loadTournament() {
+// 展开的环节 ID
+const expandedId = ref<number | string | null>(null)
+
+// 模板选择弹窗
+const showTemplateModal = ref(false)
+
+// 辩论计时器模板列表
+const debateTemplates = [
+  {
+    id: 'international',
+    name: '国际华语辩论邀请赛',
+    description: '标准赛制：立论、质询、小结、自由辩论、总结陈词',
+    stages: [
+      { name: '正方一辩立论', duration: 180, type: 'speech', order: 1 },
+      { name: '反方四辩质询正方一辩', duration: 120, type: 'question', order: 2 },
+      { name: '反方一辩立论', duration: 180, type: 'speech', order: 3 },
+      { name: '正方四辩质询反方一辩', duration: 120, type: 'question', order: 4 },
+      { name: '正方二辩申论', duration: 180, type: 'speech', order: 5 },
+      { name: '反方三辩质询正方二辩', duration: 120, type: 'question', order: 6 },
+      { name: '反方二辩申论', duration: 180, type: 'speech', order: 7 },
+      { name: '正方三辩质询反方二辩', duration: 120, type: 'question', order: 8 },
+      { name: '正方三辩小结', duration: 120, type: 'summary', order: 9 },
+      { name: '反方三辩小结', duration: 120, type: 'summary', order: 10 },
+      { name: '自由辩论', duration: 240, type: 'dual-timer', order: 11, positiveDuration: 120, negativeDuration: 120 },
+      { name: '反方四辩总结陈词', duration: 240, type: 'summary', order: 12 },
+      { name: '正方四辩总结陈词', duration: 240, type: 'summary', order: 13 },
+    ]
+  },
+  {
+    id: 'worldcup2024',
+    name: '华语辩论世界杯[2024]',
+    description: '简化赛制：立论、质询、自由辩论、总结陈词',
+    stages: [
+      { name: '正方一辩立论', duration: 210, type: 'speech', order: 1 },
+      { name: '反方四辩质询正方一辩', duration: 150, type: 'question', order: 2 },
+      { name: '反方一辩立论', duration: 210, type: 'speech', order: 3 },
+      { name: '正方四辩质询反方一辩', duration: 150, type: 'question', order: 4 },
+      { name: '正方二辩申论', duration: 180, type: 'speech', order: 5 },
+      { name: '反方二辩申论', duration: 180, type: 'speech', order: 6 },
+      { name: '自由辩论', duration: 240, type: 'dual-timer', order: 7, positiveDuration: 120, negativeDuration: 120 },
+      { name: '反方三辩总结陈词', duration: 210, type: 'summary', order: 8 },
+      { name: '正方三辩总结陈词', duration: 210, type: 'summary', order: 9 },
+    ]
+  },
+  {
+    id: 'simple',
+    name: '简单标准赛制',
+    description: '四环节：立论、攻辩、自由辩论、总结陈词',
+    stages: [
+      { name: '开篇立论', duration: 180, type: 'speech', order: 1 },
+      { name: '攻辩', duration: 120, type: 'speech', order: 2 },
+      { name: '自由辩论', duration: 240, type: 'dual-timer', order: 3, positiveDuration: 120, negativeDuration: 120 },
+      { name: '总结陈词', duration: 180, type: 'summary', order: 4 },
+    ]
+  },
+  {
+    id: 'englishbp',
+    name: '英国议会制辩论赛',
+    description: 'BP赛制：四位首相/反对党发言',
+    stages: [
+      { name: '首相', duration: 420, type: 'speech', order: 1 },
+      { name: '反对党领袖', duration: 420, type: 'speech', order: 2 },
+      { name: '副首相', duration: 420, type: 'speech', order: 3 },
+      { name: '反对党副领袖', duration: 420, type: 'speech', order: 4 },
+      { name: '政府成员', duration: 420, type: 'speech', order: 5 },
+      { name: '反对党成员', duration: 420, type: 'speech', order: 6 },
+      { name: '政府党鞭', duration: 420, type: 'speech', order: 7 },
+      { name: '反对党党鞭', duration: 420, type: 'speech', order: 8 },
+    ]
+  },
+]
+
+// 应用选定的模板
+function applyTemplate(tplId: string) {
+  const tpl = debateTemplates.find(t => t.id === tplId)
+  if (!tpl) return
+  let nextId = 100
+  fullConfig.value.stages = tpl.stages.map(s => ({
+    id: ++nextId,
+    ...s,
+  }))
+  showTemplateModal.value = false
+}
+
+// ═══════════ 拖拽排序状态 ═══════════
+// 当前被拖拽的卡片 id
+const dragSourceId = ref<string | number | null>(null)
+// 当前拖拽悬浮的目标卡片 id
+const dragOverId = ref<string | number | null>(null)
+
+// 完整的计时器配置
+const fullConfig = ref<{
+  name: string
+  title: string
+  positiveTopic: string
+  negativeTopic: string
+  teamPositiveName: string
+  teamNegativeName: string
+  uiConfig: Record<string, any>
+  skinConfig: Record<string, any>
+  audioConfig: Record<string, any>
+  teamLogoConfig: Record<string, any>
+  stages: Stage[]
+}>({
+  name: '',
+  title: '',
+  positiveTopic: '',
+  negativeTopic: '',
+  teamPositiveName: '',
+  teamNegativeName: '',
+  uiConfig: {},
+  skinConfig: {},
+  audioConfig: {},
+  teamLogoConfig: {},
+  stages: [],
+})
+
+// 新环节 ID 计数器
+let nextStageId = 100
+
+// ═══════════ 分类栏数据 ═══════════
+const timerCountTypes = [
+  { type: 'speech', name: '单计时器环节', label: '单计时器' },
+  { type: 'dual-timer', name: '双计时器环节', label: '双计时器' },
+  { type: 'special', name: '无计时器环节', label: '无计时器' },
+]
+const speechTypes = [
+  { name: '立论' },
+  { name: '驳论' },
+  { name: '小结' },
+  { name: '总结陈词' },
+]
+const questionTypes = [
+  { name: '质询' },
+  { name: '盘问' },
+]
+const dualTypes = [
+  { name: '对辩' },
+  { name: '自由辩论' },
+]
+
+// ═══════════ 环节类型标签（支持新类型）═══════════
+function typeLabel(type: string): string {
+  const map: Record<string, string> = {
+    // 新类型（级联选择器）
+    single_speech: '单方发言',
+    single_question: '单方发问',
+    bilateral_debate: '双边对辩',
+    free_debate: '自由辩论',
+    single_timer: '单计时器',
+    double_timer: '双计时器',
+    no_timer: '无计时器',
+    ppt_replace: 'PPT图片',
+    // 兼容旧类型
+    special: '无计时器',
+    speech: '单计时器',
+    question: '单计时器',
+    summary: '单计时器',
+    'dual-timer': '双计时器',
+  }
+  return map[type] || type
+}
+
+// 判断是否有计时功能（需要显示时长）
+function hasTimer(type: string): boolean {
+  const nonTimerTypes = ['special', 'no_timer', 'ppt_replace']
+  return !nonTimerTypes.includes(type)
+}
+
+// 判断是否双计时器
+function isDualTimer(type: string): boolean {
+  return type === 'dual-timer' || type === 'double_timer' || type === 'bilateral_debate' || type === 'free_debate'
+}
+
+// 获取环节对应的角色信息（用于卡片头标题显示）
+function getStageSpeaker(stage: any): string {
+  const t = stage.type
+  const speaker = stage.speaker
+  const questioner = stage.questioner
+  const responder = stage.responder
+  const first = stage.firstSpeaker
+
+  // 单方发言：正方一辩·开篇陈词
+  if (t === 'single_speech' || t === 'speech' || t === 'question' || t === 'summary') {
+    return (speaker || '正方·一辩').replace(/[·\/\s\-]/g, '')
+  }
+  // 单方发问：反方二辩·质询·正方一辩
+  if (t === 'single_question') {
+    return `${(questioner || '反方·二辩').replace(/[·\/\s\-]/g, '')}·${stage.name || ''}·${(responder || '正方·一辩').replace(/[·\/\s\-]/g, '')}`
+  }
+  // 双边对辩/自由辩论：正方一辩·自由辩论
+  if (isDualTimer(t)) {
+    return (first || '正方·一辩').replace(/[·\/\s\-]/g, '')
+  }
+  return ''
+}
+
+// ═══════════ 数据加载 ═══════════
+async function loadConfig() {
   loading.value = true
   try {
-    tournament.value = await getTournament(tournamentId.value)
+    // 加载赛事基本信息
+    const tournRes = await $fetch<any>(`/api/tournaments/${tournamentId.value}`, {
+      headers: { Authorization: `Bearer ${authStore.token}` },
+    })
+    tournament.value = tournRes.data || tournRes
+    fullConfig.value.name = tournament.value.name
+    fullConfig.value.title = tournament.value.name
+
+    // 加载计时器配置
+    const configRes = await $fetch<any>(`/api/tournaments/${tournamentId.value}/timer-config`, {
+      headers: { Authorization: `Bearer ${authStore.token}` },
+    })
+
+    if (configRes?.data) {
+      const cfg = configRes.data
+      fullConfig.value.name = cfg.name || tournament.value.name
+      fullConfig.value.title = cfg.title || tournament.value.name
+      fullConfig.value.positiveTopic = cfg.positiveTopic || ''
+      fullConfig.value.negativeTopic = cfg.negativeTopic || ''
+      fullConfig.value.teamPositiveName = cfg.teamPositiveName || ''
+      fullConfig.value.teamNegativeName = cfg.teamNegativeName || ''
+      fullConfig.value.uiConfig = cfg.uiConfig || {}
+      fullConfig.value.skinConfig = cfg.skinConfig || {}
+      fullConfig.value.audioConfig = cfg.audioConfig || {}
+      fullConfig.value.teamLogoConfig = cfg.teamLogoConfig || {}
+      fullConfig.value.stages = (cfg.stages || []) as Stage[]
+
+      // 如果 stages 为空，使用默认环节
+      if (fullConfig.value.stages.length === 0) {
+        fullConfig.value.stages = getDefaultStages()
+      }
+    } else {
+      // 新配置，使用默认环节
+      fullConfig.value.name = tournament.value.name
+      fullConfig.value.title = tournament.value.name
+      fullConfig.value.stages = getDefaultStages()
+    }
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '加载失败', color: 'error' })
   } finally {
@@ -22,43 +290,180 @@ async function loadTournament() {
   }
 }
 
-// 从 API 加载环节列表用于预览
-async function loadPhasesForPreview() {
+// 获取默认环节
+function getDefaultStages(): Stage[] {
+  return [
+    { id: 1, name: '开篇立论', duration: 180, type: 'speech', order: 1 },
+    { id: 2, name: '攻辩', duration: 120, type: 'speech', order: 2 },
+    { id: 3, name: '自由辩论', duration: 240, type: 'dual-timer', order: 3, positiveDuration: 120, negativeDuration: 120 },
+    { id: 4, name: '总结陈词', duration: 180, type: 'speech', order: 4 },
+  ]
+}
+
+// ═══════════ 数据保存 ═══════════
+async function saveConfig() {
+  saving.value = true
   try {
-    const res = await $fetch<any>(`/api/tournaments/${tournamentId.value}/timer-template`, {
-      headers: { Authorization: `Bearer ${useAuthStore().token}` },
+    await $fetch<any>(`/api/tournaments/${tournamentId.value}/timer-config`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${authStore.token}` },
+      body: {
+        name: fullConfig.value.name,
+        title: fullConfig.value.title,
+        positiveTopic: fullConfig.value.positiveTopic,
+        negativeTopic: fullConfig.value.negativeTopic,
+        teamPositiveName: fullConfig.value.teamPositiveName,
+        teamNegativeName: fullConfig.value.teamNegativeName,
+        uiConfig: fullConfig.value.uiConfig,
+        skinConfig: fullConfig.value.skinConfig,
+        audioConfig: fullConfig.value.audioConfig,
+        teamLogoConfig: fullConfig.value.teamLogoConfig,
+        stages: fullConfig.value.stages,
+      },
     })
-    if (res?.phases) {
-      phases.value = typeof res.phases === 'string' ? JSON.parse(res.phases) : res.phases
-    }
-  } catch { phases.value = [] }
+  } catch (e: any) {
+    toast.add({ title: e?.data?.statusMessage || '保存失败', color: 'error' })
+  } finally {
+    saving.value = false
+  }
 }
 
-// 预览当前环节索引
-const previewPhaseIdx = ref(0)
-const previewPhase = computed(() => phases.value[previewPhaseIdx.value] || null)
-
-function prevPreview() {
-  if (previewPhaseIdx.value > 0) previewPhaseIdx.value--
+// ═══════════ 环节操作 ═══════════
+function addStageByType(type: string, name: string) {
+  const newStage: Stage = {
+    id: ++nextStageId,
+    name,
+    duration: type === 'special' ? 0 : 180,
+    type: type as Stage['type'],
+    order: fullConfig.value.stages.length + 1,
+    description: '',
+  }
+  if (type === 'dual-timer') {
+    newStage.positiveDuration = 120
+    newStage.negativeDuration = 120
+  }
+  fullConfig.value.stages.push(newStage)
+  expandedId.value = newStage.id
 }
-function nextPreview() {
-  if (previewPhaseIdx.value < phases.value.length - 1) previewPhaseIdx.value++
+
+function removeStage(idx: number) {
+  if (fullConfig.value.stages.length <= 1) {
+    toast.add({ title: '至少保留一个环节', color: 'info' })
+    return
+  }
+  const removed = fullConfig.value.stages[idx]
+  fullConfig.value.stages.splice(idx, 1)
+  if (expandedId.value === removed?.id) expandedId.value = null
 }
 
-// 监听 TimerConfig 保存后刷新预览
-function onPhaseSaved() {
-  loadPhasesForPreview()
+function duplicateStage(idx: number) {
+  const original = fullConfig.value.stages[idx]
+  if (!original) return
+  const copy: Stage = {
+    ...JSON.parse(JSON.stringify(original)),
+    id: ++nextStageId,
+    name: original.name + ' (副本)',
+    order: fullConfig.value.stages.length + 1,
+  }
+  fullConfig.value.stages.splice(idx + 1, 0, copy)
+  expandedId.value = copy.id
 }
 
-onMounted(() => {
-  loadTournament()
-  loadPhasesForPreview()
-})
+// ═══════════ 拖拽排序（替代按钮移动）═══════════
+// 记录被拖拽的源卡片 id
+function onDragStart(e: DragEvent, id: string | number) {
+  dragSourceId.value = id
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', String(id))
+  }
+}
+
+// 标记当前悬浮目标
+function onDragOver(e: DragEvent, id: string | number) {
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
+  if (dragOverId.value !== id) dragOverId.value = id
+}
+
+// 离开目标时清除标记
+function onDragLeave(id: string | number) {
+  if (dragOverId.value === id) dragOverId.value = null
+}
+
+// 放置时重排序
+function onDrop(targetId: string | number) {
+  if (dragSourceId.value === null || dragSourceId.value === targetId) return
+  const sourceIdx = fullConfig.value.stages.findIndex(s => s.id === dragSourceId.value)
+  const targetIdx = fullConfig.value.stages.findIndex(s => s.id === targetId)
+  if (sourceIdx < 0 || targetIdx < 0) return
+  const [item] = fullConfig.value.stages.splice(sourceIdx, 1)
+  if (item) fullConfig.value.stages.splice(targetIdx, 0, item)
+  dragOverId.value = null
+}
+
+// 拖拽结束清理
+function onDragEnd() {
+  dragSourceId.value = null
+  dragOverId.value = null
+}
+
+function toggleExpand(id: number | string) {
+  expandedId.value = expandedId.value === id ? null : id
+}
+
+// ═══════════ StageForm 数据回写 ═══════════
+// 处理 StageForm 返回的表单数据，同步到 stage 对象
+function onStageFormUpdate(stage: Stage, formData: {
+  type: string
+  name: string
+  duration: number
+  protectionTime: number
+  speaker?: string
+  questioner?: string
+  responder?: string
+  firstSpeaker?: string
+}) {
+  stage.type = formData.type
+  stage.name = formData.name
+  stage.protectionTime = formData.protectionTime
+  stage.speaker = formData.speaker
+  stage.questioner = formData.questioner
+  stage.responder = formData.responder
+  stage.firstSpeaker = formData.firstSpeaker
+
+  // 根据类型设置 duration
+  const t = formData.type
+  if (t === 'dual-timer' || t === 'bilateral_debate' || t === 'free_debate') {
+    // 双计时器/双边对辩：将 duration 同时赋给正/反方
+    stage.positiveDuration = formData.duration
+    stage.negativeDuration = formData.duration
+  } else if (t === 'no_timer' || t === 'ppt_replace') {
+    stage.duration = 0
+  } else {
+    stage.duration = formData.duration
+  }
+}
+
+// ═══════════ 生命周期 ═══════════
+onMounted(() => loadConfig())
+
+// 配置变化时自动保存（防抖）
+let saveTimeout: ReturnType<typeof setTimeout> | null = null
+watch(
+  () => fullConfig.value.stages,
+  () => {
+    if (saveTimeout) clearTimeout(saveTimeout)
+    saveTimeout = setTimeout(() => {
+      if (!loading.value) saveConfig()
+    }, 1500)
+  },
+  { deep: true }
+)
 </script>
 
 <template>
   <div class="min-h-screen" style="background-color: #F5F7FA;">
-    <div class="max-w-[1200px] mx-auto px-6">
+    <div class="max-w-[80rem] mx-auto px-6">
 
       <!-- ═══ 加载状态 ═══ -->
       <div v-if="loading" class="flex justify-center py-24">
@@ -66,112 +471,263 @@ onMounted(() => {
       </div>
 
       <template v-else-if="tournament">
-        <!-- ═══ 头部 ═══ -->
+        <!-- ═══ 头部区域 ═══ -->
         <header class="flex items-end justify-between pt-10 pb-5">
           <div>
             <p class="text-xs text-gray-400 mb-1">
               赛事管理 / ID: {{ tournament.id }}
             </p>
-            <h1 class="text-[28px] font-bold text-gray-900 leading-tight">
+            <h1 class="text-[1.75rem] font-bold text-gray-900 leading-tight">
               {{ tournament.name }}
             </h1>
           </div>
-          <div class="flex items-center gap-3">
-            <button
-              class="h-9 px-4 text-sm border border-gray-200 rounded-md bg-white text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              离线版下载
-            </button>
-            <button
-              class="h-9 px-4 text-sm rounded-md text-white transition-colors"
-              style="background-color: #1F2937;"
-              @click="navigateTo(`/tournaments/${tournamentId}/timer`)"
-            >
-              打开在线版计时器
-            </button>
+          <div class="flex items-center gap-2">
+            <span v-if="saving" class="text-xs text-gray-500">保存中...</span>
           </div>
         </header>
 
-        <!-- ═══ 双层Tab导航 ═══ -->
-        <!-- 一级导航：功能大类 -->
-        <div class="primary-tabs">
-          <span class="primary-tab primary-tab--active">基础配置</span>
-          <span class="primary-tab">
-            视听设计
-            <span class="pro-badge">Pro</span>
-          </span>
-          <span class="primary-tab">
-            进阶功能
-            <span class="pro-badge">Pro</span>
-          </span>
+        <!-- ═══ 表格样式双层 Tab 导航 ═══ -->
+        <div class="tab-table-row1">
+          <span class="tab-primary tab-primary--active">基础配置</span>
+          <span class="tab-primary">视听设计</span>
+          <span class="tab-primary">进阶功能</span>
         </div>
-        <!-- 二级导航：细分功能（胶囊式激活态） -->
-        <nav class="secondary-tabs">
-          <NuxtLink :to="`/tournaments/${tournamentId}`" class="sub-tab">概览</NuxtLink>
-          <NuxtLink :to="`/tournaments/${tournamentId}/info`" class="sub-tab">比赛信息</NuxtLink>
-          <NuxtLink :to="`/tournaments/${tournamentId}/timing`" class="sub-tab sub-tab--active">计时器环节</NuxtLink>
-        </nav>
+        <div class="tab-table-row2">
+          <NuxtLink :to="`/tournaments/${tournamentId}`" class="tab-secondary">概览</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/info`" class="tab-secondary">比赛信息</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/timing`" class="tab-secondary tab-secondary--active">计时器环节</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/skin`" class="tab-secondary">背景</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/details`" class="tab-secondary">界面</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/audio`" class="tab-secondary">提示音</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/teams`" class="tab-secondary">队徽</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/schedule`" class="tab-secondary">赛程</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/offline`" class="tab-secondary">离线版</NuxtLink>
+        </div>
 
-        <!-- ═══════ 双栏主体内容 ═══════ -->
-        <main class="config-container">
-          <!-- ═══ 左侧面板：预览 + 控制 + 信息卡 ═══ -->
-          <aside class="left-panel">
-            <!-- 预览窗口：16:9 黑色背景模拟大屏 -->
-            <div class="preview-card">
-              <div class="preview-window">
-                <div class="preview-inner">
-                  <!-- 顶部队名条 -->
-                  <div class="preview-header">
-                    <div class="preview-team preview-team--pro">
-                      <span class="preview-team-name">{{ tournament.teams?.[0]?.name || '正方' }}</span>
-                    </div>
-                    <div class="preview-team preview-team--con">
-                      <span class="preview-team-name">{{ tournament.teams?.[1]?.name || '反方' }}</span>
-                    </div>
+        <!-- ═══ 主内容：左侧实时预览 + 右侧环节配置（左右并排，左1/3 + 右2/3） ═══ -->
+        <main class="py-6 grid grid-cols-12 gap-6">
+
+          <!-- ═══ 左侧：实时预览（左4列，约1/3宽度） ═══ -->
+          <div class="col-span-4">
+            <TimerPreviewCard
+              :full-config="fullConfig"
+              :tournament-id="tournamentId"
+              v-model:stage-index="previewStageIndex"
+            />
+          </div>
+
+          <!-- ═══ 右侧：环节配置（右8列，约2/3宽度） ═══ -->
+          <div class="col-span-8 space-y-4">
+            <div class="stages-config-card">
+              <div class="flex gap-4 stages-flex-container">
+                <!-- 左侧分类栏 -->
+                <div class="category-sidebar stages-sidebar-scroll">
+                  <!-- 计时器数量 -->
+                  <div class="category-group">
+                    <h4 class="category-title">
+                      <UIcon name="i-lucide-timer" class="w-4 h-4 mr-1" />
+                      计时器数量
+                    </h4>
+                    <button
+                      v-for="item in timerCountTypes"
+                      :key="item.type"
+                      class="category-btn"
+                      @click="addStageByType(item.type, item.name)"
+                    >
+                      <span>{{ item.label }}</span>
+                      <span class="text-lg">+</span>
+                    </button>
                   </div>
-                  <!-- 中心倒计时 -->
-                  <div class="preview-center">
-                    <p class="preview-countdown" v-if="previewPhase">
-                      {{ Math.floor((previewPhase.duration || 0) / 60).toString().padStart(2, '0') }}:{{ ((previewPhase.duration || 0) % 60).toString().padStart(2, '0') }}
-                    </p>
-                    <p class="preview-countdown" v-else>00:00</p>
-                    <p class="preview-phase-name">{{ previewPhase?.name || '未配置环节' }}</p>
+                  <!-- 单方发言 -->
+                  <div class="category-group">
+                    <h4 class="category-title">
+                      <UIcon name="i-lucide-message-circle" class="w-4 h-4 mr-1" />
+                      单方发言
+                    </h4>
+                    <button
+                      v-for="item in speechTypes"
+                      :key="item.name"
+                      class="category-btn"
+                      @click="addStageByType('speech', item.name)"
+                    >
+                      <span>{{ item.name }}</span>
+                      <span class="text-lg">+</span>
+                    </button>
+                  </div>
+                  <!-- 单方发问 -->
+                  <div class="category-group">
+                    <h4 class="category-title">
+                      <UIcon name="i-lucide-help-circle" class="w-4 h-4 mr-1" />
+                      单方发问
+                    </h4>
+                    <button
+                      v-for="item in questionTypes"
+                      :key="item.name"
+                      class="category-btn"
+                      @click="addStageByType('question', item.name)"
+                    >
+                      <span>{{ item.name }}</span>
+                      <span class="text-lg">+</span>
+                    </button>
+                  </div>
+                  <!-- 双边对辩 -->
+                  <div class="category-group">
+                    <h4 class="category-title">
+                      <UIcon name="i-lucide-check-circle" class="w-4 h-4 mr-1" />
+                      双边对辩
+                    </h4>
+                    <button
+                      v-for="item in dualTypes"
+                      :key="item.name"
+                      class="category-btn"
+                      @click="addStageByType('dual-timer', item.name)"
+                    >
+                      <span>{{ item.name }}</span>
+                      <span class="text-lg">+</span>
+                    </button>
                   </div>
                 </div>
-              </div>
-              <!-- 导航控制按钮 -->
-              <div class="preview-controls">
-                <button class="preview-btn" :disabled="previewPhaseIdx <= 0" @click="prevPreview">← 上一环节</button>
-                <NuxtLink :to="`/tournaments/${tournamentId}/timer`" class="preview-btn preview-btn--primary">跳转计时页面</NuxtLink>
-                <button class="preview-btn" :disabled="previewPhaseIdx >= phases.length - 1" @click="nextPreview">下一环节 →</button>
-              </div>
-            </div>
 
-            <!-- 帮助信息卡 -->
-            <div class="info-card">
-              <div class="info-card-row">
-                <UIcon name="i-lucide-download" class="w-5 h-5 text-green-500" />
-                <div>
-                  <p class="info-card-title">下载离线版</p>
-                  <a href="#" class="info-card-link">点击查看介绍 →</a>
+                <!-- 右侧环节列表 -->
+                <div class="flex-1 stages-right-container">
+                  <!-- 空状态 -->
+                  <div v-if="fullConfig.stages.length === 0" class="empty-state">
+                    <UIcon name="i-lucide-clock" class="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                    <p>从左侧分类栏添加计时环节</p>
+                  </div>
+
+                  <!-- 环节卡片列表 -->
+                  <!-- 环节卡片列表（可拖拽排序）-->
+                  <div class="stages-scroll">
+                    <!-- 顶部：使用模板按钮（随列表滚动） -->
+                    <button class="template-btn" @click="showTemplateModal = true">
+                      <UIcon name="i-lucide-download" class="template-btn-icon" />
+                      <span>使用模板</span>
+                    </button>
+                    <div
+                      v-for="(stage, idx) in fullConfig.stages"
+                      :key="stage.id"
+                      class="stage-card"
+                      :class="{
+                        'stage-card--dragging': dragSourceId === stage.id,
+                        'stage-card--over': dragOverId === stage.id
+                      }"
+                      draggable="true"
+                      @dragstart="onDragStart($event, stage.id)"
+                      @dragover.prevent="onDragOver($event, stage.id)"
+                      @dragleave="onDragLeave(stage.id)"
+                      @drop.prevent="onDrop(stage.id)"
+                      @dragend="onDragEnd"
+                    >
+                      <!-- 卡片头（新状态栏风格，可拖拽排序）-->
+                      <div class="stage-card-header" @click="toggleExpand(stage.id)">
+                        <!-- 拖拽把手 + 序号：用户按住此处拖动 -->
+                        <div class="stage-order stage-order--handle" title="拖动调整顺序">
+                          <span class="ml-1">{{ idx + 1 }}</span>
+                        </div>
+
+                        <!-- 左侧标签组：类/类型/时/时间 -->
+                        <div class="stage-header-tags">
+                          <span class="status-tag status-tag--green">类</span>
+                          <span class="status-tag status-tag--white">{{ typeLabel(stage.type) }}</span>
+                          <span class="status-tag status-tag--green">时</span>
+                          <span v-if="hasTimer(stage.type)" class="status-tag status-tag--white status-tag--time">
+                            {{ isDualTimer(stage.type)
+                                ? `${stage.positiveDuration ?? stage.duration}/${stage.negativeDuration ?? stage.duration}`
+                                : stage.duration
+                            }}
+                          </span>
+                        </div>
+
+                        <!-- 右侧标题：动态文本 -->
+                        <div class="stage-header-title">
+                          <template v-if="hasTimer(stage.type)">
+                            <template v-if="stage.type === 'single_speech' || stage.type === 'speech' || stage.type === 'summary'">
+                              {{ (stage.speaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}
+                            </template>
+                            <template v-else-if="stage.type === 'single_question'">
+                              {{ (stage.questioner || '反方·二辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}·{{ (stage.responder || '正方·一辩').replace(/[·\/\s\-]/g, '') }}
+                            </template>
+                            <template v-else-if="isDualTimer(stage.type)">
+                              {{ (stage.firstSpeaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}
+                            </template>
+                            <template v-else>
+                              {{ stage.name }}
+                            </template>
+                          </template>
+                          <template v-else>
+                            {{ stage.name }}
+                          </template>
+                        </div>
+                      </div>
+                      <!-- 展开的详情（使用新的 StageForm 组件）-->
+                      <div v-if="expandedId === stage.id" class="stage-card-body">
+                        <!-- 动态表单：根据环节类型展示不同字段 -->
+                        <StageForm
+                          :model-value="{
+                            type: stage.type,
+                            name: stage.name,
+                            duration: stage.type === 'dual-timer' ? (stage.positiveDuration ?? 120) : (stage.duration ?? 180),
+                            protectionTime: stage.protectionTime ?? 0,
+                            speaker: stage.speaker || '正方·一辩',
+                            questioner: stage.questioner || '反方·二辩',
+                            responder: stage.responder || '正方·一辩',
+                            firstSpeaker: stage.firstSpeaker || '正方·一辩',
+                          }"
+                          @update:model-value="(val) => onStageFormUpdate(stage, val)"
+                        />
+
+                        <!-- 底部操作按钮 -->
+                        <div class="stage-card-actions">
+                          <button class="action-btn action-btn--copy" @click.stop="duplicateStage(idx)">
+                            <UIcon name="i-lucide-copy" class="w-4 h-4" />
+                            复制
+                          </button>
+                          <button class="action-btn action-btn--delete" @click.stop="removeStage(idx)">
+                            <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
+                            删除
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 底部：添加一个环节（随列表滚动） -->
+                    <button class="add-stage-btn" @click="addStageByType('speech', '新环节')">
+                      <span class="add-stage-plus">＋</span>
+                      <span>添加一个环节</span>
+                    </button>
+                  </div>
+
                 </div>
               </div>
             </div>
-            <div class="info-card">
-              <div class="info-card-row">
-                <UIcon name="i-lucide-zap" class="w-5 h-5 text-amber-500" />
-                <div>
-                  <p class="info-card-title">快速上手</p>
-                  <a href="#" class="info-card-link">查看使用教程 →</a>
+          </div>
+
+          <!-- ═══ 模板选择弹窗 ═══ -->
+          <div v-if="showTemplateModal" class="template-modal-mask" @click.self="showTemplateModal = false">
+            <div class="template-modal">
+              <div class="template-modal-header">
+                <h3 class="text-lg font-bold text-gray-800">选择计时器模板</h3>
+                <button class="template-modal-close" @click="showTemplateModal = false">×</button>
+              </div>
+              <div class="template-modal-body">
+                <div
+                  v-for="tpl in debateTemplates"
+                  :key="tpl.id"
+                  class="template-item"
+                >
+                  <div class="template-item-info">
+                    <div class="template-item-name">{{ tpl.name }}</div>
+                    <div class="template-item-desc">{{ tpl.description }}</div>
+                    <div class="template-item-count">共 {{ tpl.stages.length }} 个环节</div>
+                  </div>
+                  <button class="template-item-btn" @click="applyTemplate(tpl.id)">
+                    使用该模板
+                  </button>
                 </div>
               </div>
             </div>
-          </aside>
-
-          <!-- ═══ 右侧面板：配置表单 ═══ -->
-          <section class="right-panel">
-            <TimerConfig :tournament-id="tournament.id" @saved="onPhaseSaved" />
-          </section>
+          </div>
         </main>
       </template>
     </div>
@@ -179,244 +735,489 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* ═══════════ 一级导航 ═══════════ */
-.primary-tabs {
-  display: flex;
-  border-bottom: 1px solid #E5E7EB;
+/* ═══════════ 表格样式双层Tab导航 ═══════════ */
+.tab-table-row1 {
+  display: grid;
+  grid-template-columns: 3fr 4fr 2fr;
+  border: 1px solid #D1D5DB;
+  border-bottom: none;
+  background: #F9FAFB;
+}
+
+.tab-primary {
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+  color: #6B7280;
+  cursor: default;
+  border-right: 1px solid #D1D5DB;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tab-primary:last-child { border-right: none; }
+.tab-primary--active { color: #1F2937; background: #FFFFFF; border-bottom: 2px solid #3B82F6; }
+
+.tab-table-row2 {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  border: 1px solid #D1D5DB;
+  border-top: none;
   background: #FFFFFF;
 }
 
-.primary-tab {
-  flex: 1;
+.tab-secondary {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
   text-align: center;
-  padding: 12px 0;
-  font-size: 16px;
-  font-weight: 600;
   color: #6B7280;
   cursor: pointer;
-  position: relative;
-  transition: color 0.2s;
-}
-
-.primary-tab:hover {
-  color: #374151;
-}
-
-.primary-tab--active {
-  color: #1F2329;
-  border-bottom: 2px solid #3B82F6;
-}
-
-.pro-badge {
-  display: inline-block;
-  background-color: #10B981;
-  color: #FFFFFF;
-  font-size: 10px;
-  font-weight: 500;
-  padding: 1px 6px;
-  border-radius: 9px;
-  margin-left: 6px;
-  vertical-align: middle;
-  line-height: 1.4;
-}
-
-/* ═══════════ 二级导航 ═══════════ */
-.secondary-tabs {
-  display: flex;
-  gap: 8px;
-  padding: 8px 20px;
-  background: #FFFFFF;
-  border-bottom: 1px solid #E5E7EB;
-}
-
-.sub-tab {
-  padding: 6px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #6B7280;
-  border-radius: 4px;
+  border-right: 1px solid #E5E7EB;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
 
-.sub-tab:hover {
-  color: #374151;
-  background: #F3F4F6;
-}
+.tab-secondary:last-child { border-right: none; }
+.tab-secondary:hover { color: #374151; background: #F3F4F6; }
+.tab-secondary--active { color: #3B82F6; background: #EFF6FF; font-weight: 600; }
 
-.sub-tab--active {
-  color: #3B82F6;
-  background: #EFF6FF;
-}
-
-/* ═══════════ 双栏布局 ═══════════ */
-.config-container {
-  display: flex;
-  gap: 24px;
-  padding: 24px 0;
-}
-
-/* ═══════════ 左侧面板 ═══════════ */
-.left-panel {
-  width: 380px;
+/* ═══════════ 分类栏与环节配置 ═══════════ */
+.category-sidebar {
+  width: 11.25rem;
   flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  border-right: 1px solid #E5E7EB;
+  padding: 0.75rem;
 }
 
-/* 预览卡片 */
-.preview-card {
+.category-group {
+  margin-bottom: 1rem;
+}
+
+.category-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6B7280;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.category-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.8125rem;
+  color: #374151;
+  background: transparent;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 0.25rem;
+}
+
+.category-btn:hover {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3.75rem 0;
+  color: #9CA3AF;
+  font-size: 0.875rem;
+}
+
+/* 环节卡片 —— 可拖拽排序 */
+.stage-card {
   background: #FFFFFF;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
   overflow: hidden;
+  cursor: grab;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
+  user-select: none;
 }
 
-.preview-window {
-  background: #1E2226;
-  padding: 16px;
-  aspect-ratio: 16 / 9;
+/* 鼠标按住拖拽中：显示可抓取状态 */
+.stage-card:active {
+  cursor: grabbing;
+}
+
+/* 被拖拽的源卡片 */
+.stage-card--dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
+  border-style: dashed;
+  border-color: #07C160;
+}
+
+/* 悬浮目标卡片高亮 */
+.stage-card--over {
+  border-color: #07C160;
+  box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.2);
+}
+
+.stage-card-header {
   display: flex;
   align-items: center;
-  justify-content: center;
+  padding: 0.75rem 0.75rem;
+  cursor: pointer;
+  gap: 0.75rem;
+  background-color: #F0FDF4; /* 极淡的绿色背景，呼应状态栏风格 */
+  transition: background-color 0.2s;
 }
 
-.preview-inner {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+.stage-card-header:hover {
+  background-color: #DCFCE7; /* hover 时更深一点的淡绿 */
 }
 
-.preview-header {
-  display: flex;
-  width: 100%;
-  margin-bottom: 8px;
-}
-
-.preview-team {
-  flex: 1;
-  padding: 4px 12px;
-  display: flex;
-  justify-content: center;
-}
-
-.preview-team--pro {
-  background: #C43535;
-  justify-content: flex-start;
-}
-
-.preview-team--con {
-  background: #0077B6;
-  justify-content: flex-end;
-}
-
-.preview-team-name {
-  font-size: 12px;
-  font-weight: 700;
+/* 序号（同时作为拖拽把手，grab 光标） */
+.stage-order {
+  min-width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  background: #07C160; /* 绿色底，配合新风格 */
   color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  cursor: grab;
+}
+
+.stage-order:active {
+  cursor: grabbing;
+}
+
+/* 左侧标签组 */
+.stage-header-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+/* 通用标签（复用 StageForm 的 status-tag 风格）*/
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1875rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+  flex-shrink: 0;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* 绿底白字标签（"类"、"时"）*/
+.status-tag--green {
+  color: #FFFFFF;
+  background-color: #07C160;
+  font-weight: 500;
+}
+
+/* 白底黑字带边框标签（类型、时间数值）*/
+.status-tag--white {
+  color: #333333;
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  font-weight: 500;
+}
+
+.status-tag--time {
+  font-variant-numeric: tabular-nums;
+  min-width: 2rem;
+}
+
+/* 右侧标题 */
+.stage-header-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1F2937;
+  text-align: right;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.preview-center {
-  text-align: center;
-}
-
-.preview-countdown {
-  font-size: 40px;
-  font-weight: 900;
-  color: #FFFFFF;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 4px;
-}
-
-.preview-phase-name {
-  font-size: 18px;
-  font-weight: 700;
-  color: #FFFFFF;
-  margin-top: 4px;
-}
-
-/* 控制按钮组 */
-.preview-controls {
-  display: flex;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #FFFFFF;
+/* ═══════════ 卡片展开表单（使用 StageForm 组件）══════════ */
+.stage-card-body {
+  padding: 1rem 0.75rem 0.75rem;
   border-top: 1px solid #F3F4F6;
 }
 
-.preview-btn {
-  flex: 1;
-  height: 36px;
-  padding: 0 8px;
-  font-size: 13px;
-  color: #4B5563;
-  background: #FFFFFF;
-  border: 1px solid #DEE0E3;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-decoration: none;
+/* 底部操作按钮区 */
+.stage-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid #F3F4F6;
+}
+
+.action-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  white-space: nowrap;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 0.25rem;
+  background: #FFFFFF;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.15s;
 }
 
-.preview-btn:hover:not(:disabled) {
-  background: #F2F3F5;
+.action-btn:hover {
+  background: #F3F4F6;
 }
 
-.preview-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.preview-btn--primary {
+.action-btn--copy:hover {
   color: #3B82F6;
   border-color: #3B82F6;
 }
 
-/* 帮助信息卡 */
-.info-card {
-  background: #FFFFFF;
-  border-radius: 8px;
-  padding: 16px 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+.action-btn--delete:hover {
+  color: #EF4444;
+  border-color: #EF4444;
 }
 
-.info-card-row {
+/* ═══════════ 使用模板按钮（绿色虚线边框，较窄，列表内顶部） ═══════════ */
+.template-btn {
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1.5px dashed #10B981;
+  background: transparent;
+  color: #10B981;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: 0.5rem; /* 与下方卡片保持小间距 */
 }
 
-.info-card-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 2px;
+.template-btn:hover {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: #059669;
+  color: #059669;
 }
 
-.info-card-link {
-  font-size: 13px;
-  color: #3B82F6;
-  text-decoration: none;
+.template-btn-icon {
+  width: 0.85rem;
+  height: 0.85rem;
 }
 
-.info-card-link:hover {
-  text-decoration: underline;
+/* ═══════════ 模板选择弹窗样式 ═══════════ */
+.template-modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* ═══════════ 右侧面板 ═══════════ */
-.right-panel {
+.template-modal {
+  background: #FFFFFF;
+  border-radius: 0.75rem;
+  width: 32rem;
+  max-width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.template-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #E5E7EB;
+  background: #F9FAFB;
+}
+
+.template-modal-close {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #6B7280;
+  background: transparent;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.template-modal-close:hover {
+  background: #E5E7EB;
+  color: #374151;
+}
+
+.template-modal-body {
+  padding: 1rem 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.template-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.15s ease;
+}
+
+.template-item:hover {
+  border-color: #10B981;
+  background: rgba(16, 185, 129, 0.04);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+}
+
+.template-item:last-child {
+  margin-bottom: 0;
+}
+
+.template-item-info {
   flex: 1;
   min-width: 0;
+}
+
+.template-item-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.template-item-desc {
+  font-size: 0.8rem;
+  color: #6B7280;
+  margin-bottom: 0.25rem;
+}
+
+.template-item-count {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+}
+
+.template-item-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #10B981;
+  background: transparent;
+  border: 1.5px solid #10B981;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.template-item-btn:hover {
+  background: #10B981;
+  color: #FFFFFF;
+}
+
+/* ═══════════ 添加环节按钮（灰色虚线边框，位于环节列表底部） ═══════════ */
+.add-stage-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1.5px dashed #9CA3AF; /* 灰色虚线边框 */
+  background: transparent;
+  color: #6B7280; /* 灰色文字 */
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 0.5rem;
+}
+
+.add-stage-btn:hover {
+  background: rgba(107, 114, 128, 0.06);
+  border-color: #4B5563;
+  color: #4B5563;
+}
+
+.add-stage-plus {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* ═══════════ 高度与溢出控制（避免环节列表溢出） ═══════════ */
+.stages-config-card {
+  background-color: #FFFFFF;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  max-height: 90vh; /* 原 70vh，增加 20vh */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.stages-flex-container {
+  position: relative; /* 让左侧可绝对定位 */
+  min-height: 0;
+}
+
+.category-sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 11.25rem; /* 180px 固定宽度 */
+  height: 100%; /* 跟随右侧内容高度 */
+  border-right: 1px solid #E5E7EB;
+  padding: 0.75rem;
+  overflow-y: auto; /* 内容过多时内部滚动 */
+  flex-shrink: 0;
+}
+
+.stages-sidebar-scroll {
+  /* 不再需要单独的 max-height 限制，由父容器控制 */
+}
+
+.stages-right-container {
+  margin-left: calc(11.25rem + 1rem); /* 左侧宽度 + gap */
+  min-width: 0;
+}
+
+.stages-scroll {
+  overflow-y: auto;
+  max-height: 72vh; /* 原 52vh，随卡片整体增加 20vh */
+  padding-bottom: 0.25rem;
 }
 </style>

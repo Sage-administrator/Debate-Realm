@@ -18,7 +18,73 @@ logs
 .fleet
 .idea
 
-# Local env files
+# ============ 敏感文件保护 ============
+# 环境变量（包含密钥、密码、个人 token）
 .env
 .env.*
 !.env.example
+
+# 数据库文件（SQLite、MS Access、本地缓存 DB）
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sql
+# Prisma 特定路径
+prisma/*.db
+prisma/**/*.db
+prisma/migrations_lock.toml
+
+# BOT 相关密钥文件（本地备份、参考项目中的数据库）
+reference/**/*.db
+reference/**/dev.db
+reference/**/prisma/*.db
+
+# 测试脚本（可能包含敏感数据）
+test-api.ts
+typecheck_log.txt
+
+# IDE / 编辑器个人设置
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.fleet
+.idea
+
+# ============ 构建 / 依赖输出（原有） ============
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+
+# ============ 附加保护 ============
+# Windows 缩略图
+Thumbs.db
+# macOS 元数据
+._*
+# SSH / PEM 私钥
+*.pem
+*.key
+# 证书
+*.cer
+*.crt
+*.p12
+*.pfx

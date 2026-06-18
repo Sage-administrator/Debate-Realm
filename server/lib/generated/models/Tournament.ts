@@ -227,6 +227,7 @@ export type TournamentWhereInput = {
   judges?: Prisma.TournamentJudgeListRelationFilter
   matches?: Prisma.MatchListRelationFilter
   timerTemplate?: Prisma.XOR<Prisma.TimerTemplateNullableScalarRelationFilter, Prisma.TimerTemplateWhereInput> | null
+  timerProject?: Prisma.XOR<Prisma.DebateTimerProjectNullableScalarRelationFilter, Prisma.DebateTimerProjectWhereInput> | null
 }
 
 export type TournamentOrderByWithRelationInput = {
@@ -245,6 +246,7 @@ export type TournamentOrderByWithRelationInput = {
   judges?: Prisma.TournamentJudgeOrderByRelationAggregateInput
   matches?: Prisma.MatchOrderByRelationAggregateInput
   timerTemplate?: Prisma.TimerTemplateOrderByWithRelationInput
+  timerProject?: Prisma.DebateTimerProjectOrderByWithRelationInput
 }
 
 export type TournamentWhereUniqueInput = Prisma.AtLeast<{
@@ -266,6 +268,7 @@ export type TournamentWhereUniqueInput = Prisma.AtLeast<{
   judges?: Prisma.TournamentJudgeListRelationFilter
   matches?: Prisma.MatchListRelationFilter
   timerTemplate?: Prisma.XOR<Prisma.TimerTemplateNullableScalarRelationFilter, Prisma.TimerTemplateWhereInput> | null
+  timerProject?: Prisma.XOR<Prisma.DebateTimerProjectNullableScalarRelationFilter, Prisma.DebateTimerProjectWhereInput> | null
 }, "id">
 
 export type TournamentOrderByWithAggregationInput = {
@@ -315,6 +318,7 @@ export type TournamentCreateInput = {
   judges?: Prisma.TournamentJudgeCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateInput = {
@@ -332,6 +336,7 @@ export type TournamentUncheckedCreateInput = {
   judges?: Prisma.TournamentJudgeUncheckedCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
 }
 
 export type TournamentUpdateInput = {
@@ -349,6 +354,7 @@ export type TournamentUpdateInput = {
   judges?: Prisma.TournamentJudgeUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateInput = {
@@ -366,6 +372,7 @@ export type TournamentUncheckedUpdateInput = {
   judges?: Prisma.TournamentJudgeUncheckedUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentCreateManyInput = {
@@ -569,6 +576,22 @@ export type TournamentUpdateOneRequiredWithoutTimerTemplateNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TournamentUpdateToOneWithWhereWithoutTimerTemplateInput, Prisma.TournamentUpdateWithoutTimerTemplateInput>, Prisma.TournamentUncheckedUpdateWithoutTimerTemplateInput>
 }
 
+export type TournamentCreateNestedOneWithoutTimerProjectInput = {
+  create?: Prisma.XOR<Prisma.TournamentCreateWithoutTimerProjectInput, Prisma.TournamentUncheckedCreateWithoutTimerProjectInput>
+  connectOrCreate?: Prisma.TournamentCreateOrConnectWithoutTimerProjectInput
+  connect?: Prisma.TournamentWhereUniqueInput
+}
+
+export type TournamentUpdateOneWithoutTimerProjectNestedInput = {
+  create?: Prisma.XOR<Prisma.TournamentCreateWithoutTimerProjectInput, Prisma.TournamentUncheckedCreateWithoutTimerProjectInput>
+  connectOrCreate?: Prisma.TournamentCreateOrConnectWithoutTimerProjectInput
+  upsert?: Prisma.TournamentUpsertWithoutTimerProjectInput
+  disconnect?: Prisma.TournamentWhereInput | boolean
+  delete?: Prisma.TournamentWhereInput | boolean
+  connect?: Prisma.TournamentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TournamentUpdateToOneWithWhereWithoutTimerProjectInput, Prisma.TournamentUpdateWithoutTimerProjectInput>, Prisma.TournamentUncheckedUpdateWithoutTimerProjectInput>
+}
+
 export type TournamentCreateWithoutTeamInput = {
   id?: string
   name: string
@@ -583,6 +606,7 @@ export type TournamentCreateWithoutTeamInput = {
   judges?: Prisma.TournamentJudgeCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateWithoutTeamInput = {
@@ -599,6 +623,7 @@ export type TournamentUncheckedCreateWithoutTeamInput = {
   judges?: Prisma.TournamentJudgeUncheckedCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
 }
 
 export type TournamentCreateOrConnectWithoutTeamInput = {
@@ -656,6 +681,7 @@ export type TournamentCreateWithoutTeamsInput = {
   judges?: Prisma.TournamentJudgeCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateWithoutTeamsInput = {
@@ -672,6 +698,7 @@ export type TournamentUncheckedCreateWithoutTeamsInput = {
   judges?: Prisma.TournamentJudgeUncheckedCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
 }
 
 export type TournamentCreateOrConnectWithoutTeamsInput = {
@@ -704,6 +731,7 @@ export type TournamentUpdateWithoutTeamsInput = {
   judges?: Prisma.TournamentJudgeUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateWithoutTeamsInput = {
@@ -720,6 +748,7 @@ export type TournamentUncheckedUpdateWithoutTeamsInput = {
   judges?: Prisma.TournamentJudgeUncheckedUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentCreateWithoutJudgesInput = {
@@ -736,6 +765,7 @@ export type TournamentCreateWithoutJudgesInput = {
   teams?: Prisma.TournamentTeamCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateWithoutJudgesInput = {
@@ -752,6 +782,7 @@ export type TournamentUncheckedCreateWithoutJudgesInput = {
   teams?: Prisma.TournamentTeamUncheckedCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
 }
 
 export type TournamentCreateOrConnectWithoutJudgesInput = {
@@ -784,6 +815,7 @@ export type TournamentUpdateWithoutJudgesInput = {
   teams?: Prisma.TournamentTeamUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateWithoutJudgesInput = {
@@ -800,6 +832,7 @@ export type TournamentUncheckedUpdateWithoutJudgesInput = {
   teams?: Prisma.TournamentTeamUncheckedUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentCreateWithoutMatchesInput = {
@@ -816,6 +849,7 @@ export type TournamentCreateWithoutMatchesInput = {
   teams?: Prisma.TournamentTeamCreateNestedManyWithoutTournamentInput
   judges?: Prisma.TournamentJudgeCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateWithoutMatchesInput = {
@@ -832,6 +866,7 @@ export type TournamentUncheckedCreateWithoutMatchesInput = {
   teams?: Prisma.TournamentTeamUncheckedCreateNestedManyWithoutTournamentInput
   judges?: Prisma.TournamentJudgeUncheckedCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
 }
 
 export type TournamentCreateOrConnectWithoutMatchesInput = {
@@ -864,6 +899,7 @@ export type TournamentUpdateWithoutMatchesInput = {
   teams?: Prisma.TournamentTeamUpdateManyWithoutTournamentNestedInput
   judges?: Prisma.TournamentJudgeUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateWithoutMatchesInput = {
@@ -880,6 +916,7 @@ export type TournamentUncheckedUpdateWithoutMatchesInput = {
   teams?: Prisma.TournamentTeamUncheckedUpdateManyWithoutTournamentNestedInput
   judges?: Prisma.TournamentJudgeUncheckedUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentCreateWithoutTimerTemplateInput = {
@@ -896,6 +933,7 @@ export type TournamentCreateWithoutTimerTemplateInput = {
   teams?: Prisma.TournamentTeamCreateNestedManyWithoutTournamentInput
   judges?: Prisma.TournamentJudgeCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateWithoutTimerTemplateInput = {
@@ -912,6 +950,7 @@ export type TournamentUncheckedCreateWithoutTimerTemplateInput = {
   teams?: Prisma.TournamentTeamUncheckedCreateNestedManyWithoutTournamentInput
   judges?: Prisma.TournamentJudgeUncheckedCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
 }
 
 export type TournamentCreateOrConnectWithoutTimerTemplateInput = {
@@ -944,6 +983,7 @@ export type TournamentUpdateWithoutTimerTemplateInput = {
   teams?: Prisma.TournamentTeamUpdateManyWithoutTournamentNestedInput
   judges?: Prisma.TournamentJudgeUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateWithoutTimerTemplateInput = {
@@ -960,6 +1000,91 @@ export type TournamentUncheckedUpdateWithoutTimerTemplateInput = {
   teams?: Prisma.TournamentTeamUncheckedUpdateManyWithoutTournamentNestedInput
   judges?: Prisma.TournamentJudgeUncheckedUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
+}
+
+export type TournamentCreateWithoutTimerProjectInput = {
+  id?: string
+  name: string
+  description?: string | null
+  format?: string
+  status?: string
+  scheduledAt?: Date | string | null
+  venue?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  team: Prisma.TeamCreateNestedOneWithoutTournamentsInput
+  teams?: Prisma.TournamentTeamCreateNestedManyWithoutTournamentInput
+  judges?: Prisma.TournamentJudgeCreateNestedManyWithoutTournamentInput
+  matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
+  timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
+}
+
+export type TournamentUncheckedCreateWithoutTimerProjectInput = {
+  id?: string
+  teamId: string
+  name: string
+  description?: string | null
+  format?: string
+  status?: string
+  scheduledAt?: Date | string | null
+  venue?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  teams?: Prisma.TournamentTeamUncheckedCreateNestedManyWithoutTournamentInput
+  judges?: Prisma.TournamentJudgeUncheckedCreateNestedManyWithoutTournamentInput
+  matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
+  timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
+}
+
+export type TournamentCreateOrConnectWithoutTimerProjectInput = {
+  where: Prisma.TournamentWhereUniqueInput
+  create: Prisma.XOR<Prisma.TournamentCreateWithoutTimerProjectInput, Prisma.TournamentUncheckedCreateWithoutTimerProjectInput>
+}
+
+export type TournamentUpsertWithoutTimerProjectInput = {
+  update: Prisma.XOR<Prisma.TournamentUpdateWithoutTimerProjectInput, Prisma.TournamentUncheckedUpdateWithoutTimerProjectInput>
+  create: Prisma.XOR<Prisma.TournamentCreateWithoutTimerProjectInput, Prisma.TournamentUncheckedCreateWithoutTimerProjectInput>
+  where?: Prisma.TournamentWhereInput
+}
+
+export type TournamentUpdateToOneWithWhereWithoutTimerProjectInput = {
+  where?: Prisma.TournamentWhereInput
+  data: Prisma.XOR<Prisma.TournamentUpdateWithoutTimerProjectInput, Prisma.TournamentUncheckedUpdateWithoutTimerProjectInput>
+}
+
+export type TournamentUpdateWithoutTimerProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  format?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  team?: Prisma.TeamUpdateOneRequiredWithoutTournamentsNestedInput
+  teams?: Prisma.TournamentTeamUpdateManyWithoutTournamentNestedInput
+  judges?: Prisma.TournamentJudgeUpdateManyWithoutTournamentNestedInput
+  matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
+  timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
+}
+
+export type TournamentUncheckedUpdateWithoutTimerProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  teamId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  format?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teams?: Prisma.TournamentTeamUncheckedUpdateManyWithoutTournamentNestedInput
+  judges?: Prisma.TournamentJudgeUncheckedUpdateManyWithoutTournamentNestedInput
+  matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
+  timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentCreateManyTeamInput = {
@@ -988,6 +1113,7 @@ export type TournamentUpdateWithoutTeamInput = {
   judges?: Prisma.TournamentJudgeUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateWithoutTeamInput = {
@@ -1004,6 +1130,7 @@ export type TournamentUncheckedUpdateWithoutTeamInput = {
   judges?: Prisma.TournamentJudgeUncheckedUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateManyWithoutTeamInput = {
@@ -1083,6 +1210,7 @@ export type TournamentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   judges?: boolean | Prisma.Tournament$judgesArgs<ExtArgs>
   matches?: boolean | Prisma.Tournament$matchesArgs<ExtArgs>
   timerTemplate?: boolean | Prisma.Tournament$timerTemplateArgs<ExtArgs>
+  timerProject?: boolean | Prisma.Tournament$timerProjectArgs<ExtArgs>
   _count?: boolean | Prisma.TournamentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tournament"]>
 
@@ -1134,6 +1262,7 @@ export type TournamentInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   judges?: boolean | Prisma.Tournament$judgesArgs<ExtArgs>
   matches?: boolean | Prisma.Tournament$matchesArgs<ExtArgs>
   timerTemplate?: boolean | Prisma.Tournament$timerTemplateArgs<ExtArgs>
+  timerProject?: boolean | Prisma.Tournament$timerProjectArgs<ExtArgs>
   _count?: boolean | Prisma.TournamentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TournamentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1151,6 +1280,7 @@ export type $TournamentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     judges: Prisma.$TournamentJudgePayload<ExtArgs>[]
     matches: Prisma.$MatchPayload<ExtArgs>[]
     timerTemplate: Prisma.$TimerTemplatePayload<ExtArgs> | null
+    timerProject: Prisma.$DebateTimerProjectPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1562,6 +1692,7 @@ export interface Prisma__TournamentClient<T, Null = never, ExtArgs extends runti
   judges<T extends Prisma.Tournament$judgesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tournament$judgesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TournamentJudgePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   matches<T extends Prisma.Tournament$matchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tournament$matchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   timerTemplate<T extends Prisma.Tournament$timerTemplateArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tournament$timerTemplateArgs<ExtArgs>>): Prisma.Prisma__TimerTemplateClient<runtime.Types.Result.GetResult<Prisma.$TimerTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  timerProject<T extends Prisma.Tournament$timerProjectArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tournament$timerProjectArgs<ExtArgs>>): Prisma.Prisma__DebateTimerProjectClient<runtime.Types.Result.GetResult<Prisma.$DebateTimerProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2088,6 +2219,25 @@ export type Tournament$timerTemplateArgs<ExtArgs extends runtime.Types.Extension
    */
   include?: Prisma.TimerTemplateInclude<ExtArgs> | null
   where?: Prisma.TimerTemplateWhereInput
+}
+
+/**
+ * Tournament.timerProject
+ */
+export type Tournament$timerProjectArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DebateTimerProject
+   */
+  select?: Prisma.DebateTimerProjectSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DebateTimerProject
+   */
+  omit?: Prisma.DebateTimerProjectOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DebateTimerProjectInclude<ExtArgs> | null
+  where?: Prisma.DebateTimerProjectWhereInput
 }
 
 /**

@@ -394,7 +394,10 @@ export const ModelName = {
   StandaloneMatch: 'StandaloneMatch',
   Timer: 'Timer',
   MemberAssignedMatch: 'MemberAssignedMatch',
-  TimerTemplate: 'TimerTemplate'
+  TimerTemplate: 'TimerTemplate',
+  UserLoginSession: 'UserLoginSession',
+  DebateTimerProject: 'DebateTimerProject',
+  DebateTimerStage: 'DebateTimerStage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -410,7 +413,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "team" | "teamMember" | "tournament" | "tournamentTeam" | "tournamentJudge" | "match" | "standaloneMatch" | "timer" | "memberAssignedMatch" | "timerTemplate"
+    modelProps: "user" | "team" | "teamMember" | "tournament" | "tournamentTeam" | "tournamentJudge" | "match" | "standaloneMatch" | "timer" | "memberAssignedMatch" | "timerTemplate" | "userLoginSession" | "debateTimerProject" | "debateTimerStage"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1228,6 +1231,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    UserLoginSession: {
+      payload: Prisma.$UserLoginSessionPayload<ExtArgs>
+      fields: Prisma.UserLoginSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserLoginSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserLoginSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserLoginSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserLoginSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.UserLoginSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserLoginSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserLoginSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserLoginSessionPayload>
+        }
+        findMany: {
+          args: Prisma.UserLoginSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserLoginSessionPayload>[]
+        }
+        create: {
+          args: Prisma.UserLoginSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserLoginSessionPayload>
+        }
+        createMany: {
+          args: Prisma.UserLoginSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserLoginSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserLoginSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.UserLoginSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserLoginSessionPayload>
+        }
+        update: {
+          args: Prisma.UserLoginSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserLoginSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.UserLoginSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserLoginSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserLoginSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserLoginSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.UserLoginSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserLoginSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.UserLoginSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserLoginSession>
+        }
+        groupBy: {
+          args: Prisma.UserLoginSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserLoginSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserLoginSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserLoginSessionCountAggregateOutputType> | number
+        }
+      }
+    }
+    DebateTimerProject: {
+      payload: Prisma.$DebateTimerProjectPayload<ExtArgs>
+      fields: Prisma.DebateTimerProjectFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DebateTimerProjectFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerProjectPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DebateTimerProjectFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerProjectPayload>
+        }
+        findFirst: {
+          args: Prisma.DebateTimerProjectFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerProjectPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DebateTimerProjectFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerProjectPayload>
+        }
+        findMany: {
+          args: Prisma.DebateTimerProjectFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerProjectPayload>[]
+        }
+        create: {
+          args: Prisma.DebateTimerProjectCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerProjectPayload>
+        }
+        createMany: {
+          args: Prisma.DebateTimerProjectCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DebateTimerProjectCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerProjectPayload>[]
+        }
+        delete: {
+          args: Prisma.DebateTimerProjectDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerProjectPayload>
+        }
+        update: {
+          args: Prisma.DebateTimerProjectUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerProjectPayload>
+        }
+        deleteMany: {
+          args: Prisma.DebateTimerProjectDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DebateTimerProjectUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DebateTimerProjectUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerProjectPayload>[]
+        }
+        upsert: {
+          args: Prisma.DebateTimerProjectUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerProjectPayload>
+        }
+        aggregate: {
+          args: Prisma.DebateTimerProjectAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDebateTimerProject>
+        }
+        groupBy: {
+          args: Prisma.DebateTimerProjectGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DebateTimerProjectGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DebateTimerProjectCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DebateTimerProjectCountAggregateOutputType> | number
+        }
+      }
+    }
+    DebateTimerStage: {
+      payload: Prisma.$DebateTimerStagePayload<ExtArgs>
+      fields: Prisma.DebateTimerStageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DebateTimerStageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerStagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DebateTimerStageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerStagePayload>
+        }
+        findFirst: {
+          args: Prisma.DebateTimerStageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerStagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DebateTimerStageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerStagePayload>
+        }
+        findMany: {
+          args: Prisma.DebateTimerStageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerStagePayload>[]
+        }
+        create: {
+          args: Prisma.DebateTimerStageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerStagePayload>
+        }
+        createMany: {
+          args: Prisma.DebateTimerStageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DebateTimerStageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerStagePayload>[]
+        }
+        delete: {
+          args: Prisma.DebateTimerStageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerStagePayload>
+        }
+        update: {
+          args: Prisma.DebateTimerStageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerStagePayload>
+        }
+        deleteMany: {
+          args: Prisma.DebateTimerStageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DebateTimerStageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DebateTimerStageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerStagePayload>[]
+        }
+        upsert: {
+          args: Prisma.DebateTimerStageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DebateTimerStagePayload>
+        }
+        aggregate: {
+          args: Prisma.DebateTimerStageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDebateTimerStage>
+        }
+        groupBy: {
+          args: Prisma.DebateTimerStageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DebateTimerStageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DebateTimerStageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DebateTimerStageCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1271,6 +1496,7 @@ export const UserScalarFieldEnum = {
   teamId: 'teamId',
   role: 'role',
   mode: 'mode',
+  tokenVersion: 'tokenVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1413,6 +1639,63 @@ export const TimerTemplateScalarFieldEnum = {
 export type TimerTemplateScalarFieldEnum = (typeof TimerTemplateScalarFieldEnum)[keyof typeof TimerTemplateScalarFieldEnum]
 
 
+export const UserLoginSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tokenVersion: 'tokenVersion',
+  deviceInfo: 'deviceInfo',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  isActive: 'isActive',
+  loggedInAt: 'loggedInAt',
+  lastSeenAt: 'lastSeenAt',
+  loggedOutAt: 'loggedOutAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserLoginSessionScalarFieldEnum = (typeof UserLoginSessionScalarFieldEnum)[keyof typeof UserLoginSessionScalarFieldEnum]
+
+
+export const DebateTimerProjectScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tournamentId: 'tournamentId',
+  name: 'name',
+  title: 'title',
+  positiveTopic: 'positiveTopic',
+  negativeTopic: 'negativeTopic',
+  teamPositiveName: 'teamPositiveName',
+  teamNegativeName: 'teamNegativeName',
+  uiConfig: 'uiConfig',
+  skinConfig: 'skinConfig',
+  audioConfig: 'audioConfig',
+  teamLogoConfig: 'teamLogoConfig',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DebateTimerProjectScalarFieldEnum = (typeof DebateTimerProjectScalarFieldEnum)[keyof typeof DebateTimerProjectScalarFieldEnum]
+
+
+export const DebateTimerStageScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  name: 'name',
+  duration: 'duration',
+  type: 'type',
+  description: 'description',
+  orderIndex: 'orderIndex',
+  positiveDuration: 'positiveDuration',
+  negativeDuration: 'negativeDuration',
+  allowedRoles: 'allowedRoles',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DebateTimerStageScalarFieldEnum = (typeof DebateTimerStageScalarFieldEnum)[keyof typeof DebateTimerStageScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1443,16 +1726,16 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
 
 
 /**
- * Reference to a field of type 'DateTime'
+ * Reference to a field of type 'Int'
  */
-export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
     
 
 
 /**
- * Reference to a field of type 'Int'
+ * Reference to a field of type 'DateTime'
  */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
     
 
 
@@ -1590,6 +1873,9 @@ export type GlobalOmitConfig = {
   timer?: Prisma.TimerOmit
   memberAssignedMatch?: Prisma.MemberAssignedMatchOmit
   timerTemplate?: Prisma.TimerTemplateOmit
+  userLoginSession?: Prisma.UserLoginSessionOmit
+  debateTimerProject?: Prisma.DebateTimerProjectOmit
+  debateTimerStage?: Prisma.DebateTimerStageOmit
 }
 
 /* Types for Logging */

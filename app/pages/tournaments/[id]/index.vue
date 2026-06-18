@@ -70,7 +70,7 @@ onMounted(() => loadTournament())
             <p class="text-xs text-gray-400 mb-1">
               赛事管理 / ID: {{ tournament.id }}
             </p>
-            <h1 class="text-[28px] font-bold text-gray-900 leading-tight">
+            <h1 class="text-[1.75rem] font-bold text-gray-900 leading-tight">
               {{ tournament.name }}
             </h1>
           </div>
@@ -90,40 +90,23 @@ onMounted(() => loadTournament())
           </div>
         </header>
 
-        <!-- ═══ 双层Tab导航 ═══ -->
-        <!-- 一级导航：功能大类 -->
-        <div class="primary-tabs">
-          <span class="primary-tab primary-tab--active">基础配置</span>
-          <span class="primary-tab">
-            视听设计
-            <span class="pro-badge">Pro</span>
-          </span>
-          <span class="primary-tab">
-            进阶功能
-            <span class="pro-badge">Pro</span>
-          </span>
+        <!-- ═══ 表格样式双层Tab导航 ═══ -->
+        <div class="tab-table-row1">
+          <span class="tab-primary tab-primary--active">基础配置</span>
+          <span class="tab-primary">视听设计</span>
+          <span class="tab-primary">进阶功能</span>
         </div>
-        <!-- 二级导航：细分功能（胶囊式激活态） -->
-        <nav class="secondary-tabs">
-          <NuxtLink
-            :to="`/tournaments/${tournamentId}`"
-            class="sub-tab sub-tab--active"
-          >
-            概览
-          </NuxtLink>
-          <NuxtLink
-            :to="`/tournaments/${tournamentId}/info`"
-            class="sub-tab"
-          >
-            比赛信息
-          </NuxtLink>
-          <NuxtLink
-            :to="`/tournaments/${tournamentId}/timing`"
-            class="sub-tab"
-          >
-            计时器环节
-          </NuxtLink>
-        </nav>
+        <div class="tab-table-row2">
+          <NuxtLink :to="`/tournaments/${tournamentId}`" class="tab-secondary tab-secondary--active">概览</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/info`" class="tab-secondary">比赛信息</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/timing`" class="tab-secondary">计时器环节</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/skin`" class="tab-secondary">背景</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/details`" class="tab-secondary">界面</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/audio`" class="tab-secondary">提示音</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/teams`" class="tab-secondary">队徽</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/schedule`" class="tab-secondary">赛程</NuxtLink>
+          <NuxtLink :to="`/tournaments/${tournamentId}/offline`" class="tab-secondary">离线版</NuxtLink>
+        </div>
 
         <!-- ═══ 概览内容 ═══ -->
         <main class="py-6 space-y-6">
@@ -262,74 +245,69 @@ onMounted(() => loadTournament())
 </template>
 
 <style scoped>
-/* ═══════════ 一级导航：基础配置/视听设计/进阶功能 ═══════════ */
-.primary-tabs {
-  display: flex;
-  border-bottom: 1px solid #E5E7EB;
-  background: #FFFFFF;
+/* ═══════════ 表格样式双层Tab导航 ═══════════ */
+.tab-table-row1 {
+  display: grid;
+  grid-template-columns: 3fr 4fr 2fr;
+  border: 1px solid #D1D5DB;
+  border-bottom: none;
+  background: #F9FAFB;
 }
 
-.primary-tab {
-  flex: 1;
-  text-align: center;
-  padding: 12px 0;
-  font-size: 16px;
+.tab-primary {
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
+  text-align: center;
   color: #6B7280;
-  cursor: pointer;
-  position: relative;
-  transition: color 0.2s;
+  cursor: default;
+  border-right: 1px solid #D1D5DB;
+  pointer-events: none;
+  user-select: none;
 }
 
-.primary-tab:hover {
-  color: #374151;
+.tab-primary:last-child {
+  border-right: none;
 }
 
-.primary-tab--active {
-  color: #1F2329;
+.tab-primary--active {
+  color: #1F2937;
+  background: #FFFFFF;
   border-bottom: 2px solid #3B82F6;
 }
 
-/* Pro 徽章：绿色胶囊 */
-.pro-badge {
-  display: inline-block;
-  background-color: #10B981;
-  color: #FFFFFF;
-  font-size: 10px;
-  font-weight: 500;
-  padding: 1px 6px;
-  border-radius: 9px;
-  margin-left: 6px;
-  vertical-align: middle;
-  line-height: 1.4;
-}
-
-/* ═══════════ 二级导航：胶囊式激活态（蓝色底蓝色字） ═══════════ */
-.secondary-tabs {
-  display: flex;
-  gap: 8px;
-  padding: 8px 20px;
+.tab-table-row2 {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  border: 1px solid #D1D5DB;
+  border-top: none;
   background: #FFFFFF;
-  border-bottom: 1px solid #E5E7EB;
 }
 
-.sub-tab {
-  padding: 6px 16px;
-  font-size: 13px;
+.tab-secondary {
+  padding: 0.5rem 0.75rem;       /* 与其他页面一致：8px 12px */
+  font-size: 0.8125rem;          /* 与其他页面一致：13px */
   font-weight: 500;
+  text-align: center;
   color: #6B7280;
-  border-radius: 4px;
+  cursor: pointer;
+  border-right: 1px solid #E5E7EB;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
 
-.sub-tab:hover {
+.tab-secondary:last-child {
+  border-right: none;
+}
+
+.tab-secondary:hover {
   color: #374151;
   background: #F3F4F6;
 }
 
-.sub-tab--active {
+.tab-secondary--active {
   color: #3B82F6;
   background: #EFF6FF;
+  font-weight: 600;
 }
 </style>

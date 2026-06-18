@@ -9,6 +9,9 @@ export interface JWTPayload {
   username: string
   role: string
   mode: string
+  teamId?: string | null
+  tokenVersion: number
+  sessionId: string
 }
 
 export function generateToken(payload: JWTPayload): string {

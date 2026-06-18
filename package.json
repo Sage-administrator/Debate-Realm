@@ -20,12 +20,14 @@
     "nuxt": "^4.4.8",
     "pinia": "^3.0.4",
     "vue": "^3.5.35",
-    "vue-router": "^5.1.0"
+    "vue-router": "^5.1.0",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.112",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/ws": "^8.18.1",
     "prisma": "^7.8.0"
   }
 }

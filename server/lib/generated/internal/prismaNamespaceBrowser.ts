@@ -61,7 +61,10 @@ export const ModelName = {
   StandaloneMatch: 'StandaloneMatch',
   Timer: 'Timer',
   MemberAssignedMatch: 'MemberAssignedMatch',
-  TimerTemplate: 'TimerTemplate'
+  TimerTemplate: 'TimerTemplate',
+  UserLoginSession: 'UserLoginSession',
+  DebateTimerProject: 'DebateTimerProject',
+  DebateTimerStage: 'DebateTimerStage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -84,6 +87,7 @@ export const UserScalarFieldEnum = {
   teamId: 'teamId',
   role: 'role',
   mode: 'mode',
+  tokenVersion: 'tokenVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -224,6 +228,63 @@ export const TimerTemplateScalarFieldEnum = {
 } as const
 
 export type TimerTemplateScalarFieldEnum = (typeof TimerTemplateScalarFieldEnum)[keyof typeof TimerTemplateScalarFieldEnum]
+
+
+export const UserLoginSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tokenVersion: 'tokenVersion',
+  deviceInfo: 'deviceInfo',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  isActive: 'isActive',
+  loggedInAt: 'loggedInAt',
+  lastSeenAt: 'lastSeenAt',
+  loggedOutAt: 'loggedOutAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserLoginSessionScalarFieldEnum = (typeof UserLoginSessionScalarFieldEnum)[keyof typeof UserLoginSessionScalarFieldEnum]
+
+
+export const DebateTimerProjectScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tournamentId: 'tournamentId',
+  name: 'name',
+  title: 'title',
+  positiveTopic: 'positiveTopic',
+  negativeTopic: 'negativeTopic',
+  teamPositiveName: 'teamPositiveName',
+  teamNegativeName: 'teamNegativeName',
+  uiConfig: 'uiConfig',
+  skinConfig: 'skinConfig',
+  audioConfig: 'audioConfig',
+  teamLogoConfig: 'teamLogoConfig',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DebateTimerProjectScalarFieldEnum = (typeof DebateTimerProjectScalarFieldEnum)[keyof typeof DebateTimerProjectScalarFieldEnum]
+
+
+export const DebateTimerStageScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  name: 'name',
+  duration: 'duration',
+  type: 'type',
+  description: 'description',
+  orderIndex: 'orderIndex',
+  positiveDuration: 'positiveDuration',
+  negativeDuration: 'negativeDuration',
+  allowedRoles: 'allowedRoles',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DebateTimerStageScalarFieldEnum = (typeof DebateTimerStageScalarFieldEnum)[keyof typeof DebateTimerStageScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -1,0 +1,47 @@
+// POST /api/bot/unbind — 解绑 Bot（清除配置 + 断连）
+import { prisma } from '../../lib/prisma'
+import { getUserFromEvent } from '../../utils/auth'
+import { stopBotInstance } from '../../lib/bot-ws'
+
+export default defineEventHandler(async (event) => {
+  try {
+    const currentUser = getUserFromEvent(event)
+
+    if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
+      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+    }
+
+    const teamId = currentUser.teamId
+    if (!teamId) {
+      throw createError({ statusCode: 400, statusMessage: '用户不属于任何团队' })
+    }
+
+    const team = await prisma.team.findUnique({
+      where: { id: teamId },
+      select: { mode: true },
+    })
+
+    if (!team || team.mode !== 'qq_bot') {
+      throw createError({ statusCode: 400, statusMessage: '仅 QQ 频道模式团队可使用机器人功能' })
+    }
+
+    // 1. 断开 WebSocket 并删除实例
+    stopBotInstance(teamId)
+
+    // 2. 清除数据库中的 Bot 配置
+    await prisma.team.update({
+      where: { id: teamId },
+      data: {
+        botAppId: null,
+        botAppSecret: null,
+        botChannelId: null,
+      },
+    })
+
+    return { success: true, message: 'Bot 已解绑，配置和连接已全部清除' }
+  } catch (error: unknown) {
+    if ((error as { statusCode?: number }).statusCode) throw error
+    console.error('[Bot Unbind] 解绑失败:', error)
+    throw createError({ statusCode: 500, statusMessage: '解绑 Bot 失败' })
+  }
+})
