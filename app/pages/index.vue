@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const store = useAuthStore()
 const toast = useToast()
+const router = useRouter()
 const { getTeams, getUsers, createTeam, deleteTeam, deleteUser, resetUserPassword, createUser } = useTeam()
 const { getTournaments, getStandaloneMatches } = useTournament()
 
@@ -57,30 +58,46 @@ function formatHomeDuration(seconds: number): string {
   return `${s}秒`
 }
 
-// QQ机器人生状态（仅 QQ 频道模式加载）
+// QQ机器人生状态（仅 QQ 频道模式加载，通过 WebSocket 获取）
 const botConfigured = ref(false)
 const botAppIdMasked = ref('')
 const botChannelId = ref('')
 const homeConnectionStatus = ref('not_configured')
 const homeConnectedDuration = ref(-1)
+const botWs = useBotWs()
 
-// 加载机器人状态
+// 加载机器人状态（通过 WebSocket 获取一次，然后断开）
 async function loadBotStatus() {
   if (!isQQBotMode.value) return
   try {
-    const data = await $fetch<{
-      configured: boolean; appId: string | null; channelId: string | null
-      connectionStatus: string; connectedDuration: number
-    }>('/api/bot/status', {
-      headers: { Authorization: `Bearer ${store.token}` },
+    botWs.connect()
+    // 等待认证完成
+    await new Promise<void>((resolve, reject) => {
+      const check = setInterval(() => {
+        if (botWs.state.authenticated) {
+          clearInterval(check)
+          resolve()
+        }
+        if (!botWs.state.connected) {
+          clearInterval(check)
+          resolve() // 连接失败也继续
+        }
+      }, 200)
+      // 超时 5 秒
+      setTimeout(() => { clearInterval(check); resolve() }, 5000)
     })
-    botConfigured.value = data.configured
-    botAppIdMasked.value = data.appId || ''
-    botChannelId.value = data.channelId || ''
-    homeConnectionStatus.value = data.connectionStatus
-    homeConnectedDuration.value = data.connectedDuration
+    if (botWs.state.status) {
+      const s = botWs.state.status
+      botConfigured.value = s.configured
+      botAppIdMasked.value = s.appId || ''
+      botChannelId.value = s.channelId || ''
+      homeConnectionStatus.value = s.connectionStatus
+      homeConnectedDuration.value = s.connectedDuration
+    }
   } catch (_e: unknown) {
     // 静默失败，bot 状态非关键
+  } finally {
+    botWs.disconnect()
   }
 }
 
@@ -152,7 +169,17 @@ async function loadAdminData() {
       getTeams(),
       getUsers(),
     ])
-    teams.value = teamsData
+    // ⭐ 添加虚拟的"个人团队"条目，作为团队管理体系下的特殊团队类型
+    const individualCount = usersData.filter((u: any) => u.role === 'individual').length
+    const personalTeam = {
+      id: '__individual__',
+      name: '个人团队',
+      mode: 'individual',
+      memberCount: individualCount,
+      tournamentCount: 0,
+      isVirtual: true, // 标记为虚拟团队
+    }
+    teams.value = [personalTeam, ...teamsData]
     users.value = usersData
   } catch (e: any) {
     toast.add({ title: e.statusMessage || '加载数据失败', color: 'error' })
@@ -336,8 +363,17 @@ onMounted(() => {
     <!-- 系统管理员仪表盘 -->
     <ClientOnly v-if="isSystemAdmin">
       <div class="mb-8">
-        <h1 class="text-2xl font-bold mb-2">系统管理仪表盘</h1>
-        <p class="text-gray-500">管理系统中的所有团队和用户</p>
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold mb-2">系统管理仪表盘</h1>
+            <p class="text-gray-500">管理系统中的所有团队和用户</p>
+          </div>
+          <!-- 当前模式标识 -->
+          <div class="flex items-center gap-2 px-4 py-2 bg-red-50 rounded-lg">
+            <UBadge label="系统管理员模式" color="error" variant="soft" />
+            <span class="text-sm text-gray-600">拥有最高权限</span>
+          </div>
+        </div>
       </div>
 
       <!-- 加载状态 -->
@@ -386,16 +422,22 @@ onMounted(() => {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="t in teams" :key="t.id" class="border-b border-gray-100 hover:bg-gray-50">
-                  <td class="py-2 px-3 font-medium">{{ t.name }}</td>
+                <tr v-for="t in teams" :key="t.id" class="border-b border-gray-100 hover:bg-gray-50"
+                  @click="t.isVirtual ? router.push('/individual-team') : router.push(`/teams/${t.id}`)">
+                  <td class="py-2 px-3 font-medium">
+                    {{ t.name }}
+                    <span v-if="t.isVirtual" class="text-xs text-gray-400 ml-2">(虚拟团队)</span>
+                  </td>
                   <td class="py-2 px-3">
-                    <UBadge :label="t.mode === 'qq_bot' ? 'QQ频道' : '普通'" :color="t.mode === 'qq_bot' ? 'primary' : 'neutral'" size="xs" variant="soft" />
+                    <UBadge v-if="t.isVirtual" label="个人模式" color="success" size="xs" variant="soft" />
+                    <UBadge v-else :label="t.mode === 'qq_bot' ? 'QQ频道' : '普通'" :color="t.mode === 'qq_bot' ? 'primary' : 'neutral'" size="xs" variant="soft" />
                   </td>
                   <td class="py-2 px-3">{{ t.memberCount ?? 0 }}</td>
                   <td class="py-2 px-3">{{ t.tournamentCount ?? 0 }}</td>
                   <td class="py-2 px-3 text-right">
-                    <UButton color="neutral" variant="ghost" size="xs" :to="`/teams/${t.id}`">详情</UButton>
-                    <UButton color="error" variant="ghost" size="xs" @click="handleDeleteTeam(t.id, t.name)">删除</UButton>
+                    <!-- 虚拟团队不允许删除 -->
+                    <UButton v-if="!t.isVirtual" color="error" variant="ghost" size="xs" @click="handleDeleteTeam(t.id, t.name)">删除</UButton>
+                    <span v-else class="text-xs text-gray-400">不可删除</span>
                   </td>
                 </tr>
               </tbody>
@@ -689,8 +731,17 @@ onMounted(() => {
     <!-- 个人用户仪表盘 -->
     <ClientOnly v-if="isIndividual">
       <div class="mb-8">
-        <h1 class="text-2xl font-bold mb-2">个人中心</h1>
-        <p class="text-gray-500">管理您的独立赛事</p>
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold mb-2">个人中心</h1>
+            <p class="text-gray-500">管理您的独立赛事</p>
+          </div>
+          <!-- 当前模式标识 -->
+          <div class="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg">
+            <UBadge label="个人模式" color="success" variant="soft" />
+            <span class="text-sm text-gray-600">独立使用，无需团队</span>
+          </div>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">

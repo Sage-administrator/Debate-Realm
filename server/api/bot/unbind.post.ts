@@ -1,4 +1,13 @@
-// POST /api/bot/unbind — 解绑 Bot（清除配置 + 断连）
+// ════════════════════════════════════════════════════
+// POST /api/bot/unbind — 解绑 Bot（清除数据库配置 + 删除内存实例）
+// 功能：
+//   1. 校验用户权限（仅团队管理员/system_admin可操作）
+//   2. 调用 stopBotInstance(teamId) 关闭 WebSocket 连接并删除实例记录
+//   3. 更新数据库 Team 表：将 botAppId/botAppSecret/botChannelId 全部设为 null
+// 与 /disconnect 的区别：/disconnect 仅断连保留配置，/unbind 彻底清除配置
+// 场景：团队不再使用 Bot 功能、更换新的 Bot 账号等
+// 权限：role === 'admin' 或 role === 'system_admin'
+// ════════════════════════════════════════════════════
 import { prisma } from '../../lib/prisma'
 import { getUserFromEvent } from '../../utils/auth'
 import { stopBotInstance } from '../../lib/bot-ws'

@@ -505,8 +505,18 @@ export const useDebateStore = defineStore('debate', {
         s.activeTimer = 'positive'
       } else if (type === 'positive') {
         s.positiveTime = initialPositive
+        // 如果正方正在运行，则停止计时
+        if (s.activeTimer === 'positive') {
+          s.isRunning = false
+          s.isPaused = false
+        }
       } else if (type === 'negative') {
         s.negativeTime = initialNegative
+        // 如果反方正在运行，则停止计时
+        if (s.activeTimer === 'negative') {
+          s.isRunning = false
+          s.isPaused = false
+        }
       }
     },
 

@@ -3,6 +3,9 @@ import { getHeader, createError } from 'h3'
 import { verifyToken, type JWTPayload } from '../lib/jwt'
 import type { PrismaClient } from '../lib/generated/client'
 
+// 允许其他模块直接 import type { JWTPayload } from '../utils/auth'
+export type { JWTPayload }
+
 // 被踢下线的标准错误信息
 export const KICKED_MESSAGE = '您的账号已在其他设备登录，请重新登录'
 

@@ -1,20 +1,12 @@
 import { prisma } from '../../lib/prisma'
-import { getUserFromEvent } from '../../utils/auth'
+import { requireWriteTournament } from '../../utils/tournament-auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = getUserFromEvent(event)
     const id = getRouterParam(event, 'id')!
 
-    const tournament = await prisma.tournament.findUnique({
-      where: { id }, include: { team: true },
-    })
-
-    if (!tournament) throw createError({ statusCode: 404, statusMessage: '赛事不存在' })
-
-    if (user.role !== 'system_admin' && tournament.team.adminId !== user.userId) {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
-    }
+    // 权限：系统管理员 或 该赛事所属团队的管理员
+    await requireWriteTournament(event, prisma, id)
 
     await prisma.tournament.delete({ where: { id } })
     return { message: '赛事已删除' }

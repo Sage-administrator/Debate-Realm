@@ -576,10 +576,6 @@ export type TimerUncheckedUpdateOneWithoutMatchNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TimerUpdateToOneWithWhereWithoutMatchInput, Prisma.TimerUpdateWithoutMatchInput>, Prisma.TimerUncheckedUpdateWithoutMatchInput>
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type TimerCreateWithoutMatchInput = {
   id?: string
   matchType: string

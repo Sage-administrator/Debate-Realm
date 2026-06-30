@@ -386,6 +386,11 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   User: 'User',
   Team: 'Team',
+  BotArena: 'BotArena',
+  BotArenaRole: 'BotArenaRole',
+  BotArenaClaim: 'BotArenaClaim',
+  BotPermissionLog: 'BotPermissionLog',
+  MatchScore: 'MatchScore',
   TeamMember: 'TeamMember',
   Tournament: 'Tournament',
   TournamentTeam: 'TournamentTeam',
@@ -413,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "team" | "teamMember" | "tournament" | "tournamentTeam" | "tournamentJudge" | "match" | "standaloneMatch" | "timer" | "memberAssignedMatch" | "timerTemplate" | "userLoginSession" | "debateTimerProject" | "debateTimerStage"
+    modelProps: "user" | "team" | "botArena" | "botArenaRole" | "botArenaClaim" | "botPermissionLog" | "matchScore" | "teamMember" | "tournament" | "tournamentTeam" | "tournamentJudge" | "match" | "standaloneMatch" | "timer" | "memberAssignedMatch" | "timerTemplate" | "userLoginSession" | "debateTimerProject" | "debateTimerStage"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -562,6 +567,376 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.TeamCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.TeamCountAggregateOutputType> | number
+        }
+      }
+    }
+    BotArena: {
+      payload: Prisma.$BotArenaPayload<ExtArgs>
+      fields: Prisma.BotArenaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BotArenaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BotArenaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaPayload>
+        }
+        findFirst: {
+          args: Prisma.BotArenaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BotArenaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaPayload>
+        }
+        findMany: {
+          args: Prisma.BotArenaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaPayload>[]
+        }
+        create: {
+          args: Prisma.BotArenaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaPayload>
+        }
+        createMany: {
+          args: Prisma.BotArenaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BotArenaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaPayload>[]
+        }
+        delete: {
+          args: Prisma.BotArenaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaPayload>
+        }
+        update: {
+          args: Prisma.BotArenaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaPayload>
+        }
+        deleteMany: {
+          args: Prisma.BotArenaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BotArenaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BotArenaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaPayload>[]
+        }
+        upsert: {
+          args: Prisma.BotArenaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaPayload>
+        }
+        aggregate: {
+          args: Prisma.BotArenaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBotArena>
+        }
+        groupBy: {
+          args: Prisma.BotArenaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BotArenaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BotArenaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BotArenaCountAggregateOutputType> | number
+        }
+      }
+    }
+    BotArenaRole: {
+      payload: Prisma.$BotArenaRolePayload<ExtArgs>
+      fields: Prisma.BotArenaRoleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BotArenaRoleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaRolePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BotArenaRoleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaRolePayload>
+        }
+        findFirst: {
+          args: Prisma.BotArenaRoleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaRolePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BotArenaRoleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaRolePayload>
+        }
+        findMany: {
+          args: Prisma.BotArenaRoleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaRolePayload>[]
+        }
+        create: {
+          args: Prisma.BotArenaRoleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaRolePayload>
+        }
+        createMany: {
+          args: Prisma.BotArenaRoleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BotArenaRoleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaRolePayload>[]
+        }
+        delete: {
+          args: Prisma.BotArenaRoleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaRolePayload>
+        }
+        update: {
+          args: Prisma.BotArenaRoleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaRolePayload>
+        }
+        deleteMany: {
+          args: Prisma.BotArenaRoleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BotArenaRoleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BotArenaRoleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaRolePayload>[]
+        }
+        upsert: {
+          args: Prisma.BotArenaRoleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaRolePayload>
+        }
+        aggregate: {
+          args: Prisma.BotArenaRoleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBotArenaRole>
+        }
+        groupBy: {
+          args: Prisma.BotArenaRoleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BotArenaRoleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BotArenaRoleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BotArenaRoleCountAggregateOutputType> | number
+        }
+      }
+    }
+    BotArenaClaim: {
+      payload: Prisma.$BotArenaClaimPayload<ExtArgs>
+      fields: Prisma.BotArenaClaimFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BotArenaClaimFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaClaimPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BotArenaClaimFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaClaimPayload>
+        }
+        findFirst: {
+          args: Prisma.BotArenaClaimFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaClaimPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BotArenaClaimFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaClaimPayload>
+        }
+        findMany: {
+          args: Prisma.BotArenaClaimFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaClaimPayload>[]
+        }
+        create: {
+          args: Prisma.BotArenaClaimCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaClaimPayload>
+        }
+        createMany: {
+          args: Prisma.BotArenaClaimCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BotArenaClaimCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaClaimPayload>[]
+        }
+        delete: {
+          args: Prisma.BotArenaClaimDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaClaimPayload>
+        }
+        update: {
+          args: Prisma.BotArenaClaimUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaClaimPayload>
+        }
+        deleteMany: {
+          args: Prisma.BotArenaClaimDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BotArenaClaimUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BotArenaClaimUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaClaimPayload>[]
+        }
+        upsert: {
+          args: Prisma.BotArenaClaimUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotArenaClaimPayload>
+        }
+        aggregate: {
+          args: Prisma.BotArenaClaimAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBotArenaClaim>
+        }
+        groupBy: {
+          args: Prisma.BotArenaClaimGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BotArenaClaimGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BotArenaClaimCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BotArenaClaimCountAggregateOutputType> | number
+        }
+      }
+    }
+    BotPermissionLog: {
+      payload: Prisma.$BotPermissionLogPayload<ExtArgs>
+      fields: Prisma.BotPermissionLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BotPermissionLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotPermissionLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BotPermissionLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotPermissionLogPayload>
+        }
+        findFirst: {
+          args: Prisma.BotPermissionLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotPermissionLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BotPermissionLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotPermissionLogPayload>
+        }
+        findMany: {
+          args: Prisma.BotPermissionLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotPermissionLogPayload>[]
+        }
+        create: {
+          args: Prisma.BotPermissionLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotPermissionLogPayload>
+        }
+        createMany: {
+          args: Prisma.BotPermissionLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BotPermissionLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotPermissionLogPayload>[]
+        }
+        delete: {
+          args: Prisma.BotPermissionLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotPermissionLogPayload>
+        }
+        update: {
+          args: Prisma.BotPermissionLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotPermissionLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.BotPermissionLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BotPermissionLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BotPermissionLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotPermissionLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.BotPermissionLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BotPermissionLogPayload>
+        }
+        aggregate: {
+          args: Prisma.BotPermissionLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBotPermissionLog>
+        }
+        groupBy: {
+          args: Prisma.BotPermissionLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BotPermissionLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BotPermissionLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BotPermissionLogCountAggregateOutputType> | number
+        }
+      }
+    }
+    MatchScore: {
+      payload: Prisma.$MatchScorePayload<ExtArgs>
+      fields: Prisma.MatchScoreFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MatchScoreFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MatchScorePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MatchScoreFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MatchScorePayload>
+        }
+        findFirst: {
+          args: Prisma.MatchScoreFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MatchScorePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MatchScoreFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MatchScorePayload>
+        }
+        findMany: {
+          args: Prisma.MatchScoreFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MatchScorePayload>[]
+        }
+        create: {
+          args: Prisma.MatchScoreCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MatchScorePayload>
+        }
+        createMany: {
+          args: Prisma.MatchScoreCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MatchScoreCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MatchScorePayload>[]
+        }
+        delete: {
+          args: Prisma.MatchScoreDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MatchScorePayload>
+        }
+        update: {
+          args: Prisma.MatchScoreUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MatchScorePayload>
+        }
+        deleteMany: {
+          args: Prisma.MatchScoreDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MatchScoreUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MatchScoreUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MatchScorePayload>[]
+        }
+        upsert: {
+          args: Prisma.MatchScoreUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MatchScorePayload>
+        }
+        aggregate: {
+          args: Prisma.MatchScoreAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMatchScore>
+        }
+        groupBy: {
+          args: Prisma.MatchScoreGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MatchScoreGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MatchScoreCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MatchScoreCountAggregateOutputType> | number
         }
       }
     }
@@ -1519,6 +1894,86 @@ export const TeamScalarFieldEnum = {
 export type TeamScalarFieldEnum = (typeof TeamScalarFieldEnum)[keyof typeof TeamScalarFieldEnum]
 
 
+export const BotArenaScalarFieldEnum = {
+  id: 'id',
+  teamId: 'teamId',
+  name: 'name',
+  matchFormat: 'matchFormat',
+  status: 'status',
+  guildId: 'guildId',
+  channelId: 'channelId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BotArenaScalarFieldEnum = (typeof BotArenaScalarFieldEnum)[keyof typeof BotArenaScalarFieldEnum]
+
+
+export const BotArenaRoleScalarFieldEnum = {
+  id: 'id',
+  arenaId: 'arenaId',
+  label: 'label',
+  side: 'side',
+  orderIndex: 'orderIndex',
+  qqRoleId: 'qqRoleId',
+  maxCount: 'maxCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BotArenaRoleScalarFieldEnum = (typeof BotArenaRoleScalarFieldEnum)[keyof typeof BotArenaRoleScalarFieldEnum]
+
+
+export const BotArenaClaimScalarFieldEnum = {
+  id: 'id',
+  arenaId: 'arenaId',
+  roleId: 'roleId',
+  userId: 'userId',
+  username: 'username',
+  guildId: 'guildId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BotArenaClaimScalarFieldEnum = (typeof BotArenaClaimScalarFieldEnum)[keyof typeof BotArenaClaimScalarFieldEnum]
+
+
+export const BotPermissionLogScalarFieldEnum = {
+  id: 'id',
+  teamId: 'teamId',
+  guildId: 'guildId',
+  channelId: 'channelId',
+  action: 'action',
+  targetType: 'targetType',
+  targetId: 'targetId',
+  targetName: 'targetName',
+  operator: 'operator',
+  detail: 'detail',
+  createdAt: 'createdAt'
+} as const
+
+export type BotPermissionLogScalarFieldEnum = (typeof BotPermissionLogScalarFieldEnum)[keyof typeof BotPermissionLogScalarFieldEnum]
+
+
+export const MatchScoreScalarFieldEnum = {
+  id: 'id',
+  matchId: 'matchId',
+  tournamentId: 'tournamentId',
+  judgeName: 'judgeName',
+  dimensions: 'dimensions',
+  reason: 'reason',
+  scoreTeamA: 'scoreTeamA',
+  scoreTeamB: 'scoreTeamB',
+  winner: 'winner',
+  bestDebaterA: 'bestDebaterA',
+  bestDebaterB: 'bestDebaterB',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MatchScoreScalarFieldEnum = (typeof MatchScoreScalarFieldEnum)[keyof typeof MatchScoreScalarFieldEnum]
+
+
 export const TeamMemberScalarFieldEnum = {
   id: 'id',
   teamId: 'teamId',
@@ -1539,6 +1994,11 @@ export const TournamentScalarFieldEnum = {
   status: 'status',
   scheduledAt: 'scheduledAt',
   venue: 'venue',
+  groupCount: 'groupCount',
+  promotePerGroup: 'promotePerGroup',
+  topicPool: 'topicPool',
+  bestDebaterMode: 'bestDebaterMode',
+  assignments: 'assignments',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1549,7 +2009,15 @@ export type TournamentScalarFieldEnum = (typeof TournamentScalarFieldEnum)[keyof
 export const TournamentTeamScalarFieldEnum = {
   id: 'id',
   tournamentId: 'tournamentId',
-  name: 'name'
+  name: 'name',
+  groupLabel: 'groupLabel',
+  seed: 'seed',
+  points: 'points',
+  wins: 'wins',
+  draws: 'draws',
+  losses: 'losses',
+  scoreFor: 'scoreFor',
+  scoreAgainst: 'scoreAgainst'
 } as const
 
 export type TournamentTeamScalarFieldEnum = (typeof TournamentTeamScalarFieldEnum)[keyof typeof TournamentTeamScalarFieldEnum]
@@ -1578,7 +2046,19 @@ export const MatchScalarFieldEnum = {
   status: 'status',
   scheduledAt: 'scheduledAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  topic: 'topic',
+  affirmativeSide: 'affirmativeSide',
+  bestDebaterA: 'bestDebaterA',
+  bestDebaterB: 'bestDebaterB',
+  judge: 'judge',
+  version: 'version',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy',
+  deleteReason: 'deleteReason',
+  promotedFromA: 'promotedFromA',
+  promotedFromB: 'promotedFromB',
+  isBye: 'isBye'
 } as const
 
 export type MatchScalarFieldEnum = (typeof MatchScalarFieldEnum)[keyof typeof MatchScalarFieldEnum]
@@ -1864,6 +2344,11 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   team?: Prisma.TeamOmit
+  botArena?: Prisma.BotArenaOmit
+  botArenaRole?: Prisma.BotArenaRoleOmit
+  botArenaClaim?: Prisma.BotArenaClaimOmit
+  botPermissionLog?: Prisma.BotPermissionLogOmit
+  matchScore?: Prisma.MatchScoreOmit
   teamMember?: Prisma.TeamMemberOmit
   tournament?: Prisma.TournamentOmit
   tournamentTeam?: Prisma.TournamentTeamOmit

@@ -1,7 +1,6 @@
 // 保存/更新赛事的完整计时器配置
-// 修复：使用 getUserFromEvent 从授权 token 获取真实用户 ID，避免外键约束错误
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { requireWriteTournament } from '../../../utils/tournament-auth'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
@@ -10,10 +9,9 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   if (!body) throw createError({ statusCode: 400, statusMessage: '缺少请求体' })
 
-  // 关键修复：从授权 token 中获取真实的用户 ID
-  // 这样确保 userId 始终对应 User 表中的有效用户，避免外键约束错误
-  const currentUser = getUserFromEvent(event)
-  const userId = currentUser.userId
+  // 权限：系统管理员 或 该赛事所属团队的管理员
+  const { user } = await requireWriteTournament(event, prisma, id)
+  const userId = user.userId
 
   const {
     name,

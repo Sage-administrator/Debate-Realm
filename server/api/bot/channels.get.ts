@@ -1,4 +1,14 @@
-// GET /api/bot/channels — 获取 Bot 所在频道/服务器列表
+// ════════════════════════════════════════════════════
+// GET /api/bot/channels — 获取 Bot 所在的频道/服务器列表
+// 功能：
+//   1. 校验用户权限（仅团队管理员/system_admin可访问）
+//   2. 调用 fetchBotGuilds(teamId) → 内部调用 QQ API /users/@me/guilds
+//   3. 返回 { guilds: [{ id, name, ownerId?, joinedAt? }], error?: string }
+// 用途：
+//   - 让管理员查看 Bot 当前加入了哪些频道/服务器
+//   - 协助配置默认的消息发送频道（频道 ID）
+// 权限：role === 'admin' 或 role === 'system_admin'
+// ════════════════════════════════════════════════════
 import { prisma } from '../../lib/prisma'
 import { getUserFromEvent } from '../../utils/auth'
 import { fetchBotGuilds } from '../../lib/bot-ws'

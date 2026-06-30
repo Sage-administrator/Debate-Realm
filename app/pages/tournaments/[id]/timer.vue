@@ -7,7 +7,7 @@
 <template>
   <div class="h-screen text-white overflow-hidden responsive-container gradient-background scale-wrapper" :style="{ '--ui-scale': uiScale }">
 
-    <!-- 顶部辩题展示区（横幅） -->
+    <!-- 顶部辩题展示区（横幅）- 显示横幅/辩题时显示完整横幅 -->
     <div class="debate-header" v-if="(uiConfig.bannerVisible !== false && uiConfig.showBanner !== false)">
       <div class="flex w-full" :style="{ marginTop: `${uiConfig.bannerPos ?? 0}vh` }">
         <!-- 正方横幅（红色） -->
@@ -15,15 +15,25 @@
           <div class="debate-label-white">
             <span class="font-bold" :style="{ color: uiConfig.bannerFontColorPos || 'white' }">{{ positiveLabel }}</span>
           </div>
-          <div class="text-white font-bold debate-topic-text">{{ positiveTopic || '' }}</div>
+          <div ref="positiveTopicRef" class="text-white font-bold debate-topic-text">{{ positiveTopic || '' }}</div>
         </div>
         <!-- 反方横幅（蓝色） -->
         <div class="flex-1 debate-side-negative flex items-center justify-end" :style="{ backgroundColor: uiConfig.bannerColorNeg || 'rgb(3, 105, 161)' }">
-          <div class="text-white font-bold text-right debate-topic-text debate-topic-right">{{ negativeTopic || '' }}</div>
+          <div ref="negativeTopicRef" class="text-white font-bold text-right debate-topic-text debate-topic-right">{{ negativeTopic || '' }}</div>
           <div class="debate-label-white">
             <span class="font-bold" :style="{ color: uiConfig.bannerFontColorNeg || 'white' }">{{ negativeLabel }}</span>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- 不显示横幅/辩题时，仍显示正方/反方标签 -->
+    <div v-else class="flex w-full justify-between px-8 mt-2">
+      <div class="debate-label-white">
+        <span class="font-bold" :style="{ color: uiConfig.bannerFontColorPos || 'white' }">{{ positiveLabel }}</span>
+      </div>
+      <div class="debate-label-white">
+        <span class="font-bold" :style="{ color: uiConfig.bannerFontColorNeg || 'white' }">{{ negativeLabel }}</span>
       </div>
     </div>
 
@@ -57,8 +67,49 @@
           </div>
         </div>
         <div class="flex items-center justify-between mt-4">
-          <button class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 bg-gray-100 cursor-not-allowed" disabled>从赛程选择（待开发）</button>
+          <button class="px-3 py-1 border border-blue-500 text-blue-600 rounded text-sm hover:bg-blue-50 transition-colors" @click="openMatchSelectModal">从赛程选择</button>
           <button class="px-3 py-1 border border-green-600 bg-green-600 text-white rounded text-sm hover:bg-green-700" @click="applySetupAndStart">使用以上设置开始计时</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 从赛程选择比赛弹窗 -->
+    <div v-if="showMatchSelectModal" class="fixed inset-0 z-50 flex items-center justify-center" @click="showMatchSelectModal = false">
+      <div class="absolute inset-0 bg-black/50"></div>
+      <div class="relative bg-white text-gray-800 rounded-lg shadow-2xl w-[35rem] max-w-[90vw] max-h-[70vh] border border-gray-200 p-4 overflow-hidden flex flex-col" @click.stop>
+        <h3 class="font-bold text-lg mb-3">从赛程选择比赛</h3>
+        <div v-if="matchSelectLoading" class="flex-1 flex items-center justify-center py-8">
+          <span class="text-gray-500 text-sm">加载中...</span>
+        </div>
+        <div v-else-if="matches.length === 0" class="flex-1 flex items-center justify-center py-8">
+          <span class="text-gray-500 text-sm">暂无比赛数据，请先在赛程页面添加比赛</span>
+        </div>
+        <div v-else class="flex-1 overflow-y-auto space-y-2">
+          <div
+            v-for="match in matches"
+            :key="match.id"
+            class="border border-gray-200 rounded-lg p-3 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-colors"
+            @click="selectMatch(match)"
+          >
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs text-gray-500">第 {{ match.round }} 轮 · 第 {{ match.orderNum }} 场</span>
+              <span v-if="match.status" class="text-xs px-2 py-0.5 bg-gray-100 rounded">{{ match.status === 'completed' ? '已完成' : (match.status === 'in_progress' ? '进行中' : '待开始') }}</span>
+            </div>
+            <div class="font-bold text-sm text-gray-800 mb-1">
+              {{ match.teamA || '队伍A' }} vs {{ match.teamB || '队伍B' }}
+            </div>
+            <div class="text-xs text-gray-600">
+              <span v-if="match.affirmativeSide === 'teamA'">正方: {{ match.teamA }} / 反方: {{ match.teamB }}</span>
+              <span v-else-if="match.affirmativeSide === 'teamB'">正方: {{ match.teamB }} / 反方: {{ match.teamA }}</span>
+              <span v-else>未指定正反方</span>
+            </div>
+            <div v-if="match.topic" class="text-xs text-gray-500 mt-1">
+              辩题: {{ match.topic }}
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 flex justify-end">
+          <button class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50" @click="showMatchSelectModal = false">取消</button>
         </div>
       </div>
     </div>
@@ -106,22 +157,21 @@
       </div>
     </div>
 
-    <!-- 控制面板（右下角，默认透明，悬停显示） -->
-    <div class="fixed bottom-4 right-4 control-panel">
+    <!-- 控制面板（左下角，默认透明，悬停显示） -->
+    <div class="fixed bottom-4 left-4 control-panel">
       <!-- 双计时器控制 -->
-      <div v-if="isDualTimerStage">
-        <div class="flex items-center space-x-1 mb-1">
-          <span class="text-white text-xs font-bold w-16">计时控制:</span>
-          <button v-if="!dualTimer.isRunning" class="control-btn" @click="startTimer" :disabled="currentStage === 0">{{ dualTimer.isPaused ? '继续计时(空格)' : '启动计时(空格)' }}</button>
-          <button v-if="dualTimer.isRunning" class="control-btn" @click="switchActiveTimer">{{ dualTimer.activeTimer === 'positive' ? '切换反方(空格)' : '切换正方(空格)' }}</button>
-          <button class="control-btn" @click="pauseTimer" :disabled="!dualTimer.isRunning">中断(P)</button>
-          <button class="control-btn" @click="openResetModal" :disabled="currentStage === 0">重置</button>
-        </div>
-        <div class="flex items-center space-x-1 mb-1">
-          <span class="text-white text-xs font-bold w-16">直接启动:</span>
-          <button class="control-btn" @click="startPositiveTimer">启动正方(。)</button>
-          <button class="control-btn" @click="startNegativeTimer">启动反方(，)</button>
-        </div>
+      <div v-if="isDualTimerStage" class="flex items-center space-x-1 mb-1">
+        <span class="text-white text-xs font-bold w-16">计时控制:</span>
+        <button v-if="!dualTimer.isRunning" class="control-btn" @click="startTimer" :disabled="currentStage === 0">{{ dualTimer.isPaused ? '继续计时(空格)' : '启动计时(空格)' }}</button>
+        <button v-if="dualTimer.isRunning" class="control-btn" @click="switchActiveTimer">{{ dualTimer.activeTimer === 'positive' ? '切换反方(空格)' : '切换正方(空格)' }}</button>
+        <button class="control-btn" @click="pauseTimer" :disabled="!dualTimer.isRunning">中断(P)</button>
+      </div>
+
+      <!-- 直接启动（双计时模式下显示在计时控制下方） -->
+      <div v-if="isDualTimerStage" class="flex items-center space-x-1 mb-1">
+        <span class="text-white text-xs font-bold w-16">直接启动:</span>
+        <button class="control-btn" @click="startPositiveTimer">启动正方(。)</button>
+        <button class="control-btn" @click="startNegativeTimer">启动反方(，)</button>
       </div>
 
       <!-- 单计时器控制 -->
@@ -129,7 +179,6 @@
         <span class="text-white text-xs font-bold w-16">计时控制:</span>
         <button class="control-btn" @click="isRunning ? pauseTimer() : startTimer()" :disabled="currentStage === 0">{{ isRunning ? '暂停计时(空格)' : (isPaused ? '继续计时(空格)' : '启动计时(空格)') }}</button>
         <button class="control-btn" @click="pauseTimer" :disabled="!isRunning && !isPaused">中断(P)</button>
-        <button class="control-btn" @click="openResetModal" :disabled="currentStage === 0">重置</button>
       </div>
 
       <!-- 通用控制：环节切换 -->
@@ -158,7 +207,8 @@
       <div class="flex items-center space-x-1">
         <span class="text-white text-xs font-bold w-16">特殊功能:</span>
         <button class="control-btn">奇袭发言</button>
-        <button class="control-btn" @click="openTimeModal">设置时间</button>
+        <button class="control-btn" @click="openTimeModal($event)">设置时间</button>
+        <button class="control-btn">登记赛果</button>
       </div>
     </div>
 
@@ -185,35 +235,59 @@
       </div>
     </div>
 
-    <!-- 时间设置弹窗 -->
-    <div v-if="showTimeModal" class="fixed bottom-20 right-4 bg-white rounded-lg p-3 w-64 shadow-2xl border border-gray-200 z-50" @mouseenter="handleModalEnter" @mouseleave="handleModalLeave('time')">
-      <div class="flex items-center mb-2">
+    <!-- 时间设置弹窗（集成重置按钮 + 内部toast+进度条） -->
+    <div v-if="showTimeModal" class="fixed bg-white rounded-lg p-3 w-64 shadow-2xl border border-gray-200 z-50" :style="{ top: timeModalPos.top + 'px', left: timeModalPos.left + 'px' }" @mouseenter="handleModalEnter" @mouseleave="handleModalLeave('time')">
+      <!-- 内部 toast：居中在弹窗顶部，带进度条 -->
+      <div v-if="showQuickTimeToast" class="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-2 bg-orange-500 text-white text-xs rounded shadow-lg whitespace-nowrap overflow-hidden z-10" style="min-width: 180px;">
+        <div>请先点击输入框，再选择快捷时间</div>
+        <div class="mt-1 h-1 bg-orange-300 rounded-full overflow-hidden">
+          <div class="h-full bg-white" :style="{ width: toastProgress + '%', transition: 'width 0.05s linear' }"></div>
+        </div>
+      </div>
+      <!-- 单计时器：标题 + 调整为 + 输入框 + 秒 同行 -->
+      <div v-if="!isDualTimerStage" class="flex items-center mb-2">
         <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xs mr-2">i</div>
         <span class="text-gray-800 font-bold text-xs">调整时间</span>
-      </div>
-      <div v-if="isDualTimerStage" class="space-y-1.5">
-        <div class="flex items-center justify-between">
-          <span class="text-gray-600 text-xs">正方时间:</span>
-          <input v-model.number="customPositiveTime" type="number" min="0" max="3600" class="px-1.5 py-0.5 border border-gray-300 rounded w-20 text-center text-gray-800 text-xs" @keyup.enter="setCustomTime">
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-gray-600 text-xs">反方时间:</span>
-          <input v-model.number="customNegativeTime" type="number" min="0" max="3600" class="px-1.5 py-0.5 border border-gray-300 rounded w-20 text-center text-gray-800 text-xs" @keyup.enter="setCustomTime">
-        </div>
-      </div>
-      <div v-else class="flex items-center">
-        <span class="text-gray-800 font-bold text-xs">调整为</span>
+        <span class="text-gray-800 text-xs ml-2">调整为</span>
         <input v-model.number="customTime" type="number" min="0" max="3600" class="mx-1.5 px-1.5 py-0.5 border border-gray-300 rounded w-14 text-center text-gray-800 text-xs" @keyup.enter="setCustomTime">
         <span class="text-gray-800 text-xs">秒</span>
       </div>
-      <div class="flex justify-end space-x-1.5 mt-3">
-        <button @click="closeTimeModal" class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors">取消</button>
-        <button @click="setCustomTime" class="px-2.5 py-0.5 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors">确定</button>
+      <!-- 双计时器：标题行 + 正方/反方同行 -->
+      <div v-else>
+        <div class="flex items-center mb-2">
+          <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xs mr-2">i</div>
+          <span class="text-gray-800 font-bold text-xs">调整时间</span>
+        </div>
+        <div class="flex items-center space-x-2 mb-2">
+          <div class="flex items-center flex-1">
+            <span class="text-gray-600 text-xs">正方:</span>
+            <input v-model.number="customPositiveTime" type="number" min="0" max="3600" class="ml-1 px-1.5 py-0.5 border border-gray-300 rounded w-14 text-center text-gray-800 text-xs" @keyup.enter="setCustomTime" @focus="lastFocusedInput = 'positive'">
+          </div>
+          <div class="flex items-center flex-1">
+            <span class="text-gray-600 text-xs">反方:</span>
+            <input v-model.number="customNegativeTime" type="number" min="0" max="3600" class="ml-1 px-1.5 py-0.5 border border-gray-300 rounded w-14 text-center text-gray-800 text-xs" @keyup.enter="setCustomTime" @focus="lastFocusedInput = 'negative'">
+          </div>
+        </div>
+      </div>
+      <!-- 快捷时间按钮：-5s +5s +10s +15s -->
+      <div class="flex items-center space-x-1.5 mb-2">
+        <button @click="addQuickTime(-5)" class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors">-5s</button>
+        <button @click="addQuickTime(5)" class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors">+5s</button>
+        <button @click="addQuickTime(10)" class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors">+10s</button>
+        <button @click="addQuickTime(15)" class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors">+15s</button>
+      </div>
+      <!-- 底部按钮区：重置(红色) | 取消 | 确定 -->
+      <div class="flex justify-between items-center mt-1">
+        <button @click="openResetFromTimeModal" class="px-2.5 py-0.5 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-colors">重置</button>
+        <div class="flex space-x-1.5">
+          <button @click="closeTimeModal" class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors">取消</button>
+          <button @click="setCustomTime" class="px-2.5 py-0.5 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors">确定</button>
+        </div>
       </div>
     </div>
 
     <!-- 重置确认弹窗 -->
-    <div v-if="showResetModal" class="fixed bottom-20 right-4 bg-white rounded-lg p-3 w-64 shadow-2xl border border-gray-200 z-50" @mouseenter="handleModalEnter" @mouseleave="handleModalLeave('reset')">
+    <div v-if="showResetModal" class="fixed bg-white rounded-lg p-3 w-64 shadow-2xl border border-gray-200 z-[60]" :style="{ top: resetModalPos.top + 'px', left: resetModalPos.left + 'px' }" @mouseenter="handleModalEnter" @mouseleave="handleModalLeave('reset')">
       <div v-if="isDualTimerStage">
         <div class="flex items-center mb-2">
           <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xs mr-2">i</div>
@@ -314,6 +388,23 @@ const uiConfig = ref({
   negativeLabel: '反方',
 })
 
+// ═══════════ 辩题文字溢出检测与字体大小调整 ═══════════
+const positiveTopicRef = ref<HTMLElement | null>(null)
+const negativeTopicRef = ref<HTMLElement | null>(null)
+// 检测元素是否溢出单行，若是则切换为小字体两行
+function checkTopicOverflow() {
+  const check = (el: HTMLElement | null) => {
+    if (!el || !el.textContent) return
+    // 先去掉溢出类，检测是否会溢出
+    el.classList.remove('topic-overflow')
+    // 使用scrollWidth > clientWidth来检测
+    const isOverflow = el.scrollWidth > el.clientWidth + 1
+    if (isOverflow) el.classList.add('topic-overflow')
+  }
+  check(positiveTopicRef.value)
+  check(negativeTopicRef.value)
+}
+
 // ═══════════ 设置面板 ═══════════
 // 检测 URL 是否包含预览参数——如有则跳过初始设置弹窗
 const isPreviewMode = computed(() => !!route.query?.ui)
@@ -324,6 +415,11 @@ const setupTeamPositiveName = ref('')
 const setupTeamNegativeName = ref('')
 const manualSetupApplied = ref(false)
 
+// ═══════════ 从赛程选择弹窗 ═══════════
+const showMatchSelectModal = ref(false)
+const matches = ref<any[]>([])
+const matchSelectLoading = ref(false)
+
 // ═══════════ 进度指示器 ═══════════
 const showProgress = ref(false)
 const showTimeModal = ref(false)
@@ -332,6 +428,17 @@ const customTime = ref(0)
 const customPositiveTime = ref(0)
 const customNegativeTime = ref(0)
 const modalHoverTimer = ref<ReturnType<typeof setTimeout> | null>(null)
+// 弹窗动态位置（跟随点击按钮的位置显示）
+const timeModalPos = ref({ top: 0, left: 0 })
+const resetModalPos = ref({ top: 0, left: 0 })
+// 双计时模式下最后聚焦的输入框：'positive' | 'negative' | null
+const lastFocusedInput = ref<string | null>(null)
+// toast 进度条（100→0，2秒内完成
+const toastProgress = ref(100)
+let toastProgressTimer: ReturnType<typeof setInterval> | null = null
+// 快捷时间 toast 提示
+const showQuickTimeToast = ref(false)
+let quickTimeToastTimer: ReturnType<typeof setTimeout> | null = null
 let timerInterval: ReturnType<typeof setInterval> | null = null
 
 // ═══════════ 从 debateStore 获取状态 ═══════════
@@ -397,6 +504,7 @@ function resetTimer() {
 }
 
 function resetDualTimer(type: 'positive' | 'negative') {
+  if (timerInterval) clearInterval(timerInterval)
   debateStore.resetDualTimer(type)
 }
 
@@ -449,6 +557,30 @@ function playTestSound(type: string) {
 }
 
 // ═══════════ 弹窗控制 ═══════════
+// 根据点击事件计算弹窗位置：弹窗右下角出现在按钮正上方
+// estimatedHeight: 弹窗估算高度，用于计算 top 值
+function calcModalPosition(event: any, posRef: any, estimatedHeight: number = 150) {
+  const target = event?.currentTarget || event?.target
+  if (target && target.getBoundingClientRect) {
+    const rect = target.getBoundingClientRect()
+    const modalWidth = 260
+    const gap = 8 // 弹窗与按钮之间的间距
+    // 弹窗 top = 按钮 top - 弹窗高度 - 间距（弹窗底部贴近按钮顶部）
+    let top = rect.top - estimatedHeight - gap
+    // 弹窗 left = 按钮 right - 弹窗宽度（弹窗右下角对齐按钮右上角的上方）
+    let left = rect.right - modalWidth
+    // 边界修正：左侧超出屏幕时，左移到屏幕左侧
+    if (left < 8) {
+      left = 8
+    }
+    // 边界修正：上方空间不足时，改为在按钮下方显示
+    if (top < 20) {
+      top = rect.bottom + gap
+    }
+    posRef.value = { top, left }
+  }
+}
+
 function handleModalEnter() {
   if (modalHoverTimer.value) clearTimeout(modalHoverTimer.value)
 }
@@ -458,8 +590,11 @@ function handleModalLeave(modalType: string) {
     else if (modalType === 'reset') showResetModal.value = false
   }, 1000)
 }
-function openTimeModal() {
+function openTimeModal(event?: any) {
   handleModalEnter()
+  showResetModal.value = false
+  lastFocusedInput.value = null // 打开弹窗时重置聚焦状态
+  if (event) calcModalPosition(event, timeModalPos, 150)
   if (isDualTimerStage.value) {
     customPositiveTime.value = dualTimer.value.positiveTime
     customNegativeTime.value = dualTimer.value.negativeTime
@@ -468,12 +603,61 @@ function openTimeModal() {
   }
   showTimeModal.value = true
 }
-function openResetModal() {
+function openResetModal(event?: any) {
+  // 打开重置确认弹窗（覆盖在时间弹窗之上）
   handleModalEnter()
+  if (event) calcModalPosition(event, resetModalPos, 120)
   showResetModal.value = true
 }
 function closeTimeModal() {
   showTimeModal.value = false
+}
+// 显示 toast 提示（弹窗内居中）
+function showToast() {
+  showQuickTimeToast.value = true
+  toastProgress.value = 100
+  // 每50ms减少2.5%，2秒内从100→0
+  if (toastProgressTimer) clearInterval(toastProgressTimer)
+  toastProgressTimer = setInterval(() => {
+    toastProgress.value -= 2.5
+    if (toastProgress.value <= 0) {
+      if (toastProgressTimer) clearInterval(toastProgressTimer)
+      showQuickTimeToast.value = false
+    }
+  }, 50)
+  // 2秒后确保关闭toast
+  if (quickTimeToastTimer) clearTimeout(quickTimeToastTimer)
+  quickTimeToastTimer = setTimeout(() => {
+    showQuickTimeToast.value = false
+    if (toastProgressTimer) clearInterval(toastProgressTimer)
+  }, 2000)
+}
+// 从时间弹窗内点击红色"重置"按钮：打开重置确认弹窗（居中在旧弹窗位置，同时旧弹窗消失）
+function openResetFromTimeModal() {
+  // 将重置确认弹窗定位在时间弹窗的中心（两个弹窗宽度相同260px，左对齐；顶部略偏上）
+  resetModalPos.value = {
+    top: timeModalPos.value.top + 20,
+    left: timeModalPos.value.left
+  }
+  showTimeModal.value = false  // 旧弹窗消失
+  showResetModal.value = true   // 新弹窗显示
+}
+// 快捷时间：单计时模式直接加；双计时模式需先选择输入框
+function addQuickTime(seconds: number) {
+  // 单计时模式：直接加减
+  if (!isDualTimerStage.value) {
+    customTime.value = Number(customTime.value) + seconds
+    return
+  }
+  // 双计时模式：必须先点击（聚焦）一个输入框
+  if (lastFocusedInput.value === 'positive') {
+    customPositiveTime.value = Number(customPositiveTime.value) + seconds
+  } else if (lastFocusedInput.value === 'negative') {
+    customNegativeTime.value = Number(customNegativeTime.value) + seconds
+  } else {
+    // 未聚焦任何输入框，弹出 toast 提醒
+    showToast()
+  }
 }
 function setCustomTime() {
   if (isDualTimerStage.value) {
@@ -485,6 +669,56 @@ function setCustomTime() {
 }
 
 // ═══════════ 设置面板 ═══════════
+// 从赛程选择弹窗：加载比赛列表
+async function openMatchSelectModal() {
+  showMatchSelectModal.value = true
+  if (matches.value.length === 0) {
+    matchSelectLoading.value = true
+    try {
+      const res = await $fetch<any>(`/api/tournaments/${tournamentId.value}/matches`, {
+        headers: { Authorization: `Bearer ${useAuthStore().token}` },
+      })
+      if (Array.isArray(res)) matches.value = res
+    } catch (e) {
+      toast.add({ title: '加载赛程失败', color: 'error' })
+    } finally {
+      matchSelectLoading.value = false
+    }
+  }
+}
+// 从赛程选择弹窗：选中一场比赛，自动填充队伍名称和辩题
+function selectMatch(match: any) {
+  // 根据 affirmativeSide 判断正反方
+  if (match.affirmativeSide === 'teamA') {
+    setupTeamPositiveName.value = match.teamA || ''
+    setupTeamNegativeName.value = match.teamB || ''
+  } else if (match.affirmativeSide === 'teamB') {
+    setupTeamPositiveName.value = match.teamB || ''
+    setupTeamNegativeName.value = match.teamA || ''
+  } else {
+    // 未指定正反方时，默认 teamA 为正方
+    setupTeamPositiveName.value = match.teamA || ''
+    setupTeamNegativeName.value = match.teamB || ''
+  }
+  // 辩题：从 match.topic 解析（支持 JSON 格式：{"pro":"...","con":"..."}）
+  if (match.topic) {
+    try {
+      const parsed = JSON.parse(match.topic)
+      if (parsed && typeof parsed === 'object' && parsed.pro && parsed.con) {
+        setupPositiveTopic.value = parsed.pro
+        setupNegativeTopic.value = parsed.con
+      } else {
+        setupPositiveTopic.value = match.topic
+        setupNegativeTopic.value = match.topic
+      }
+    } catch (e) {
+      setupPositiveTopic.value = match.topic
+      setupNegativeTopic.value = match.topic
+    }
+  }
+  manualSetupApplied.value = true
+  showMatchSelectModal.value = false
+}
 function applySetupAndStart() {
   positiveTopic.value = setupPositiveTopic.value
   negativeTopic.value = setupNegativeTopic.value
@@ -535,20 +769,44 @@ function handleKeyPress(event: KeyboardEvent) {
   if (handler) { event.preventDefault(); handler() }
 }
 
-// ═══════════ 数据加载：从赛事信息获取环节数据 ═══════════
+// ═══════════ 数据加载：从赛事信息和配置获取数据 ═══════════
 async function loadTournamentData() {
   try {
     // 加载赛事基本信息
     const tournament = await $fetch<any>(`/api/tournaments/${tournamentId.value}`, {
       headers: { Authorization: `Bearer ${useAuthStore().token}` },
     })
+    let tournamentName = '辩论赛'
     if (tournament?.data) {
       const t = tournament.data
-      contestTitle.value = t.name || '辩论赛'
+      tournamentName = t.name || '辩论赛'
       // 从参赛队伍中取前两队作为正反方
       const teams: string[] = t.teams || []
       if (teams.length >= 1 && !manualSetupApplied.value) setupTeamPositiveName.value = teams[0]!
       if (teams.length >= 2 && !manualSetupApplied.value) setupTeamNegativeName.value = teams[1]!
+    }
+
+    // 加载计时器配置（包含标题、队伍名称、辩题等自定义设置）
+    const configRes = await $fetch<any>(`/api/tournaments/${tournamentId.value}/timer-config`, {
+      headers: { Authorization: `Bearer ${useAuthStore().token}` },
+    })
+    if (configRes?.data) {
+      const cfg = configRes.data
+      // 优先使用配置中的 title 或 name，其次使用赛事名称
+      contestTitle.value = cfg.title || cfg.name || tournamentName
+      // 同步其他配置（队伍名称、辩题等）
+      if (cfg.teamPositiveName) teamPositiveName.value = cfg.teamPositiveName
+      if (cfg.teamNegativeName) teamNegativeName.value = cfg.teamNegativeName
+      if (cfg.positiveTopic) positiveTopic.value = cfg.positiveTopic
+      if (cfg.negativeTopic) negativeTopic.value = cfg.negativeTopic
+      // 同步正方/反方标签
+      if (cfg.uiConfig?.positiveLabel) positiveLabel.value = cfg.uiConfig.positiveLabel
+      if (cfg.uiConfig?.negativeLabel) negativeLabel.value = cfg.uiConfig.negativeLabel
+      // 同步 UI 配置（标题颜色等）
+      if (cfg.uiConfig) Object.assign(uiConfig.value, cfg.uiConfig)
+    } else {
+      // 没有配置时使用赛事名称
+      contestTitle.value = tournamentName
     }
 
     // 加载计时器环节配置
@@ -598,12 +856,18 @@ onMounted(async () => {
     showSetup.value = false
   }
   document.addEventListener('keydown', handleKeyPress)
+  // 等待DOM渲染后检测辩题文字溢出
+  setTimeout(() => {
+    checkTopicOverflow()
+    window.addEventListener('resize', checkTopicOverflow)
+  }, 100)
 })
 
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval)
   if (modalHoverTimer.value) clearTimeout(modalHoverTimer.value)
   document.removeEventListener('keydown', handleKeyPress)
+  window.removeEventListener('resize', checkTopicOverflow)
 })
 </script>
 
@@ -633,7 +897,22 @@ onUnmounted(() => {
   height: 1.3em; line-height: 1.3;
 }
 .debate-label-white span { padding: 0.1vh 0.5vw; line-height: 1; }
-.debate-topic-text { font-size: 1.5vw; line-height: 1.3; max-width: 45vw; word-wrap: break-word; }
+/* 辩题文字：默认与标签同大小，单行；溢出时自动变两行并缩小字体 */
+.debate-topic-text {
+  font-size: clamp(2vw, 3vw, 2.8vw); /* 默认与标签同大小 */
+  line-height: 1.2;
+  max-width: 45vw;
+  white-space: nowrap;              /* 默认单行 */
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+.debate-topic-text.topic-overflow {
+  font-size: 1.5vw;                 /* 溢出时变小字体 */
+  white-space: normal;              /* 允许换行 */
+  word-wrap: break-word;
+  line-height: 1.3;
+}
 .debate-side-positive .debate-label-white { margin-left: 1vw; margin-right: 2vw; }
 .debate-side-negative .debate-label-white { margin-right: 1vw; margin-left: 2vw; }
 
@@ -668,18 +947,65 @@ onUnmounted(() => {
 .digital-char { font-family: 'Digiface', monospace !important; font-size: 13.75vw; font-weight: normal; line-height: 1; } /* 在原 9.167vw 基础上加 0.5 倍 */
 
 /* ═══════════ 控制面板：默认透明，悬停可见 ═══════════ */
-.control-panel { opacity: 0.1; transition: opacity 0.3s ease-in-out; background: transparent; }
+.control-panel {
+  opacity: 0.1;
+  transition: opacity 0.3s ease-in-out;
+  background: transparent;
+  min-width: 14vw; /* 确保全屏时能放下标签+按钮 */
+}
 .control-panel:hover { opacity: 1; }
-/* 标签 span：字体放大一倍，保持最小宽度以实现列对齐 */
-.control-panel span.text-xs { font-size: 1.146vw; min-width: 6vw; }
-/* 行间距：原 mb-1 增大到约 8px */
-.control-panel > div { margin-bottom: 0.3vw; }
-/* 元素间距：原 space-x-1 增大 */
-.control-panel .space-x-1 > * + * { margin-left: 0.2vw; }
+
+/* 标签 span：固定宽度，实现左对齐基准（禁止内部换行） */
+.control-panel span.text-xs {
+  font-size: 1.146vw;
+  min-width: 3vw; /* 确保容纳"计时控制:"等中文标签 */
+  display: inline-block;
+  flex-shrink: 0;
+  white-space: nowrap; /* 禁止文字在标签内换行 */
+}
+
+/* 每一行：flex 布局，行间距统一，禁止换行 */
+.control-panel > div {
+  margin-bottom: 0.2vw;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex-wrap: nowrap; /* 防止按钮换行到下一行 */
+}
+
+/* 标签与按钮的分隔：标签固定宽度，按钮区自动延伸 */
+.control-panel > div > span.text-xs + * {
+  display: flex;
+  align-items: center;
+  gap: 0.15vw; /* 按钮间距再缩小 */
+  flex: 1;
+  justify-content: flex-start;
+}
+
+/* 元素间距：统一用 gap 控制 */
+.control-panel .space-x-1 {
+  gap: 0.15vw;
+}
+.control-panel .space-x-1 > * + * {
+  margin-left: 0;
+}
+
+/* 按钮：均分宽度，圆角更圆润 */
 .control-btn {
-  position: relative; padding: 0.416vw 0.834vw; background: transparent; color: white;
-  font-size: 1.146vw; font-weight: bold; border: 2px solid #4a5568; border-radius: 0.208vw;
-  cursor: pointer; transition: all 0.2s ease;
+  position: relative;
+  padding: 0.2vw 0.4vw; /* padding 再缩小 */
+  background: transparent;
+  color: white;
+  font-size: 1vw; /* 字号略缩小 */
+  font-weight: bold;
+  border: 2px solid #4a5568;
+  border-radius: 0.3vw; /* 圆角也缩小 */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex: 1;
+  text-align: center;
+  min-width: 2.5vw; /* 最小宽度再缩小 */
   font-family: 'SimSun', '宋体', serif !important;
 }
 .control-btn:hover { border-color: #718096; background: rgba(255, 255, 255, 0.05); }

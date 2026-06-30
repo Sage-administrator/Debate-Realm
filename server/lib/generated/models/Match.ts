@@ -30,12 +30,14 @@ export type MatchAvgAggregateOutputType = {
   orderNum: number | null
   scoreA: number | null
   scoreB: number | null
+  version: number | null
 }
 
 export type MatchSumAggregateOutputType = {
   orderNum: number | null
   scoreA: number | null
   scoreB: number | null
+  version: number | null
 }
 
 export type MatchMinAggregateOutputType = {
@@ -53,6 +55,18 @@ export type MatchMinAggregateOutputType = {
   scheduledAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
+  topic: string | null
+  affirmativeSide: string | null
+  bestDebaterA: string | null
+  bestDebaterB: string | null
+  judge: string | null
+  version: number | null
+  deletedAt: Date | null
+  deletedBy: string | null
+  deleteReason: string | null
+  promotedFromA: string | null
+  promotedFromB: string | null
+  isBye: boolean | null
 }
 
 export type MatchMaxAggregateOutputType = {
@@ -70,6 +84,18 @@ export type MatchMaxAggregateOutputType = {
   scheduledAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
+  topic: string | null
+  affirmativeSide: string | null
+  bestDebaterA: string | null
+  bestDebaterB: string | null
+  judge: string | null
+  version: number | null
+  deletedAt: Date | null
+  deletedBy: string | null
+  deleteReason: string | null
+  promotedFromA: string | null
+  promotedFromB: string | null
+  isBye: boolean | null
 }
 
 export type MatchCountAggregateOutputType = {
@@ -87,6 +113,18 @@ export type MatchCountAggregateOutputType = {
   scheduledAt: number
   createdAt: number
   updatedAt: number
+  topic: number
+  affirmativeSide: number
+  bestDebaterA: number
+  bestDebaterB: number
+  judge: number
+  version: number
+  deletedAt: number
+  deletedBy: number
+  deleteReason: number
+  promotedFromA: number
+  promotedFromB: number
+  isBye: number
   _all: number
 }
 
@@ -95,12 +133,14 @@ export type MatchAvgAggregateInputType = {
   orderNum?: true
   scoreA?: true
   scoreB?: true
+  version?: true
 }
 
 export type MatchSumAggregateInputType = {
   orderNum?: true
   scoreA?: true
   scoreB?: true
+  version?: true
 }
 
 export type MatchMinAggregateInputType = {
@@ -118,6 +158,18 @@ export type MatchMinAggregateInputType = {
   scheduledAt?: true
   createdAt?: true
   updatedAt?: true
+  topic?: true
+  affirmativeSide?: true
+  bestDebaterA?: true
+  bestDebaterB?: true
+  judge?: true
+  version?: true
+  deletedAt?: true
+  deletedBy?: true
+  deleteReason?: true
+  promotedFromA?: true
+  promotedFromB?: true
+  isBye?: true
 }
 
 export type MatchMaxAggregateInputType = {
@@ -135,6 +187,18 @@ export type MatchMaxAggregateInputType = {
   scheduledAt?: true
   createdAt?: true
   updatedAt?: true
+  topic?: true
+  affirmativeSide?: true
+  bestDebaterA?: true
+  bestDebaterB?: true
+  judge?: true
+  version?: true
+  deletedAt?: true
+  deletedBy?: true
+  deleteReason?: true
+  promotedFromA?: true
+  promotedFromB?: true
+  isBye?: true
 }
 
 export type MatchCountAggregateInputType = {
@@ -152,6 +216,18 @@ export type MatchCountAggregateInputType = {
   scheduledAt?: true
   createdAt?: true
   updatedAt?: true
+  topic?: true
+  affirmativeSide?: true
+  bestDebaterA?: true
+  bestDebaterB?: true
+  judge?: true
+  version?: true
+  deletedAt?: true
+  deletedBy?: true
+  deleteReason?: true
+  promotedFromA?: true
+  promotedFromB?: true
+  isBye?: true
   _all?: true
 }
 
@@ -256,6 +332,18 @@ export type MatchGroupByOutputType = {
   scheduledAt: Date | null
   createdAt: Date
   updatedAt: Date
+  topic: string | null
+  affirmativeSide: string | null
+  bestDebaterA: string | null
+  bestDebaterB: string | null
+  judge: string | null
+  version: number
+  deletedAt: Date | null
+  deletedBy: string | null
+  deleteReason: string | null
+  promotedFromA: string | null
+  promotedFromB: string | null
+  isBye: boolean
   _count: MatchCountAggregateOutputType | null
   _avg: MatchAvgAggregateOutputType | null
   _sum: MatchSumAggregateOutputType | null
@@ -296,10 +384,23 @@ export type MatchWhereInput = {
   scheduledAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Match"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Match"> | Date | string
+  topic?: Prisma.StringNullableFilter<"Match"> | string | null
+  affirmativeSide?: Prisma.StringNullableFilter<"Match"> | string | null
+  bestDebaterA?: Prisma.StringNullableFilter<"Match"> | string | null
+  bestDebaterB?: Prisma.StringNullableFilter<"Match"> | string | null
+  judge?: Prisma.StringNullableFilter<"Match"> | string | null
+  version?: Prisma.IntFilter<"Match"> | number
+  deletedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
+  deletedBy?: Prisma.StringNullableFilter<"Match"> | string | null
+  deleteReason?: Prisma.StringNullableFilter<"Match"> | string | null
+  promotedFromA?: Prisma.StringNullableFilter<"Match"> | string | null
+  promotedFromB?: Prisma.StringNullableFilter<"Match"> | string | null
+  isBye?: Prisma.BoolFilter<"Match"> | boolean
   tournament?: Prisma.XOR<Prisma.TournamentNullableScalarRelationFilter, Prisma.TournamentWhereInput> | null
   standaloneMatch?: Prisma.XOR<Prisma.StandaloneMatchNullableScalarRelationFilter, Prisma.StandaloneMatchWhereInput> | null
   assignedMembers?: Prisma.MemberAssignedMatchListRelationFilter
   timer?: Prisma.XOR<Prisma.TimerNullableScalarRelationFilter, Prisma.TimerWhereInput> | null
+  scores?: Prisma.MatchScoreListRelationFilter
 }
 
 export type MatchOrderByWithRelationInput = {
@@ -317,10 +418,23 @@ export type MatchOrderByWithRelationInput = {
   scheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  topic?: Prisma.SortOrderInput | Prisma.SortOrder
+  affirmativeSide?: Prisma.SortOrderInput | Prisma.SortOrder
+  bestDebaterA?: Prisma.SortOrderInput | Prisma.SortOrder
+  bestDebaterB?: Prisma.SortOrderInput | Prisma.SortOrder
+  judge?: Prisma.SortOrderInput | Prisma.SortOrder
+  version?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  deletedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  deleteReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  promotedFromA?: Prisma.SortOrderInput | Prisma.SortOrder
+  promotedFromB?: Prisma.SortOrderInput | Prisma.SortOrder
+  isBye?: Prisma.SortOrder
   tournament?: Prisma.TournamentOrderByWithRelationInput
   standaloneMatch?: Prisma.StandaloneMatchOrderByWithRelationInput
   assignedMembers?: Prisma.MemberAssignedMatchOrderByRelationAggregateInput
   timer?: Prisma.TimerOrderByWithRelationInput
+  scores?: Prisma.MatchScoreOrderByRelationAggregateInput
 }
 
 export type MatchWhereUniqueInput = Prisma.AtLeast<{
@@ -341,10 +455,23 @@ export type MatchWhereUniqueInput = Prisma.AtLeast<{
   scheduledAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Match"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Match"> | Date | string
+  topic?: Prisma.StringNullableFilter<"Match"> | string | null
+  affirmativeSide?: Prisma.StringNullableFilter<"Match"> | string | null
+  bestDebaterA?: Prisma.StringNullableFilter<"Match"> | string | null
+  bestDebaterB?: Prisma.StringNullableFilter<"Match"> | string | null
+  judge?: Prisma.StringNullableFilter<"Match"> | string | null
+  version?: Prisma.IntFilter<"Match"> | number
+  deletedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
+  deletedBy?: Prisma.StringNullableFilter<"Match"> | string | null
+  deleteReason?: Prisma.StringNullableFilter<"Match"> | string | null
+  promotedFromA?: Prisma.StringNullableFilter<"Match"> | string | null
+  promotedFromB?: Prisma.StringNullableFilter<"Match"> | string | null
+  isBye?: Prisma.BoolFilter<"Match"> | boolean
   tournament?: Prisma.XOR<Prisma.TournamentNullableScalarRelationFilter, Prisma.TournamentWhereInput> | null
   standaloneMatch?: Prisma.XOR<Prisma.StandaloneMatchNullableScalarRelationFilter, Prisma.StandaloneMatchWhereInput> | null
   assignedMembers?: Prisma.MemberAssignedMatchListRelationFilter
   timer?: Prisma.XOR<Prisma.TimerNullableScalarRelationFilter, Prisma.TimerWhereInput> | null
+  scores?: Prisma.MatchScoreListRelationFilter
 }, "id">
 
 export type MatchOrderByWithAggregationInput = {
@@ -362,6 +489,18 @@ export type MatchOrderByWithAggregationInput = {
   scheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  topic?: Prisma.SortOrderInput | Prisma.SortOrder
+  affirmativeSide?: Prisma.SortOrderInput | Prisma.SortOrder
+  bestDebaterA?: Prisma.SortOrderInput | Prisma.SortOrder
+  bestDebaterB?: Prisma.SortOrderInput | Prisma.SortOrder
+  judge?: Prisma.SortOrderInput | Prisma.SortOrder
+  version?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  deletedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  deleteReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  promotedFromA?: Prisma.SortOrderInput | Prisma.SortOrder
+  promotedFromB?: Prisma.SortOrderInput | Prisma.SortOrder
+  isBye?: Prisma.SortOrder
   _count?: Prisma.MatchCountOrderByAggregateInput
   _avg?: Prisma.MatchAvgOrderByAggregateInput
   _max?: Prisma.MatchMaxOrderByAggregateInput
@@ -387,6 +526,18 @@ export type MatchScalarWhereWithAggregatesInput = {
   scheduledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Match"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Match"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Match"> | Date | string
+  topic?: Prisma.StringNullableWithAggregatesFilter<"Match"> | string | null
+  affirmativeSide?: Prisma.StringNullableWithAggregatesFilter<"Match"> | string | null
+  bestDebaterA?: Prisma.StringNullableWithAggregatesFilter<"Match"> | string | null
+  bestDebaterB?: Prisma.StringNullableWithAggregatesFilter<"Match"> | string | null
+  judge?: Prisma.StringNullableWithAggregatesFilter<"Match"> | string | null
+  version?: Prisma.IntWithAggregatesFilter<"Match"> | number
+  deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Match"> | Date | string | null
+  deletedBy?: Prisma.StringNullableWithAggregatesFilter<"Match"> | string | null
+  deleteReason?: Prisma.StringNullableWithAggregatesFilter<"Match"> | string | null
+  promotedFromA?: Prisma.StringNullableWithAggregatesFilter<"Match"> | string | null
+  promotedFromB?: Prisma.StringNullableWithAggregatesFilter<"Match"> | string | null
+  isBye?: Prisma.BoolWithAggregatesFilter<"Match"> | boolean
 }
 
 export type MatchCreateInput = {
@@ -402,10 +553,23 @@ export type MatchCreateInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
   tournament?: Prisma.TournamentCreateNestedOneWithoutMatchesInput
   standaloneMatch?: Prisma.StandaloneMatchCreateNestedOneWithoutMatchesInput
   assignedMembers?: Prisma.MemberAssignedMatchCreateNestedManyWithoutMatchInput
   timer?: Prisma.TimerCreateNestedOneWithoutMatchInput
+  scores?: Prisma.MatchScoreCreateNestedManyWithoutMatchInput
 }
 
 export type MatchUncheckedCreateInput = {
@@ -423,8 +587,21 @@ export type MatchUncheckedCreateInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
   assignedMembers?: Prisma.MemberAssignedMatchUncheckedCreateNestedManyWithoutMatchInput
   timer?: Prisma.TimerUncheckedCreateNestedOneWithoutMatchInput
+  scores?: Prisma.MatchScoreUncheckedCreateNestedManyWithoutMatchInput
 }
 
 export type MatchUpdateInput = {
@@ -440,10 +617,23 @@ export type MatchUpdateInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tournament?: Prisma.TournamentUpdateOneWithoutMatchesNestedInput
   standaloneMatch?: Prisma.StandaloneMatchUpdateOneWithoutMatchesNestedInput
   assignedMembers?: Prisma.MemberAssignedMatchUpdateManyWithoutMatchNestedInput
   timer?: Prisma.TimerUpdateOneWithoutMatchNestedInput
+  scores?: Prisma.MatchScoreUpdateManyWithoutMatchNestedInput
 }
 
 export type MatchUncheckedUpdateInput = {
@@ -461,8 +651,21 @@ export type MatchUncheckedUpdateInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
   assignedMembers?: Prisma.MemberAssignedMatchUncheckedUpdateManyWithoutMatchNestedInput
   timer?: Prisma.TimerUncheckedUpdateOneWithoutMatchNestedInput
+  scores?: Prisma.MatchScoreUncheckedUpdateManyWithoutMatchNestedInput
 }
 
 export type MatchCreateManyInput = {
@@ -480,6 +683,18 @@ export type MatchCreateManyInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
 }
 
 export type MatchUpdateManyMutationInput = {
@@ -495,6 +710,18 @@ export type MatchUpdateManyMutationInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type MatchUncheckedUpdateManyInput = {
@@ -512,6 +739,23 @@ export type MatchUncheckedUpdateManyInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
+}
+
+export type MatchScalarRelationFilter = {
+  is?: Prisma.MatchWhereInput
+  isNot?: Prisma.MatchWhereInput
 }
 
 export type MatchListRelationFilter = {
@@ -539,12 +783,25 @@ export type MatchCountOrderByAggregateInput = {
   scheduledAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  topic?: Prisma.SortOrder
+  affirmativeSide?: Prisma.SortOrder
+  bestDebaterA?: Prisma.SortOrder
+  bestDebaterB?: Prisma.SortOrder
+  judge?: Prisma.SortOrder
+  version?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
+  deletedBy?: Prisma.SortOrder
+  deleteReason?: Prisma.SortOrder
+  promotedFromA?: Prisma.SortOrder
+  promotedFromB?: Prisma.SortOrder
+  isBye?: Prisma.SortOrder
 }
 
 export type MatchAvgOrderByAggregateInput = {
   orderNum?: Prisma.SortOrder
   scoreA?: Prisma.SortOrder
   scoreB?: Prisma.SortOrder
+  version?: Prisma.SortOrder
 }
 
 export type MatchMaxOrderByAggregateInput = {
@@ -562,6 +819,18 @@ export type MatchMaxOrderByAggregateInput = {
   scheduledAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  topic?: Prisma.SortOrder
+  affirmativeSide?: Prisma.SortOrder
+  bestDebaterA?: Prisma.SortOrder
+  bestDebaterB?: Prisma.SortOrder
+  judge?: Prisma.SortOrder
+  version?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
+  deletedBy?: Prisma.SortOrder
+  deleteReason?: Prisma.SortOrder
+  promotedFromA?: Prisma.SortOrder
+  promotedFromB?: Prisma.SortOrder
+  isBye?: Prisma.SortOrder
 }
 
 export type MatchMinOrderByAggregateInput = {
@@ -579,12 +848,25 @@ export type MatchMinOrderByAggregateInput = {
   scheduledAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  topic?: Prisma.SortOrder
+  affirmativeSide?: Prisma.SortOrder
+  bestDebaterA?: Prisma.SortOrder
+  bestDebaterB?: Prisma.SortOrder
+  judge?: Prisma.SortOrder
+  version?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
+  deletedBy?: Prisma.SortOrder
+  deleteReason?: Prisma.SortOrder
+  promotedFromA?: Prisma.SortOrder
+  promotedFromB?: Prisma.SortOrder
+  isBye?: Prisma.SortOrder
 }
 
 export type MatchSumOrderByAggregateInput = {
   orderNum?: Prisma.SortOrder
   scoreA?: Prisma.SortOrder
   scoreB?: Prisma.SortOrder
+  version?: Prisma.SortOrder
 }
 
 export type MatchNullableScalarRelationFilter = {
@@ -592,9 +874,18 @@ export type MatchNullableScalarRelationFilter = {
   isNot?: Prisma.MatchWhereInput | null
 }
 
-export type MatchScalarRelationFilter = {
-  is?: Prisma.MatchWhereInput
-  isNot?: Prisma.MatchWhereInput
+export type MatchCreateNestedOneWithoutScoresInput = {
+  create?: Prisma.XOR<Prisma.MatchCreateWithoutScoresInput, Prisma.MatchUncheckedCreateWithoutScoresInput>
+  connectOrCreate?: Prisma.MatchCreateOrConnectWithoutScoresInput
+  connect?: Prisma.MatchWhereUniqueInput
+}
+
+export type MatchUpdateOneRequiredWithoutScoresNestedInput = {
+  create?: Prisma.XOR<Prisma.MatchCreateWithoutScoresInput, Prisma.MatchUncheckedCreateWithoutScoresInput>
+  connectOrCreate?: Prisma.MatchCreateOrConnectWithoutScoresInput
+  upsert?: Prisma.MatchUpsertWithoutScoresInput
+  connect?: Prisma.MatchWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MatchUpdateToOneWithWhereWithoutScoresInput, Prisma.MatchUpdateWithoutScoresInput>, Prisma.MatchUncheckedUpdateWithoutScoresInput>
 }
 
 export type MatchCreateNestedManyWithoutTournamentInput = {
@@ -637,6 +928,10 @@ export type MatchUncheckedUpdateManyWithoutTournamentNestedInput = {
   update?: Prisma.MatchUpdateWithWhereUniqueWithoutTournamentInput | Prisma.MatchUpdateWithWhereUniqueWithoutTournamentInput[]
   updateMany?: Prisma.MatchUpdateManyWithWhereWithoutTournamentInput | Prisma.MatchUpdateManyWithWhereWithoutTournamentInput[]
   deleteMany?: Prisma.MatchScalarWhereInput | Prisma.MatchScalarWhereInput[]
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type MatchCreateNestedManyWithoutStandaloneMatchInput = {
@@ -711,6 +1006,146 @@ export type MatchUpdateOneRequiredWithoutAssignedMembersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.MatchUpdateToOneWithWhereWithoutAssignedMembersInput, Prisma.MatchUpdateWithoutAssignedMembersInput>, Prisma.MatchUncheckedUpdateWithoutAssignedMembersInput>
 }
 
+export type MatchCreateWithoutScoresInput = {
+  id?: string
+  round: string
+  orderNum: number
+  teamA?: string | null
+  teamB?: string | null
+  winner?: string | null
+  scoreA?: number
+  scoreB?: number
+  status?: string
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
+  tournament?: Prisma.TournamentCreateNestedOneWithoutMatchesInput
+  standaloneMatch?: Prisma.StandaloneMatchCreateNestedOneWithoutMatchesInput
+  assignedMembers?: Prisma.MemberAssignedMatchCreateNestedManyWithoutMatchInput
+  timer?: Prisma.TimerCreateNestedOneWithoutMatchInput
+}
+
+export type MatchUncheckedCreateWithoutScoresInput = {
+  id?: string
+  tournamentId?: string | null
+  standaloneMatchId?: string | null
+  round: string
+  orderNum: number
+  teamA?: string | null
+  teamB?: string | null
+  winner?: string | null
+  scoreA?: number
+  scoreB?: number
+  status?: string
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
+  assignedMembers?: Prisma.MemberAssignedMatchUncheckedCreateNestedManyWithoutMatchInput
+  timer?: Prisma.TimerUncheckedCreateNestedOneWithoutMatchInput
+}
+
+export type MatchCreateOrConnectWithoutScoresInput = {
+  where: Prisma.MatchWhereUniqueInput
+  create: Prisma.XOR<Prisma.MatchCreateWithoutScoresInput, Prisma.MatchUncheckedCreateWithoutScoresInput>
+}
+
+export type MatchUpsertWithoutScoresInput = {
+  update: Prisma.XOR<Prisma.MatchUpdateWithoutScoresInput, Prisma.MatchUncheckedUpdateWithoutScoresInput>
+  create: Prisma.XOR<Prisma.MatchCreateWithoutScoresInput, Prisma.MatchUncheckedCreateWithoutScoresInput>
+  where?: Prisma.MatchWhereInput
+}
+
+export type MatchUpdateToOneWithWhereWithoutScoresInput = {
+  where?: Prisma.MatchWhereInput
+  data: Prisma.XOR<Prisma.MatchUpdateWithoutScoresInput, Prisma.MatchUncheckedUpdateWithoutScoresInput>
+}
+
+export type MatchUpdateWithoutScoresInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  round?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNum?: Prisma.IntFieldUpdateOperationsInput | number
+  teamA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teamB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  winner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scoreA?: Prisma.IntFieldUpdateOperationsInput | number
+  scoreB?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tournament?: Prisma.TournamentUpdateOneWithoutMatchesNestedInput
+  standaloneMatch?: Prisma.StandaloneMatchUpdateOneWithoutMatchesNestedInput
+  assignedMembers?: Prisma.MemberAssignedMatchUpdateManyWithoutMatchNestedInput
+  timer?: Prisma.TimerUpdateOneWithoutMatchNestedInput
+}
+
+export type MatchUncheckedUpdateWithoutScoresInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tournamentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  standaloneMatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  round?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNum?: Prisma.IntFieldUpdateOperationsInput | number
+  teamA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teamB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  winner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scoreA?: Prisma.IntFieldUpdateOperationsInput | number
+  scoreB?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  assignedMembers?: Prisma.MemberAssignedMatchUncheckedUpdateManyWithoutMatchNestedInput
+  timer?: Prisma.TimerUncheckedUpdateOneWithoutMatchNestedInput
+}
+
 export type MatchCreateWithoutTournamentInput = {
   id?: string
   round: string
@@ -724,9 +1159,22 @@ export type MatchCreateWithoutTournamentInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
   standaloneMatch?: Prisma.StandaloneMatchCreateNestedOneWithoutMatchesInput
   assignedMembers?: Prisma.MemberAssignedMatchCreateNestedManyWithoutMatchInput
   timer?: Prisma.TimerCreateNestedOneWithoutMatchInput
+  scores?: Prisma.MatchScoreCreateNestedManyWithoutMatchInput
 }
 
 export type MatchUncheckedCreateWithoutTournamentInput = {
@@ -743,8 +1191,21 @@ export type MatchUncheckedCreateWithoutTournamentInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
   assignedMembers?: Prisma.MemberAssignedMatchUncheckedCreateNestedManyWithoutMatchInput
   timer?: Prisma.TimerUncheckedCreateNestedOneWithoutMatchInput
+  scores?: Prisma.MatchScoreUncheckedCreateNestedManyWithoutMatchInput
 }
 
 export type MatchCreateOrConnectWithoutTournamentInput = {
@@ -790,6 +1251,18 @@ export type MatchScalarWhereInput = {
   scheduledAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Match"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Match"> | Date | string
+  topic?: Prisma.StringNullableFilter<"Match"> | string | null
+  affirmativeSide?: Prisma.StringNullableFilter<"Match"> | string | null
+  bestDebaterA?: Prisma.StringNullableFilter<"Match"> | string | null
+  bestDebaterB?: Prisma.StringNullableFilter<"Match"> | string | null
+  judge?: Prisma.StringNullableFilter<"Match"> | string | null
+  version?: Prisma.IntFilter<"Match"> | number
+  deletedAt?: Prisma.DateTimeNullableFilter<"Match"> | Date | string | null
+  deletedBy?: Prisma.StringNullableFilter<"Match"> | string | null
+  deleteReason?: Prisma.StringNullableFilter<"Match"> | string | null
+  promotedFromA?: Prisma.StringNullableFilter<"Match"> | string | null
+  promotedFromB?: Prisma.StringNullableFilter<"Match"> | string | null
+  isBye?: Prisma.BoolFilter<"Match"> | boolean
 }
 
 export type MatchCreateWithoutStandaloneMatchInput = {
@@ -805,9 +1278,22 @@ export type MatchCreateWithoutStandaloneMatchInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
   tournament?: Prisma.TournamentCreateNestedOneWithoutMatchesInput
   assignedMembers?: Prisma.MemberAssignedMatchCreateNestedManyWithoutMatchInput
   timer?: Prisma.TimerCreateNestedOneWithoutMatchInput
+  scores?: Prisma.MatchScoreCreateNestedManyWithoutMatchInput
 }
 
 export type MatchUncheckedCreateWithoutStandaloneMatchInput = {
@@ -824,8 +1310,21 @@ export type MatchUncheckedCreateWithoutStandaloneMatchInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
   assignedMembers?: Prisma.MemberAssignedMatchUncheckedCreateNestedManyWithoutMatchInput
   timer?: Prisma.TimerUncheckedCreateNestedOneWithoutMatchInput
+  scores?: Prisma.MatchScoreUncheckedCreateNestedManyWithoutMatchInput
 }
 
 export type MatchCreateOrConnectWithoutStandaloneMatchInput = {
@@ -866,9 +1365,22 @@ export type MatchCreateWithoutTimerInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
   tournament?: Prisma.TournamentCreateNestedOneWithoutMatchesInput
   standaloneMatch?: Prisma.StandaloneMatchCreateNestedOneWithoutMatchesInput
   assignedMembers?: Prisma.MemberAssignedMatchCreateNestedManyWithoutMatchInput
+  scores?: Prisma.MatchScoreCreateNestedManyWithoutMatchInput
 }
 
 export type MatchUncheckedCreateWithoutTimerInput = {
@@ -886,7 +1398,20 @@ export type MatchUncheckedCreateWithoutTimerInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
   assignedMembers?: Prisma.MemberAssignedMatchUncheckedCreateNestedManyWithoutMatchInput
+  scores?: Prisma.MatchScoreUncheckedCreateNestedManyWithoutMatchInput
 }
 
 export type MatchCreateOrConnectWithoutTimerInput = {
@@ -918,9 +1443,22 @@ export type MatchUpdateWithoutTimerInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tournament?: Prisma.TournamentUpdateOneWithoutMatchesNestedInput
   standaloneMatch?: Prisma.StandaloneMatchUpdateOneWithoutMatchesNestedInput
   assignedMembers?: Prisma.MemberAssignedMatchUpdateManyWithoutMatchNestedInput
+  scores?: Prisma.MatchScoreUpdateManyWithoutMatchNestedInput
 }
 
 export type MatchUncheckedUpdateWithoutTimerInput = {
@@ -938,7 +1476,20 @@ export type MatchUncheckedUpdateWithoutTimerInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
   assignedMembers?: Prisma.MemberAssignedMatchUncheckedUpdateManyWithoutMatchNestedInput
+  scores?: Prisma.MatchScoreUncheckedUpdateManyWithoutMatchNestedInput
 }
 
 export type MatchCreateWithoutAssignedMembersInput = {
@@ -954,9 +1505,22 @@ export type MatchCreateWithoutAssignedMembersInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
   tournament?: Prisma.TournamentCreateNestedOneWithoutMatchesInput
   standaloneMatch?: Prisma.StandaloneMatchCreateNestedOneWithoutMatchesInput
   timer?: Prisma.TimerCreateNestedOneWithoutMatchInput
+  scores?: Prisma.MatchScoreCreateNestedManyWithoutMatchInput
 }
 
 export type MatchUncheckedCreateWithoutAssignedMembersInput = {
@@ -974,7 +1538,20 @@ export type MatchUncheckedCreateWithoutAssignedMembersInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
   timer?: Prisma.TimerUncheckedCreateNestedOneWithoutMatchInput
+  scores?: Prisma.MatchScoreUncheckedCreateNestedManyWithoutMatchInput
 }
 
 export type MatchCreateOrConnectWithoutAssignedMembersInput = {
@@ -1006,9 +1583,22 @@ export type MatchUpdateWithoutAssignedMembersInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tournament?: Prisma.TournamentUpdateOneWithoutMatchesNestedInput
   standaloneMatch?: Prisma.StandaloneMatchUpdateOneWithoutMatchesNestedInput
   timer?: Prisma.TimerUpdateOneWithoutMatchNestedInput
+  scores?: Prisma.MatchScoreUpdateManyWithoutMatchNestedInput
 }
 
 export type MatchUncheckedUpdateWithoutAssignedMembersInput = {
@@ -1026,7 +1616,20 @@ export type MatchUncheckedUpdateWithoutAssignedMembersInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
   timer?: Prisma.TimerUncheckedUpdateOneWithoutMatchNestedInput
+  scores?: Prisma.MatchScoreUncheckedUpdateManyWithoutMatchNestedInput
 }
 
 export type MatchCreateManyTournamentInput = {
@@ -1043,6 +1646,18 @@ export type MatchCreateManyTournamentInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
 }
 
 export type MatchUpdateWithoutTournamentInput = {
@@ -1058,9 +1673,22 @@ export type MatchUpdateWithoutTournamentInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
   standaloneMatch?: Prisma.StandaloneMatchUpdateOneWithoutMatchesNestedInput
   assignedMembers?: Prisma.MemberAssignedMatchUpdateManyWithoutMatchNestedInput
   timer?: Prisma.TimerUpdateOneWithoutMatchNestedInput
+  scores?: Prisma.MatchScoreUpdateManyWithoutMatchNestedInput
 }
 
 export type MatchUncheckedUpdateWithoutTournamentInput = {
@@ -1077,8 +1705,21 @@ export type MatchUncheckedUpdateWithoutTournamentInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
   assignedMembers?: Prisma.MemberAssignedMatchUncheckedUpdateManyWithoutMatchNestedInput
   timer?: Prisma.TimerUncheckedUpdateOneWithoutMatchNestedInput
+  scores?: Prisma.MatchScoreUncheckedUpdateManyWithoutMatchNestedInput
 }
 
 export type MatchUncheckedUpdateManyWithoutTournamentInput = {
@@ -1095,6 +1736,18 @@ export type MatchUncheckedUpdateManyWithoutTournamentInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type MatchCreateManyStandaloneMatchInput = {
@@ -1111,6 +1764,18 @@ export type MatchCreateManyStandaloneMatchInput = {
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  topic?: string | null
+  affirmativeSide?: string | null
+  bestDebaterA?: string | null
+  bestDebaterB?: string | null
+  judge?: string | null
+  version?: number
+  deletedAt?: Date | string | null
+  deletedBy?: string | null
+  deleteReason?: string | null
+  promotedFromA?: string | null
+  promotedFromB?: string | null
+  isBye?: boolean
 }
 
 export type MatchUpdateWithoutStandaloneMatchInput = {
@@ -1126,9 +1791,22 @@ export type MatchUpdateWithoutStandaloneMatchInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tournament?: Prisma.TournamentUpdateOneWithoutMatchesNestedInput
   assignedMembers?: Prisma.MemberAssignedMatchUpdateManyWithoutMatchNestedInput
   timer?: Prisma.TimerUpdateOneWithoutMatchNestedInput
+  scores?: Prisma.MatchScoreUpdateManyWithoutMatchNestedInput
 }
 
 export type MatchUncheckedUpdateWithoutStandaloneMatchInput = {
@@ -1145,8 +1823,21 @@ export type MatchUncheckedUpdateWithoutStandaloneMatchInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
   assignedMembers?: Prisma.MemberAssignedMatchUncheckedUpdateManyWithoutMatchNestedInput
   timer?: Prisma.TimerUncheckedUpdateOneWithoutMatchNestedInput
+  scores?: Prisma.MatchScoreUncheckedUpdateManyWithoutMatchNestedInput
 }
 
 export type MatchUncheckedUpdateManyWithoutStandaloneMatchInput = {
@@ -1163,6 +1854,18 @@ export type MatchUncheckedUpdateManyWithoutStandaloneMatchInput = {
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  affirmativeSide?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  judge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deleteReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromA?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotedFromB?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBye?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -1172,10 +1875,12 @@ export type MatchUncheckedUpdateManyWithoutStandaloneMatchInput = {
 
 export type MatchCountOutputType = {
   assignedMembers: number
+  scores: number
 }
 
 export type MatchCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   assignedMembers?: boolean | MatchCountOutputTypeCountAssignedMembersArgs
+  scores?: boolean | MatchCountOutputTypeCountScoresArgs
 }
 
 /**
@@ -1195,6 +1900,13 @@ export type MatchCountOutputTypeCountAssignedMembersArgs<ExtArgs extends runtime
   where?: Prisma.MemberAssignedMatchWhereInput
 }
 
+/**
+ * MatchCountOutputType without action
+ */
+export type MatchCountOutputTypeCountScoresArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MatchScoreWhereInput
+}
+
 
 export type MatchSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1211,10 +1923,23 @@ export type MatchSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   scheduledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  topic?: boolean
+  affirmativeSide?: boolean
+  bestDebaterA?: boolean
+  bestDebaterB?: boolean
+  judge?: boolean
+  version?: boolean
+  deletedAt?: boolean
+  deletedBy?: boolean
+  deleteReason?: boolean
+  promotedFromA?: boolean
+  promotedFromB?: boolean
+  isBye?: boolean
   tournament?: boolean | Prisma.Match$tournamentArgs<ExtArgs>
   standaloneMatch?: boolean | Prisma.Match$standaloneMatchArgs<ExtArgs>
   assignedMembers?: boolean | Prisma.Match$assignedMembersArgs<ExtArgs>
   timer?: boolean | Prisma.Match$timerArgs<ExtArgs>
+  scores?: boolean | Prisma.Match$scoresArgs<ExtArgs>
   _count?: boolean | Prisma.MatchCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["match"]>
 
@@ -1233,6 +1958,18 @@ export type MatchSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   scheduledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  topic?: boolean
+  affirmativeSide?: boolean
+  bestDebaterA?: boolean
+  bestDebaterB?: boolean
+  judge?: boolean
+  version?: boolean
+  deletedAt?: boolean
+  deletedBy?: boolean
+  deleteReason?: boolean
+  promotedFromA?: boolean
+  promotedFromB?: boolean
+  isBye?: boolean
   tournament?: boolean | Prisma.Match$tournamentArgs<ExtArgs>
   standaloneMatch?: boolean | Prisma.Match$standaloneMatchArgs<ExtArgs>
 }, ExtArgs["result"]["match"]>
@@ -1252,6 +1989,18 @@ export type MatchSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   scheduledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  topic?: boolean
+  affirmativeSide?: boolean
+  bestDebaterA?: boolean
+  bestDebaterB?: boolean
+  judge?: boolean
+  version?: boolean
+  deletedAt?: boolean
+  deletedBy?: boolean
+  deleteReason?: boolean
+  promotedFromA?: boolean
+  promotedFromB?: boolean
+  isBye?: boolean
   tournament?: boolean | Prisma.Match$tournamentArgs<ExtArgs>
   standaloneMatch?: boolean | Prisma.Match$standaloneMatchArgs<ExtArgs>
 }, ExtArgs["result"]["match"]>
@@ -1271,14 +2020,27 @@ export type MatchSelectScalar = {
   scheduledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  topic?: boolean
+  affirmativeSide?: boolean
+  bestDebaterA?: boolean
+  bestDebaterB?: boolean
+  judge?: boolean
+  version?: boolean
+  deletedAt?: boolean
+  deletedBy?: boolean
+  deleteReason?: boolean
+  promotedFromA?: boolean
+  promotedFromB?: boolean
+  isBye?: boolean
 }
 
-export type MatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tournamentId" | "standaloneMatchId" | "round" | "orderNum" | "teamA" | "teamB" | "winner" | "scoreA" | "scoreB" | "status" | "scheduledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["match"]>
+export type MatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tournamentId" | "standaloneMatchId" | "round" | "orderNum" | "teamA" | "teamB" | "winner" | "scoreA" | "scoreB" | "status" | "scheduledAt" | "createdAt" | "updatedAt" | "topic" | "affirmativeSide" | "bestDebaterA" | "bestDebaterB" | "judge" | "version" | "deletedAt" | "deletedBy" | "deleteReason" | "promotedFromA" | "promotedFromB" | "isBye", ExtArgs["result"]["match"]>
 export type MatchInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tournament?: boolean | Prisma.Match$tournamentArgs<ExtArgs>
   standaloneMatch?: boolean | Prisma.Match$standaloneMatchArgs<ExtArgs>
   assignedMembers?: boolean | Prisma.Match$assignedMembersArgs<ExtArgs>
   timer?: boolean | Prisma.Match$timerArgs<ExtArgs>
+  scores?: boolean | Prisma.Match$scoresArgs<ExtArgs>
   _count?: boolean | Prisma.MatchCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MatchIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1297,6 +2059,7 @@ export type $MatchPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     standaloneMatch: Prisma.$StandaloneMatchPayload<ExtArgs> | null
     assignedMembers: Prisma.$MemberAssignedMatchPayload<ExtArgs>[]
     timer: Prisma.$TimerPayload<ExtArgs> | null
+    scores: Prisma.$MatchScorePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1313,6 +2076,18 @@ export type $MatchPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     scheduledAt: Date | null
     createdAt: Date
     updatedAt: Date
+    topic: string | null
+    affirmativeSide: string | null
+    bestDebaterA: string | null
+    bestDebaterB: string | null
+    judge: string | null
+    version: number
+    deletedAt: Date | null
+    deletedBy: string | null
+    deleteReason: string | null
+    promotedFromA: string | null
+    promotedFromB: string | null
+    isBye: boolean
   }, ExtArgs["result"]["match"]>
   composites: {}
 }
@@ -1711,6 +2486,7 @@ export interface Prisma__MatchClient<T, Null = never, ExtArgs extends runtime.Ty
   standaloneMatch<T extends Prisma.Match$standaloneMatchArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Match$standaloneMatchArgs<ExtArgs>>): Prisma.Prisma__StandaloneMatchClient<runtime.Types.Result.GetResult<Prisma.$StandaloneMatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   assignedMembers<T extends Prisma.Match$assignedMembersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Match$assignedMembersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MemberAssignedMatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   timer<T extends Prisma.Match$timerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Match$timerArgs<ExtArgs>>): Prisma.Prisma__TimerClient<runtime.Types.Result.GetResult<Prisma.$TimerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  scores<T extends Prisma.Match$scoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Match$scoresArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MatchScorePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1754,6 +2530,18 @@ export interface MatchFieldRefs {
   readonly scheduledAt: Prisma.FieldRef<"Match", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Match", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Match", 'DateTime'>
+  readonly topic: Prisma.FieldRef<"Match", 'String'>
+  readonly affirmativeSide: Prisma.FieldRef<"Match", 'String'>
+  readonly bestDebaterA: Prisma.FieldRef<"Match", 'String'>
+  readonly bestDebaterB: Prisma.FieldRef<"Match", 'String'>
+  readonly judge: Prisma.FieldRef<"Match", 'String'>
+  readonly version: Prisma.FieldRef<"Match", 'Int'>
+  readonly deletedAt: Prisma.FieldRef<"Match", 'DateTime'>
+  readonly deletedBy: Prisma.FieldRef<"Match", 'String'>
+  readonly deleteReason: Prisma.FieldRef<"Match", 'String'>
+  readonly promotedFromA: Prisma.FieldRef<"Match", 'String'>
+  readonly promotedFromB: Prisma.FieldRef<"Match", 'String'>
+  readonly isBye: Prisma.FieldRef<"Match", 'Boolean'>
 }
     
 
@@ -2231,6 +3019,30 @@ export type Match$timerArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
    */
   include?: Prisma.TimerInclude<ExtArgs> | null
   where?: Prisma.TimerWhereInput
+}
+
+/**
+ * Match.scores
+ */
+export type Match$scoresArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MatchScore
+   */
+  select?: Prisma.MatchScoreSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MatchScore
+   */
+  omit?: Prisma.MatchScoreOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MatchScoreInclude<ExtArgs> | null
+  where?: Prisma.MatchScoreWhereInput
+  orderBy?: Prisma.MatchScoreOrderByWithRelationInput | Prisma.MatchScoreOrderByWithRelationInput[]
+  cursor?: Prisma.MatchScoreWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MatchScoreScalarFieldEnum | Prisma.MatchScoreScalarFieldEnum[]
 }
 
 /**

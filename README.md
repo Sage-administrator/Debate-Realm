@@ -1,8 +1,33 @@
-# Nuxt Minimal Starter
+# 辩论赛计时系统
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Nuxt 3 + Vue 3 + Prisma + SQLite
 
 ## Setup
+
+### 数据库迁移（首次部署必读）
+
+本轮改动新增了 Match 表和 TournamentTeam 表的多个字段（版本号、软删除标志、晋级溯源、积分统计等。
+**部署前请先阅读详细部署说明**：
+
+📖 [DEPLOYMENT.md](file:///d:/Code/DebateTimer/DebateTimerV3/DEPLOYMENT.md)
+
+**核心流程速览**：
+
+```bash
+# 1. 备份数据库（重要！）
+Copy-Item prisma\dev.db prisma\dev.db.backup_$(Get-Date -Format 'yyyyMMdd_HHmmss')
+
+# 2. 应用 schema 变更
+npx prisma db push
+
+# 3. 启动服务
+npm run dev    # 开发
+npm run build && npm run preview    # 生产
+```
+
+---
+
+## 安装依赖
 
 Make sure to install dependencies:
 

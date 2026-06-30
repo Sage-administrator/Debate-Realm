@@ -5,6 +5,7 @@
 
 import WebSocket from 'ws'
 import type { PrismaClient } from './generated/client'
+import { prisma } from './prisma'
 import { handleMessage } from './bot-handlers'
 
 // ---------- 类型定义 ----------
@@ -38,7 +39,7 @@ interface WebSocketPayload {
 
 export interface BotInstance {
   config: BotConfig
-  status: 'disconnected' | 'connecting' | 'connected' | 'error'
+  status: 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error'
   /** Bot 用户名（READY 事件返回） */
   botUsername?: string
   /** Bot ID（READY 事件返回） */
@@ -57,18 +58,69 @@ export interface BotInstance {
 // ---------- 常量 ----------
 
 const API_BASE_URL = 'https://api.sgroup.qq.com'
+const SANDBOX_API_BASE_URL = 'https://sandbox.api.sgroup.qq.com'
 const TOKEN_URL = 'https://bots.qq.com/app/getAppAccessToken'
 const GATEWAY_URL = 'https://api.sgroup.qq.com/gateway'
+const SANDBOX_GATEWAY_URL = 'https://sandbox.api.sgroup.qq.com/gateway'
+
+// 沙箱模式：通过环境变量 BOT_SANDBOX=true 启用（沙箱 Bot 的 token 仅在沙箱网关有效）
+const isSandboxMode = process.env.BOT_SANDBOX === 'true'
+if (isSandboxMode) {
+  console.log('[Bot] ⚠ 沙箱模式已启用，将使用 QQ Bot 沙箱环境（sandbox.api.sgroup.qq.com）')
+}
 
 // ---------- 实例管理 ----------
 
 const botInstances = new Map<string, BotInstance>()
+
+// 已关闭/解绑的 Bot 团队集合：放入后不再允许自动重连
+// 仅 createBotInstance 手动调用时会清除此标志
+const shutDownTeams = new Set<string>()
+
+// 消息去重：记录最近处理的消息 ID，防止 QQ 平台重复推送
+// 使用 Set + 数组实现 FIFO，容量上限 200 条
+const MAX_DEDUP_SIZE = 200
+const processedMessageIds = new Set<string>()
+const processedMessageQueue: string[] = []
+
+/** 检查并记录消息是否已处理（去重） */
+function checkAndMarkMessage(msgId: string): boolean {
+  if (!msgId) return false // 无消息 ID 时不做去重
+  if (processedMessageIds.has(msgId)) {
+    return true // 已处理过
+  }
+  // 加入队列
+  processedMessageIds.add(msgId)
+  processedMessageQueue.push(msgId)
+  // FIFO 淘汰：超出容量时移除最旧条目
+  if (processedMessageQueue.length > MAX_DEDUP_SIZE) {
+    const oldest = processedMessageQueue.shift()!
+    processedMessageIds.delete(oldest)
+  }
+  return false // 未处理过
+}
 
 // Gateway URL 全局缓存（QQ 官方 Gateway URL 短时间内稳定不变）
 // 缓存 1 小时，避免频繁请求触发频率限制
 let cachedGatewayUrl: string | null = null
 let gatewayUrlExpiresAt = 0
 const GATEWAY_CACHE_TTL = 60 * 60 * 1000 // 1 小时
+
+// intents 降级列表：从最常见的权限组合开始，逐步尝试更小的子集
+// 当 op=9（Invalid Session）时，自动切换到下一个配置重试
+// 注意：QQ 官方测试 Bot 通常只需要 intents=1 (GUILDS)
+const FALLBACK_INTENTS: Array<{ name: string; value: number }> = [
+  { name: 'GUILDS (1<<0)', value: 1 << 0 },
+  { name: 'GUILDS | PUBLIC_GUILD_MESSAGES', value: (1 << 0) | (1 << 30) },
+  { name: 'PUBLIC_GUILD_MESSAGES', value: 1 << 30 },
+  { name: 'GUILDS | INTERACTION', value: (1 << 0) | (1 << 26) },
+  { name: 'GUILDS | PUBLIC_GUILD_MESSAGES | INTERACTION', value: (1 << 0) | (1 << 30) | (1 << 26) },
+  { name: 'GUILDS | GUILD_MESSAGES', value: (1 << 0) | (1 << 9) },
+  { name: 'GUILDS | GUILD_MEMBERS | PUBLIC_GUILD_MESSAGES', value: (1 << 0) | (1 << 1) | (1 << 30) },
+  { name: 'GUILDS | PUBLIC_GUILD_MESSAGES | GROUP_AND_C2C', value: (1 << 0) | (1 << 30) | (1 << 25) },
+  { name: 'PUBLIC_GUILD_MESSAGES | GROUP_AND_C2C', value: (1 << 30) | (1 << 25) },
+  { name: 'INTERACTION (1<<26)', value: 1 << 26 },
+]
 
 // 每个 bot 实例的私有状态
 const stateMap = new Map<string, {
@@ -81,9 +133,31 @@ const stateMap = new Map<string, {
   // 重连退避状态：失败次数越多，间隔越长
   retryCount: number
   backoffTimer: ReturnType<typeof setTimeout> | null
+  // intents 降级索引：当 intents 不匹配时，逐步尝试其他配置
+  intentIndex: number
+  // intents 降级完整轮次：2 轮后停止重连，避免无限循环
+  fullRoundsTried: number
+  // 熔断标志：circuitBreaker = true 时，所有重连尝试都被阻止
+  circuitBreaker: boolean
 }>()
 
 function getState(teamId: string) {
+  // 如果团队已被关闭/解绑，不创建新状态，返回空的只读状态
+  if (shutDownTeams.has(teamId)) {
+    return {
+      accessToken: null,
+      tokenExpiresAt: 0,
+      ws: null,
+      sessionId: null,
+      lastSequence: 0,
+      heartbeatInterval: null,
+      retryCount: 0,
+      backoffTimer: null,
+      intentIndex: 0,
+      fullRoundsTried: 0,
+      circuitBreaker: true,
+    }
+  }
   if (!stateMap.has(teamId)) {
     stateMap.set(teamId, {
       accessToken: null,
@@ -94,6 +168,9 @@ function getState(teamId: string) {
       heartbeatInterval: null,
       retryCount: 0,
       backoffTimer: null,
+      intentIndex: 0,
+      fullRoundsTried: 0,
+      circuitBreaker: false,
     })
   }
   return stateMap.get(teamId)!
@@ -134,6 +211,9 @@ async function getAccessToken(config: BotConfig): Promise<string> {
 
   if (!response.ok) {
     const text = await response.text()
+    console.error(`[Bot][${config.teamName}] ❌ 获取 Access Token 失败: HTTP ${response.status} - ${text}`)
+    console.error(`[Bot][${config.teamName}]    使用的 appId: ${config.appId}`)
+    console.error(`[Bot][${config.teamName}]    使用的 secret: ${config.appSecret.substring(0, 8)}...(${config.appSecret.length} 字符)`)
     throw new Error(`获取 Access Token 失败: ${response.status} - ${text}`)
   }
 
@@ -141,7 +221,7 @@ async function getAccessToken(config: BotConfig): Promise<string> {
   state.accessToken = json.access_token
   state.tokenExpiresAt = Date.now() + json.expires_in * 1000
 
-  console.log(`[Bot][${config.teamName}] Access Token 已更新，有效期: ${json.expires_in} 秒`)
+  console.log(`[Bot][${config.teamName}] ✅ Access Token 已更新 (appId=${config.appId})，有效期: ${json.expires_in} 秒`)
   return state.accessToken
 }
 
@@ -153,13 +233,16 @@ async function getAccessToken(config: BotConfig): Promise<string> {
  * 同时检测频率限制错误（code: 100017），在上层做延长退避处理
  */
 async function getGatewayUrl(config: BotConfig): Promise<string> {
+  // 沙箱模式使用沙箱网关
+  const gatewayUrl = isSandboxMode ? SANDBOX_GATEWAY_URL : GATEWAY_URL
+
   // 优先使用全局缓存（所有 Bot 共用同一个 Gateway URL）
   if (cachedGatewayUrl && Date.now() < gatewayUrlExpiresAt) {
     return cachedGatewayUrl
   }
 
   const token = await getAccessToken(config)
-  const response = await fetch(GATEWAY_URL, {
+  const response = await fetch(gatewayUrl, {
     headers: {
       Authorization: `QQBot ${token}`,
     },
@@ -202,7 +285,8 @@ export async function callBotApi(
   body?: Record<string, unknown>,
 ): Promise<any> {
   const token = await getAccessToken(config)
-  const url = `${API_BASE_URL}${path}`
+  const baseUrl = isSandboxMode ? SANDBOX_API_BASE_URL : API_BASE_URL
+  const url = `${baseUrl}${path}`
 
   const response = await fetch(url, {
     method,
@@ -226,17 +310,17 @@ export async function callBotApi(
 
 function calculateIntentsValue(intents: string[]): number {
   const intentMap: Record<string, number> = {
-    GUILDS: 1 << 0,
-    GUILD_MEMBERS: 1 << 1,
-    GUILD_MESSAGES: 1 << 2,           // 私域消息
-    GUILD_MESSAGE_REACTIONS: 1 << 4,
-    DIRECT_MESSAGE: 1 << 5,
-    INTERACTION: 1 << 6,
-    MESSAGE_AUDIT: 1 << 7,
-    FORUMS_EVENT: 1 << 8,
-    AUDIO_ACTION: 1 << 9,
-    PUBLIC_GUILD_MESSAGES: 1 << 30,   // 公域消息（AITalent等）
-    GROUP_AND_C2C_EVENT: 1 << 25,     // 群聊 + 私聊
+    GUILDS: 1 << 0,                  // 频道
+    GUILD_MEMBERS: 1 << 1,          // 频道成员
+    GUILD_MESSAGES: 1 << 9,         // 私域消息（官方文档: 1 << 9）
+    GUILD_MESSAGE_REACTIONS: 1 << 10, // 消息表态
+    DIRECT_MESSAGE: 1 << 12,        // 私聊消息
+    INTERACTION: 1 << 26,           // 互动事件
+    MESSAGE_AUDIT: 1 << 27,         // 消息审核
+    FORUMS_EVENT: 1 << 28,          // 论坛事件
+    AUDIO_ACTION: 1 << 29,          // 音频动作
+    PUBLIC_GUILD_MESSAGES: 1 << 30, // 公域消息（AITalent等）
+    GROUP_AND_C2C_EVENT: 1 << 25,   // 群聊 + 私聊
   }
 
   let value = 0
@@ -253,8 +337,17 @@ function calculateIntentsValue(intents: string[]): number {
 function connectWebSocket(config: BotConfig, gatewayUrl: string): void {
   const state = getState(config.teamId)
 
-  // 关闭旧连接
+  // 🔄 重置熔断标志：每次主动连接都重置，允许新的尝试
+  state.circuitBreaker = false
+
+  // 清理旧连接和待执行的重连定时器（防止旧 close 事件触发的定时器与新连接竞争）
+  if (state.backoffTimer) {
+    clearTimeout(state.backoffTimer)
+    state.backoffTimer = null
+  }
   if (state.ws) {
+    // 移除旧 close 监听，防止旧连接 close 事件触发新一轮重连
+    state.ws.removeAllListeners('close')
     state.ws.close()
     state.ws = null
   }
@@ -263,46 +356,57 @@ function connectWebSocket(config: BotConfig, gatewayUrl: string): void {
   if (instance) instance.status = 'connecting'
 
   state.ws = new WebSocket(gatewayUrl)
+  // 捕获当前 WebSocket 引用，防止后续重连覆盖 state.ws 导致回调中使用错误的连接
+  const ws = state.ws
 
-  state.ws.on('open', () => {
+  ws.on('open', () => {
     console.log(`[Bot][${config.teamName}] WebSocket 连接已建立`)
     if (instance) instance.status = 'connected'
   })
 
-  state.ws.on('message', (data: WebSocket.Data) => {
+  ws.on('message', (data: WebSocket.Data) => {
     try {
       const payload: WebSocketPayload = JSON.parse(data.toString())
-      handleWebSocketMessage(config, payload)
+      handleWebSocketMessage(config, payload, ws)
     } catch (err) {
       console.error(`[Bot][${config.teamName}] 解析消息失败:`, err)
     }
   })
 
-  state.ws.on('close', (code: number, reason: Buffer) => {
+  ws.on('close', (code: number, reason: Buffer) => {
     console.log(`[Bot][${config.teamName}] WebSocket 连接关闭: ${code}`)
-    if (instance) instance.status = 'disconnected'
-
+    // 🔴 熔断检查：熔断已触发，不做任何重连
+    if (state.circuitBreaker) {
+      console.log(`[Bot][${config.teamName}] 🔴 熔断已激活，停止所有自动重连（close 事件）`)
+      return
+    }
+    // 停止心跳，但注意：如果 op=9 已经调用了 scheduleReconnect，backoffTimer 已被设置
     if (state.heartbeatInterval) {
       clearInterval(state.heartbeatInterval)
       state.heartbeatInterval = null
     }
 
-    // 自动重连（使用指数退避，避免频繁重连触发频率限制）
-    const backoffMs = getBackoffMs(state.retryCount)
-    state.retryCount += 1
-    console.log(`[Bot][${config.teamName}] ${Math.round(backoffMs / 1000)} 秒后尝试重连（第 ${state.retryCount} 次）`)
-    state.backoffTimer = setTimeout(() => {
-      reconnectWebSocket(config)
-    }, backoffMs)
+    // ⚠️ 关键：先判断是否已有重连任务排队，再设置状态
+    // - 有 backoffTimer → 状态是 reconnecting（保持重连中，避免 getBotRuntimeStatus 又创建新实例）
+    // - 无 backoffTimer → 真正 disconnected，需要调度新的重连
+    if (state.backoffTimer) {
+      // scheduleReconnect 已设置过 status = 'reconnecting'，保持不动
+      console.log(`[Bot][${config.teamName}] 已有重连任务排队中，跳过 close 事件的重连`)
+      return
+    }
+
+    // 没有重连任务 → 状态置为 disconnected，然后统一走退避调度
+    if (instance) instance.status = 'disconnected'
+    scheduleReconnect(config, `WebSocket 关闭（code=${code}）`)
   })
 
-  state.ws.on('error', (err: Error) => {
+  ws.on('error', (err: Error) => {
     console.error(`[Bot][${config.teamName}] WebSocket 错误:`, err.message)
     if (instance) instance.status = 'error'
   })
 }
 
-function handleWebSocketMessage(config: BotConfig, payload: WebSocketPayload): void {
+function handleWebSocketMessage(config: BotConfig, payload: WebSocketPayload, ws: WebSocket): void {
   const state = getState(config.teamId)
   const { op, d, s, t } = payload
 
@@ -316,8 +420,8 @@ function handleWebSocketMessage(config: BotConfig, payload: WebSocketPayload): v
       // 记录心跳间隔到 Bot 实例
       const inst = botInstances.get(config.teamId)
       if (inst) inst.heartbeatInterval = d.heartbeat_interval
-      startHeartbeat(config, d.heartbeat_interval)
-      sendIdentify(config)
+      startHeartbeat(config, d.heartbeat_interval, ws)
+      sendIdentify(config, ws)
       break
 
     case 11: // Heartbeat ACK
@@ -328,15 +432,39 @@ function handleWebSocketMessage(config: BotConfig, payload: WebSocketPayload): v
       handleDispatchEvent(config, t, d)
       break
 
-    case 7: // Reconnect
+    case 7: // Reconnect — 服务端要求重连，走退避流程而非立即重连
       console.log(`[Bot][${config.teamName}] 服务端要求重连`)
-      reconnectWebSocket(config)
+      scheduleReconnect(config, '服务端要求重连（op=7）')
       break
 
-    case 9: // Invalid Session
-      console.log(`[Bot][${config.teamName}] Session 无效，重新连接`)
+    case 9: // Invalid Session — 切换 intents 后重试，2 轮失败后停止
+      // 自修复：尝试下一个 intents 配置（权限不匹配是 op=9 的常见原因）
+      state.intentIndex = (state.intentIndex + 1) % FALLBACK_INTENTS.length
+      const nextIntent = FALLBACK_INTENTS[state.intentIndex]
+
+      // 熔断机制：当 intentIndex 回到 0 时表示完成 1 轮所有配置
+      if (state.intentIndex === 0) {
+        state.fullRoundsTried += 1
+        console.log(`[Bot][${config.teamName}] ⚠️ 已完成第 ${state.fullRoundsTried} 轮 intents 尝试`)
+        if (state.fullRoundsTried >= 2) {
+          console.log(`[Bot][${config.teamName}] 🔴 熔断：所有 ${FALLBACK_INTENTS.length} 个 intents 已尝试 2 轮，全部失败。`)
+          console.log(`[Bot][${config.teamName}]    这通常意味着：1) Bot 在 QQ 开放平台未配置权限  2) Bot 处于沙盒环境  3) Bot 凭据无效`)
+          console.log(`[Bot][${config.teamName}]    停止自动重连。可通过前端页面重新启动。`)
+          const inst2 = botInstances.get(config.teamId)
+          if (inst2) inst2.status = 'disconnected'
+          state.sessionId = null
+          // 设置熔断标志：阻止所有后续重连
+          state.circuitBreaker = true
+          break
+        }
+      }
+
+      console.log(`[Bot][${config.teamName}] ❌ Session 无效，切换 intents 后重试 → 下一个: ${nextIntent.name} (value=${nextIntent.value})`)
+      if (d) {
+        console.log(`[Bot][${config.teamName}] → 服务端 op=9 详情:`, JSON.stringify(d))
+      }
       state.sessionId = null
-      reconnectWebSocket(config)
+      scheduleReconnect(config, `Session 无效（op=9），切换 intents 重试 [第${state.fullRoundsTried + 1}轮]`)
       break
 
     default:
@@ -344,7 +472,7 @@ function handleWebSocketMessage(config: BotConfig, payload: WebSocketPayload): v
   }
 }
 
-function startHeartbeat(config: BotConfig, intervalMs: number): void {
+function startHeartbeat(config: BotConfig, intervalMs: number, ws: WebSocket): void {
   const state = getState(config.teamId)
 
   if (state.heartbeatInterval) {
@@ -352,34 +480,42 @@ function startHeartbeat(config: BotConfig, intervalMs: number): void {
   }
 
   state.heartbeatInterval = setInterval(() => {
-    if (state.ws && state.ws.readyState === WebSocket.OPEN) {
-      state.ws.send(JSON.stringify({ op: 1, d: state.lastSequence }))
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ op: 1, d: state.lastSequence }))
     }
   }, intervalMs)
 }
 
-async function sendIdentify(config: BotConfig): Promise<void> {
+async function sendIdentify(config: BotConfig, ws: WebSocket): Promise<void> {
   const state = getState(config.teamId)
-  const token = await getAccessToken(config)
-  const intents = config.intents || ['PUBLIC_GUILD_MESSAGES', 'GROUP_AND_C2C_EVENT']
-  const intentsValue = calculateIntentsValue(intents)
+  try {
+    const token = await getAccessToken(config)
+    // 从降级列表中选取当前 intents（由 intentIndex 决定）— 避免权限不匹配导致连接失败
+    const currentIntent = FALLBACK_INTENTS[state.intentIndex % FALLBACK_INTENTS.length]
+    const intentsValue = currentIntent.value
 
-  const identifyPayload = {
-    op: 2,
-    d: {
-      token: `QQBot ${token}`,
-      intents: intentsValue,
-      shard: [0, 1],
-      properties: {
-        $os: 'windows',
-        $browser: 'nodejs',
-        $device: 'nodejs',
+    const identifyPayload = {
+      op: 2,
+      d: {
+        token: `QQBot ${token}`,
+        intents: intentsValue,
+        shard: [0, 1],
+        // QQ Bot Gateway 协议要求使用 $ 前缀（与 Discord 一致）
+        properties: {
+          $os: 'windows',
+          $browser: 'nodejs',
+          $device: 'nodejs',
+        },
       },
-    },
-  }
+    }
 
-  state.ws?.send(JSON.stringify(identifyPayload))
-  console.log(`[Bot][${config.teamName}] 已发送 Identify`)
+    const payloadStr = JSON.stringify(identifyPayload)
+    const tokenDebug = `${token.substring(0, 10)}...${token.substring(token.length - 10)}`
+    console.log(`[Bot][${config.teamName}] 已发送 Identify: token=QQBot ${tokenDebug}, intents=${intentsValue} (${currentIntent.name}, 尝试 #${state.intentIndex + 1})`)
+    ws.send(payloadStr)
+  } catch (err) {
+    console.error(`[Bot][${config.teamName}] ❌ sendIdentify 失败:`, (err as Error).message)
+  }
 }
 
 // ---------- 事件分发 ----------
@@ -389,8 +525,14 @@ function handleDispatchEvent(config: BotConfig, eventType: string | undefined, d
 
   switch (eventType) {
     case 'READY':
-      getState(config.teamId).sessionId = data.session_id
-      console.log(`[Bot][${config.teamName}] READY，Session: ${data.session_id}`)
+      const readyState = getState(config.teamId)
+      readyState.sessionId = data.session_id
+      // 连接成功：重置重连计数、intents 降级轮次、熔断标志
+      readyState.retryCount = 0
+      readyState.fullRoundsTried = 0
+      readyState.circuitBreaker = false
+      const intentInfo = FALLBACK_INTENTS[readyState.intentIndex % FALLBACK_INTENTS.length]
+      console.log(`[Bot][${config.teamName}] 🎉 READY（intents=${intentInfo.value} - ${intentInfo.name}）Session: ${data.session_id}`)
       // 记录 Bot 运行时信息
       const inst2 = botInstances.get(config.teamId)
       if (inst2) {
@@ -429,9 +571,15 @@ function handleDispatchEvent(config: BotConfig, eventType: string | undefined, d
 
 // ---------- 消息处理 ----------
 
-function handleChannelMessage(config: BotConfig, data: any): void {
+async function handleChannelMessage(config: BotConfig, data: any): Promise<void> {
   const msg = data
   if (!msg || !msg.channel_id) return
+
+  // 消息去重：防止 QQ 平台重复推送
+  if (checkAndMarkMessage(msg.id)) {
+    console.log(`[Bot][${config.teamName}] 跳过重复消息: ${msg.id}`)
+    return
+  }
 
   // 去掉 @机器人 标记
   let content = (msg.content || '').replace(/<@!\d+>/g, '').trim()
@@ -439,10 +587,15 @@ function handleChannelMessage(config: BotConfig, data: any): void {
 
   console.log(`[Bot][${config.teamName}] 频道消息: ${msg.author?.username || '?'}: ${content}`)
 
-  const result = handleMessage({
+  const result = await handleMessage({
     channelId: msg.channel_id,
     userId: msg.author?.id,
     content,
+    username: msg.author?.username || msg.member?.nick || '未知用户',
+    prisma,
+    botConfig: config,
+    guildId: msg.guild_id,
+    teamId: config.teamId,
   })
 
   if (result.handled && result.reply) {
@@ -453,16 +606,27 @@ function handleChannelMessage(config: BotConfig, data: any): void {
   }
 }
 
-function handlePrivateMessage(config: BotConfig, data: any): void {
+async function handlePrivateMessage(config: BotConfig, data: any): Promise<void> {
   const msg = data?.d || data
   if (!msg) return
 
+  // 消息去重
+  if (checkAndMarkMessage(msg.id)) {
+    console.log(`[Bot][${config.teamName}] 跳过重复私聊消息: ${msg.id}`)
+    return
+  }
+
   console.log(`[Bot][${config.teamName}] 私聊消息: ${msg.author?.id}: ${msg.content}`)
 
-  const result = handleMessage({
+  const result = await handleMessage({
     channelId: msg.author?.id,
     userId: msg.author?.id,
     content: msg.content || '',
+    username: msg.author?.username || '未知用户',
+    prisma,
+    botConfig: config,
+    guildId: msg.guild_id,
+    teamId: config.teamId,
   })
 
   if (result.handled && result.reply) {
@@ -473,16 +637,27 @@ function handlePrivateMessage(config: BotConfig, data: any): void {
   }
 }
 
-function handleGroupMessage(config: BotConfig, data: any): void {
+async function handleGroupMessage(config: BotConfig, data: any): Promise<void> {
   const msg = data?.d || data
   if (!msg) return
 
+  // 消息去重
+  if (checkAndMarkMessage(msg.id)) {
+    console.log(`[Bot][${config.teamName}] 跳过重复群消息: ${msg.id}`)
+    return
+  }
+
   console.log(`[Bot][${config.teamName}] 群消息: ${msg.group_openid}: ${msg.content}`)
 
-  const result = handleMessage({
+  const result = await handleMessage({
     channelId: msg.group_openid,
     userId: msg.author?.member_openid,
     content: msg.content || '',
+    username: msg.author?.username || '未知用户',
+    prisma,
+    botConfig: config,
+    guildId: msg.guild_id,
+    teamId: config.teamId,
   })
 
   if (result.handled && result.reply) {
@@ -495,8 +670,59 @@ function handleGroupMessage(config: BotConfig, data: any): void {
 
 // ---------- 重连 ----------
 
+/**
+ * 统一的重连调度入口：取消旧定时器，按退避策略排队重连
+ * 所有路径（close 事件、op=7、op=9）都走此函数，保证同一时刻只有一条重连链路
+ */
+function scheduleReconnect(config: BotConfig, reason: string): void {
+  const state = getState(config.teamId)
+  const instance = botInstances.get(config.teamId)
+
+  // 🔴 熔断检查：如果 circuitBreaker 已触发，阻止任何自动重连
+  if (state.circuitBreaker) {
+    console.log(`[Bot][${config.teamName}] 🔴 熔断已激活，忽略重连请求（${reason}）`)
+    return
+  }
+
+  // ⚠️ 关键：立即设为 reconnecting，防止 getBotRuntimeStatus 在退避期间重复创建实例
+  if (instance) instance.status = 'reconnecting'
+
+  // 取消已有重连定时器，避免多路排队
+  if (state.backoffTimer) {
+    clearTimeout(state.backoffTimer)
+    state.backoffTimer = null
+  }
+
+  const backoffMs = getBackoffMs(state.retryCount)
+  state.retryCount += 1
+  console.log(`[Bot][${config.teamName}] ${Math.round(backoffMs / 1000)} 秒后重连（${reason}，第 ${state.retryCount} 次）`)
+  state.backoffTimer = setTimeout(() => {
+    reconnectWebSocket(config)
+  }, backoffMs)
+}
+
+// 最小重连间隔（毫秒）：防止极端情况下退避计算值过小导致瞬间重连
+const MIN_RECONNECT_MS = 3000
+let lastReconnectAttempt = 0
+
 async function reconnectWebSocket(config: BotConfig): Promise<void> {
   const state = getState(config.teamId)
+
+  // 取消任何待执行的重连定时器，防止重复重连
+  if (state.backoffTimer) {
+    clearTimeout(state.backoffTimer)
+    state.backoffTimer = null
+  }
+
+  // 最小间隔保护：如果距离上次重连尝试不足 3 秒，强制等待
+  const elapsed = Date.now() - lastReconnectAttempt
+  if (elapsed < MIN_RECONNECT_MS) {
+    const waitMs = MIN_RECONNECT_MS - elapsed
+    console.log(`[Bot][${config.teamName}] 距上次重连仅 ${Math.round(elapsed / 1000)} 秒，强制等待 ${Math.round(waitMs / 1000)} 秒`)
+    await new Promise(resolve => setTimeout(resolve, waitMs))
+  }
+  lastReconnectAttempt = Date.now()
+
   try {
     const gatewayUrl = await getGatewayUrl(config)
     // 成功连接后，重置重连计数器（下次失败重新从 5s 开始）
@@ -526,12 +752,44 @@ async function reconnectWebSocket(config: BotConfig): Promise<void> {
 // ---------- 公共 API ----------
 
 /**
- * 根据 BotConfig 启动一个 Bot 实例
+ * 根据 BotConfig 启动一个 Bot 实例（幂等：已存在则复用）
+ * - 完全不存在 → 新建并连接
+ * - 已存在且状态不是「已连接」→ 复用实例，重新触发 WebSocket 连接
+ * - 已存在且已连接 → 直接返回
  */
 export function createBotInstance(config: BotConfig): BotInstance {
+  // 手动调用 createBotInstance 说明是主动重启：清除关闭标志，允许新连接
+  shutDownTeams.delete(config.teamId)
+
+  // 1) 已存在实例？根据当前状态决定下一步
+  const existing = botInstances.get(config.teamId)
+  if (existing) {
+    const state = getState(config.teamId)
+    // a) 正在连接 / 已连接 / 正在重连 → 什么都不做，直接返回
+    if (existing.status === 'connected' || existing.status === 'connecting' || existing.status === 'reconnecting') {
+      console.log(`[Bot][${config.teamName}] 实例已存在（状态=${existing.status}），复用`)
+      return existing
+    }
+    // b) 已断开 / 错误 → 复用实例，只重新发起连接（除非熔断已激活）
+    if (state.circuitBreaker) {
+      console.log(`[Bot][${config.teamName}] 🔴 熔断已激活，拒绝自动重连（需要前端手动重启）`)
+      return existing
+    }
+    console.log(`[Bot][${config.teamName}] 实例已存在但状态=${existing.status}，重新触发连接...`)
+    existing.status = 'connecting'
+    // 重置重连计数，让退避从最短间隔开始
+    state.retryCount = 0
+    getGatewayUrl(config)
+      .then((gatewayUrl) => connectWebSocket(config, gatewayUrl))
+      .catch((err) => console.error(`[Bot][${config.teamName}] 重新连接失败:`, err))
+    return existing
+  }
+
+  // 2) 全新实例
+  // 立即设为 connecting，防止 getBotRuntimeStatus 在异步间隙重复创建实例
   const instance: BotInstance = {
     config,
-    status: 'disconnected',
+    status: 'connecting',
     sendMessage: async (channelId, content, msgId) => {
       const body: Record<string, unknown> = { content }
       if (msgId) {
@@ -557,7 +815,7 @@ export function createBotInstance(config: BotConfig): BotInstance {
       .catch((err) => console.error(`[Bot][${config.teamName}] 启动失败:`, err))
   }
 
-  console.log(`[Bot][${config.teamName}] Bot 实例已创建`)
+  console.log(`[Bot][${config.teamName}] Bot 实例已创建 (appId=${config.appId}, intents=[${config.intents?.join(',') || 'DEFAULT'}])`)
   return instance
 }
 
@@ -618,7 +876,7 @@ export function connectBot(teamId: string, botAppId: string, botAppSecret: strin
     teamId,
     teamName,
     channelId,
-    intents: ['PUBLIC_GUILD_MESSAGES', 'GROUP_AND_C2C_EVENT'],
+    intents: ['PUBLIC_GUILD_MESSAGES'],
   }
 
   // 确保实例存在
@@ -686,21 +944,27 @@ export async function fetchBotGuilds(teamId: string): Promise<{
  * 停止并删除指定团队的 Bot（全清除）
  */
 export function stopBotInstance(teamId: string): void {
-  const state = getState(teamId)
-  if (state.ws) {
-    state.ws.close()
-    state.ws = null
+  // 标记团队为已关闭：阻止任何自动重连（包括 close 事件、退避定时器回调等）
+  shutDownTeams.add(teamId)
+
+  const state = stateMap.get(teamId)
+  if (state) {
+    if (state.ws) {
+      state.ws.close()
+      state.ws = null
+    }
+    if (state.heartbeatInterval) {
+      clearInterval(state.heartbeatInterval)
+      state.heartbeatInterval = null
+    }
+    if (state.backoffTimer) {
+      clearTimeout(state.backoffTimer)
+      state.backoffTimer = null
+    }
+    stateMap.delete(teamId)
   }
-  if (state.heartbeatInterval) {
-    clearInterval(state.heartbeatInterval)
-    state.heartbeatInterval = null
-  }
-  if (state.backoffTimer) {
-    clearTimeout(state.backoffTimer)
-    state.backoffTimer = null
-  }
-  stateMap.delete(teamId)
   botInstances.delete(teamId)
+  console.log(`[Bot][${teamId}] 🔴 Bot 实例已完全停止，禁用自动重连（可通过前端页面重新启动）`)
 }
 
 // ---------- 运行时状态查询 ----------
@@ -717,7 +981,7 @@ export interface BotRuntimeStatus {
   /** 频道 ID */
   channelId: string | null
   /** WebSocket 连接状态 */
-  connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error' | 'not_configured'
+  connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error' | 'not_configured'
   /** Bot 用户名 */
   botUsername?: string
   /** Bot ID */
@@ -744,10 +1008,13 @@ export function getBotRuntimeStatus(teamId: string, teamInfo: {
   const instance = botInstances.get(teamId)
   const hasConfig = !!(teamInfo.botAppId && teamInfo.botAppSecret)
 
-  // ── 按需启动：已配置但未运行 → 自动启动 Bot ──
+  // ── 按需启动：已配置但未运行（disconnected/error）→ 自动启动 Bot ──
+  // 注意：connecting/reconnecting/connected 状态下不重复创建，由内部重连逻辑处理
+  // 关键限制：如果团队已被 stopBotInstance 关闭（解绑），则不自动启动
   if (
     hasConfig &&
-    (!instance || instance.status === 'disconnected')
+    !shutDownTeams.has(teamId) &&
+    (!instance || instance.status === 'disconnected' || instance.status === 'error')
   ) {
     console.log(`[Bot] 按需启动团队「${teamInfo.name}」的 Bot 实例...`)
     createBotInstance({
@@ -756,7 +1023,7 @@ export function getBotRuntimeStatus(teamId: string, teamInfo: {
       teamId,
       teamName: teamInfo.name,
       channelId: teamInfo.botChannelId,
-      intents: ['PUBLIC_GUILD_MESSAGES', 'GROUP_AND_C2C_EVENT'],
+      intents: ['PUBLIC_GUILD_MESSAGES'],
     })
   }
 
@@ -840,7 +1107,7 @@ export async function loadBotsFromDatabase(prisma: PrismaClient): Promise<void> 
           teamId: team.id,
           teamName: team.name,
           channelId: team.botChannelId ?? null,
-          intents: ['PUBLIC_GUILD_MESSAGES', 'GROUP_AND_C2C_EVENT'],
+          intents: ['PUBLIC_GUILD_MESSAGES'],
         })
       }, delayMs)
     }

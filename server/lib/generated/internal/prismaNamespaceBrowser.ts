@@ -53,6 +53,11 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Team: 'Team',
+  BotArena: 'BotArena',
+  BotArenaRole: 'BotArenaRole',
+  BotArenaClaim: 'BotArenaClaim',
+  BotPermissionLog: 'BotPermissionLog',
+  MatchScore: 'MatchScore',
   TeamMember: 'TeamMember',
   Tournament: 'Tournament',
   TournamentTeam: 'TournamentTeam',
@@ -110,6 +115,86 @@ export const TeamScalarFieldEnum = {
 export type TeamScalarFieldEnum = (typeof TeamScalarFieldEnum)[keyof typeof TeamScalarFieldEnum]
 
 
+export const BotArenaScalarFieldEnum = {
+  id: 'id',
+  teamId: 'teamId',
+  name: 'name',
+  matchFormat: 'matchFormat',
+  status: 'status',
+  guildId: 'guildId',
+  channelId: 'channelId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BotArenaScalarFieldEnum = (typeof BotArenaScalarFieldEnum)[keyof typeof BotArenaScalarFieldEnum]
+
+
+export const BotArenaRoleScalarFieldEnum = {
+  id: 'id',
+  arenaId: 'arenaId',
+  label: 'label',
+  side: 'side',
+  orderIndex: 'orderIndex',
+  qqRoleId: 'qqRoleId',
+  maxCount: 'maxCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BotArenaRoleScalarFieldEnum = (typeof BotArenaRoleScalarFieldEnum)[keyof typeof BotArenaRoleScalarFieldEnum]
+
+
+export const BotArenaClaimScalarFieldEnum = {
+  id: 'id',
+  arenaId: 'arenaId',
+  roleId: 'roleId',
+  userId: 'userId',
+  username: 'username',
+  guildId: 'guildId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BotArenaClaimScalarFieldEnum = (typeof BotArenaClaimScalarFieldEnum)[keyof typeof BotArenaClaimScalarFieldEnum]
+
+
+export const BotPermissionLogScalarFieldEnum = {
+  id: 'id',
+  teamId: 'teamId',
+  guildId: 'guildId',
+  channelId: 'channelId',
+  action: 'action',
+  targetType: 'targetType',
+  targetId: 'targetId',
+  targetName: 'targetName',
+  operator: 'operator',
+  detail: 'detail',
+  createdAt: 'createdAt'
+} as const
+
+export type BotPermissionLogScalarFieldEnum = (typeof BotPermissionLogScalarFieldEnum)[keyof typeof BotPermissionLogScalarFieldEnum]
+
+
+export const MatchScoreScalarFieldEnum = {
+  id: 'id',
+  matchId: 'matchId',
+  tournamentId: 'tournamentId',
+  judgeName: 'judgeName',
+  dimensions: 'dimensions',
+  reason: 'reason',
+  scoreTeamA: 'scoreTeamA',
+  scoreTeamB: 'scoreTeamB',
+  winner: 'winner',
+  bestDebaterA: 'bestDebaterA',
+  bestDebaterB: 'bestDebaterB',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MatchScoreScalarFieldEnum = (typeof MatchScoreScalarFieldEnum)[keyof typeof MatchScoreScalarFieldEnum]
+
+
 export const TeamMemberScalarFieldEnum = {
   id: 'id',
   teamId: 'teamId',
@@ -130,6 +215,11 @@ export const TournamentScalarFieldEnum = {
   status: 'status',
   scheduledAt: 'scheduledAt',
   venue: 'venue',
+  groupCount: 'groupCount',
+  promotePerGroup: 'promotePerGroup',
+  topicPool: 'topicPool',
+  bestDebaterMode: 'bestDebaterMode',
+  assignments: 'assignments',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -140,7 +230,15 @@ export type TournamentScalarFieldEnum = (typeof TournamentScalarFieldEnum)[keyof
 export const TournamentTeamScalarFieldEnum = {
   id: 'id',
   tournamentId: 'tournamentId',
-  name: 'name'
+  name: 'name',
+  groupLabel: 'groupLabel',
+  seed: 'seed',
+  points: 'points',
+  wins: 'wins',
+  draws: 'draws',
+  losses: 'losses',
+  scoreFor: 'scoreFor',
+  scoreAgainst: 'scoreAgainst'
 } as const
 
 export type TournamentTeamScalarFieldEnum = (typeof TournamentTeamScalarFieldEnum)[keyof typeof TournamentTeamScalarFieldEnum]
@@ -169,7 +267,19 @@ export const MatchScalarFieldEnum = {
   status: 'status',
   scheduledAt: 'scheduledAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  topic: 'topic',
+  affirmativeSide: 'affirmativeSide',
+  bestDebaterA: 'bestDebaterA',
+  bestDebaterB: 'bestDebaterB',
+  judge: 'judge',
+  version: 'version',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy',
+  deleteReason: 'deleteReason',
+  promotedFromA: 'promotedFromA',
+  promotedFromB: 'promotedFromB',
+  isBye: 'isBye'
 } as const
 
 export type MatchScalarFieldEnum = (typeof MatchScalarFieldEnum)[keyof typeof MatchScalarFieldEnum]

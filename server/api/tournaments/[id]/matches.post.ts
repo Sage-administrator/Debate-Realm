@@ -1,26 +1,19 @@
 import { readBody } from 'h3'
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { requireWriteTournament } from '../../../utils/tournament-auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = getUserFromEvent(event)
     const id = getRouterParam(event, 'id')!
     const { round, orderNum, teamA, teamB, scheduledAt } = await readBody<{
       round: string; orderNum: number; teamA?: string; teamB?: string; scheduledAt?: string
     }>(event)
 
     if (!round || orderNum === undefined) throw createError({ statusCode: 400, statusMessage: '轮次和顺序不能为空' })
+    if (teamA && teamB && teamA.trim() === teamB.trim()) throw createError({ statusCode: 400, statusMessage: '两支队伍不能相同' })
 
-    const tournament = await prisma.tournament.findUnique({
-      where: { id }, include: { team: true },
-    })
-
-    if (!tournament) throw createError({ statusCode: 404, statusMessage: '赛事不存在' })
-
-    if (user.role !== 'system_admin' && tournament.team.adminId !== user.userId) {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
-    }
+    // 权限：系统管理员 或 该赛事所属团队的管理员
+    await requireWriteTournament(event, prisma, id)
 
     const match = await prisma.match.create({
       data: {
@@ -33,8 +26,12 @@ export default defineEventHandler(async (event) => {
 
     setResponseStatus(event, 201)
     return {
-      id: match.id, round: match.round, orderNum: match.orderNum,
-      teamA: match.teamA, teamB: match.teamB, status: match.status, scheduledAt: match.scheduledAt,
+      code: 0, message: 'success',
+      data: {
+        id: match.id, round: match.round, orderNum: match.orderNum,
+        teamA: match.teamA, teamB: match.teamB, status: match.status,
+        scheduledAt: match.scheduledAt, version: match.version,
+      },
     }
   } catch (error: any) {
     if (error.statusCode) throw error

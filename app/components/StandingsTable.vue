@@ -17,13 +17,22 @@ interface MatchItem {
   status: string
 }
 
-const props = defineProps<Props>()
+// props 定义：matches + 可选晋级提示 + 组标签
+const props = withDefaults(defineProps<{
+  matches: MatchItem[]
+  promoteLimit?: number     // 前 N 名晋级（例如 2 → 前 2 名高亮）
+  groupLabel?: string        // 可选：当前小组标签（例如 "A组"）
+}>(), {
+  promoteLimit: 0,
+  groupLabel: '',
+})
 
 // 计算各队的排名数据
 interface TeamStanding {
   team: string
   played: number
   wins: number
+  draws: number
   losses: number
   scored: number
   conceded: number
@@ -38,10 +47,10 @@ const standings = computed<TeamStanding[]>(() => {
   // 初始化所有队伍的记录
   for (const m of props.matches) {
     if (m.teamA && !teamMap.has(m.teamA)) {
-      teamMap.set(m.teamA, { team: m.teamA, played: 0, wins: 0, losses: 0, scored: 0, conceded: 0, diff: 0, points: 0 })
+      teamMap.set(m.teamA, { team: m.teamA, played: 0, wins: 0, draws: 0, losses: 0, scored: 0, conceded: 0, diff: 0, points: 0 })
     }
     if (m.teamB && !teamMap.has(m.teamB)) {
-      teamMap.set(m.teamB, { team: m.teamB, played: 0, wins: 0, losses: 0, scored: 0, conceded: 0, diff: 0, points: 0 })
+      teamMap.set(m.teamB, { team: m.teamB, played: 0, wins: 0, draws: 0, losses: 0, scored: 0, conceded: 0, diff: 0, points: 0 })
     }
   }
 
@@ -68,6 +77,8 @@ const standings = computed<TeamStanding[]>(() => {
       a.losses++
     } else {
       // 平局
+      a.draws++
+      b.draws++
       a.points += 1
       b.points += 1
     }
@@ -121,6 +132,12 @@ const scoringRules = '胜 3 分，平 1 分，负 0 分'
     </div>
 
     <div v-else class="space-y-6">
+      <!-- 组标签 + 晋级提示 -->
+      <div v-if="groupLabel || promoteLimit > 0" class="flex items-center justify-between text-xs text-gray-500">
+        <span v-if="groupLabel" class="font-semibold text-gray-700 dark:text-gray-200">{{ groupLabel }}</span>
+        <span v-if="promoteLimit > 0" class="text-green-600 font-medium">前 {{ promoteLimit }} 名晋级</span>
+      </div>
+
       <!-- 排名表格 -->
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
@@ -130,6 +147,7 @@ const scoringRules = '胜 3 分，平 1 分，负 0 分'
               <th class="py-2 px-3 text-left">队伍</th>
               <th class="py-2 px-3 text-center w-12">赛</th>
               <th class="py-2 px-3 text-center w-12">胜</th>
+              <th class="py-2 px-3 text-center w-12">平</th>
               <th class="py-2 px-3 text-center w-12">负</th>
               <th class="py-2 px-3 text-center w-16">得分</th>
               <th class="py-2 px-3 text-center w-16">失分</th>
@@ -142,7 +160,10 @@ const scoringRules = '胜 3 分，平 1 分，负 0 分'
               v-for="(team, idx) in standings"
               :key="team.team"
               class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-              :class="{ 'font-bold': idx < 3 }"
+              :class="[
+                { 'font-bold': idx < 3 },
+                promoteLimit > 0 && idx < promoteLimit ? 'bg-green-50/40 dark:bg-green-900/20' : ''
+              ]"
             >
               <td class="py-2.5 px-3">
                 <span :class="rankColor(idx + 1)">{{ idx + 1 }}</span>
@@ -150,6 +171,7 @@ const scoringRules = '胜 3 分，平 1 分，负 0 分'
               <td class="py-2.5 px-3 font-medium">{{ team.team }}</td>
               <td class="py-2.5 px-3 text-center text-gray-500">{{ team.played }}</td>
               <td class="py-2.5 px-3 text-center text-green-600">{{ team.wins }}</td>
+              <td class="py-2.5 px-3 text-center text-yellow-600">{{ team.draws }}</td>
               <td class="py-2.5 px-3 text-center text-red-500">{{ team.losses }}</td>
               <td class="py-2.5 px-3 text-center">{{ team.scored }}</td>
               <td class="py-2.5 px-3 text-center">{{ team.conceded }}</td>

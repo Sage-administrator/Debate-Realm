@@ -1,0 +1,94 @@
+// ════════════════════════════════════════════════════
+// POST /api/bot/arena/claim — 通过 HTTP 认领身份（管理员操作）
+// 请求体：{ arenaId, roleId, userId, username, guildId }
+// ════════════════════════════════════════════════════
+import { prisma } from '../../../lib/prisma'
+import { getUserFromEvent } from '../../../utils/auth'
+import { getBotInstance } from '../../../lib/bot-ws'
+
+export default defineEventHandler(async (event) => {
+  try {
+    const currentUser = getUserFromEvent(event)
+
+    if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
+      throw createError({ statusCode: 403, statusMessage: '仅团队管理员可操作认领' })
+    }
+
+    const body = await readBody(event)
+    const { arenaId, roleId, userId, username, guildId } = body
+
+    if (!arenaId || !roleId || !userId || !username) {
+      throw createError({ statusCode: 400, statusMessage: '缺少必要参数：arenaId、roleId、userId、username' })
+    }
+
+    // 校验赛场存在且活跃
+    const arena = await prisma.botArena.findFirst({
+      where: { id: arenaId, status: 'active' },
+      include: {
+        roles: {
+          where: { id: roleId },
+          include: { claims: true },
+        },
+      },
+    })
+
+    if (!arena) {
+      throw createError({ statusCode: 404, statusMessage: '赛场不存在或已关闭' })
+    }
+
+    const role = arena.roles[0]
+    if (!role) {
+      throw createError({ statusCode: 404, statusMessage: '身份组不存在' })
+    }
+
+    // 检查是否已满员
+    if (role.claims.length >= role.maxCount) {
+      throw createError({ statusCode: 400, statusMessage: `身份「${role.label}」已满员（${role.claims.length}/${role.maxCount}）` })
+    }
+
+    // 检查是否重复认领
+    const existing = await prisma.botArenaClaim.findFirst({
+      where: { arenaId, roleId, userId },
+    })
+    if (existing) {
+      throw createError({ statusCode: 400, statusMessage: '该用户已认领过此身份' })
+    }
+
+    // 创建认领记录
+    const claim = await prisma.botArenaClaim.create({
+      data: {
+        arenaId,
+        roleId,
+        userId,
+        username,
+        guildId: guildId || arena.guildId || '',
+      },
+    })
+
+    // 尝试通过 QQ API 添加身份组（如果 Bot 已连接）
+    const botInstance = getBotInstance(arena.teamId)
+    if (botInstance && botInstance.status === 'connected' && role.qqRoleId && guildId) {
+      try {
+        const { callBotApi } = await import('../../../lib/bot-ws')
+        await callBotApi(
+          botInstance.config,
+          `/guilds/${guildId}/members/${userId}/roles/${role.qqRoleId}`,
+          'PUT',
+        )
+        console.log(`[Arena Claim] 已通过 QQ API 为 ${username} 添加身份组 ${role.label}`)
+      } catch (err) {
+        console.error(`[Arena Claim] QQ API 添加身份组失败（认领记录已保存）:`, err)
+      }
+    }
+
+    return {
+      success: true,
+      message: `用户「${username}」成功认领身份「${role.label}」`,
+      claimId: claim.id,
+    }
+  } catch (error: unknown) {
+    if ((error as { statusCode?: number }).statusCode) throw error
+    console.error('[Arena Claim] 认领失败:', error)
+    throw createError({ statusCode: 500, statusMessage: '认领操作失败' })
+  }
+})

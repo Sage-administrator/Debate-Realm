@@ -2,11 +2,13 @@
 // ════════════════════════════════════════════════════
 // 机器人管理页面 — Bot 状态、频道列表、连接/断连/解绑
 // 仅 QQ 频道模式团队可用
+// 通过 WebSocket 与服务端通信，替代 HTTP API 调用
 // ════════════════════════════════════════════════════
 const store = useAuthStore()
 const toast = useToast()
+const botWs = useBotWs()
 
-// Bot 状态
+// Bot 状态（从 WebSocket 实时推送）
 const loading = ref(true)
 const botConfigured = ref(false)
 const botAppIdMasked = ref('')
@@ -21,6 +23,30 @@ const sessionId = ref('')
 const heartbeatInterval = ref(0)
 const connectedDuration = ref(-1)
 let durationTimer: ReturnType<typeof setInterval> | null = null
+
+// 同步 WebSocket 状态到本地变量
+watch(() => botWs.state.status, (newStatus) => {
+  if (!newStatus) return
+  loading.value = false
+  botConfigured.value = newStatus.configured
+  botAppIdMasked.value = newStatus.appId || ''
+  botChannelId.value = newStatus.channelId || ''
+  teamName.value = newStatus.teamName
+  connectionStatus.value = newStatus.connectionStatus
+  botUsername.value = newStatus.botUsername || ''
+  botId.value = newStatus.botId || ''
+  sessionId.value = newStatus.sessionId || ''
+  heartbeatInterval.value = newStatus.heartbeatInterval || 0
+  connectedDuration.value = newStatus.connectedDuration
+  startDurationTimer()
+
+  // 如果已配置，加载频道列表和赛场数据
+  if (newStatus.configured) {
+    loadChannels()
+    loadPermLogs()
+    loadArenaList()
+  }
+}, { immediate: true })
 
 // 频道列表
 const channelList = ref<Array<{ id: string; name: string; ownerId?: string; joinedAt?: string }>>([])
@@ -86,41 +112,39 @@ const testForm = reactive({
 })
 const sendingMessage = ref(false)
 
+// ── 权限日志 ──
+const permLogs = ref<Array<{
+  id: string; action: string; targetType: string; targetName: string
+  operator: string; detail: string; createdAt: string
+}>>([])
+const permLogsTotal = ref(0)
+const loadingPermLogs = ref(false)
+const permLogError = ref('')
+
+// ── 赛场管理 ──
+const arenaList = ref<Array<{
+  id: string; matchFormat: string; status: string
+  roleCount: number; totalClaims: number; createdAt: string
+}>>([])
+const loadingArena = ref(false)
+const arenaError = ref('')
+
+// 赛场详情（认领列表）
+const showArenaDetail = ref(false)
+const arenaDetail = ref<any>(null)
+const loadingArenaDetail = ref(false)
+
 // ---------- 数据加载 ----------
 
-async function loadStatus() {
-  loading.value = true
-  try {
-    const data = await $fetch<{
-      configured: boolean; teamName: string; appId: string | null
-      channelId: string | null; connectionStatus: string
-      botUsername?: string; botId?: string; sessionId?: string
-      heartbeatInterval?: number; connectedDuration: number
-    }>('/api/bot/status', {
-      headers: { Authorization: `Bearer ${store.token}` },
-    })
-    botConfigured.value = data.configured
-    botAppIdMasked.value = data.appId || ''
-    botChannelId.value = data.channelId || ''
-    teamName.value = data.teamName
-    connectionStatus.value = data.connectionStatus
-    botUsername.value = data.botUsername || ''
-    botId.value = data.botId || ''
-    sessionId.value = data.sessionId || ''
-    heartbeatInterval.value = data.heartbeatInterval || 0
-    connectedDuration.value = data.connectedDuration
-    startDurationTimer()
+// 页面挂载时连接 WebSocket（自动获取状态推送）
+onMounted(() => {
+  botWs.connect()
+})
 
-    // 如果已配置，获取频道列表
-    if (data.configured) {
-      loadChannels()
-    }
-  } catch (_e: unknown) {
-    // 加载失败由模板显示提示
-  } finally {
-    loading.value = false
-  }
-}
+onUnmounted(() => {
+  if (durationTimer) clearInterval(durationTimer)
+  botWs.disconnect()
+})
 
 async function loadChannels() {
   loadingChannels.value = true
@@ -151,7 +175,10 @@ function startDurationTimer() {
   }
 }
 
-onUnmounted(() => { if (durationTimer) clearInterval(durationTimer) })
+onUnmounted(() => {
+  if (durationTimer) clearInterval(durationTimer)
+  botWs.disconnect()
+})
 
 // ---------- 操作：保存配置 ----------
 
@@ -175,7 +202,8 @@ async function handleSaveConfig() {
     })
     toast.add({ title: 'Bot 配置成功，正在连接...', color: 'success' })
     configForm.botAppSecret = ''
-    await loadStatus()
+    // 通过 WebSocket 请求最新状态
+    await botWs.fetchStatus()
   } catch (e: any) {
     toast.add({ title: e?.statusMessage || '保存失败', color: 'error' })
   } finally { savingConfig.value = false }
@@ -186,28 +214,22 @@ async function handleSaveConfig() {
 async function handleConnect() {
   actionLoading.value = 'connect'
   try {
-    await $fetch('/api/bot/connect', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${store.token}` },
-    })
+    await botWs.connectBot()
     toast.add({ title: '正在重新连接 Bot...', color: 'success' })
-    await loadStatus()
+    await botWs.fetchStatus()
   } catch (e: any) {
-    toast.add({ title: e?.statusMessage || '连接失败', color: 'error' })
+    toast.add({ title: e?.message || '连接失败', color: 'error' })
   } finally { actionLoading.value = '' }
 }
 
 async function handleDisconnect() {
   actionLoading.value = 'disconnect'
   try {
-    await $fetch('/api/bot/disconnect', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${store.token}` },
-    })
+    await botWs.disconnectBot()
     toast.add({ title: 'Bot 连接已断开', color: 'info' })
-    await loadStatus()
+    await botWs.fetchStatus()
   } catch (e: any) {
-    toast.add({ title: e?.statusMessage || '断连失败', color: 'error' })
+    toast.add({ title: e?.message || '断连失败', color: 'error' })
   } finally { actionLoading.value = '' }
 }
 
@@ -219,7 +241,7 @@ async function handleUnbind() {
       headers: { Authorization: `Bearer ${store.token}` },
     })
     toast.add({ title: 'Bot 已解绑', color: 'info' })
-    await loadStatus()
+    await botWs.fetchStatus()
   } catch (e: any) {
     toast.add({ title: e?.statusMessage || '解绑失败', color: 'error' })
   } finally { actionLoading.value = '' }
@@ -236,7 +258,7 @@ async function handleSelectChannel(channelId: string) {
       headers: { Authorization: `Bearer ${store.token}` },
     })
     toast.add({ title: '默认频道已更新', color: 'success' })
-    await loadStatus()
+    await botWs.fetchStatus()
   } catch (e: any) {
     toast.add({ title: e?.statusMessage || '更新失败', color: 'error' })
   } finally { selectingChannel.value = false }
@@ -253,23 +275,160 @@ async function handleSendTest() {
   }
   sendingMessage.value = true
   try {
-    await $fetch('/api/bot/send', {
-      method: 'POST',
-      body: {
-        targetId: testForm.targetId.trim(),
-        content: testForm.content.trim(),
-        messageType: testForm.messageType,
-      },
-      headers: { Authorization: `Bearer ${store.token}` },
+    await botWs.sendMessage({
+      targetId: testForm.targetId.trim(),
+      content: testForm.content.trim(),
+      messageType: testForm.messageType,
     })
     toast.add({ title: '测试消息发送成功', color: 'success' })
     testForm.content = ''
   } catch (e: any) {
-    toast.add({ title: e?.statusMessage || '发送失败', color: 'error' })
+    toast.add({ title: e?.message || '发送失败', color: 'error' })
   } finally { sendingMessage.value = false }
 }
 
-onMounted(() => loadStatus())
+// ── 权限日志加载 ──
+
+async function loadPermLogs() {
+  loadingPermLogs.value = true
+  permLogError.value = ''
+  try {
+    const data = await $fetch<{
+      success: boolean; total: number; logs: Array<{
+        id: string; action: string; targetType: string; targetName: string
+        operator: string; detail: string; createdAt: string
+      }>
+    }>('/api/bot/permission-logs', {
+      query: { limit: 20 },
+      headers: { Authorization: `Bearer ${store.token}` },
+    })
+    permLogs.value = data.logs || []
+    permLogsTotal.value = data.total || 0
+  } catch (e: any) {
+    permLogError.value = e?.statusMessage || '加载权限日志失败'
+  } finally {
+    loadingPermLogs.value = false
+  }
+}
+
+// ── 赛场管理加载 ──
+
+async function loadArenaList() {
+  loadingArena.value = true
+  arenaError.value = ''
+  try {
+    const data = await $fetch<{
+      success: boolean; total: number; arenas: Array<{
+        id: string; matchFormat: string; status: string
+        roleCount: number; totalClaims: number; createdAt: string
+      }>
+    }>('/api/bot/arena/list', {
+      headers: { Authorization: `Bearer ${store.token}` },
+    })
+    arenaList.value = data.arenas || []
+  } catch (e: any) {
+    arenaError.value = e?.statusMessage || '加载赛场列表失败'
+  } finally {
+    loadingArena.value = false
+  }
+}
+
+async function loadArenaDetail(arenaId: string) {
+  loadingArenaDetail.value = true
+  try {
+    const data = await $fetch<{
+      success: boolean; arena: any
+    }>('/api/bot/arena/claims', {
+      query: { arenaId },
+      headers: { Authorization: `Bearer ${store.token}` },
+    })
+    arenaDetail.value = data.arena
+    showArenaDetail.value = true
+  } catch (e: any) {
+    toast.add({ title: e?.statusMessage || '加载赛场详情失败', color: 'error' })
+  } finally {
+    loadingArenaDetail.value = false
+  }
+}
+
+const actionLabels: Record<string, string> = {
+  ROUND_SWITCH_ALLOW: '允许发言', ROUND_SWITCH_DENY: '禁止发言',
+  AUDIENCE_SPEAK_GRANT: '授权发言', AUDIENCE_SPEAK_REVOKE: '撤销发言',
+  RESET_ALL: '重置权限',
+}
+
+// 阵营标签
+const sideLabels: Record<string, string> = {
+  affirmative: '正方', negative: '反方', judge: '评委', audience: '观众',
+}
+
+// ── 赛场操作 ──
+const closingArena = ref(false)
+const claimingRole = ref('') // 正在认领的角色 ID
+const unclaimingUser = ref('') // 正在取消认领的用户 ID
+
+/** 关闭赛场 */
+async function handleCloseArena() {
+  if (!arenaDetail.value) return
+  closingArena.value = true
+  try {
+    await $fetch('/api/bot/arena/close', {
+      method: 'POST',
+      body: { guildId: arenaDetail.value.guildId || '' },
+      headers: { Authorization: `Bearer ${store.token}` },
+    })
+    toast.add({ title: '赛场已关闭', color: 'success' })
+    showArenaDetail.value = false
+    loadArenaList()
+  } catch (e: any) {
+    toast.add({ title: e?.statusMessage || '关闭赛场失败', color: 'error' })
+  } finally { closingArena.value = false }
+}
+
+/** 手动认领身份（管理员操作） */
+async function handleAdminClaim(roleId: string, userId: string, username: string) {
+  if (!userId.trim() || !username.trim()) {
+    toast.add({ title: '请输入用户 ID 和用户名', color: 'warning' }); return
+  }
+  claimingRole.value = roleId
+  try {
+    await $fetch('/api/bot/arena/claim', {
+      method: 'POST',
+      body: {
+        arenaId: arenaDetail.value.id,
+        roleId,
+        userId: userId.trim(),
+        username: username.trim(),
+        guildId: arenaDetail.value.guildId || '',
+      },
+      headers: { Authorization: `Bearer ${store.token}` },
+    })
+    toast.add({ title: `已为「${username}」认领身份`, color: 'success' })
+    loadArenaDetail(arenaDetail.value.id)
+  } catch (e: any) {
+    toast.add({ title: e?.statusMessage || '认领失败', color: 'error' })
+  } finally { claimingRole.value = '' }
+}
+
+/** 手动取消认领（管理员操作） */
+async function handleAdminUnclaim(userId: string, roleId: string) {
+  unclaimingUser.value = userId
+  try {
+    await $fetch('/api/bot/arena/unclaim', {
+      method: 'POST',
+      body: {
+        arenaId: arenaDetail.value.id,
+        userId,
+        roleId,
+      },
+      headers: { Authorization: `Bearer ${store.token}` },
+    })
+    toast.add({ title: '已取消认领', color: 'success' })
+    loadArenaDetail(arenaDetail.value.id)
+  } catch (e: any) {
+    toast.add({ title: e?.statusMessage || '取消认领失败', color: 'error' })
+  } finally { unclaimingUser.value = '' }
+}
 </script>
 
 <template>
@@ -464,6 +623,157 @@ onMounted(() => loadStatus())
           </div>
         </template>
 
+        <!-- ============ 赛场管理 + 权限日志 ============ -->
+        <template v-if="botConfigured">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- 赛场管理 -->
+            <UCard>
+              <template #header>
+                <div class="flex items-center justify-between">
+                  <h2 class="font-bold">赛场管理</h2>
+                  <UButton variant="ghost" size="xs" icon="i-lucide-refresh-cw" @click="loadArenaList"
+                    :loading="loadingArena" />
+                </div>
+              </template>
+              <div v-if="loadingArena" class="text-center py-4">
+                <UIcon name="i-lucide-loader" class="w-5 h-5 animate-spin mx-auto" />
+              </div>
+              <div v-else-if="arenaError" class="text-red-500 text-sm py-2">{{ arenaError }}</div>
+              <div v-else-if="arenaList.length === 0" class="text-gray-400 text-sm py-2">
+                暂无赛场记录。在 QQ 频道中使用 <code class="bg-gray-100 px-1 rounded">/设置赛场 4v4</code> 创建赛场。
+              </div>
+              <div v-else class="space-y-2">
+                <div v-for="arena in arenaList" :key="arena.id"
+                  class="flex items-center justify-between p-2 rounded hover:bg-gray-50 transition-colors">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm font-medium">{{ arena.matchFormat }}</span>
+                      <UBadge :label="arena.status === 'active' ? '活跃' : '已关闭'"
+                        :color="arena.status === 'active' ? 'success' : 'neutral'"
+                        size="xs" variant="soft" />
+                    </div>
+                    <div class="text-xs text-gray-400 mt-0.5">
+                      {{ arena.roleCount }} 个身份组 · {{ arena.totalClaims }} 人已认领
+                    </div>
+                  </div>
+                  <UButton size="xs" variant="ghost" icon="i-lucide-eye"
+                    :loading="loadingArenaDetail"
+                    @click="loadArenaDetail(arena.id)">
+                    查看
+                  </UButton>
+                </div>
+              </div>
+            </UCard>
+
+            <!-- 权限日志 -->
+            <UCard>
+              <template #header>
+                <div class="flex items-center justify-between">
+                  <h2 class="font-bold">权限操作日志</h2>
+                  <UButton variant="ghost" size="xs" icon="i-lucide-refresh-cw" @click="loadPermLogs"
+                    :loading="loadingPermLogs" />
+                </div>
+              </template>
+              <div v-if="loadingPermLogs" class="text-center py-4">
+                <UIcon name="i-lucide-loader" class="w-5 h-5 animate-spin mx-auto" />
+              </div>
+              <div v-else-if="permLogError" class="text-red-500 text-sm py-2">{{ permLogError }}</div>
+              <div v-else-if="permLogs.length === 0" class="text-gray-400 text-sm py-2">
+                暂无权限操作记录。权限变更后会自动记录在此。
+              </div>
+              <div v-else class="space-y-1.5 max-h-80 overflow-y-auto">
+                <div v-for="log in permLogs" :key="log.id"
+                  class="flex items-center gap-2 p-1.5 rounded text-xs hover:bg-gray-50">
+                  <UBadge :label="actionLabels[log.action] || log.action"
+                    :color="log.action.includes('DENY') || log.action.includes('REVOKE') ? 'error' : 'success'"
+                    size="xs" variant="soft" />
+                  <span class="font-medium truncate flex-1">{{ log.targetName }}</span>
+                  <span class="text-gray-400 shrink-0">{{ new Date(log.createdAt).toLocaleTimeString() }}</span>
+                </div>
+              </div>
+              <div v-if="permLogsTotal > 0" class="text-xs text-gray-400 mt-2 text-center">
+                共 {{ permLogsTotal }} 条记录，显示最近 {{ permLogs.length }} 条
+              </div>
+            </UCard>
+          </div>
+        </template>
+
+        <!-- ============ 赛场详情弹窗（认领列表） ============ -->
+        <UModal v-model:open="showArenaDetail">
+          <UCard>
+            <template #header>
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold">赛场详情</h3>
+                <UButton color="neutral" variant="ghost" icon="i-lucide-x" @click="showArenaDetail = false" />
+              </div>
+            </template>
+            <div v-if="loadingArenaDetail" class="text-center py-8">
+              <UIcon name="i-lucide-loader" class="w-6 h-6 animate-spin mx-auto" />
+            </div>
+            <div v-else-if="arenaDetail" class="space-y-4">
+              <!-- 基本信息 -->
+              <div class="flex items-center justify-between">
+                <div class="text-sm">
+                  <span class="text-gray-400">比赛形式：</span>
+                  <strong>{{ arenaDetail.matchFormat }}</strong>
+                  <UBadge :label="arenaDetail.status === 'active' ? '活跃' : '已关闭'"
+                    :color="arenaDetail.status === 'active' ? 'success' : 'neutral'"
+                    size="xs" variant="soft" class="ml-2" />
+                </div>
+                <UButton
+                  v-if="arenaDetail.status === 'active'"
+                  color="error" variant="outline" size="xs"
+                  icon="i-lucide-x-circle"
+                  :loading="closingArena"
+                  @click="handleCloseArena">
+                  关闭赛场
+                </UButton>
+              </div>
+
+              <!-- 身份组列表 -->
+              <div class="space-y-2">
+                <div v-for="role in arenaDetail.roles" :key="role.id"
+                  class="p-3 rounded bg-gray-50 border border-gray-100">
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm font-medium">{{ role.label }}</span>
+                      <UBadge :label="sideLabels[role.side] || role.side" size="xs" variant="soft" />
+                      <span class="text-xs text-gray-400">
+                        {{ role.claims.length }}/{{ role.maxClaims }}
+                      </span>
+                      <span v-if="role.isFull" class="text-xs text-red-400">已满</span>
+                      <span v-else-if="arenaDetail.status === 'active'" class="text-xs text-green-500">可认领</span>
+                    </div>
+                    <!-- 手动认领按钮（管理员） -->
+                    <div v-if="arenaDetail.status === 'active' && !role.isFull" class="flex items-center gap-1">
+                      <UButton
+                        size="xs" variant="ghost" color="primary"
+                        icon="i-lucide-user-plus"
+                        :loading="claimingRole === role.id"
+                        @click="handleAdminClaim(role.id, '', '')">
+                        手动认领
+                      </UButton>
+                    </div>
+                  </div>
+                  <!-- 已认领人员 -->
+                  <div v-if="role.claims.length > 0" class="flex flex-wrap gap-1 mt-1">
+                    <UBadge
+                      v-for="claim in role.claims" :key="claim.id"
+                      size="xs" variant="solid" color="primary"
+                      class="cursor-pointer hover:opacity-80"
+                      :title="'点击取消认领'"
+                      @click="handleAdminUnclaim(claim.userId, role.id)">
+                      {{ claim.username }}
+                      <span class="ml-0.5 opacity-50">x</span>
+                    </UBadge>
+                  </div>
+                  <div v-else class="text-xs text-gray-300 mt-1">暂无认领</div>
+                </div>
+              </div>
+            </div>
+          </UCard>
+        </UModal>
+
         <!-- 使用说明 -->
         <UCard>
           <template #header>
@@ -473,7 +783,21 @@ onMounted(() => loadStatus())
             <p>1. <strong>App ID 和 App Secret</strong> 在 <a href="https://q.qq.com/" target="_blank" class="text-primary underline">QQ 开放平台</a> 创建机器人后获取。</p>
             <p>2. 配置完成后，系统会自动连接 Bot WebSocket，<strong>频道列表</strong>显示 Bot 所在的服务器。</p>
             <p>3. <strong>连接/断开</strong>可控制 WebSocket 状态；<strong>解绑</strong>会清除所有配置和连接。</p>
-            <p>4. Bot 支持命令：<code class="bg-gray-100 px-1 rounded">/ping</code> <code class="bg-gray-100 px-1 rounded">/help</code> <code class="bg-gray-100 px-1 rounded">/timer N</code> <code class="bg-gray-100 px-1 rounded">/status</code></p>
+            <p>4. Bot 支持命令：</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-1">
+              <div><code class="bg-gray-100 px-1 rounded text-xs">/ping</code> <span class="text-xs text-gray-400">测试连接</span></div>
+              <div><code class="bg-gray-100 px-1 rounded text-xs">/help</code> <span class="text-xs text-gray-400">帮助信息</span></div>
+              <div><code class="bg-gray-100 px-1 rounded text-xs">/设置赛场 4v4</code> <span class="text-xs text-gray-400">创建赛场</span></div>
+              <div><code class="bg-gray-100 px-1 rounded text-xs">/结束比赛</code> <span class="text-xs text-gray-400">关闭赛场</span></div>
+              <div><code class="bg-gray-100 px-1 rounded text-xs">/认领 正方一辩</code> <span class="text-xs text-gray-400">认领身份</span></div>
+              <div><code class="bg-gray-100 px-1 rounded text-xs">/取消认领</code> <span class="text-xs text-gray-400">取消身份</span></div>
+              <div><code class="bg-gray-100 px-1 rounded text-xs">/赛场状态</code> <span class="text-xs text-gray-400">查看赛场</span></div>
+              <div><code class="bg-gray-100 px-1 rounded text-xs">/辩题</code> <span class="text-xs text-gray-400">查看辩题库</span></div>
+              <div><code class="bg-gray-100 px-1 rounded text-xs">/赛程</code> <span class="text-xs text-gray-400">查看赛程</span></div>
+              <div><code class="bg-gray-100 px-1 rounded text-xs">/下一场</code> <span class="text-xs text-gray-400">下一场比赛</span></div>
+              <div><code class="bg-gray-100 px-1 rounded text-xs">/排名</code> <span class="text-xs text-gray-400">查看排名</span></div>
+              <div><code class="bg-gray-100 px-1 rounded text-xs">/status</code> <span class="text-xs text-gray-400">Bot 状态</span></div>
+            </div>
           </div>
         </UCard>
       </template>

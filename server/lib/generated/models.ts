@@ -10,6 +10,11 @@
  */
 export type * from './models/User.js'
 export type * from './models/Team.js'
+export type * from './models/BotArena.js'
+export type * from './models/BotArenaRole.js'
+export type * from './models/BotArenaClaim.js'
+export type * from './models/BotPermissionLog.js'
+export type * from './models/MatchScore.js'
 export type * from './models/TeamMember.js'
 export type * from './models/Tournament.js'
 export type * from './models/TournamentTeam.js'

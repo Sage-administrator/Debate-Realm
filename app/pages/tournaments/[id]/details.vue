@@ -209,35 +209,54 @@ watch(
           </div>
 
           <!-- 右侧：界面配置区域（右8列，约2/3宽度） -->
-          <div class="col-span-8 bg-white rounded-lg shadow-sm p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-base font-semibold text-gray-900 flex items-center gap-2">
-                <UIcon name="i-lucide-settings" class="w-4 h-4 text-gray-400" />
-                界面元素设置
-              </h2>
+          <div class="col-span-8 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div class="flex items-center gap-2 mb-5">
+              <UIcon name="i-lucide-palette" class="w-5 h-5 text-indigo-600" />
+              <h2 class="text-lg font-bold text-gray-900">界面元素设置</h2>
             </div>
 
-            <!-- 标题设置 -->
+            <!-- 比赛标题 -->
             <div class="mb-6">
-              <label class="block text-sm font-medium text-gray-700 mb-2">比赛标题</label>
+              <label class="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-1.5">
+                <UIcon name="i-lucide-type" class="w-4 h-4 text-gray-500" /> 比赛标题
+              </label>
               <input
                 v-model="fullConfig.title"
                 type="text"
-                class="w-full px-3 py-2 border border-gray-200 rounded text-sm"
+                class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 placeholder="例如：2025年度校际辩论赛总决赛"
               />
             </div>
 
             <!-- 显示选项 -->
             <div class="mb-6 space-y-4">
-              <label class="block text-sm font-medium text-gray-700">显示选项</label>
-              <div class="space-y-3">
+              <label class="block text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                <UIcon name="i-lucide-eye" class="w-4 h-4 text-gray-500" /> 显示选项
+              </label>
+              <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="flex items-center gap-3 cursor-pointer flex-1">
+                    <input type="checkbox" v-model="fullConfig.uiConfig.showTitle" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500" />
+                    <span class="text-sm text-gray-700">显示比赛标题</span>
+                  </label>
+                  <div class="flex items-center gap-2 ml-4">
+                    <div class="relative">
+                      <input
+                        type="color"
+                        v-model="fullConfig.uiConfig.titleColor"
+                        class="w-11 h-11 rounded-lg cursor-pointer border border-gray-200 hover:border-gray-400 transition-colors"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      v-model="fullConfig.uiConfig.titleColor"
+                      class="w-24 px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                      placeholder="#FFFFFF"
+                    />
+                  </div>
+                </div>
                 <label class="flex items-center gap-3 cursor-pointer">
-                  <input type="checkbox" v-model="fullConfig.uiConfig.showTitle" class="w-4 h-4 rounded" />
-                  <span class="text-sm text-gray-700">显示比赛标题</span>
-                </label>
-                <label class="flex items-center gap-3 cursor-pointer">
-                  <input type="checkbox" v-model="fullConfig.uiConfig.showBanner" class="w-4 h-4 rounded" />
+                  <input type="checkbox" v-model="fullConfig.uiConfig.showBanner" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500" />
                   <span class="text-sm text-gray-700">显示横幅/辩题</span>
                 </label>
               </div>
@@ -245,36 +264,24 @@ watch(
 
             <!-- 颜色设置 -->
             <div class="mb-6 space-y-4">
-              <label class="block text-sm font-medium text-gray-700">颜色设置</label>
+              <label class="block text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                <UIcon name="i-lucide-pipette" class="w-4 h-4 text-gray-500" /> 颜色设置
+              </label>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">标题颜色</label>
+                  <label class="block text-xs font-medium text-gray-600 mb-1.5">队伍名称颜色</label>
                   <div class="flex items-center gap-2">
-                    <input
-                      type="color"
-                      v-model="fullConfig.uiConfig.titleColor"
-                      class="w-10 h-8 rounded cursor-pointer border border-gray-200"
-                    />
-                    <input
-                      type="text"
-                      v-model="fullConfig.uiConfig.titleColor"
-                      class="flex-1 px-2 py-1 border border-gray-200 rounded text-xs font-mono"
-                      placeholder="#FFFFFF"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">队伍名称颜色</label>
-                  <div class="flex items-center gap-2">
-                    <input
-                      type="color"
-                      v-model="fullConfig.uiConfig.teamNameColor"
-                      class="w-10 h-8 rounded cursor-pointer border border-gray-200"
-                    />
+                    <div class="relative">
+                      <input
+                        type="color"
+                        v-model="fullConfig.uiConfig.teamNameColor"
+                        class="w-11 h-11 rounded-lg cursor-pointer border border-gray-200 hover:border-gray-400 transition-colors"
+                      />
+                    </div>
                     <input
                       type="text"
                       v-model="fullConfig.uiConfig.teamNameColor"
-                      class="flex-1 px-2 py-1 border border-gray-200 rounded text-xs font-mono"
+                      class="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                       placeholder="#FFFFFF"
                     />
                   </div>
@@ -283,24 +290,26 @@ watch(
             </div>
 
             <!-- 队伍标签 -->
-            <div class="mb-6 space-y-4">
-              <label class="block text-sm font-medium text-gray-700">队伍标签</label>
+            <div class="mb-4 space-y-4">
+              <label class="block text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                <UIcon name="i-lucide-tag" class="w-4 h-4 text-gray-500" /> 队伍标签
+              </label>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">正方标签</label>
+                  <label class="block text-xs font-medium text-gray-600 mb-1.5">正方标签</label>
                   <input
                     v-model="fullConfig.uiConfig.positiveLabel"
                     type="text"
-                    class="w-full px-3 py-2 border border-gray-200 rounded text-sm"
+                    class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     placeholder="正方"
                   />
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">反方标签</label>
+                  <label class="block text-xs font-medium text-gray-600 mb-1.5">反方标签</label>
                   <input
                     v-model="fullConfig.uiConfig.negativeLabel"
                     type="text"
-                    class="w-full px-3 py-2 border border-gray-200 rounded text-sm"
+                    class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     placeholder="反方"
                   />
                 </div>

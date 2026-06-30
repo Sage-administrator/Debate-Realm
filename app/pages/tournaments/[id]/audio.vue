@@ -289,66 +289,69 @@ watch(
                 </label>
               </div>
 
-              <!-- 30秒提示音 -->
-              <div class="space-y-2 mb-4">
-                <label class="block text-sm text-gray-700 font-medium">30秒提示音</label>
-                <div class="flex items-center gap-2">
-                  <label class="px-4 py-2 border border-gray-300 rounded text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2">
-                    <UIcon name="i-lucide-upload" class="w-4 h-4" />
-                    选择文件
-                    <input
-                      type="file"
-                      accept="audio/*"
-                      class="hidden"
-                      @change="(e: Event) => onAudioSelect(e, 'warningSound')"
-                    >
-                  </label>
-                  <span class="text-xs text-gray-500 truncate max-w-[60%]">{{ fullConfig.audioConfig.warningSound || '未选择文件' }}</span>
+              <!-- 提示音上传区 - 水平并行 -->
+              <div class="flex gap-4 mb-4">
+                <!-- 30秒提示音 -->
+                <div class="space-y-2 flex-1">
+                  <label class="block text-sm text-gray-700 font-medium">30秒提示音</label>
+                  <div class="flex items-center gap-2">
+                    <label class="px-3 py-2 border border-gray-300 rounded text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2 whitespace-nowrap">
+                      <UIcon name="i-lucide-upload" class="w-4 h-4" />
+                      选择文件
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        class="hidden"
+                        @change="(e: Event) => onAudioSelect(e, 'warningSound')"
+                      >
+                    </label>
+                    <span class="text-xs text-gray-500 truncate max-w-[60%]">{{ fullConfig.audioConfig.warningSound || '未选择文件' }}</span>
+                  </div>
+                  <div v-if="fullConfig.audioConfig.warningSound" class="flex items-center gap-2">
+                    <audio :src="fullConfig.audioConfig.warningSound" controls class="h-8 w-full max-w-xs"></audio>
+                  </div>
                 </div>
-                <div v-if="fullConfig.audioConfig.warningSound" class="flex items-center gap-2">
-                  <audio :src="fullConfig.audioConfig.warningSound" controls class="h-8 w-full max-w-xs"></audio>
-                </div>
-              </div>
 
-              <!-- 5秒提示音 -->
-              <div class="space-y-2 mb-4">
-                <label class="block text-sm text-gray-700 font-medium">5秒提示音</label>
-                <div class="flex items-center gap-2">
-                  <label class="px-4 py-2 border border-gray-300 rounded text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2">
-                    <UIcon name="i-lucide-upload" class="w-4 h-4" />
-                    选择文件
-                    <input
-                      type="file"
-                      accept="audio/*"
-                      class="hidden"
-                      @change="(e: Event) => onAudioSelect(e, 'endSound')"
-                    >
-                  </label>
-                  <span class="text-xs text-gray-500 truncate max-w-[60%]">{{ fullConfig.audioConfig.endSound || '未选择文件' }}</span>
+                <!-- 5秒提示音 -->
+                <div class="space-y-2 flex-1">
+                  <label class="block text-sm text-gray-700 font-medium">5秒提示音</label>
+                  <div class="flex items-center gap-2">
+                    <label class="px-3 py-2 border border-gray-300 rounded text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2 whitespace-nowrap">
+                      <UIcon name="i-lucide-upload" class="w-4 h-4" />
+                      选择文件
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        class="hidden"
+                        @change="(e: Event) => onAudioSelect(e, 'endSound')"
+                      >
+                    </label>
+                    <span class="text-xs text-gray-500 truncate max-w-[60%]">{{ fullConfig.audioConfig.endSound || '未选择文件' }}</span>
+                  </div>
+                  <div v-if="fullConfig.audioConfig.endSound" class="flex items-center gap-2">
+                    <audio :src="fullConfig.audioConfig.endSound" controls class="h-8 w-full max-w-xs"></audio>
+                  </div>
                 </div>
-                <div v-if="fullConfig.audioConfig.endSound" class="flex items-center gap-2">
-                  <audio :src="fullConfig.audioConfig.endSound" controls class="h-8 w-full max-w-xs"></audio>
-                </div>
-              </div>
 
-              <!-- 时间到提示音 -->
-              <div class="space-y-2 mb-4">
-                <label class="block text-sm text-gray-700 font-medium">时间到提示音</label>
-                <div class="flex items-center gap-2">
-                  <label class="px-4 py-2 border border-gray-300 rounded text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2">
-                    <UIcon name="i-lucide-upload" class="w-4 h-4" />
-                    选择文件
-                    <input
-                      type="file"
-                      accept="audio/*"
-                      class="hidden"
-                      @change="(e: Event) => onAudioSelect(e, 'startSound')"
-                    >
-                  </label>
-                  <span class="text-xs text-gray-500 truncate max-w-[60%]">{{ fullConfig.audioConfig.startSound || '未选择文件' }}</span>
-                </div>
-                <div v-if="fullConfig.audioConfig.startSound" class="flex items-center gap-2">
-                  <audio :src="fullConfig.audioConfig.startSound" controls class="h-8 w-full max-w-xs"></audio>
+                <!-- 时间到提示音 -->
+                <div class="space-y-2 flex-1">
+                  <label class="block text-sm text-gray-700 font-medium">时间到提示音</label>
+                  <div class="flex items-center gap-2">
+                    <label class="px-3 py-2 border border-gray-300 rounded text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2 whitespace-nowrap">
+                      <UIcon name="i-lucide-upload" class="w-4 h-4" />
+                      选择文件
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        class="hidden"
+                        @change="(e: Event) => onAudioSelect(e, 'startSound')"
+                      >
+                    </label>
+                    <span class="text-xs text-gray-500 truncate max-w-[60%]">{{ fullConfig.audioConfig.startSound || '未选择文件' }}</span>
+                  </div>
+                  <div v-if="fullConfig.audioConfig.startSound" class="flex items-center gap-2">
+                    <audio :src="fullConfig.audioConfig.startSound" controls class="h-8 w-full max-w-xs"></audio>
+                  </div>
                 </div>
               </div>
 

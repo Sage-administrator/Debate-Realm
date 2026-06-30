@@ -19,6 +19,20 @@ export function useTeam() {
     })
   }
 
+  // 获取所有个人用户及其独立赛事（系统管理员专用）
+  async function getIndividualUsers() {
+    return await $fetch<{
+      id: string; username: string; createdAt: string
+      standaloneMatchCount: number
+      standaloneMatches: {
+        id: string; name: string; description: string
+        status: string; scheduledAt: string; matchCount: number; createdAt: string
+      }[]
+    }[]>('/api/admin/individual-users', {
+      headers: { Authorization: `Bearer ${store.token}` },
+    })
+  }
+
   async function getTeam(id: string) {
     return await $fetch<{
       id: string; name: string; mode: string
@@ -121,6 +135,7 @@ export function useTeam() {
   return {
     getTeams,
     getUsers,
+    getIndividualUsers,
     getTeam,
     createTeam,
     updateTeam,

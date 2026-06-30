@@ -444,142 +444,163 @@ const isTimeCritical = computed(() => {
       </div>
     </div>
 
-    <!-- 控制面板（右下角） -->
-    <div class="fixed bottom-4 right-4 flex flex-col items-end gap-2 text-sm">
+    <!-- 控制面板（左下角） -->
+    <div class="fixed bottom-4 left-4 flex flex-col items-start timing-panel">
 
-      <!-- 环节切换控制 -->
-      <div class="flex items-center gap-2">
-        <span class="text-gray-400 text-xs">环节:</span>
-        <button
-          class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
-          :disabled="currentStage <= 1"
-          @click="() => { pauseTimer(); debateStore.previousStage() }"
-        >
-          ← 上一环节
-        </button>
-        <span class="text-gray-300 text-xs min-w-[60px] text-center">
-          {{ currentStage }} / {{ debateStore.stages.length }}
-        </span>
-        <button
-          class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
-          :disabled="currentStage >= debateStore.stages.length"
-          @click="() => { pauseTimer(); debateStore.nextStage() }"
-        >
-          下一环节 →
-        </button>
+      <div>
+        <span class="label-text text-gray-400">环节:</span>
+        <div class="button-group">
+          <button
+            class="timing-btn"
+            :disabled="currentStage <= 1"
+            @click="() => { pauseTimer(); debateStore.previousStage() }"
+          >
+            ← 上一环节
+          </button>
+          <span class="text-gray-300 text-xs text-center min-w-[60px]">
+            {{ currentStage }} / {{ debateStore.stages.length }}
+          </span>
+          <button
+            class="timing-btn"
+            :disabled="currentStage >= debateStore.stages.length"
+            @click="() => { pauseTimer(); debateStore.nextStage() }"
+          >
+            下一环节 →
+          </button>
+        </div>
       </div>
 
       <!-- 计时控制（单计时器） -->
-      <div v-if="!isDualTimer && !isSpecial" class="flex items-center gap-2">
-        <span class="text-gray-400 text-xs">计时:</span>
-        <button
-          class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
-          :disabled="!currentStageInfo"
-          @click="isRunning ? pauseTimer() : startTimer()"
-        >
-          {{ isRunning ? '暂停' : '启动' }}
-        </button>
-        <button
-          class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
-          @click="resetTimer"
-        >
-          重置
-        </button>
-        <button
-          class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
-          @click="openTimeModal"
-        >
-          设置时间
-        </button>
-      </div>
-
-      <!-- 计时控制（双计时器） -->
-      <div v-else-if="isDualTimer" class="space-y-2">
-        <div class="flex items-center gap-2">
-          <span class="text-gray-400 text-xs">计时:</span>
+      <div v-if="!isDualTimer && !isSpecial">
+        <span class="label-text text-gray-400">计时:</span>
+        <div class="button-group">
           <button
-            class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
-            @click="() => { isRunning ? pauseTimer() : startTimer() }"
+            class="timing-btn"
+            :disabled="!currentStageInfo"
+            @click="isRunning ? pauseTimer() : startTimer()"
           >
             {{ isRunning ? '暂停' : '启动' }}
           </button>
           <button
-            class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
-            @click="switchActiveTimer"
-          >
-            切换方
-          </button>
-          <button
-            class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
+            class="timing-btn"
             @click="resetTimer"
           >
             重置
           </button>
           <button
-            class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
+            class="timing-btn"
             @click="openTimeModal"
           >
-            设时
+            设置时间
           </button>
         </div>
-        <div class="flex items-center gap-2 justify-end">
-          <span class="text-gray-400 text-xs">直接启动:</span>
-          <button
-            class="px-3 py-1.5 border border-red-500 text-red-400 rounded hover:bg-red-500/10 transition"
-            @click="startPositiveTimer"
-          >
-            正方
-          </button>
-          <button
-            class="px-3 py-1.5 border border-blue-500 text-blue-400 rounded hover:bg-blue-500/10 transition"
-            @click="startNegativeTimer"
-          >
-            反方
-          </button>
+      </div>
+
+      <!-- 计时控制（双计时器） -->
+      <div v-else-if="isDualTimer" class="space-y-2">
+        <div>
+          <span class="label-text text-gray-400">计时:</span>
+          <div class="button-group">
+            <button
+              class="timing-btn"
+              @click="() => { isRunning ? pauseTimer() : startTimer() }"
+            >
+              {{ isRunning ? '暂停' : '启动' }}
+            </button>
+            <button
+              class="timing-btn"
+              @click="switchActiveTimer"
+            >
+              切换方
+            </button>
+            <button
+              class="timing-btn"
+              @click="resetTimer"
+            >
+              重置
+            </button>
+            <button
+              class="timing-btn"
+              @click="openTimeModal"
+            >
+              设时
+            </button>
+          </div>
+        </div>
+        <div>
+          <span class="label-text text-gray-400">直接启动:</span>
+          <div class="button-group">
+            <button
+              class="timing-btn timing-btn-red"
+              @click="startPositiveTimer"
+            >
+              正方
+            </button>
+            <button
+              class="timing-btn timing-btn-blue"
+              @click="startNegativeTimer"
+            >
+              反方
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- 试音控制 -->
-      <div class="flex items-center gap-2">
-        <span class="text-gray-400 text-xs">试音:</span>
-        <button
-          class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
-          @click="() => debateStore.playTestSound('30')"
-        >
-          30秒
-        </button>
-        <button
-          class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
-          @click="() => debateStore.playTestSound('5')"
-        >
-          5秒
-        </button>
-        <button
-          class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
-          @click="() => debateStore.playTestSound('End')"
-        >
-          时间到
-        </button>
+      <div>
+        <span class="label-text text-gray-400">试音:</span>
+        <div class="button-group">
+          <button
+            class="timing-btn"
+            @click="() => debateStore.playTestSound('30')"
+          >
+            30秒
+          </button>
+          <button
+            class="timing-btn"
+            @click="() => debateStore.playTestSound('5')"
+          >
+            5秒
+          </button>
+          <button
+            class="timing-btn"
+            @click="() => debateStore.playTestSound('End')"
+          >
+            时间到
+          </button>
+        </div>
       </div>
 
       <!-- 其他功能 -->
-      <div class="flex items-center gap-2">
-        <span class="text-gray-400 text-xs">其他:</span>
-        <button
-          class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
-          @click="showSetupModal = true"
-        >
-          设置
-        </button>
-        <button
-          class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition"
-          @click="showProgress = true"
-        >
-          进度
-        </button>
-        <NuxtLink :to="'/timer/projects'" class="px-3 py-1.5 border border-gray-500 rounded hover:border-gray-400 hover:bg-white/5 transition">
-          返回
-        </NuxtLink>
+      <div>
+        <span class="label-text text-gray-400">其他:</span>
+        <div class="button-group">
+          <button
+            class="timing-btn"
+          >
+            登记赛果
+          </button>
+          <button
+            class="timing-btn"
+            @click="showSetupModal = true"
+          >
+            设置
+          </button>
+          <button
+            class="timing-btn"
+            @click="showProgress = true"
+          >
+            进度
+          </button>
+          <NuxtLink :to="'/timer/projects'" class="timing-btn">
+            返回
+          </NuxtLink>
+        </div>
+        <NUseHead>
+          <title>
+            {{ debateStore.currentDebate?.title || '辩论赛计时' }}
+          </title>
+        </NUseHead>
       </div>
     </div>
 
@@ -742,3 +763,81 @@ const isTimeCritical = computed(() => {
     </UModal>
   </div>
 </template>
+
+<style scoped>
+/* ═══════════ 控制面板：左下角，均匀分布 ═══════════ */
+.timing-panel {
+  opacity: 0.15;
+  transition: opacity 0.3s ease-in-out;
+  min-width: 12vw; /* 再缩窄一倍 */
+}
+.timing-panel:hover { opacity: 1; }
+
+/* 每一行：flex + 全宽 + 居中对齐 */
+.timing-panel > div {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.2vw;
+}
+
+/* 标签：固定最小宽度，不缩小 */
+.timing-panel .label-text {
+  font-size: 0.875rem;
+  min-width: 2vw; /* 标签再缩窄 */
+  flex-shrink: 0;
+  text-align: left;
+}
+
+/* 按钮组：占据剩余空间，均匀分布 */
+.timing-panel .button-group {
+  display: flex;
+  align-items: center;
+  gap: 0.15vw; /* 按钮间距缩小 */
+  flex: 1;
+}
+
+/* 按钮：均分宽度，圆角更圆润 */
+.timing-panel .timing-btn {
+  padding: 0.2vw 0.4vw; /* padding 再缩小 */
+  border: 2px solid #6b7280;
+  border-radius: 0.3vw; /* 圆角缩小 */
+  font-size: 0.75rem; /* 字号略缩小 */
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 2.5vw; /* 最小宽度再缩小 */
+  text-align: center;
+  background: transparent;
+  color: #f3f4f6;
+  text-decoration: none;
+}
+.timing-panel .timing-btn:hover {
+  border-color: #9ca3af;
+  background: rgba(255, 255, 255, 0.05);
+}
+.timing-panel .timing-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 红色按钮（正方） */
+.timing-panel .timing-btn-red {
+  border-color: #ef4444;
+  color: #f87171;
+}
+.timing-panel .timing-btn-red:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* 蓝色按钮（反方） */
+.timing-panel .timing-btn-blue {
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+.timing-panel .timing-btn-blue:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+</style>

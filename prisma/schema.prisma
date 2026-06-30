@@ -39,6 +39,117 @@ model Team {
   members     TeamMember[]
   tournaments Tournament[]
   users       User[]
+  arenas      BotArena[] // Bot 赛场列表
+}
+
+// ════════════════════════════════════════════════════
+// Bot 赛场 — 管理 QQ 频道内的辩论赛场
+// ════════════════════════════════════════════════════
+model BotArena {
+  id          String   @id @default(uuid())
+  teamId      String
+  name        String   @default("") // 赛场名称，如"赛场A"
+  matchFormat String   @default("4v4") // 比赛形式：4v4 / 3v3 / 2v2
+  status      String   @default("active") // active / closed
+  guildId     String?  // QQ 频道 ID（赛场所在频道）
+  channelId   String?  // QQ 子频道 ID（消息来源频道，区分同频道不同赛场）
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  team  Team           @relation(fields: [teamId], references: [id])
+  roles BotArenaRole[] // 赛场内所有身份组
+
+  @@index([teamId])
+  @@index([teamId, status])
+  @@index([guildId, status])
+}
+
+// ════════════════════════════════════════════════════
+// Bot 赛场身份组 — 赛场内的身份和 QQ 频道身份组映射
+// ════════════════════════════════════════════════════
+model BotArenaRole {
+  id          String   @id @default(uuid())
+  arenaId     String
+  label       String   // 身份标签：正方一辩、反方二辩、评委、观众
+  side        String   // 阵营：affirmative / negative / judge / audience
+  orderIndex  Int      @default(0) // 发言顺序
+  qqRoleId    String?  // QQ 频道身份组 ID（创建后回填）
+  maxCount    Int      @default(1) // 该身份最多可认领人数
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  arena  BotArena       @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  claims BotArenaClaim[] // 认领记录
+
+  @@index([arenaId])
+  @@index([qqRoleId])
+}
+
+// ════════════════════════════════════════════════════
+// Bot 身份认领记录 — 记录谁认领了哪个身份
+// ════════════════════════════════════════════════════
+model BotArenaClaim {
+  id        String   @id @default(uuid())
+  arenaId   String   // 赛场 ID（冗余字段，方便查询）
+  roleId    String
+  userId    String   // QQ 用户 ID
+  username  String   // QQ 用户名
+  guildId   String   // QQ 频道 ID
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  role  BotArenaRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([arenaId, roleId, userId]) // 同一赛场同一身份只能认领一次
+  @@index([arenaId])
+  @@index([userId])
+}
+
+// ════════════════════════════════════════════════════
+// Bot 权限操作日志 — 记录所有权限变更，确保可追溯
+// ════════════════════════════════════════════════════
+model BotPermissionLog {
+  id         String   @id @default(uuid())
+  teamId     String   // 团队 ID
+  guildId    String   // QQ 频道 ID
+  channelId  String   // 子频道 ID
+  action     String   // 操作类型：ROUND_SWITCH_ALLOW / ROUND_SWITCH_DENY / AUDIENCE_SPEAK_GRANT / AUDIENCE_SPEAK_REVOKE / RESET_ALL
+  targetType String   // 目标类型：role / user
+  targetId   String   // 目标 ID（身份组 ID 或用户 ID）
+  targetName String   // 目标名称（身份组标签或用户名）
+  operator   String   // 操作者：system / timer_system / admin / auto_timer
+  detail     String   // 操作详情描述
+  createdAt  DateTime @default(now())
+
+  @@index([teamId])
+  @@index([teamId, createdAt])
+  @@index([action])
+}
+
+// ════════════════════════════════════════════════════
+// 评委评分记录 — 多维评分 + 评分理由
+// ════════════════════════════════════════════════════
+model MatchScore {
+  id            String   @id @default(uuid())
+  matchId       String   // 比赛 ID
+  tournamentId  String   // 赛事 ID（冗余，方便查询）
+  judgeName     String   // 评委姓名
+  dimensions    String   // 评分维度 JSON：[{"name":"逻辑","score":8},{"name":"表达","score":7}]
+  reason        String?  // 评分理由
+  scoreTeamA    Int      // A队总分
+  scoreTeamB    Int      // B队总分
+  winner        String   // 评委认为胜方：teamA / teamB / draw
+  bestDebaterA  String?  // A队最佳辩手
+  bestDebaterB  String?  // B队最佳辩手
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  match      Match      @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, judgeName]) // 同一评委对同一比赛只能评一次
+  @@index([matchId])
+  @@index([tournamentId])
 }
 
 model TeamMember {
@@ -56,14 +167,23 @@ model TeamMember {
 }
 
 model Tournament {
-  id          String    @id @default(uuid())
-  teamId      String
-  name        String
-  description String?
-  format      String    @default("knockout")
-  status      String    @default("pending")
-  scheduledAt DateTime?
-  venue       String?
+  id              String    @id @default(uuid())
+  teamId          String
+  name            String
+  description     String?
+  format          String    @default("knockout")
+  status          String    @default("pending")
+  scheduledAt     DateTime?
+  venue           String?
+
+  // ====== 新增：辩论赛特有配置 ======
+  groupCount        Int?    // 分组数（小组赛用，例 2 → A组 B组）
+  promotePerGroup   Int?    // 每组晋级数
+  topicPool         String? // 辩题库（JSON数组：["辩题1","辩题2",...]）
+  bestDebaterMode   String  @default("both") // "both" 双方各一位 / "winner_only" 仅胜方
+  assignments       String? // 抽签结果缓存（JSON：{ groupAssignments, topicAssignments, sides }）
+  // ====================================
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -73,16 +193,29 @@ model Tournament {
   matches           Match[]
   timerTemplate     TimerTemplate?
   timerProject      DebateTimerProject? // 关联到计时器配置项目
+  scores            MatchScore[] // 评委评分记录
 }
 
 model TournamentTeam {
   id           String @id @default(uuid())
   tournamentId String
   name         String
+  groupLabel   String? // 分组标签（如 A组 / B组）—— 抽签后写入
+  seed         Int?    // 种子编号（用于淘汰赛排序）
+  // ====== 新增：积分与排名 ======
+  points      Int  @default(0)
+  wins        Int  @default(0)
+  draws       Int  @default(0)
+  losses      Int  @default(0)
+  scoreFor    Int  @default(0)
+  scoreAgainst Int @default(0)
+  // ==================================
 
   tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
 
   @@index([tournamentId])
+  @@index([tournamentId, points])
+  @@index([tournamentId, groupLabel, points])
 }
 
 model TournamentJudge {
@@ -111,10 +244,28 @@ model Match {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
+  // ====== 新增：辩论赛特有字段 ======
+  topic           String? // 当前比赛的辩题（由抽签分配）
+  affirmativeSide String? // "teamA" | "teamB" —— 哪支队伍是正方
+  bestDebaterA    String? // 正方最佳辩手（姓名或标识）
+  bestDebaterB    String? // 反方最佳辩手
+  judge          String? // 评委姓名（本次比赛的评委）
+  // ====== 新增：版本控制与软删除 ======
+  version        Int       @default(1)
+  deletedAt      DateTime?
+  deletedBy      String?
+  deleteReason   String?
+  // ====== 新增：晋级溯源 ======
+  promotedFromA  String?   // teamA 来自哪场比赛的胜者（Match.id）
+  promotedFromB  String?   // teamB 来自哪场比赛的胜者（Match.id）
+  isBye          Boolean   @default(false)
+  // =====================================
+
   tournament      Tournament?           @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   standaloneMatch StandaloneMatch?      @relation(fields: [standaloneMatchId], references: [id], onDelete: Cascade)
   assignedMembers MemberAssignedMatch[]
   timer           Timer?
+  scores          MatchScore[] // 评委评分记录
 
   @@index([tournamentId])
   @@index([standaloneMatchId])

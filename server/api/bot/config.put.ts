@@ -1,4 +1,20 @@
-// PUT /api/bot/config — 更新机器人配置（App ID / Secret / 频道 ID），保存后自动启动/重启 Bot
+// ════════════════════════════════════════════════════
+// PUT /api/bot/config — 更新机器人配置（保存后自动启动/重启 Bot）
+// 请求体：{
+//   botAppId?: string | null,      // QQ 机器人 AppID（可为空以清除凭证）
+//   botAppSecret?: string | null,  // QQ 机器人 AppSecret（可为空以清除凭证）
+//   botChannelId?: string | null   // 默认消息发送频道/群 ID（可选）
+// }
+// 功能：
+//   1. 校验用户权限（仅团队管理员/system_admin可操作）
+//   2. 更新数据库 Team 表中的 Bot 配置字段
+//   3. 智能更新内存实例：
+//      - 仅更新 channelId：直接修改内存实例 config，不重启连接
+//      - 更新凭证（AppId/AppSecret）：stopBotInstance() 清除旧实例 + createBotInstance() 创建新实例
+//      - 清除凭证（传空）：停止并删除现有 Bot 实例
+//   4. 返回脱敏后的配置摘要（AppID 前6位 + **** + 后4位）
+// 权限：role === 'admin' 或 role === 'system_admin'
+// ════════════════════════════════════════════════════
 import { readBody } from 'h3'
 import { prisma } from '../../lib/prisma'
 import { getUserFromEvent } from '../../utils/auth'
@@ -83,7 +99,7 @@ export default defineEventHandler(async (event) => {
           teamId: updated.id,
           teamName: updated.name,
           channelId: updated.botChannelId,
-          intents: ['PUBLIC_GUILD_MESSAGES', 'GROUP_AND_C2C_EVENT'],
+          intents: ['PUBLIC_GUILD_MESSAGES'],
         })
         resultMessage = 'Bot 配置已保存并启动'
         console.log(`[Bot Config] 已为团队「${updated.name}」重启 Bot 实例`)

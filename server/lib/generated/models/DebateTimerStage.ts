@@ -575,14 +575,6 @@ export type DebateTimerStageUncheckedUpdateManyWithoutProjectNestedInput = {
   deleteMany?: Prisma.DebateTimerStageScalarWhereInput | Prisma.DebateTimerStageScalarWhereInput[]
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type DebateTimerStageCreateWithoutProjectInput = {
   id?: string
   name: string

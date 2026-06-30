@@ -20,8 +20,20 @@ export type TournamentModel = runtime.Types.Result.DefaultSelection<Prisma.$Tour
 
 export type AggregateTournament = {
   _count: TournamentCountAggregateOutputType | null
+  _avg: TournamentAvgAggregateOutputType | null
+  _sum: TournamentSumAggregateOutputType | null
   _min: TournamentMinAggregateOutputType | null
   _max: TournamentMaxAggregateOutputType | null
+}
+
+export type TournamentAvgAggregateOutputType = {
+  groupCount: number | null
+  promotePerGroup: number | null
+}
+
+export type TournamentSumAggregateOutputType = {
+  groupCount: number | null
+  promotePerGroup: number | null
 }
 
 export type TournamentMinAggregateOutputType = {
@@ -33,6 +45,11 @@ export type TournamentMinAggregateOutputType = {
   status: string | null
   scheduledAt: Date | null
   venue: string | null
+  groupCount: number | null
+  promotePerGroup: number | null
+  topicPool: string | null
+  bestDebaterMode: string | null
+  assignments: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -46,6 +63,11 @@ export type TournamentMaxAggregateOutputType = {
   status: string | null
   scheduledAt: Date | null
   venue: string | null
+  groupCount: number | null
+  promotePerGroup: number | null
+  topicPool: string | null
+  bestDebaterMode: string | null
+  assignments: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -59,11 +81,26 @@ export type TournamentCountAggregateOutputType = {
   status: number
   scheduledAt: number
   venue: number
+  groupCount: number
+  promotePerGroup: number
+  topicPool: number
+  bestDebaterMode: number
+  assignments: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type TournamentAvgAggregateInputType = {
+  groupCount?: true
+  promotePerGroup?: true
+}
+
+export type TournamentSumAggregateInputType = {
+  groupCount?: true
+  promotePerGroup?: true
+}
 
 export type TournamentMinAggregateInputType = {
   id?: true
@@ -74,6 +111,11 @@ export type TournamentMinAggregateInputType = {
   status?: true
   scheduledAt?: true
   venue?: true
+  groupCount?: true
+  promotePerGroup?: true
+  topicPool?: true
+  bestDebaterMode?: true
+  assignments?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -87,6 +129,11 @@ export type TournamentMaxAggregateInputType = {
   status?: true
   scheduledAt?: true
   venue?: true
+  groupCount?: true
+  promotePerGroup?: true
+  topicPool?: true
+  bestDebaterMode?: true
+  assignments?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -100,6 +147,11 @@ export type TournamentCountAggregateInputType = {
   status?: true
   scheduledAt?: true
   venue?: true
+  groupCount?: true
+  promotePerGroup?: true
+  topicPool?: true
+  bestDebaterMode?: true
+  assignments?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -143,6 +195,18 @@ export type TournamentAggregateArgs<ExtArgs extends runtime.Types.Extensions.Int
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: TournamentAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: TournamentSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: TournamentMinAggregateInputType
@@ -173,6 +237,8 @@ export type TournamentGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   _count?: TournamentCountAggregateInputType | true
+  _avg?: TournamentAvgAggregateInputType
+  _sum?: TournamentSumAggregateInputType
   _min?: TournamentMinAggregateInputType
   _max?: TournamentMaxAggregateInputType
 }
@@ -186,9 +252,16 @@ export type TournamentGroupByOutputType = {
   status: string
   scheduledAt: Date | null
   venue: string | null
+  groupCount: number | null
+  promotePerGroup: number | null
+  topicPool: string | null
+  bestDebaterMode: string
+  assignments: string | null
   createdAt: Date
   updatedAt: Date
   _count: TournamentCountAggregateOutputType | null
+  _avg: TournamentAvgAggregateOutputType | null
+  _sum: TournamentSumAggregateOutputType | null
   _min: TournamentMinAggregateOutputType | null
   _max: TournamentMaxAggregateOutputType | null
 }
@@ -220,6 +293,11 @@ export type TournamentWhereInput = {
   status?: Prisma.StringFilter<"Tournament"> | string
   scheduledAt?: Prisma.DateTimeNullableFilter<"Tournament"> | Date | string | null
   venue?: Prisma.StringNullableFilter<"Tournament"> | string | null
+  groupCount?: Prisma.IntNullableFilter<"Tournament"> | number | null
+  promotePerGroup?: Prisma.IntNullableFilter<"Tournament"> | number | null
+  topicPool?: Prisma.StringNullableFilter<"Tournament"> | string | null
+  bestDebaterMode?: Prisma.StringFilter<"Tournament"> | string
+  assignments?: Prisma.StringNullableFilter<"Tournament"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Tournament"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Tournament"> | Date | string
   team?: Prisma.XOR<Prisma.TeamScalarRelationFilter, Prisma.TeamWhereInput>
@@ -228,6 +306,7 @@ export type TournamentWhereInput = {
   matches?: Prisma.MatchListRelationFilter
   timerTemplate?: Prisma.XOR<Prisma.TimerTemplateNullableScalarRelationFilter, Prisma.TimerTemplateWhereInput> | null
   timerProject?: Prisma.XOR<Prisma.DebateTimerProjectNullableScalarRelationFilter, Prisma.DebateTimerProjectWhereInput> | null
+  scores?: Prisma.MatchScoreListRelationFilter
 }
 
 export type TournamentOrderByWithRelationInput = {
@@ -239,6 +318,11 @@ export type TournamentOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   venue?: Prisma.SortOrderInput | Prisma.SortOrder
+  groupCount?: Prisma.SortOrderInput | Prisma.SortOrder
+  promotePerGroup?: Prisma.SortOrderInput | Prisma.SortOrder
+  topicPool?: Prisma.SortOrderInput | Prisma.SortOrder
+  bestDebaterMode?: Prisma.SortOrder
+  assignments?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   team?: Prisma.TeamOrderByWithRelationInput
@@ -247,6 +331,7 @@ export type TournamentOrderByWithRelationInput = {
   matches?: Prisma.MatchOrderByRelationAggregateInput
   timerTemplate?: Prisma.TimerTemplateOrderByWithRelationInput
   timerProject?: Prisma.DebateTimerProjectOrderByWithRelationInput
+  scores?: Prisma.MatchScoreOrderByRelationAggregateInput
 }
 
 export type TournamentWhereUniqueInput = Prisma.AtLeast<{
@@ -261,6 +346,11 @@ export type TournamentWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.StringFilter<"Tournament"> | string
   scheduledAt?: Prisma.DateTimeNullableFilter<"Tournament"> | Date | string | null
   venue?: Prisma.StringNullableFilter<"Tournament"> | string | null
+  groupCount?: Prisma.IntNullableFilter<"Tournament"> | number | null
+  promotePerGroup?: Prisma.IntNullableFilter<"Tournament"> | number | null
+  topicPool?: Prisma.StringNullableFilter<"Tournament"> | string | null
+  bestDebaterMode?: Prisma.StringFilter<"Tournament"> | string
+  assignments?: Prisma.StringNullableFilter<"Tournament"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Tournament"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Tournament"> | Date | string
   team?: Prisma.XOR<Prisma.TeamScalarRelationFilter, Prisma.TeamWhereInput>
@@ -269,6 +359,7 @@ export type TournamentWhereUniqueInput = Prisma.AtLeast<{
   matches?: Prisma.MatchListRelationFilter
   timerTemplate?: Prisma.XOR<Prisma.TimerTemplateNullableScalarRelationFilter, Prisma.TimerTemplateWhereInput> | null
   timerProject?: Prisma.XOR<Prisma.DebateTimerProjectNullableScalarRelationFilter, Prisma.DebateTimerProjectWhereInput> | null
+  scores?: Prisma.MatchScoreListRelationFilter
 }, "id">
 
 export type TournamentOrderByWithAggregationInput = {
@@ -280,11 +371,18 @@ export type TournamentOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   venue?: Prisma.SortOrderInput | Prisma.SortOrder
+  groupCount?: Prisma.SortOrderInput | Prisma.SortOrder
+  promotePerGroup?: Prisma.SortOrderInput | Prisma.SortOrder
+  topicPool?: Prisma.SortOrderInput | Prisma.SortOrder
+  bestDebaterMode?: Prisma.SortOrder
+  assignments?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.TournamentCountOrderByAggregateInput
+  _avg?: Prisma.TournamentAvgOrderByAggregateInput
   _max?: Prisma.TournamentMaxOrderByAggregateInput
   _min?: Prisma.TournamentMinOrderByAggregateInput
+  _sum?: Prisma.TournamentSumOrderByAggregateInput
 }
 
 export type TournamentScalarWhereWithAggregatesInput = {
@@ -299,6 +397,11 @@ export type TournamentScalarWhereWithAggregatesInput = {
   status?: Prisma.StringWithAggregatesFilter<"Tournament"> | string
   scheduledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Tournament"> | Date | string | null
   venue?: Prisma.StringNullableWithAggregatesFilter<"Tournament"> | string | null
+  groupCount?: Prisma.IntNullableWithAggregatesFilter<"Tournament"> | number | null
+  promotePerGroup?: Prisma.IntNullableWithAggregatesFilter<"Tournament"> | number | null
+  topicPool?: Prisma.StringNullableWithAggregatesFilter<"Tournament"> | string | null
+  bestDebaterMode?: Prisma.StringWithAggregatesFilter<"Tournament"> | string
+  assignments?: Prisma.StringNullableWithAggregatesFilter<"Tournament"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Tournament"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Tournament"> | Date | string
 }
@@ -311,6 +414,11 @@ export type TournamentCreateInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   team: Prisma.TeamCreateNestedOneWithoutTournamentsInput
@@ -319,6 +427,7 @@ export type TournamentCreateInput = {
   matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
   timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateInput = {
@@ -330,6 +439,11 @@ export type TournamentUncheckedCreateInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   teams?: Prisma.TournamentTeamUncheckedCreateNestedManyWithoutTournamentInput
@@ -337,6 +451,7 @@ export type TournamentUncheckedCreateInput = {
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
   timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreUncheckedCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentUpdateInput = {
@@ -347,6 +462,11 @@ export type TournamentUpdateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   team?: Prisma.TeamUpdateOneRequiredWithoutTournamentsNestedInput
@@ -355,6 +475,7 @@ export type TournamentUpdateInput = {
   matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
   timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateInput = {
@@ -366,6 +487,11 @@ export type TournamentUncheckedUpdateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teams?: Prisma.TournamentTeamUncheckedUpdateManyWithoutTournamentNestedInput
@@ -373,6 +499,7 @@ export type TournamentUncheckedUpdateInput = {
   matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
   timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUncheckedUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentCreateManyInput = {
@@ -384,6 +511,11 @@ export type TournamentCreateManyInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -396,6 +528,11 @@ export type TournamentUpdateManyMutationInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -409,6 +546,11 @@ export type TournamentUncheckedUpdateManyInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -423,6 +565,11 @@ export type TournamentOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type TournamentScalarRelationFilter = {
+  is?: Prisma.TournamentWhereInput
+  isNot?: Prisma.TournamentWhereInput
+}
+
 export type TournamentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   teamId?: Prisma.SortOrder
@@ -432,8 +579,18 @@ export type TournamentCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
   venue?: Prisma.SortOrder
+  groupCount?: Prisma.SortOrder
+  promotePerGroup?: Prisma.SortOrder
+  topicPool?: Prisma.SortOrder
+  bestDebaterMode?: Prisma.SortOrder
+  assignments?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type TournamentAvgOrderByAggregateInput = {
+  groupCount?: Prisma.SortOrder
+  promotePerGroup?: Prisma.SortOrder
 }
 
 export type TournamentMaxOrderByAggregateInput = {
@@ -445,6 +602,11 @@ export type TournamentMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
   venue?: Prisma.SortOrder
+  groupCount?: Prisma.SortOrder
+  promotePerGroup?: Prisma.SortOrder
+  topicPool?: Prisma.SortOrder
+  bestDebaterMode?: Prisma.SortOrder
+  assignments?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -458,13 +620,18 @@ export type TournamentMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
   venue?: Prisma.SortOrder
+  groupCount?: Prisma.SortOrder
+  promotePerGroup?: Prisma.SortOrder
+  topicPool?: Prisma.SortOrder
+  bestDebaterMode?: Prisma.SortOrder
+  assignments?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
-export type TournamentScalarRelationFilter = {
-  is?: Prisma.TournamentWhereInput
-  isNot?: Prisma.TournamentWhereInput
+export type TournamentSumOrderByAggregateInput = {
+  groupCount?: Prisma.SortOrder
+  promotePerGroup?: Prisma.SortOrder
 }
 
 export type TournamentNullableScalarRelationFilter = {
@@ -514,8 +681,30 @@ export type TournamentUncheckedUpdateManyWithoutTeamNestedInput = {
   deleteMany?: Prisma.TournamentScalarWhereInput | Prisma.TournamentScalarWhereInput[]
 }
 
+export type TournamentCreateNestedOneWithoutScoresInput = {
+  create?: Prisma.XOR<Prisma.TournamentCreateWithoutScoresInput, Prisma.TournamentUncheckedCreateWithoutScoresInput>
+  connectOrCreate?: Prisma.TournamentCreateOrConnectWithoutScoresInput
+  connect?: Prisma.TournamentWhereUniqueInput
+}
+
+export type TournamentUpdateOneRequiredWithoutScoresNestedInput = {
+  create?: Prisma.XOR<Prisma.TournamentCreateWithoutScoresInput, Prisma.TournamentUncheckedCreateWithoutScoresInput>
+  connectOrCreate?: Prisma.TournamentCreateOrConnectWithoutScoresInput
+  upsert?: Prisma.TournamentUpsertWithoutScoresInput
+  connect?: Prisma.TournamentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TournamentUpdateToOneWithWhereWithoutScoresInput, Prisma.TournamentUpdateWithoutScoresInput>, Prisma.TournamentUncheckedUpdateWithoutScoresInput>
+}
+
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type TournamentCreateNestedOneWithoutTeamsInput = {
@@ -600,6 +789,11 @@ export type TournamentCreateWithoutTeamInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   teams?: Prisma.TournamentTeamCreateNestedManyWithoutTournamentInput
@@ -607,6 +801,7 @@ export type TournamentCreateWithoutTeamInput = {
   matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
   timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateWithoutTeamInput = {
@@ -617,6 +812,11 @@ export type TournamentUncheckedCreateWithoutTeamInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   teams?: Prisma.TournamentTeamUncheckedCreateNestedManyWithoutTournamentInput
@@ -624,6 +824,7 @@ export type TournamentUncheckedCreateWithoutTeamInput = {
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
   timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreUncheckedCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentCreateOrConnectWithoutTeamInput = {
@@ -663,8 +864,121 @@ export type TournamentScalarWhereInput = {
   status?: Prisma.StringFilter<"Tournament"> | string
   scheduledAt?: Prisma.DateTimeNullableFilter<"Tournament"> | Date | string | null
   venue?: Prisma.StringNullableFilter<"Tournament"> | string | null
+  groupCount?: Prisma.IntNullableFilter<"Tournament"> | number | null
+  promotePerGroup?: Prisma.IntNullableFilter<"Tournament"> | number | null
+  topicPool?: Prisma.StringNullableFilter<"Tournament"> | string | null
+  bestDebaterMode?: Prisma.StringFilter<"Tournament"> | string
+  assignments?: Prisma.StringNullableFilter<"Tournament"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Tournament"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Tournament"> | Date | string
+}
+
+export type TournamentCreateWithoutScoresInput = {
+  id?: string
+  name: string
+  description?: string | null
+  format?: string
+  status?: string
+  scheduledAt?: Date | string | null
+  venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  team: Prisma.TeamCreateNestedOneWithoutTournamentsInput
+  teams?: Prisma.TournamentTeamCreateNestedManyWithoutTournamentInput
+  judges?: Prisma.TournamentJudgeCreateNestedManyWithoutTournamentInput
+  matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
+  timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
+}
+
+export type TournamentUncheckedCreateWithoutScoresInput = {
+  id?: string
+  teamId: string
+  name: string
+  description?: string | null
+  format?: string
+  status?: string
+  scheduledAt?: Date | string | null
+  venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  teams?: Prisma.TournamentTeamUncheckedCreateNestedManyWithoutTournamentInput
+  judges?: Prisma.TournamentJudgeUncheckedCreateNestedManyWithoutTournamentInput
+  matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
+  timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
+}
+
+export type TournamentCreateOrConnectWithoutScoresInput = {
+  where: Prisma.TournamentWhereUniqueInput
+  create: Prisma.XOR<Prisma.TournamentCreateWithoutScoresInput, Prisma.TournamentUncheckedCreateWithoutScoresInput>
+}
+
+export type TournamentUpsertWithoutScoresInput = {
+  update: Prisma.XOR<Prisma.TournamentUpdateWithoutScoresInput, Prisma.TournamentUncheckedUpdateWithoutScoresInput>
+  create: Prisma.XOR<Prisma.TournamentCreateWithoutScoresInput, Prisma.TournamentUncheckedCreateWithoutScoresInput>
+  where?: Prisma.TournamentWhereInput
+}
+
+export type TournamentUpdateToOneWithWhereWithoutScoresInput = {
+  where?: Prisma.TournamentWhereInput
+  data: Prisma.XOR<Prisma.TournamentUpdateWithoutScoresInput, Prisma.TournamentUncheckedUpdateWithoutScoresInput>
+}
+
+export type TournamentUpdateWithoutScoresInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  format?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  team?: Prisma.TeamUpdateOneRequiredWithoutTournamentsNestedInput
+  teams?: Prisma.TournamentTeamUpdateManyWithoutTournamentNestedInput
+  judges?: Prisma.TournamentJudgeUpdateManyWithoutTournamentNestedInput
+  matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
+  timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
+}
+
+export type TournamentUncheckedUpdateWithoutScoresInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  teamId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  format?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teams?: Prisma.TournamentTeamUncheckedUpdateManyWithoutTournamentNestedInput
+  judges?: Prisma.TournamentJudgeUncheckedUpdateManyWithoutTournamentNestedInput
+  matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
+  timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
 }
 
 export type TournamentCreateWithoutTeamsInput = {
@@ -675,6 +989,11 @@ export type TournamentCreateWithoutTeamsInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   team: Prisma.TeamCreateNestedOneWithoutTournamentsInput
@@ -682,6 +1001,7 @@ export type TournamentCreateWithoutTeamsInput = {
   matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
   timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateWithoutTeamsInput = {
@@ -693,12 +1013,18 @@ export type TournamentUncheckedCreateWithoutTeamsInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   judges?: Prisma.TournamentJudgeUncheckedCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
   timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreUncheckedCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentCreateOrConnectWithoutTeamsInput = {
@@ -725,6 +1051,11 @@ export type TournamentUpdateWithoutTeamsInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   team?: Prisma.TeamUpdateOneRequiredWithoutTournamentsNestedInput
@@ -732,6 +1063,7 @@ export type TournamentUpdateWithoutTeamsInput = {
   matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
   timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateWithoutTeamsInput = {
@@ -743,12 +1075,18 @@ export type TournamentUncheckedUpdateWithoutTeamsInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   judges?: Prisma.TournamentJudgeUncheckedUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
   timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUncheckedUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentCreateWithoutJudgesInput = {
@@ -759,6 +1097,11 @@ export type TournamentCreateWithoutJudgesInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   team: Prisma.TeamCreateNestedOneWithoutTournamentsInput
@@ -766,6 +1109,7 @@ export type TournamentCreateWithoutJudgesInput = {
   matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
   timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateWithoutJudgesInput = {
@@ -777,12 +1121,18 @@ export type TournamentUncheckedCreateWithoutJudgesInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   teams?: Prisma.TournamentTeamUncheckedCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
   timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreUncheckedCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentCreateOrConnectWithoutJudgesInput = {
@@ -809,6 +1159,11 @@ export type TournamentUpdateWithoutJudgesInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   team?: Prisma.TeamUpdateOneRequiredWithoutTournamentsNestedInput
@@ -816,6 +1171,7 @@ export type TournamentUpdateWithoutJudgesInput = {
   matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
   timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateWithoutJudgesInput = {
@@ -827,12 +1183,18 @@ export type TournamentUncheckedUpdateWithoutJudgesInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teams?: Prisma.TournamentTeamUncheckedUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
   timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUncheckedUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentCreateWithoutMatchesInput = {
@@ -843,6 +1205,11 @@ export type TournamentCreateWithoutMatchesInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   team: Prisma.TeamCreateNestedOneWithoutTournamentsInput
@@ -850,6 +1217,7 @@ export type TournamentCreateWithoutMatchesInput = {
   judges?: Prisma.TournamentJudgeCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
   timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateWithoutMatchesInput = {
@@ -861,12 +1229,18 @@ export type TournamentUncheckedCreateWithoutMatchesInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   teams?: Prisma.TournamentTeamUncheckedCreateNestedManyWithoutTournamentInput
   judges?: Prisma.TournamentJudgeUncheckedCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
   timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreUncheckedCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentCreateOrConnectWithoutMatchesInput = {
@@ -893,6 +1267,11 @@ export type TournamentUpdateWithoutMatchesInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   team?: Prisma.TeamUpdateOneRequiredWithoutTournamentsNestedInput
@@ -900,6 +1279,7 @@ export type TournamentUpdateWithoutMatchesInput = {
   judges?: Prisma.TournamentJudgeUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
   timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateWithoutMatchesInput = {
@@ -911,12 +1291,18 @@ export type TournamentUncheckedUpdateWithoutMatchesInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teams?: Prisma.TournamentTeamUncheckedUpdateManyWithoutTournamentNestedInput
   judges?: Prisma.TournamentJudgeUncheckedUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
   timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUncheckedUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentCreateWithoutTimerTemplateInput = {
@@ -927,6 +1313,11 @@ export type TournamentCreateWithoutTimerTemplateInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   team: Prisma.TeamCreateNestedOneWithoutTournamentsInput
@@ -934,6 +1325,7 @@ export type TournamentCreateWithoutTimerTemplateInput = {
   judges?: Prisma.TournamentJudgeCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
   timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateWithoutTimerTemplateInput = {
@@ -945,12 +1337,18 @@ export type TournamentUncheckedCreateWithoutTimerTemplateInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   teams?: Prisma.TournamentTeamUncheckedCreateNestedManyWithoutTournamentInput
   judges?: Prisma.TournamentJudgeUncheckedCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
   timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreUncheckedCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentCreateOrConnectWithoutTimerTemplateInput = {
@@ -977,6 +1375,11 @@ export type TournamentUpdateWithoutTimerTemplateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   team?: Prisma.TeamUpdateOneRequiredWithoutTournamentsNestedInput
@@ -984,6 +1387,7 @@ export type TournamentUpdateWithoutTimerTemplateInput = {
   judges?: Prisma.TournamentJudgeUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
   timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateWithoutTimerTemplateInput = {
@@ -995,12 +1399,18 @@ export type TournamentUncheckedUpdateWithoutTimerTemplateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teams?: Prisma.TournamentTeamUncheckedUpdateManyWithoutTournamentNestedInput
   judges?: Prisma.TournamentJudgeUncheckedUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
   timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUncheckedUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentCreateWithoutTimerProjectInput = {
@@ -1011,6 +1421,11 @@ export type TournamentCreateWithoutTimerProjectInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   team: Prisma.TeamCreateNestedOneWithoutTournamentsInput
@@ -1018,6 +1433,7 @@ export type TournamentCreateWithoutTimerProjectInput = {
   judges?: Prisma.TournamentJudgeCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentUncheckedCreateWithoutTimerProjectInput = {
@@ -1029,12 +1445,18 @@ export type TournamentUncheckedCreateWithoutTimerProjectInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   teams?: Prisma.TournamentTeamUncheckedCreateNestedManyWithoutTournamentInput
   judges?: Prisma.TournamentJudgeUncheckedCreateNestedManyWithoutTournamentInput
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutTournamentInput
   timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutTournamentInput
+  scores?: Prisma.MatchScoreUncheckedCreateNestedManyWithoutTournamentInput
 }
 
 export type TournamentCreateOrConnectWithoutTimerProjectInput = {
@@ -1061,6 +1483,11 @@ export type TournamentUpdateWithoutTimerProjectInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   team?: Prisma.TeamUpdateOneRequiredWithoutTournamentsNestedInput
@@ -1068,6 +1495,7 @@ export type TournamentUpdateWithoutTimerProjectInput = {
   judges?: Prisma.TournamentJudgeUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateWithoutTimerProjectInput = {
@@ -1079,12 +1507,18 @@ export type TournamentUncheckedUpdateWithoutTimerProjectInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teams?: Prisma.TournamentTeamUncheckedUpdateManyWithoutTournamentNestedInput
   judges?: Prisma.TournamentJudgeUncheckedUpdateManyWithoutTournamentNestedInput
   matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUncheckedUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentCreateManyTeamInput = {
@@ -1095,6 +1529,11 @@ export type TournamentCreateManyTeamInput = {
   status?: string
   scheduledAt?: Date | string | null
   venue?: string | null
+  groupCount?: number | null
+  promotePerGroup?: number | null
+  topicPool?: string | null
+  bestDebaterMode?: string
+  assignments?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1107,6 +1546,11 @@ export type TournamentUpdateWithoutTeamInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teams?: Prisma.TournamentTeamUpdateManyWithoutTournamentNestedInput
@@ -1114,6 +1558,7 @@ export type TournamentUpdateWithoutTeamInput = {
   matches?: Prisma.MatchUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutTournamentNestedInput
   timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateWithoutTeamInput = {
@@ -1124,6 +1569,11 @@ export type TournamentUncheckedUpdateWithoutTeamInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teams?: Prisma.TournamentTeamUncheckedUpdateManyWithoutTournamentNestedInput
@@ -1131,6 +1581,7 @@ export type TournamentUncheckedUpdateWithoutTeamInput = {
   matches?: Prisma.MatchUncheckedUpdateManyWithoutTournamentNestedInput
   timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput
   timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput
+  scores?: Prisma.MatchScoreUncheckedUpdateManyWithoutTournamentNestedInput
 }
 
 export type TournamentUncheckedUpdateManyWithoutTeamInput = {
@@ -1141,6 +1592,11 @@ export type TournamentUncheckedUpdateManyWithoutTeamInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  promotePerGroup?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  topicPool?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bestDebaterMode?: Prisma.StringFieldUpdateOperationsInput | string
+  assignments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1154,12 +1610,14 @@ export type TournamentCountOutputType = {
   teams: number
   judges: number
   matches: number
+  scores: number
 }
 
 export type TournamentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   teams?: boolean | TournamentCountOutputTypeCountTeamsArgs
   judges?: boolean | TournamentCountOutputTypeCountJudgesArgs
   matches?: boolean | TournamentCountOutputTypeCountMatchesArgs
+  scores?: boolean | TournamentCountOutputTypeCountScoresArgs
 }
 
 /**
@@ -1193,6 +1651,13 @@ export type TournamentCountOutputTypeCountMatchesArgs<ExtArgs extends runtime.Ty
   where?: Prisma.MatchWhereInput
 }
 
+/**
+ * TournamentCountOutputType without action
+ */
+export type TournamentCountOutputTypeCountScoresArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MatchScoreWhereInput
+}
+
 
 export type TournamentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1203,6 +1668,11 @@ export type TournamentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   status?: boolean
   scheduledAt?: boolean
   venue?: boolean
+  groupCount?: boolean
+  promotePerGroup?: boolean
+  topicPool?: boolean
+  bestDebaterMode?: boolean
+  assignments?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
@@ -1211,6 +1681,7 @@ export type TournamentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   matches?: boolean | Prisma.Tournament$matchesArgs<ExtArgs>
   timerTemplate?: boolean | Prisma.Tournament$timerTemplateArgs<ExtArgs>
   timerProject?: boolean | Prisma.Tournament$timerProjectArgs<ExtArgs>
+  scores?: boolean | Prisma.Tournament$scoresArgs<ExtArgs>
   _count?: boolean | Prisma.TournamentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tournament"]>
 
@@ -1223,6 +1694,11 @@ export type TournamentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   status?: boolean
   scheduledAt?: boolean
   venue?: boolean
+  groupCount?: boolean
+  promotePerGroup?: boolean
+  topicPool?: boolean
+  bestDebaterMode?: boolean
+  assignments?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
@@ -1237,6 +1713,11 @@ export type TournamentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   status?: boolean
   scheduledAt?: boolean
   venue?: boolean
+  groupCount?: boolean
+  promotePerGroup?: boolean
+  topicPool?: boolean
+  bestDebaterMode?: boolean
+  assignments?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
@@ -1251,11 +1732,16 @@ export type TournamentSelectScalar = {
   status?: boolean
   scheduledAt?: boolean
   venue?: boolean
+  groupCount?: boolean
+  promotePerGroup?: boolean
+  topicPool?: boolean
+  bestDebaterMode?: boolean
+  assignments?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TournamentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "teamId" | "name" | "description" | "format" | "status" | "scheduledAt" | "venue" | "createdAt" | "updatedAt", ExtArgs["result"]["tournament"]>
+export type TournamentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "teamId" | "name" | "description" | "format" | "status" | "scheduledAt" | "venue" | "groupCount" | "promotePerGroup" | "topicPool" | "bestDebaterMode" | "assignments" | "createdAt" | "updatedAt", ExtArgs["result"]["tournament"]>
 export type TournamentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
   teams?: boolean | Prisma.Tournament$teamsArgs<ExtArgs>
@@ -1263,6 +1749,7 @@ export type TournamentInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   matches?: boolean | Prisma.Tournament$matchesArgs<ExtArgs>
   timerTemplate?: boolean | Prisma.Tournament$timerTemplateArgs<ExtArgs>
   timerProject?: boolean | Prisma.Tournament$timerProjectArgs<ExtArgs>
+  scores?: boolean | Prisma.Tournament$scoresArgs<ExtArgs>
   _count?: boolean | Prisma.TournamentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TournamentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1281,6 +1768,7 @@ export type $TournamentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     matches: Prisma.$MatchPayload<ExtArgs>[]
     timerTemplate: Prisma.$TimerTemplatePayload<ExtArgs> | null
     timerProject: Prisma.$DebateTimerProjectPayload<ExtArgs> | null
+    scores: Prisma.$MatchScorePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1291,6 +1779,11 @@ export type $TournamentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     status: string
     scheduledAt: Date | null
     venue: string | null
+    groupCount: number | null
+    promotePerGroup: number | null
+    topicPool: string | null
+    bestDebaterMode: string
+    assignments: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["tournament"]>
@@ -1693,6 +2186,7 @@ export interface Prisma__TournamentClient<T, Null = never, ExtArgs extends runti
   matches<T extends Prisma.Tournament$matchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tournament$matchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   timerTemplate<T extends Prisma.Tournament$timerTemplateArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tournament$timerTemplateArgs<ExtArgs>>): Prisma.Prisma__TimerTemplateClient<runtime.Types.Result.GetResult<Prisma.$TimerTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   timerProject<T extends Prisma.Tournament$timerProjectArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tournament$timerProjectArgs<ExtArgs>>): Prisma.Prisma__DebateTimerProjectClient<runtime.Types.Result.GetResult<Prisma.$DebateTimerProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  scores<T extends Prisma.Tournament$scoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tournament$scoresArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MatchScorePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1730,6 +2224,11 @@ export interface TournamentFieldRefs {
   readonly status: Prisma.FieldRef<"Tournament", 'String'>
   readonly scheduledAt: Prisma.FieldRef<"Tournament", 'DateTime'>
   readonly venue: Prisma.FieldRef<"Tournament", 'String'>
+  readonly groupCount: Prisma.FieldRef<"Tournament", 'Int'>
+  readonly promotePerGroup: Prisma.FieldRef<"Tournament", 'Int'>
+  readonly topicPool: Prisma.FieldRef<"Tournament", 'String'>
+  readonly bestDebaterMode: Prisma.FieldRef<"Tournament", 'String'>
+  readonly assignments: Prisma.FieldRef<"Tournament", 'String'>
   readonly createdAt: Prisma.FieldRef<"Tournament", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Tournament", 'DateTime'>
 }
@@ -2238,6 +2737,30 @@ export type Tournament$timerProjectArgs<ExtArgs extends runtime.Types.Extensions
    */
   include?: Prisma.DebateTimerProjectInclude<ExtArgs> | null
   where?: Prisma.DebateTimerProjectWhereInput
+}
+
+/**
+ * Tournament.scores
+ */
+export type Tournament$scoresArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MatchScore
+   */
+  select?: Prisma.MatchScoreSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MatchScore
+   */
+  omit?: Prisma.MatchScoreOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MatchScoreInclude<ExtArgs> | null
+  where?: Prisma.MatchScoreWhereInput
+  orderBy?: Prisma.MatchScoreOrderByWithRelationInput | Prisma.MatchScoreOrderByWithRelationInput[]
+  cursor?: Prisma.MatchScoreWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MatchScoreScalarFieldEnum | Prisma.MatchScoreScalarFieldEnum[]
 }
 
 /**

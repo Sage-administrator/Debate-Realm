@@ -1,3 +1,4 @@
+import { readBody } from 'h3'
 import { prisma } from '../../lib/prisma'
 import { getUserFromEvent } from '../../utils/auth'
 
@@ -6,24 +7,93 @@ export default defineEventHandler(async (event) => {
     const user = getUserFromEvent(event)
     const id = getRouterParam(event, 'id')!
 
+    // 读取请求体（含 currentVersion 和可选 deleteReason
+    const body = await readBody<{ currentVersion?: number; deleteReason?: string }>(event) || {}
+
+    // 1. 查找比赛（含所属 tournament 信息，用于权限校验）
     const match = await prisma.match.findUnique({
       where: { id },
       include: { tournament: { include: { team: true } } },
     })
 
-    if (!match) throw createError({ statusCode: 404, statusMessage: '场次不存在' })
+    if (!match) {
+      throw createError({ statusCode: 404, statusMessage: '40001场次不存在' })
+    }
 
+    // 2. 权限校验
     if (user.role !== 'system_admin') {
       if (match.tournament?.team.adminId !== user.userId) {
-        throw createError({ statusCode: 403, statusMessage: '权限不足' })
+        throw createError({ statusCode: 403, statusMessage: '40003权限不足' })
       }
     }
 
-    await prisma.match.delete({ where: { id } })
-    return { message: '场次已删除' }
+    // 3. 禁止删除已晋级比赛的校验：查询所有 match 中 promotedFromA === id 或 promotedFromB === id 的记录
+    const dependentMatches = await prisma.match.findMany({
+      where: {
+        OR: [
+          { promotedFromA: id },
+          { promotedFromB: id },
+        ],
+      },
+    })
+
+    if (dependentMatches.length > 0) {
+      const dependentInfo = dependentMatches
+        .map((m) => `第${m.orderNum}场`)
+        .join('、')
+      throw createError({
+        statusCode: 400,
+        statusMessage: `40004需先撤销${dependentInfo}的晋级关系`,
+      })
+    }
+
+    // 4. 乐观锁校验
+    const currentVersion = body.currentVersion
+    if (currentVersion !== undefined && currentVersion !== match.version) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: `40002版本冲突：当前版本为 ${match.version}，请刷新后重试`,
+      })
+    }
+
+    // 5. 软删除：使用 prisma.match.updateMany() 同时更新 { deletedAt, deletedBy, deleteReason, version: {increment:1} }，条件为 {id, version: currentVersion}
+    const now = new Date()
+    const updateResult = await prisma.match.updateMany({
+      where: {
+        id,
+        version: currentVersion !== undefined ? currentVersion : match.version,
+      },
+      data: {
+        deletedAt: now,
+        deletedBy: user.userId,
+        deleteReason: body.deleteReason || '',
+        version: { increment: 1 },
+      },
+    })
+
+    if (updateResult.count === 0) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: '40002版本冲突：记录已被其他操作修改',
+      })
+    }
+
+    // 6. 返回统一响应格式
+    return {
+      code: 0,
+      message: 'success',
+      data: {
+        match: {
+          id,
+          status: 'deleted',
+          version: (currentVersion !== undefined ? currentVersion : match.version) + 1,
+          deletedAt: now,
+        },
+      },
+    }
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Delete match error:', error)
-    throw createError({ statusCode: 500, statusMessage: '删除场次失败' })
+    throw createError({ statusCode: 500, statusMessage: '50000删除场次失败' })
   }
 })

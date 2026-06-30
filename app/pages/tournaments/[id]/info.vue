@@ -293,30 +293,57 @@ onMounted(() => loadTournament())
 
           <!-- 参赛队伍 -->
           <div class="bg-white rounded-lg shadow-sm p-6">
-            <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <UIcon name="i-lucide-users" class="w-4 h-4 text-gray-400" />
-              参赛队伍
-              <span class="text-xs font-normal text-gray-400">(创建时设置，暂不支持在线修改)</span>
-            </h3>
-            <div v-if="!tournament.teams?.length" class="text-sm text-gray-400 py-2">暂无队伍</div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                <UIcon name="i-lucide-users" class="w-4 h-4 text-gray-400" />
+                参赛队伍
+                <span class="text-xs font-normal text-gray-400">(赛程页设置，支持在线添加/删除)</span>
+              </h3>
+              <NuxtLink
+                :to="`/tournaments/${tournamentId}/schedule`"
+                class="text-xs font-medium text-purple-600 hover:text-purple-700 flex items-center gap-1"
+              >
+                前往设置
+                <UIcon name="i-lucide-arrow-right" class="w-3 h-3" />
+              </NuxtLink>
+            </div>
+            <!-- 兼容字符串数组和对象数组 -->
+            <div v-if="!(Array.isArray(tournament.teams) && tournament.teams.length > 0)" class="text-sm text-gray-400 py-2">暂无队伍</div>
             <div v-else class="flex flex-wrap gap-2">
-              <span v-for="t in tournament.teams" :key="t.id" class="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-full">
-                {{ t.name }}
+              <span
+                v-for="(t, idx) in tournament.teams"
+                :key="typeof t === 'string' ? t : (t.id ?? t.name ?? idx)"
+                class="px-3 py-1 text-sm text-gray-600 bg-blue-50 rounded-full"
+              >
+                {{ typeof t === 'string' ? t : t.name }}
               </span>
             </div>
           </div>
 
           <!-- 评委 -->
           <div class="bg-white rounded-lg shadow-sm p-6">
-            <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <UIcon name="i-lucide-gavel" class="w-4 h-4 text-gray-400" />
-              评委
-              <span class="text-xs font-normal text-gray-400">(创建时设置，暂不支持在线修改)</span>
-            </h3>
-            <div v-if="!tournament.judges?.length" class="text-sm text-gray-400 py-2">暂无评委</div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                <UIcon name="i-lucide-gavel" class="w-4 h-4 text-gray-400" />
+                评委
+                <span class="text-xs font-normal text-gray-400">(赛程页设置，支持在线添加/删除)</span>
+              </h3>
+              <NuxtLink
+                :to="`/tournaments/${tournamentId}/schedule`"
+                class="text-xs font-medium text-purple-600 hover:text-purple-700 flex items-center gap-1"
+              >
+                前往设置
+                <UIcon name="i-lucide-arrow-right" class="w-3 h-3" />
+              </NuxtLink>
+            </div>
+            <div v-if="!(Array.isArray(tournament.judges) && tournament.judges.length > 0)" class="text-sm text-gray-400 py-2">暂无评委</div>
             <div v-else class="flex flex-wrap gap-2">
-              <span v-for="j in tournament.judges" :key="j.id" class="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-full">
-                {{ j.name }}
+              <span
+                v-for="(j, idx) in tournament.judges"
+                :key="typeof j === 'string' ? j : (j.id ?? j.name ?? idx)"
+                class="px-3 py-1 text-sm text-gray-600 bg-amber-50 rounded-full"
+              >
+                {{ typeof j === 'string' ? j : j.name }}
               </span>
             </div>
           </div>

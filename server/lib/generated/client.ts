@@ -52,6 +52,31 @@ export type User = Prisma.UserModel
  */
 export type Team = Prisma.TeamModel
 /**
+ * Model BotArena
+ * 
+ */
+export type BotArena = Prisma.BotArenaModel
+/**
+ * Model BotArenaRole
+ * 
+ */
+export type BotArenaRole = Prisma.BotArenaRoleModel
+/**
+ * Model BotArenaClaim
+ * 
+ */
+export type BotArenaClaim = Prisma.BotArenaClaimModel
+/**
+ * Model BotPermissionLog
+ * 
+ */
+export type BotPermissionLog = Prisma.BotPermissionLogModel
+/**
+ * Model MatchScore
+ * 
+ */
+export type MatchScore = Prisma.MatchScoreModel
+/**
  * Model TeamMember
  * 
  */
