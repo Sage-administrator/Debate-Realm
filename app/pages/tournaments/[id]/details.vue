@@ -44,7 +44,15 @@ const fullConfig = ref<{
   negativeTopic: '',
   teamPositiveName: '',
   teamNegativeName: '',
-  uiConfig: {},
+  // ⭐ 初始值设置：确保页面渲染时颜色选择器有正确的默认值
+  uiConfig: {
+    showTitle: true,
+    showBanner: true,
+    titleColor: '#FFFFFF',     // ⭐ 标题颜色默认白色
+    positiveLabel: '正方',
+    negativeLabel: '反方',
+    teamNameColor: '#0369a1',  // ⭐ 队伍名称颜色默认深蓝色
+  },
   skinConfig: {},
   audioConfig: {},
   teamLogoConfig: {},
@@ -76,13 +84,15 @@ async function loadConfig() {
       fullConfig.value.negativeTopic = cfg.negativeTopic || ''
       fullConfig.value.teamPositiveName = cfg.teamPositiveName || ''
       fullConfig.value.teamNegativeName = cfg.teamNegativeName || ''
-      fullConfig.value.uiConfig = cfg.uiConfig || {
+      // ⭐ 合并默认值：showTitle 和 showBanner 默认勾选，标题颜色白色，队伍名称颜色深蓝色
+      fullConfig.value.uiConfig = {
         showTitle: true,
         showBanner: true,
-        titleColor: '#FFFFFF',
+        titleColor: '#FFFFFF',     // ⭐ 标题颜色默认白色
         positiveLabel: '正方',
         negativeLabel: '反方',
-        teamNameColor: '#FFFFFF',
+        teamNameColor: '#0369a1',  // ⭐ 队伍名称颜色默认深蓝色
+        ...cfg.uiConfig, // 数据库值覆盖默认值
       }
       fullConfig.value.skinConfig = cfg.skinConfig || {}
       fullConfig.value.audioConfig = cfg.audioConfig || {}
@@ -95,10 +105,10 @@ async function loadConfig() {
       fullConfig.value.uiConfig = {
         showTitle: true,
         showBanner: true,
-        titleColor: '#FFFFFF',
+        titleColor: '#FFFFFF',     // ⭐ 标题颜色默认白色
         positiveLabel: '正方',
         negativeLabel: '反方',
-        teamNameColor: '#FFFFFF',
+        teamNameColor: '#0369a1',  // ⭐ 队伍名称颜色默认深蓝色
       }
     }
   } catch (e: any) {
@@ -262,57 +272,46 @@ watch(
               </div>
             </div>
 
-            <!-- 颜色设置 -->
-            <div class="mb-6 space-y-4">
-              <label class="block text-sm font-bold text-gray-900 flex items-center gap-1.5">
-                <UIcon name="i-lucide-pipette" class="w-4 h-4 text-gray-500" /> 颜色设置
-              </label>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-1.5">队伍名称颜色</label>
-                  <div class="flex items-center gap-2">
-                    <div class="relative">
-                      <input
-                        type="color"
-                        v-model="fullConfig.uiConfig.teamNameColor"
-                        class="w-11 h-11 rounded-lg cursor-pointer border border-gray-200 hover:border-gray-400 transition-colors"
-                      />
-                    </div>
+            <!-- 队伍名称颜色 + 标签（三列并列） -->
+            <div class="mb-6 grid grid-cols-3 gap-4">
+              <!-- 队伍名称颜色 -->
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">队伍名称颜色</label>
+                <div class="flex items-center gap-2">
+                  <div class="relative">
                     <input
-                      type="text"
+                      type="color"
                       v-model="fullConfig.uiConfig.teamNameColor"
-                      class="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                      placeholder="#FFFFFF"
+                      class="w-11 h-11 rounded-lg cursor-pointer border border-gray-200 hover:border-gray-400 transition-colors"
                     />
                   </div>
+                  <input
+                    type="text"
+                    v-model="fullConfig.uiConfig.teamNameColor"
+                    class="w-20 px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    placeholder="#0369a1"
+                  />
                 </div>
               </div>
-            </div>
-
-            <!-- 队伍标签 -->
-            <div class="mb-4 space-y-4">
-              <label class="block text-sm font-bold text-gray-900 flex items-center gap-1.5">
-                <UIcon name="i-lucide-tag" class="w-4 h-4 text-gray-500" /> 队伍标签
-              </label>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-1.5">正方标签</label>
-                  <input
-                    v-model="fullConfig.uiConfig.positiveLabel"
-                    type="text"
-                    class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    placeholder="正方"
-                  />
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-1.5">反方标签</label>
-                  <input
-                    v-model="fullConfig.uiConfig.negativeLabel"
-                    type="text"
-                    class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    placeholder="反方"
-                  />
-                </div>
+              <!-- 正方标签 -->
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">正方标签</label>
+                <input
+                  v-model="fullConfig.uiConfig.positiveLabel"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  placeholder="正方"
+                />
+              </div>
+              <!-- 反方标签 -->
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">反方标签</label>
+                <input
+                  v-model="fullConfig.uiConfig.negativeLabel"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  placeholder="反方"
+                />
               </div>
             </div>
 

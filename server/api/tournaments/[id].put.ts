@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
       }
       if (uniqueTeams.length > 0) {
         await prisma.tournamentTeam.createMany({
-          data: uniqueTeams.map((teamName, i) => ({ tournamentId: id, name: teamName, orderNum: i + 1 })),
+          data: uniqueTeams.map((teamName) => ({ tournamentId: id, name: teamName })),
         })
       }
     }
@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
       }
       if (uniqueJudges.length > 0) {
         await prisma.tournamentJudge.createMany({
-          data: uniqueJudges.map((judgeName, i) => ({ tournamentId: id, name: judgeName, orderNum: i + 1 })),
+          data: uniqueJudges.map((judgeName) => ({ tournamentId: id, name: judgeName })),
         })
       }
     }

@@ -732,7 +732,7 @@ const drawLotsForm = ref({
   groupCount: 2,
 })
 
-// 赛果设置 —— 最佳辩手模式
+// 佳辩设置 —— 最佳辩手模式
 // =====================================================================
 const showResultSettingsModal = ref(false)
 const resultSettingsForm = ref({
@@ -760,7 +760,7 @@ async function saveResultSettings() {
     if (tournament.value) {
       tournament.value.bestDebaterMode = resultSettingsForm.value.bestDebaterMode
     }
-    toast.add({ title: '赛果设置已保存', color: 'success' })
+    toast.add({ title: '佳辩设置已保存', color: 'success' })
     showResultSettingsModal.value = false
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '保存失败', color: 'error' })
@@ -1009,12 +1009,12 @@ onMounted(() => loadAll())
             >
               <UIcon name="i-lucide-dice-5" class="w-4 h-4" /> 抽签管理
             </button>
-            <!-- 🔴 新增：赛果设置 -->
+            <!-- 🔴 新增：佳辩设置 -->
             <button
               @click="openResultSettingsModal"
               class="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-lg hover:bg-rose-700 transition-colors flex items-center gap-2"
             >
-              <UIcon name="i-lucide-settings-2" class="w-4 h-4" /> 赛果设置
+              <UIcon name="i-lucide-settings-2" class="w-4 h-4" /> 佳辩设置
             </button>
             <button
               @click="openGenerateModal"
@@ -1655,7 +1655,7 @@ onMounted(() => loadAll())
               </div>
             </div>
             <p class="text-xs text-gray-400 mt-2">
-              当前模式：{{ tournament?.bestDebaterMode === 'winner_only' ? '仅胜方可有最佳辩手' : '双方均可有最佳辩手' }}
+              当前模式：{{ tournament?.bestDebaterMode === 'winner_only' ? '只有一方可以有最佳辩手' : '双方均可有最佳辩手' }}
             </p>
           </div>
 
@@ -1815,13 +1815,13 @@ onMounted(() => loadAll())
       </div>
     </div>
 
-    <!-- ═══════════════════════ 🔴 赛果设置 Modal ═══════════════════════ -->
+    <!-- ═══════════════════════ 🔴 佳辩设置 Modal ═══════════════════════ -->
     <div v-if="showResultSettingsModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showResultSettingsModal = false">
       <div class="bg-white rounded-xl shadow-lg w-full max-w-xl p-6 max-h-[90vh] overflow-y-auto">
         <!-- 头部 -->
         <div class="flex items-center gap-2 mb-2">
           <UIcon name="i-lucide-trophy" class="w-5 h-5 text-rose-600" />
-          <h3 class="text-lg font-bold text-gray-900">赛果设置</h3>
+          <h3 class="text-lg font-bold text-gray-900">佳辩设置</h3>
         </div>
         <p class="text-sm text-gray-500 mb-6">配置赛果录入时的规则，包括最佳辩手的评选方式</p>
 
@@ -1844,7 +1844,7 @@ onMounted(() => loadAll())
                 class="px-4 py-3 text-sm font-medium rounded-lg border-2 transition-all text-left"
                 :class="resultSettingsForm.bestDebaterMode === 'winner_only' ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-gray-200 text-gray-600 hover:bg-gray-100'"
               >
-                仅胜方可有最佳辩手
+                只有一方可以有最佳辩手
               </button>
             </div>
           </div>
@@ -1852,7 +1852,7 @@ onMounted(() => loadAll())
           <!-- 说明 -->
           <div class="p-3 bg-white border border-gray-200 rounded-lg text-xs text-gray-600 leading-relaxed">
             <p class="mb-1"><strong>双方均可有最佳辩手：</strong>胜方和败方都可以评选最佳辩手，用于展示双方优秀选手的表现。</p>
-            <p><strong>仅胜方可有最佳辩手：</strong>只有胜方可以评选最佳辩手，败方不设置最佳辩手字段。</p>
+            <p><strong>只有一方可以有最佳辩手：</strong>只有一方可以评选最佳辩手，另一方不设置最佳辩手字段。</p>
           </div>
         </div>
 

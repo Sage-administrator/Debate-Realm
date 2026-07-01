@@ -1,4 +1,5 @@
 // 保存/更新赛事的完整计时器配置
+import { getRouterParam, readBody, createError } from 'h3'
 import { prisma } from '../../../lib/prisma'
 import { requireWriteTournament } from '../../../utils/tournament-auth'
 

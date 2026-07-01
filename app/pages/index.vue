@@ -149,12 +149,6 @@ const showTeamSelector = computed(() => {
 })
 
 // 分类用户列表
-const teamUsers = computed(() => {
-  return users.value.filter((u: any) =>
-    u.role === 'admin' || u.role === 'subaccount'
-  )
-})
-
 const individualUsers = computed(() => {
   return users.value.filter((u: any) =>
     u.role === 'individual' || u.role === 'system_admin'
@@ -438,44 +432,6 @@ onMounted(() => {
                     <!-- 虚拟团队不允许删除 -->
                     <UButton v-if="!t.isVirtual" color="error" variant="ghost" size="xs" @click="handleDeleteTeam(t.id, t.name)">删除</UButton>
                     <span v-else class="text-xs text-gray-400">不可删除</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </UCard>
-
-        <!-- 团队用户列表 -->
-        <h2 class="text-lg font-bold mb-4">团队用户</h2>
-        <UCard class="mb-8">
-          <div v-if="teamUsers.length === 0" class="text-center py-8 text-gray-400">
-            暂无团队用户
-          </div>
-          <!-- 团队用户列表 - 使用自定义 HTML 表格 -->
-          <div v-else class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="border-b border-gray-200">
-                  <th class="text-left py-2 px-3 font-medium text-gray-600">用户名</th>
-                  <th class="text-left py-2 px-3 font-medium text-gray-600">角色</th>
-                  <th class="text-left py-2 px-3 font-medium text-gray-600">模式</th>
-                  <th class="text-left py-2 px-3 font-medium text-gray-600">所属团队</th>
-                  <th class="text-right py-2 px-3 font-medium text-gray-600">操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="u in teamUsers" :key="u.id" class="border-b border-gray-100 hover:bg-gray-50">
-                  <td class="py-2 px-3 font-medium">{{ u.username }}</td>
-                  <td class="py-2 px-3">
-                    <UBadge :label="roleLabel(u.role)" :color="roleColor(u.role)" size="xs" variant="soft" />
-                  </td>
-                  <td class="py-2 px-3">
-                    <UBadge :label="u.mode === 'qq_bot' ? 'QQ频道' : '普通'" size="xs" variant="soft" />
-                  </td>
-                  <td class="py-2 px-3">{{ u.team?.name ?? '-' }}</td>
-                  <td class="py-2 px-3 text-right">
-                    <UButton color="neutral" variant="ghost" size="xs" @click="openResetPassword(u.id)">重置密码</UButton>
-                    <UButton color="error" variant="ghost" size="xs" @click="handleDeleteUser(u.id, u.username)">删除</UButton>
                   </td>
                 </tr>
               </tbody>

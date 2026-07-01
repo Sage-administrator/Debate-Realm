@@ -287,70 +287,75 @@ watch(
                 </label>
               </div>
 
-              <!-- 正方队伍队徽 -->
-              <div class="mb-6 border border-gray-200 rounded-lg p-4">
-                <label class="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-                  <span class="inline-block w-3 h-3 rounded-full bg-red-500"></span>
-                  正方队伍队徽
-                </label>
-                <div class="flex items-start gap-4">
-                  <!-- 预览框 -->
-                  <div class="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-gray-50 flex-shrink-0">
-                    <img v-if="fullConfig.teamLogoConfig.positiveLogoUrl" :src="fullConfig.teamLogoConfig.positiveLogoUrl" class="w-full h-full object-cover" alt="正方队徽" />
-                    <div v-else class="flex flex-col items-center justify-center text-gray-400">
-                      <UIcon name="i-lucide-image" class="w-8 h-8 mb-1" />
-                      <span class="text-xs">暂无图片</span>
+              <!-- 队徽设置（正反方并排） -->
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                <!-- 正方队伍队徽 -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <span class="inline-block w-3 h-3 rounded-full bg-red-500"></span>
+                    正方队伍队徽
+                  </label>
+                  <!-- 预览框和操作按钮上下排列 -->
+                  <div class="flex flex-col items-center gap-3">
+                    <!-- 预览框 -->
+                    <div class="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-gray-50">
+                      <img v-if="fullConfig.teamLogoConfig.positiveLogoUrl" :src="fullConfig.teamLogoConfig.positiveLogoUrl" class="w-full h-full object-cover" alt="正方队徽" />
+                      <div v-else class="flex flex-col items-center justify-center text-gray-400">
+                        <UIcon name="i-lucide-image" class="w-8 h-8 mb-1" />
+                        <span class="text-xs">暂无图片</span>
+                      </div>
                     </div>
-                  </div>
-                  <!-- 操作按钮 -->
-                  <div class="flex flex-col gap-2">
-                    <label class="px-4 py-2 border border-gray-300 rounded text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2">
-                      <UIcon name="i-lucide-upload" class="w-4 h-4" />
-                      选择图片
-                      <input type="file" accept="image/*" class="hidden" @change="(e: Event) => onLogoSelect(e, 'positiveLogoUrl')" />
-                    </label>
-                    <button
-                      v-if="fullConfig.teamLogoConfig.positiveLogoUrl"
-                      @click="removeLogo('positiveLogoUrl')"
-                      class="px-4 py-2 text-sm text-red-500 border border-red-200 rounded hover:bg-red-50 transition-colors flex items-center gap-2"
-                    >
-                      <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
-                      移除队徽
-                    </button>
+                    <!-- 操作按钮 -->
+                    <div class="flex gap-2">
+                      <label class="px-4 py-2 border border-gray-300 rounded text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2">
+                        <UIcon name="i-lucide-upload" class="w-4 h-4" />
+                        选择图片
+                        <input type="file" accept="image/*" class="hidden" @change="(e: Event) => onLogoSelect(e, 'positiveLogoUrl')" />
+                      </label>
+                      <button
+                        v-if="fullConfig.teamLogoConfig.positiveLogoUrl"
+                        @click="removeLogo('positiveLogoUrl')"
+                        class="px-4 py-2 text-sm text-red-500 border border-red-200 rounded hover:bg-red-50 transition-colors flex items-center gap-2"
+                      >
+                        <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
+                        移除队徽
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- 反方队伍队徽 -->
-              <div class="mb-4 border border-gray-200 rounded-lg p-4">
-                <label class="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-                  <span class="inline-block w-3 h-3 rounded-full bg-blue-500"></span>
-                  反方队伍队徽
-                </label>
-                <div class="flex items-start gap-4">
-                  <!-- 预览框 -->
-                  <div class="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-gray-50 flex-shrink-0">
-                    <img v-if="fullConfig.teamLogoConfig.negativeLogoUrl" :src="fullConfig.teamLogoConfig.negativeLogoUrl" class="w-full h-full object-cover" alt="反方队徽" />
-                    <div v-else class="flex flex-col items-center justify-center text-gray-400">
-                      <UIcon name="i-lucide-image" class="w-8 h-8 mb-1" />
-                      <span class="text-xs">暂无图片</span>
+                <!-- 反方队伍队徽 -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <span class="inline-block w-3 h-3 rounded-full bg-blue-500"></span>
+                    反方队伍队徽
+                  </label>
+                  <!-- 预览框和操作按钮上下排列 -->
+                  <div class="flex flex-col items-center gap-3">
+                    <!-- 预览框 -->
+                    <div class="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-gray-50">
+                      <img v-if="fullConfig.teamLogoConfig.negativeLogoUrl" :src="fullConfig.teamLogoConfig.negativeLogoUrl" class="w-full h-full object-cover" alt="反方队徽" />
+                      <div v-else class="flex flex-col items-center justify-center text-gray-400">
+                        <UIcon name="i-lucide-image" class="w-8 h-8 mb-1" />
+                        <span class="text-xs">暂无图片</span>
+                      </div>
                     </div>
-                  </div>
-                  <!-- 操作按钮 -->
-                  <div class="flex flex-col gap-2">
-                    <label class="px-4 py-2 border border-gray-300 rounded text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2">
-                      <UIcon name="i-lucide-upload" class="w-4 h-4" />
-                      选择图片
-                      <input type="file" accept="image/*" class="hidden" @change="(e: Event) => onLogoSelect(e, 'negativeLogoUrl')" />
-                    </label>
-                    <button
-                      v-if="fullConfig.teamLogoConfig.negativeLogoUrl"
-                      @click="removeLogo('negativeLogoUrl')"
-                      class="px-4 py-2 text-sm text-red-500 border border-red-200 rounded hover:bg-red-50 transition-colors flex items-center gap-2"
-                    >
-                      <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
-                      移除队徽
-                    </button>
+                    <!-- 操作按钮 -->
+                    <div class="flex gap-2">
+                      <label class="px-4 py-2 border border-gray-300 rounded text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2">
+                        <UIcon name="i-lucide-upload" class="w-4 h-4" />
+                        选择图片
+                        <input type="file" accept="image/*" class="hidden" @change="(e: Event) => onLogoSelect(e, 'negativeLogoUrl')" />
+                      </label>
+                      <button
+                        v-if="fullConfig.teamLogoConfig.negativeLogoUrl"
+                        @click="removeLogo('negativeLogoUrl')"
+                        class="px-4 py-2 text-sm text-red-500 border border-red-200 rounded hover:bg-red-50 transition-colors flex items-center gap-2"
+                      >
+                        <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
+                        移除队徽
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

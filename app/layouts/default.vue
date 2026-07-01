@@ -4,10 +4,10 @@
     <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-14">
-          <div class="flex items-center gap-3">
+          <NuxtLink to="/" class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
             <UIcon name="i-lucide-timer" class="w-6 h-6 text-primary" />
             <span class="text-lg font-bold">辩论计时器</span>
-          </div>
+          </NuxtLink>
           <!-- 用户信息区域 - 使用 ClientOnly 避免 SSR 水合不匹配 -->
           <ClientOnly>
             <div class="flex items-center gap-4">

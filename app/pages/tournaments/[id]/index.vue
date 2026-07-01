@@ -43,6 +43,10 @@ const statusColor = (s: string): 'primary' | 'secondary' | 'success' | 'info' | 
   return ({ pending: 'neutral', running: 'primary', finished: 'success' } as Record<string, any>)[s] || 'neutral'
 }
 const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
+const formatDateMonth = (dateStr: string) => {
+  const d = new Date(dateStr)
+  return `${d.getFullYear()}/${d.getMonth() + 1}`
+}
 
 // ── 解析 description 中的扩展信息 ──
 const extendedInfo = computed(() => {
@@ -124,7 +128,7 @@ onMounted(() => loadTournament())
               <span class="text-sm text-gray-400">·</span>
               <span class="text-sm text-gray-500">{{ formatLabel(tournament.format) }}</span>
               <span v-if="tournament.scheduledAt" class="text-sm text-gray-400">
-                · {{ new Date(tournament.scheduledAt).toLocaleDateString('zh-CN') }}
+                · {{ formatDateMonth(tournament.scheduledAt) }}
               </span>
             </div>
 

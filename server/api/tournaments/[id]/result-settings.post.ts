@@ -1,5 +1,5 @@
 // =====================================================================
-// 赛果设置 API —— 保存最佳辩手模式等赛果配置
+// 佳辩设置 API —— 保存最佳辩手模式等赛果配置
 // POST /api/tournaments/{id}/result-settings
 //
 // 请求体：
@@ -8,7 +8,7 @@
 //   }
 // =====================================================================
 
-import { readBody } from 'h3'
+import { readBody, createError } from 'h3'
 import { prisma } from '../../../lib/prisma'
 import { getUserFromEvent } from '../../../utils/auth'
 
