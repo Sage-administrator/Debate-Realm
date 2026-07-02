@@ -1,6 +1,6 @@
 # 辩论赛计时与评分系统
 
-基于 Nuxt 3 + Vue 3 + TypeScript + Prisma + SQLite 构建的全栈辩论赛计时评分系统，支持赛事管理、实时计时、积分统计、QQ Bot 联动、报名系统与辩题投票等功能。
+基于 Nuxt 4 + Vue 3 + TypeScript + Prisma + SQLite 构建的全栈辩论赛计时评分系统，支持赛事管理、实时计时、积分统计、QQ Bot 联动、报名系统与辩题投票等功能。
 
 ## ✨ 核心功能
 
@@ -46,8 +46,8 @@
 
 | 层级 | 技术 |
 |------|------|
-| 前端 | Nuxt 3 + Vue 3 + TypeScript + Nuxt UI v4 + Tailwind CSS |
-| 后端 | Nuxt Server Routes + Prisma ORM |
+| 前端 | Nuxt 4 + Vue 3 + TypeScript + Nuxt UI v4 + Tailwind CSS |
+| 后端 | Nuxt Server API Routes + Prisma ORM |
 | 数据库 | SQLite（可切换 MySQL/PostgreSQL） |
 | 实时通信 | WebSocket + 15s 轮询降级 |
 | 认证 | JWT + 单设备登录限制 |
@@ -56,7 +56,7 @@
 ## 📦 快速开始
 
 ### 环境要求
-- Node.js >= 18
+- Node.js >= 20（Nuxt 4 要求）
 - npm / pnpm / yarn / bun
 
 ### 安装依赖
