@@ -62,6 +62,8 @@ export const ModelName = {
   Tournament: 'Tournament',
   TournamentTeam: 'TournamentTeam',
   TournamentJudge: 'TournamentJudge',
+  TopicVote: 'TopicVote',
+  TopicVoteRecord: 'TopicVoteRecord',
   Match: 'Match',
   StandaloneMatch: 'StandaloneMatch',
   Timer: 'Timer',
@@ -69,7 +71,10 @@ export const ModelName = {
   TimerTemplate: 'TimerTemplate',
   UserLoginSession: 'UserLoginSession',
   DebateTimerProject: 'DebateTimerProject',
-  DebateTimerStage: 'DebateTimerStage'
+  DebateTimerStage: 'DebateTimerStage',
+  Registration: 'Registration',
+  RegistrationMember: 'RegistrationMember',
+  RegistrationField: 'RegistrationField'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -220,6 +225,11 @@ export const TournamentScalarFieldEnum = {
   topicPool: 'topicPool',
   bestDebaterMode: 'bestDebaterMode',
   assignments: 'assignments',
+  registrationOpen: 'registrationOpen',
+  registrationDeadline: 'registrationDeadline',
+  isPublic: 'isPublic',
+  teamSize: 'teamSize',
+  registrationInfo: 'registrationInfo',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -251,6 +261,40 @@ export const TournamentJudgeScalarFieldEnum = {
 } as const
 
 export type TournamentJudgeScalarFieldEnum = (typeof TournamentJudgeScalarFieldEnum)[keyof typeof TournamentJudgeScalarFieldEnum]
+
+
+export const TopicVoteScalarFieldEnum = {
+  id: 'id',
+  tournamentId: 'tournamentId',
+  matchId: 'matchId',
+  title: 'title',
+  description: 'description',
+  topics: 'topics',
+  status: 'status',
+  allowedVoters: 'allowedVoters',
+  multipleChoice: 'multipleChoice',
+  deadline: 'deadline',
+  showResults: 'showResults',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TopicVoteScalarFieldEnum = (typeof TopicVoteScalarFieldEnum)[keyof typeof TopicVoteScalarFieldEnum]
+
+
+export const TopicVoteRecordScalarFieldEnum = {
+  id: 'id',
+  voteId: 'voteId',
+  topicIndices: 'topicIndices',
+  userId: 'userId',
+  voterType: 'voterType',
+  voterName: 'voterName',
+  voterFingerprint: 'voterFingerprint',
+  createdAt: 'createdAt'
+} as const
+
+export type TopicVoteRecordScalarFieldEnum = (typeof TopicVoteRecordScalarFieldEnum)[keyof typeof TopicVoteRecordScalarFieldEnum]
 
 
 export const MatchScalarFieldEnum = {
@@ -395,6 +439,58 @@ export const DebateTimerStageScalarFieldEnum = {
 } as const
 
 export type DebateTimerStageScalarFieldEnum = (typeof DebateTimerStageScalarFieldEnum)[keyof typeof DebateTimerStageScalarFieldEnum]
+
+
+export const RegistrationScalarFieldEnum = {
+  id: 'id',
+  tournamentId: 'tournamentId',
+  type: 'type',
+  status: 'status',
+  userId: 'userId',
+  teamName: 'teamName',
+  submitterName: 'submitterName',
+  contactPhone: 'contactPhone',
+  contactEmail: 'contactEmail',
+  notes: 'notes',
+  customData: 'customData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  reviewedAt: 'reviewedAt',
+  reviewedBy: 'reviewedBy',
+  reviewNote: 'reviewNote',
+  convertedTeamId: 'convertedTeamId',
+  accountCreated: 'accountCreated'
+} as const
+
+export type RegistrationScalarFieldEnum = (typeof RegistrationScalarFieldEnum)[keyof typeof RegistrationScalarFieldEnum]
+
+
+export const RegistrationMemberScalarFieldEnum = {
+  id: 'id',
+  registrationId: 'registrationId',
+  name: 'name',
+  preferredPosition: 'preferredPosition',
+  experience: 'experience',
+  userId: 'userId',
+  createdAt: 'createdAt'
+} as const
+
+export type RegistrationMemberScalarFieldEnum = (typeof RegistrationMemberScalarFieldEnum)[keyof typeof RegistrationMemberScalarFieldEnum]
+
+
+export const RegistrationFieldScalarFieldEnum = {
+  id: 'id',
+  tournamentId: 'tournamentId',
+  fieldName: 'fieldName',
+  fieldKey: 'fieldKey',
+  fieldType: 'fieldType',
+  fieldOptions: 'fieldOptions',
+  required: 'required',
+  sortOrder: 'sortOrder',
+  appliesTo: 'appliesTo'
+} as const
+
+export type RegistrationFieldScalarFieldEnum = (typeof RegistrationFieldScalarFieldEnum)[keyof typeof RegistrationFieldScalarFieldEnum]
 
 
 export const SortOrder = {

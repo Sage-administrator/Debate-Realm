@@ -432,7 +432,10 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- 最外层容器：页面背景 -->
+  <div class="min-h-screen">
+    <!-- 内容容器：居中布局 -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- 加载中 -->
     <div v-if="loading" class="text-center py-12">
       <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto" />
@@ -441,9 +444,9 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
     <template v-else>
       <!-- 非 QQ 频道模式：禁止访问 -->
       <div v-if="!isQQBotTeam" class="text-center py-12">
-        <UIcon name="i-lucide-bot" class="w-16 h-16 mx-auto mb-4 text-gray-300" />
+        <UIcon name="i-lucide-bot" class="w-16 h-16 mx-auto mb-4 text-white/30" />
         <h2 class="text-xl font-bold mb-2">无法使用机器人功能</h2>
-        <p class="text-gray-500">
+        <p class="text-white/50">
           当前团队不是 QQ 频道模式，机器人功能仅限 QQ 频道模式团队使用。
         </p>
       </div>
@@ -456,7 +459,7 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
             <UIcon name="i-lucide-bot" class="w-8 h-8 text-primary" />
             <h1 class="text-2xl font-bold">机器人管理</h1>
           </div>
-          <p class="text-gray-500">
+          <p class="text-white/50">
             {{ teamName }}
             <UBadge label="QQ频道模式" color="primary" size="xs" variant="soft" class="ml-2" />
           </p>
@@ -472,38 +475,38 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
           </template>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <div class="text-xs text-gray-400 mb-1">连接状态</div>
+              <div class="text-xs text-white/40 mb-1">连接状态</div>
               <div class="flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full" :class="statusDotClass" />
                 <span class="text-sm font-medium">{{ connectionStatusLabel }}</span>
               </div>
             </div>
             <div>
-              <div class="text-xs text-gray-400 mb-1">Bot 名称</div>
+              <div class="text-xs text-white/40 mb-1">Bot 名称</div>
               <div class="text-sm font-medium">{{ botUsername || '-' }}</div>
             </div>
             <div>
-              <div class="text-xs text-gray-400 mb-1">已连接时长</div>
+              <div class="text-xs text-white/40 mb-1">已连接时长</div>
               <div class="text-sm font-medium">{{ formatDuration(connectedDuration) }}</div>
             </div>
             <div>
-              <div class="text-xs text-gray-400 mb-1">心跳间隔</div>
+              <div class="text-xs text-white/40 mb-1">心跳间隔</div>
               <div class="text-sm font-medium">{{ heartbeatInterval ? (heartbeatInterval / 1000).toFixed(1) + '秒' : '-' }}</div>
             </div>
             <div>
-              <div class="text-xs text-gray-400 mb-1">Session ID</div>
+              <div class="text-xs text-white/40 mb-1">Session ID</div>
               <div class="text-sm font-mono truncate max-w-32" :title="sessionId">{{ sessionId ? sessionId.slice(0, 8) + '...' : '-' }}</div>
             </div>
             <div>
-              <div class="text-xs text-gray-400 mb-1">Bot ID</div>
+              <div class="text-xs text-white/40 mb-1">Bot ID</div>
               <div class="text-sm font-mono truncate max-w-32" :title="botId">{{ botId || '-' }}</div>
             </div>
             <div>
-              <div class="text-xs text-gray-400 mb-1">App ID</div>
+              <div class="text-xs text-white/40 mb-1">App ID</div>
               <div class="text-sm font-mono">{{ botAppIdMasked || '-' }}</div>
             </div>
             <div>
-              <div class="text-xs text-gray-400 mb-1">当前频道</div>
+              <div class="text-xs text-white/40 mb-1">当前频道</div>
               <div class="text-sm font-mono">{{ botChannelId || '未设置' }}</div>
             </div>
           </div>
@@ -572,15 +575,15 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
               <div v-else-if="channelListError" class="text-red-500 text-sm py-2">
                 {{ channelListError }}
               </div>
-              <div v-else-if="channelList.length === 0" class="text-gray-400 text-sm py-2">
+              <div v-else-if="channelList.length === 0" class="text-white/40 text-sm py-2">
                 未找到任何频道，请确认 Bot 已被添加到频道中。
               </div>
               <div v-else class="space-y-2">
                 <div v-for="ch in channelList" :key="ch.id"
-                  class="flex items-center justify-between p-2 rounded hover:bg-gray-50 transition-colors">
+                  class="flex items-center justify-between p-2 rounded hover:bg-white/5 transition-colors">
                   <div class="flex-1 min-w-0">
                     <div class="text-sm font-medium truncate">{{ ch.name }}</div>
-                    <div class="text-xs text-gray-400 font-mono truncate">{{ ch.id }}</div>
+                    <div class="text-xs text-white/40 font-mono truncate">{{ ch.id }}</div>
                   </div>
                   <UButton
                     size="xs"
@@ -639,12 +642,12 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
                 <UIcon name="i-lucide-loader" class="w-5 h-5 animate-spin mx-auto" />
               </div>
               <div v-else-if="arenaError" class="text-red-500 text-sm py-2">{{ arenaError }}</div>
-              <div v-else-if="arenaList.length === 0" class="text-gray-400 text-sm py-2">
-                暂无赛场记录。在 QQ 频道中使用 <code class="bg-gray-100 px-1 rounded">/设置赛场 4v4</code> 创建赛场。
+              <div v-else-if="arenaList.length === 0" class="text-white/40 text-sm py-2">
+                暂无赛场记录。在 QQ 频道中使用 <code class="bg-white/10 px-1 rounded">/设置赛场 4v4</code> 创建赛场。
               </div>
               <div v-else class="space-y-2">
                 <div v-for="arena in arenaList" :key="arena.id"
-                  class="flex items-center justify-between p-2 rounded hover:bg-gray-50 transition-colors">
+                  class="flex items-center justify-between p-2 rounded hover:bg-white/5 transition-colors">
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
                       <span class="text-sm font-medium">{{ arena.matchFormat }}</span>
@@ -652,7 +655,7 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
                         :color="arena.status === 'active' ? 'success' : 'neutral'"
                         size="xs" variant="soft" />
                     </div>
-                    <div class="text-xs text-gray-400 mt-0.5">
+                    <div class="text-xs text-white/40 mt-0.5">
                       {{ arena.roleCount }} 个身份组 · {{ arena.totalClaims }} 人已认领
                     </div>
                   </div>
@@ -678,20 +681,20 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
                 <UIcon name="i-lucide-loader" class="w-5 h-5 animate-spin mx-auto" />
               </div>
               <div v-else-if="permLogError" class="text-red-500 text-sm py-2">{{ permLogError }}</div>
-              <div v-else-if="permLogs.length === 0" class="text-gray-400 text-sm py-2">
+              <div v-else-if="permLogs.length === 0" class="text-white/40 text-sm py-2">
                 暂无权限操作记录。权限变更后会自动记录在此。
               </div>
               <div v-else class="space-y-1.5 max-h-80 overflow-y-auto">
                 <div v-for="log in permLogs" :key="log.id"
-                  class="flex items-center gap-2 p-1.5 rounded text-xs hover:bg-gray-50">
+                  class="flex items-center gap-2 p-1.5 rounded text-xs hover:bg-white/5">
                   <UBadge :label="actionLabels[log.action] || log.action"
                     :color="log.action.includes('DENY') || log.action.includes('REVOKE') ? 'error' : 'success'"
                     size="xs" variant="soft" />
                   <span class="font-medium truncate flex-1">{{ log.targetName }}</span>
-                  <span class="text-gray-400 shrink-0">{{ new Date(log.createdAt).toLocaleTimeString() }}</span>
+                  <span class="text-white/40 shrink-0">{{ new Date(log.createdAt).toLocaleTimeString() }}</span>
                 </div>
               </div>
-              <div v-if="permLogsTotal > 0" class="text-xs text-gray-400 mt-2 text-center">
+              <div v-if="permLogsTotal > 0" class="text-xs text-white/40 mt-2 text-center">
                 共 {{ permLogsTotal }} 条记录，显示最近 {{ permLogs.length }} 条
               </div>
             </UCard>
@@ -714,7 +717,7 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
               <!-- 基本信息 -->
               <div class="flex items-center justify-between">
                 <div class="text-sm">
-                  <span class="text-gray-400">比赛形式：</span>
+                  <span class="text-white/40">比赛形式：</span>
                   <strong>{{ arenaDetail.matchFormat }}</strong>
                   <UBadge :label="arenaDetail.status === 'active' ? '活跃' : '已关闭'"
                     :color="arenaDetail.status === 'active' ? 'success' : 'neutral'"
@@ -733,12 +736,12 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
               <!-- 身份组列表 -->
               <div class="space-y-2">
                 <div v-for="role in arenaDetail.roles" :key="role.id"
-                  class="p-3 rounded bg-gray-50 border border-gray-100">
+                  class="p-3 rounded bg-white/5 border border-white/10">
                   <div class="flex items-center justify-between mb-1">
                     <div class="flex items-center gap-2">
                       <span class="text-sm font-medium">{{ role.label }}</span>
                       <UBadge :label="sideLabels[role.side] || role.side" size="xs" variant="soft" />
-                      <span class="text-xs text-gray-400">
+                      <span class="text-xs text-white/40">
                         {{ role.claims.length }}/{{ role.maxClaims }}
                       </span>
                       <span v-if="role.isFull" class="text-xs text-red-400">已满</span>
@@ -767,7 +770,7 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
                       <span class="ml-0.5 opacity-50">x</span>
                     </UBadge>
                   </div>
-                  <div v-else class="text-xs text-gray-300 mt-1">暂无认领</div>
+                  <div v-else class="text-xs text-white/30 mt-1">暂无认领</div>
                 </div>
               </div>
             </div>
@@ -779,28 +782,29 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
           <template #header>
             <h2 class="font-bold">使用说明</h2>
           </template>
-          <div class="text-sm text-gray-600 space-y-2">
+          <div class="text-sm text-white/60 space-y-2">
             <p>1. <strong>App ID 和 App Secret</strong> 在 <a href="https://q.qq.com/" target="_blank" class="text-primary underline">QQ 开放平台</a> 创建机器人后获取。</p>
             <p>2. 配置完成后，系统会自动连接 Bot WebSocket，<strong>频道列表</strong>显示 Bot 所在的服务器。</p>
             <p>3. <strong>连接/断开</strong>可控制 WebSocket 状态；<strong>解绑</strong>会清除所有配置和连接。</p>
             <p>4. Bot 支持命令：</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-1">
-              <div><code class="bg-gray-100 px-1 rounded text-xs">/ping</code> <span class="text-xs text-gray-400">测试连接</span></div>
-              <div><code class="bg-gray-100 px-1 rounded text-xs">/help</code> <span class="text-xs text-gray-400">帮助信息</span></div>
-              <div><code class="bg-gray-100 px-1 rounded text-xs">/设置赛场 4v4</code> <span class="text-xs text-gray-400">创建赛场</span></div>
-              <div><code class="bg-gray-100 px-1 rounded text-xs">/结束比赛</code> <span class="text-xs text-gray-400">关闭赛场</span></div>
-              <div><code class="bg-gray-100 px-1 rounded text-xs">/认领 正方一辩</code> <span class="text-xs text-gray-400">认领身份</span></div>
-              <div><code class="bg-gray-100 px-1 rounded text-xs">/取消认领</code> <span class="text-xs text-gray-400">取消身份</span></div>
-              <div><code class="bg-gray-100 px-1 rounded text-xs">/赛场状态</code> <span class="text-xs text-gray-400">查看赛场</span></div>
-              <div><code class="bg-gray-100 px-1 rounded text-xs">/辩题</code> <span class="text-xs text-gray-400">查看辩题库</span></div>
-              <div><code class="bg-gray-100 px-1 rounded text-xs">/赛程</code> <span class="text-xs text-gray-400">查看赛程</span></div>
-              <div><code class="bg-gray-100 px-1 rounded text-xs">/下一场</code> <span class="text-xs text-gray-400">下一场比赛</span></div>
-              <div><code class="bg-gray-100 px-1 rounded text-xs">/排名</code> <span class="text-xs text-gray-400">查看排名</span></div>
-              <div><code class="bg-gray-100 px-1 rounded text-xs">/status</code> <span class="text-xs text-gray-400">Bot 状态</span></div>
+              <div><code class="bg-white/10 px-1 rounded text-xs">/ping</code> <span class="text-xs text-white/40">测试连接</span></div>
+              <div><code class="bg-white/10 px-1 rounded text-xs">/help</code> <span class="text-xs text-white/40">帮助信息</span></div>
+              <div><code class="bg-white/10 px-1 rounded text-xs">/设置赛场 4v4</code> <span class="text-xs text-white/40">创建赛场</span></div>
+              <div><code class="bg-white/10 px-1 rounded text-xs">/结束比赛</code> <span class="text-xs text-white/40">关闭赛场</span></div>
+              <div><code class="bg-white/10 px-1 rounded text-xs">/认领 正方一辩</code> <span class="text-xs text-white/40">认领身份</span></div>
+              <div><code class="bg-white/10 px-1 rounded text-xs">/取消认领</code> <span class="text-xs text-white/40">取消身份</span></div>
+              <div><code class="bg-white/10 px-1 rounded text-xs">/赛场状态</code> <span class="text-xs text-white/40">查看赛场</span></div>
+              <div><code class="bg-white/10 px-1 rounded text-xs">/辩题</code> <span class="text-xs text-white/40">查看辩题库</span></div>
+              <div><code class="bg-white/10 px-1 rounded text-xs">/赛程</code> <span class="text-xs text-white/40">查看赛程</span></div>
+              <div><code class="bg-white/10 px-1 rounded text-xs">/下一场</code> <span class="text-xs text-white/40">下一场比赛</span></div>
+              <div><code class="bg-white/10 px-1 rounded text-xs">/排名</code> <span class="text-xs text-white/40">查看排名</span></div>
+              <div><code class="bg-white/10 px-1 rounded text-xs">/status</code> <span class="text-xs text-white/40">Bot 状态</span></div>
             </div>
           </div>
         </UCard>
       </template>
     </template>
+  </div>
   </div>
 </template>

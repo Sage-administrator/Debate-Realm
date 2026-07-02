@@ -1,11 +1,12 @@
 import { readBody } from 'h3'
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
+import { canWriteTournament } from '../../../utils/tournament-auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    // 1. 鉴权
-    const user = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion
+    const user = await getUserFromEventWithSession(event, prisma)
     const id = getRouterParam(event, 'id')!
 
     // 读取请求体的 currentVersion
@@ -25,11 +26,9 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: '40005场次未处于删除状态，无需恢复' })
     }
 
-    // 权限校验
-    if (user.role !== 'system_admin') {
-      if (match.tournament?.team.adminId !== user.userId) {
-        throw createError({ statusCode: 403, statusMessage: '40003权限不足' })
-      }
+    // 权限校验：使用统一的权限判定函数
+    if (!match.tournament || !canWriteTournament(user, match.tournament, match.tournament.team)) {
+      throw createError({ statusCode: 403, statusMessage: '40003权限不足' })
     }
 
     // 3. 读取请求体的 currentVersion，做乐观锁校验

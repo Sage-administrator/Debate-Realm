@@ -3,18 +3,31 @@
 // 请求体：{ matchId, judgeName, dimensions, reason, scoreTeamA, scoreTeamB, winner, bestDebaterA?, bestDebaterB? }
 // ════════════════════════════════════════════════════
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
+import { canWriteTournament } from '../../../utils/tournament-auth'
 import { submitScore } from '../../../lib/bot-scoring'
 import { notifyScoreSubmitted } from '../../../lib/bot-notifications'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion，
+    // 否则被踢下线的旧 token 在 7 天过期前仍可提交评分
+    const currentUser = await getUserFromEventWithSession(event, prisma)
     const tournamentId = getRouterParam(event, 'id')!
 
-    // 权限校验
-    if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
-      throw createError({ statusCode: 403, statusMessage: '仅团队管理员可提交评分' })
+    // 获取赛事信息用于权限校验
+    const tournament = await prisma.tournament.findUnique({
+      where: { id: tournamentId },
+      include: { team: true },
+    })
+
+    if (!tournament) {
+      throw createError({ statusCode: 404, statusMessage: '赛事不存在' })
+    }
+
+    // 修复：使用统一的权限判定函数，避免仅校验 role 而未校验 teamId
+    if (!canWriteTournament(currentUser, tournament, tournament.team)) {
+      throw createError({ statusCode: 403, statusMessage: '仅赛事所属团队管理员可提交评分' })
     }
 
     const body = await readBody(event)

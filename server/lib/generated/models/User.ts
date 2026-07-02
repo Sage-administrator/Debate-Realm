@@ -249,10 +249,12 @@ export type UserWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   team?: Prisma.XOR<Prisma.TeamNullableScalarRelationFilter, Prisma.TeamWhereInput> | null
+  adminOfTeams?: Prisma.TeamListRelationFilter
   teamMemberships?: Prisma.TeamMemberListRelationFilter
   standaloneMatches?: Prisma.StandaloneMatchListRelationFilter
   loginSessions?: Prisma.UserLoginSessionListRelationFilter
   timerProjects?: Prisma.DebateTimerProjectListRelationFilter
+  registrations?: Prisma.RegistrationListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -266,10 +268,12 @@ export type UserOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   team?: Prisma.TeamOrderByWithRelationInput
+  adminOfTeams?: Prisma.TeamOrderByRelationAggregateInput
   teamMemberships?: Prisma.TeamMemberOrderByRelationAggregateInput
   standaloneMatches?: Prisma.StandaloneMatchOrderByRelationAggregateInput
   loginSessions?: Prisma.UserLoginSessionOrderByRelationAggregateInput
   timerProjects?: Prisma.DebateTimerProjectOrderByRelationAggregateInput
+  registrations?: Prisma.RegistrationOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -286,10 +290,12 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   team?: Prisma.XOR<Prisma.TeamNullableScalarRelationFilter, Prisma.TeamWhereInput> | null
+  adminOfTeams?: Prisma.TeamListRelationFilter
   teamMemberships?: Prisma.TeamMemberListRelationFilter
   standaloneMatches?: Prisma.StandaloneMatchListRelationFilter
   loginSessions?: Prisma.UserLoginSessionListRelationFilter
   timerProjects?: Prisma.DebateTimerProjectListRelationFilter
+  registrations?: Prisma.RegistrationListRelationFilter
 }, "id" | "username">
 
 export type UserOrderByWithAggregationInput = {
@@ -334,10 +340,12 @@ export type UserCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   team?: Prisma.TeamCreateNestedOneWithoutUsersInput
+  adminOfTeams?: Prisma.TeamCreateNestedManyWithoutAdminInput
   teamMemberships?: Prisma.TeamMemberCreateNestedManyWithoutUserInput
   standaloneMatches?: Prisma.StandaloneMatchCreateNestedManyWithoutUserInput
   loginSessions?: Prisma.UserLoginSessionCreateNestedManyWithoutUserInput
   timerProjects?: Prisma.DebateTimerProjectCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -350,10 +358,12 @@ export type UserUncheckedCreateInput = {
   tokenVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  adminOfTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutAdminInput
   teamMemberships?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutUserInput
   standaloneMatches?: Prisma.StandaloneMatchUncheckedCreateNestedManyWithoutUserInput
   loginSessions?: Prisma.UserLoginSessionUncheckedCreateNestedManyWithoutUserInput
   timerProjects?: Prisma.DebateTimerProjectUncheckedCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -366,10 +376,12 @@ export type UserUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   team?: Prisma.TeamUpdateOneWithoutUsersNestedInput
+  adminOfTeams?: Prisma.TeamUpdateManyWithoutAdminNestedInput
   teamMemberships?: Prisma.TeamMemberUpdateManyWithoutUserNestedInput
   standaloneMatches?: Prisma.StandaloneMatchUpdateManyWithoutUserNestedInput
   loginSessions?: Prisma.UserLoginSessionUpdateManyWithoutUserNestedInput
   timerProjects?: Prisma.DebateTimerProjectUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -382,10 +394,12 @@ export type UserUncheckedUpdateInput = {
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  adminOfTeams?: Prisma.TeamUncheckedUpdateManyWithoutAdminNestedInput
   teamMemberships?: Prisma.TeamMemberUncheckedUpdateManyWithoutUserNestedInput
   standaloneMatches?: Prisma.StandaloneMatchUncheckedUpdateManyWithoutUserNestedInput
   loginSessions?: Prisma.UserLoginSessionUncheckedUpdateManyWithoutUserNestedInput
   timerProjects?: Prisma.DebateTimerProjectUncheckedUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -467,6 +481,11 @@ export type UserSumOrderByAggregateInput = {
   tokenVersion?: Prisma.SortOrder
 }
 
+export type UserScalarRelationFilter = {
+  is?: Prisma.UserWhereInput
+  isNot?: Prisma.UserWhereInput
+}
+
 export type UserListRelationFilter = {
   every?: Prisma.UserWhereInput
   some?: Prisma.UserWhereInput
@@ -475,11 +494,6 @@ export type UserListRelationFilter = {
 
 export type UserOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
-}
-
-export type UserScalarRelationFilter = {
-  is?: Prisma.UserWhereInput
-  isNot?: Prisma.UserWhereInput
 }
 
 export type UserNullableScalarRelationFilter = {
@@ -507,6 +521,12 @@ export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
 }
 
+export type UserCreateNestedOneWithoutAdminOfTeamsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAdminOfTeamsInput, Prisma.UserUncheckedCreateWithoutAdminOfTeamsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAdminOfTeamsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
 export type UserCreateNestedManyWithoutTeamInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutTeamInput, Prisma.UserUncheckedCreateWithoutTeamInput> | Prisma.UserCreateWithoutTeamInput[] | Prisma.UserUncheckedCreateWithoutTeamInput[]
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutTeamInput | Prisma.UserCreateOrConnectWithoutTeamInput[]
@@ -519,6 +539,14 @@ export type UserUncheckedCreateNestedManyWithoutTeamInput = {
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutTeamInput | Prisma.UserCreateOrConnectWithoutTeamInput[]
   createMany?: Prisma.UserCreateManyTeamInputEnvelope
   connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[]
+}
+
+export type UserUpdateOneRequiredWithoutAdminOfTeamsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAdminOfTeamsInput, Prisma.UserUncheckedCreateWithoutAdminOfTeamsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAdminOfTeamsInput
+  upsert?: Prisma.UserUpsertWithoutAdminOfTeamsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAdminOfTeamsInput, Prisma.UserUpdateWithoutAdminOfTeamsInput>, Prisma.UserUncheckedUpdateWithoutAdminOfTeamsInput>
 }
 
 export type UserUpdateManyWithoutTeamNestedInput = {
@@ -607,6 +635,61 @@ export type UserUpdateOneWithoutTimerProjectsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTimerProjectsInput, Prisma.UserUpdateWithoutTimerProjectsInput>, Prisma.UserUncheckedUpdateWithoutTimerProjectsInput>
 }
 
+export type UserCreateNestedOneWithoutRegistrationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRegistrationsInput, Prisma.UserUncheckedCreateWithoutRegistrationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRegistrationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutRegistrationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRegistrationsInput, Prisma.UserUncheckedCreateWithoutRegistrationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRegistrationsInput
+  upsert?: Prisma.UserUpsertWithoutRegistrationsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRegistrationsInput, Prisma.UserUpdateWithoutRegistrationsInput>, Prisma.UserUncheckedUpdateWithoutRegistrationsInput>
+}
+
+export type UserCreateWithoutAdminOfTeamsInput = {
+  id?: string
+  username: string
+  password: string
+  role?: string
+  mode?: string
+  tokenVersion?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  team?: Prisma.TeamCreateNestedOneWithoutUsersInput
+  teamMemberships?: Prisma.TeamMemberCreateNestedManyWithoutUserInput
+  standaloneMatches?: Prisma.StandaloneMatchCreateNestedManyWithoutUserInput
+  loginSessions?: Prisma.UserLoginSessionCreateNestedManyWithoutUserInput
+  timerProjects?: Prisma.DebateTimerProjectCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutAdminOfTeamsInput = {
+  id?: string
+  username: string
+  password: string
+  teamId?: string | null
+  role?: string
+  mode?: string
+  tokenVersion?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  teamMemberships?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutUserInput
+  standaloneMatches?: Prisma.StandaloneMatchUncheckedCreateNestedManyWithoutUserInput
+  loginSessions?: Prisma.UserLoginSessionUncheckedCreateNestedManyWithoutUserInput
+  timerProjects?: Prisma.DebateTimerProjectUncheckedCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutAdminOfTeamsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutAdminOfTeamsInput, Prisma.UserUncheckedCreateWithoutAdminOfTeamsInput>
+}
+
 export type UserCreateWithoutTeamInput = {
   id?: string
   username: string
@@ -616,10 +699,12 @@ export type UserCreateWithoutTeamInput = {
   tokenVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  adminOfTeams?: Prisma.TeamCreateNestedManyWithoutAdminInput
   teamMemberships?: Prisma.TeamMemberCreateNestedManyWithoutUserInput
   standaloneMatches?: Prisma.StandaloneMatchCreateNestedManyWithoutUserInput
   loginSessions?: Prisma.UserLoginSessionCreateNestedManyWithoutUserInput
   timerProjects?: Prisma.DebateTimerProjectCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTeamInput = {
@@ -631,10 +716,12 @@ export type UserUncheckedCreateWithoutTeamInput = {
   tokenVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  adminOfTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutAdminInput
   teamMemberships?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutUserInput
   standaloneMatches?: Prisma.StandaloneMatchUncheckedCreateNestedManyWithoutUserInput
   loginSessions?: Prisma.UserLoginSessionUncheckedCreateNestedManyWithoutUserInput
   timerProjects?: Prisma.DebateTimerProjectUncheckedCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTeamInput = {
@@ -644,6 +731,51 @@ export type UserCreateOrConnectWithoutTeamInput = {
 
 export type UserCreateManyTeamInputEnvelope = {
   data: Prisma.UserCreateManyTeamInput | Prisma.UserCreateManyTeamInput[]
+}
+
+export type UserUpsertWithoutAdminOfTeamsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutAdminOfTeamsInput, Prisma.UserUncheckedUpdateWithoutAdminOfTeamsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutAdminOfTeamsInput, Prisma.UserUncheckedCreateWithoutAdminOfTeamsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutAdminOfTeamsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutAdminOfTeamsInput, Prisma.UserUncheckedUpdateWithoutAdminOfTeamsInput>
+}
+
+export type UserUpdateWithoutAdminOfTeamsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  mode?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  team?: Prisma.TeamUpdateOneWithoutUsersNestedInput
+  teamMemberships?: Prisma.TeamMemberUpdateManyWithoutUserNestedInput
+  standaloneMatches?: Prisma.StandaloneMatchUpdateManyWithoutUserNestedInput
+  loginSessions?: Prisma.UserLoginSessionUpdateManyWithoutUserNestedInput
+  timerProjects?: Prisma.DebateTimerProjectUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutAdminOfTeamsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  mode?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  teamMemberships?: Prisma.TeamMemberUncheckedUpdateManyWithoutUserNestedInput
+  standaloneMatches?: Prisma.StandaloneMatchUncheckedUpdateManyWithoutUserNestedInput
+  loginSessions?: Prisma.UserLoginSessionUncheckedUpdateManyWithoutUserNestedInput
+  timerProjects?: Prisma.DebateTimerProjectUncheckedUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithWhereUniqueWithoutTeamInput = {
@@ -687,9 +819,11 @@ export type UserCreateWithoutTeamMembershipsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   team?: Prisma.TeamCreateNestedOneWithoutUsersInput
+  adminOfTeams?: Prisma.TeamCreateNestedManyWithoutAdminInput
   standaloneMatches?: Prisma.StandaloneMatchCreateNestedManyWithoutUserInput
   loginSessions?: Prisma.UserLoginSessionCreateNestedManyWithoutUserInput
   timerProjects?: Prisma.DebateTimerProjectCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTeamMembershipsInput = {
@@ -702,9 +836,11 @@ export type UserUncheckedCreateWithoutTeamMembershipsInput = {
   tokenVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  adminOfTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutAdminInput
   standaloneMatches?: Prisma.StandaloneMatchUncheckedCreateNestedManyWithoutUserInput
   loginSessions?: Prisma.UserLoginSessionUncheckedCreateNestedManyWithoutUserInput
   timerProjects?: Prisma.DebateTimerProjectUncheckedCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTeamMembershipsInput = {
@@ -733,9 +869,11 @@ export type UserUpdateWithoutTeamMembershipsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   team?: Prisma.TeamUpdateOneWithoutUsersNestedInput
+  adminOfTeams?: Prisma.TeamUpdateManyWithoutAdminNestedInput
   standaloneMatches?: Prisma.StandaloneMatchUpdateManyWithoutUserNestedInput
   loginSessions?: Prisma.UserLoginSessionUpdateManyWithoutUserNestedInput
   timerProjects?: Prisma.DebateTimerProjectUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTeamMembershipsInput = {
@@ -748,9 +886,11 @@ export type UserUncheckedUpdateWithoutTeamMembershipsInput = {
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  adminOfTeams?: Prisma.TeamUncheckedUpdateManyWithoutAdminNestedInput
   standaloneMatches?: Prisma.StandaloneMatchUncheckedUpdateManyWithoutUserNestedInput
   loginSessions?: Prisma.UserLoginSessionUncheckedUpdateManyWithoutUserNestedInput
   timerProjects?: Prisma.DebateTimerProjectUncheckedUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutStandaloneMatchesInput = {
@@ -763,9 +903,11 @@ export type UserCreateWithoutStandaloneMatchesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   team?: Prisma.TeamCreateNestedOneWithoutUsersInput
+  adminOfTeams?: Prisma.TeamCreateNestedManyWithoutAdminInput
   teamMemberships?: Prisma.TeamMemberCreateNestedManyWithoutUserInput
   loginSessions?: Prisma.UserLoginSessionCreateNestedManyWithoutUserInput
   timerProjects?: Prisma.DebateTimerProjectCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutStandaloneMatchesInput = {
@@ -778,9 +920,11 @@ export type UserUncheckedCreateWithoutStandaloneMatchesInput = {
   tokenVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  adminOfTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutAdminInput
   teamMemberships?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutUserInput
   loginSessions?: Prisma.UserLoginSessionUncheckedCreateNestedManyWithoutUserInput
   timerProjects?: Prisma.DebateTimerProjectUncheckedCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutStandaloneMatchesInput = {
@@ -809,9 +953,11 @@ export type UserUpdateWithoutStandaloneMatchesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   team?: Prisma.TeamUpdateOneWithoutUsersNestedInput
+  adminOfTeams?: Prisma.TeamUpdateManyWithoutAdminNestedInput
   teamMemberships?: Prisma.TeamMemberUpdateManyWithoutUserNestedInput
   loginSessions?: Prisma.UserLoginSessionUpdateManyWithoutUserNestedInput
   timerProjects?: Prisma.DebateTimerProjectUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutStandaloneMatchesInput = {
@@ -824,9 +970,11 @@ export type UserUncheckedUpdateWithoutStandaloneMatchesInput = {
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  adminOfTeams?: Prisma.TeamUncheckedUpdateManyWithoutAdminNestedInput
   teamMemberships?: Prisma.TeamMemberUncheckedUpdateManyWithoutUserNestedInput
   loginSessions?: Prisma.UserLoginSessionUncheckedUpdateManyWithoutUserNestedInput
   timerProjects?: Prisma.DebateTimerProjectUncheckedUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutLoginSessionsInput = {
@@ -839,9 +987,11 @@ export type UserCreateWithoutLoginSessionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   team?: Prisma.TeamCreateNestedOneWithoutUsersInput
+  adminOfTeams?: Prisma.TeamCreateNestedManyWithoutAdminInput
   teamMemberships?: Prisma.TeamMemberCreateNestedManyWithoutUserInput
   standaloneMatches?: Prisma.StandaloneMatchCreateNestedManyWithoutUserInput
   timerProjects?: Prisma.DebateTimerProjectCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutLoginSessionsInput = {
@@ -854,9 +1004,11 @@ export type UserUncheckedCreateWithoutLoginSessionsInput = {
   tokenVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  adminOfTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutAdminInput
   teamMemberships?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutUserInput
   standaloneMatches?: Prisma.StandaloneMatchUncheckedCreateNestedManyWithoutUserInput
   timerProjects?: Prisma.DebateTimerProjectUncheckedCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutLoginSessionsInput = {
@@ -885,9 +1037,11 @@ export type UserUpdateWithoutLoginSessionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   team?: Prisma.TeamUpdateOneWithoutUsersNestedInput
+  adminOfTeams?: Prisma.TeamUpdateManyWithoutAdminNestedInput
   teamMemberships?: Prisma.TeamMemberUpdateManyWithoutUserNestedInput
   standaloneMatches?: Prisma.StandaloneMatchUpdateManyWithoutUserNestedInput
   timerProjects?: Prisma.DebateTimerProjectUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLoginSessionsInput = {
@@ -900,9 +1054,11 @@ export type UserUncheckedUpdateWithoutLoginSessionsInput = {
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  adminOfTeams?: Prisma.TeamUncheckedUpdateManyWithoutAdminNestedInput
   teamMemberships?: Prisma.TeamMemberUncheckedUpdateManyWithoutUserNestedInput
   standaloneMatches?: Prisma.StandaloneMatchUncheckedUpdateManyWithoutUserNestedInput
   timerProjects?: Prisma.DebateTimerProjectUncheckedUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTimerProjectsInput = {
@@ -915,9 +1071,11 @@ export type UserCreateWithoutTimerProjectsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   team?: Prisma.TeamCreateNestedOneWithoutUsersInput
+  adminOfTeams?: Prisma.TeamCreateNestedManyWithoutAdminInput
   teamMemberships?: Prisma.TeamMemberCreateNestedManyWithoutUserInput
   standaloneMatches?: Prisma.StandaloneMatchCreateNestedManyWithoutUserInput
   loginSessions?: Prisma.UserLoginSessionCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTimerProjectsInput = {
@@ -930,9 +1088,11 @@ export type UserUncheckedCreateWithoutTimerProjectsInput = {
   tokenVersion?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  adminOfTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutAdminInput
   teamMemberships?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutUserInput
   standaloneMatches?: Prisma.StandaloneMatchUncheckedCreateNestedManyWithoutUserInput
   loginSessions?: Prisma.UserLoginSessionUncheckedCreateNestedManyWithoutUserInput
+  registrations?: Prisma.RegistrationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTimerProjectsInput = {
@@ -961,9 +1121,11 @@ export type UserUpdateWithoutTimerProjectsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   team?: Prisma.TeamUpdateOneWithoutUsersNestedInput
+  adminOfTeams?: Prisma.TeamUpdateManyWithoutAdminNestedInput
   teamMemberships?: Prisma.TeamMemberUpdateManyWithoutUserNestedInput
   standaloneMatches?: Prisma.StandaloneMatchUpdateManyWithoutUserNestedInput
   loginSessions?: Prisma.UserLoginSessionUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTimerProjectsInput = {
@@ -976,9 +1138,95 @@ export type UserUncheckedUpdateWithoutTimerProjectsInput = {
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  adminOfTeams?: Prisma.TeamUncheckedUpdateManyWithoutAdminNestedInput
   teamMemberships?: Prisma.TeamMemberUncheckedUpdateManyWithoutUserNestedInput
   standaloneMatches?: Prisma.StandaloneMatchUncheckedUpdateManyWithoutUserNestedInput
   loginSessions?: Prisma.UserLoginSessionUncheckedUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutRegistrationsInput = {
+  id?: string
+  username: string
+  password: string
+  role?: string
+  mode?: string
+  tokenVersion?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  team?: Prisma.TeamCreateNestedOneWithoutUsersInput
+  adminOfTeams?: Prisma.TeamCreateNestedManyWithoutAdminInput
+  teamMemberships?: Prisma.TeamMemberCreateNestedManyWithoutUserInput
+  standaloneMatches?: Prisma.StandaloneMatchCreateNestedManyWithoutUserInput
+  loginSessions?: Prisma.UserLoginSessionCreateNestedManyWithoutUserInput
+  timerProjects?: Prisma.DebateTimerProjectCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutRegistrationsInput = {
+  id?: string
+  username: string
+  password: string
+  teamId?: string | null
+  role?: string
+  mode?: string
+  tokenVersion?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  adminOfTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutAdminInput
+  teamMemberships?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutUserInput
+  standaloneMatches?: Prisma.StandaloneMatchUncheckedCreateNestedManyWithoutUserInput
+  loginSessions?: Prisma.UserLoginSessionUncheckedCreateNestedManyWithoutUserInput
+  timerProjects?: Prisma.DebateTimerProjectUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutRegistrationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutRegistrationsInput, Prisma.UserUncheckedCreateWithoutRegistrationsInput>
+}
+
+export type UserUpsertWithoutRegistrationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutRegistrationsInput, Prisma.UserUncheckedUpdateWithoutRegistrationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutRegistrationsInput, Prisma.UserUncheckedCreateWithoutRegistrationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutRegistrationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutRegistrationsInput, Prisma.UserUncheckedUpdateWithoutRegistrationsInput>
+}
+
+export type UserUpdateWithoutRegistrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  mode?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  team?: Prisma.TeamUpdateOneWithoutUsersNestedInput
+  adminOfTeams?: Prisma.TeamUpdateManyWithoutAdminNestedInput
+  teamMemberships?: Prisma.TeamMemberUpdateManyWithoutUserNestedInput
+  standaloneMatches?: Prisma.StandaloneMatchUpdateManyWithoutUserNestedInput
+  loginSessions?: Prisma.UserLoginSessionUpdateManyWithoutUserNestedInput
+  timerProjects?: Prisma.DebateTimerProjectUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutRegistrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  mode?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  adminOfTeams?: Prisma.TeamUncheckedUpdateManyWithoutAdminNestedInput
+  teamMemberships?: Prisma.TeamMemberUncheckedUpdateManyWithoutUserNestedInput
+  standaloneMatches?: Prisma.StandaloneMatchUncheckedUpdateManyWithoutUserNestedInput
+  loginSessions?: Prisma.UserLoginSessionUncheckedUpdateManyWithoutUserNestedInput
+  timerProjects?: Prisma.DebateTimerProjectUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyTeamInput = {
@@ -1001,10 +1249,12 @@ export type UserUpdateWithoutTeamInput = {
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  adminOfTeams?: Prisma.TeamUpdateManyWithoutAdminNestedInput
   teamMemberships?: Prisma.TeamMemberUpdateManyWithoutUserNestedInput
   standaloneMatches?: Prisma.StandaloneMatchUpdateManyWithoutUserNestedInput
   loginSessions?: Prisma.UserLoginSessionUpdateManyWithoutUserNestedInput
   timerProjects?: Prisma.DebateTimerProjectUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTeamInput = {
@@ -1016,10 +1266,12 @@ export type UserUncheckedUpdateWithoutTeamInput = {
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  adminOfTeams?: Prisma.TeamUncheckedUpdateManyWithoutAdminNestedInput
   teamMemberships?: Prisma.TeamMemberUncheckedUpdateManyWithoutUserNestedInput
   standaloneMatches?: Prisma.StandaloneMatchUncheckedUpdateManyWithoutUserNestedInput
   loginSessions?: Prisma.UserLoginSessionUncheckedUpdateManyWithoutUserNestedInput
   timerProjects?: Prisma.DebateTimerProjectUncheckedUpdateManyWithoutUserNestedInput
+  registrations?: Prisma.RegistrationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutTeamInput = {
@@ -1039,17 +1291,21 @@ export type UserUncheckedUpdateManyWithoutTeamInput = {
  */
 
 export type UserCountOutputType = {
+  adminOfTeams: number
   teamMemberships: number
   standaloneMatches: number
   loginSessions: number
   timerProjects: number
+  registrations: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  adminOfTeams?: boolean | UserCountOutputTypeCountAdminOfTeamsArgs
   teamMemberships?: boolean | UserCountOutputTypeCountTeamMembershipsArgs
   standaloneMatches?: boolean | UserCountOutputTypeCountStandaloneMatchesArgs
   loginSessions?: boolean | UserCountOutputTypeCountLoginSessionsArgs
   timerProjects?: boolean | UserCountOutputTypeCountTimerProjectsArgs
+  registrations?: boolean | UserCountOutputTypeCountRegistrationsArgs
 }
 
 /**
@@ -1060,6 +1316,13 @@ export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
    * Select specific fields to fetch from the UserCountOutputType
    */
   select?: Prisma.UserCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountAdminOfTeamsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TeamWhereInput
 }
 
 /**
@@ -1090,6 +1353,13 @@ export type UserCountOutputTypeCountTimerProjectsArgs<ExtArgs extends runtime.Ty
   where?: Prisma.DebateTimerProjectWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountRegistrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RegistrationWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1102,10 +1372,12 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   createdAt?: boolean
   updatedAt?: boolean
   team?: boolean | Prisma.User$teamArgs<ExtArgs>
+  adminOfTeams?: boolean | Prisma.User$adminOfTeamsArgs<ExtArgs>
   teamMemberships?: boolean | Prisma.User$teamMembershipsArgs<ExtArgs>
   standaloneMatches?: boolean | Prisma.User$standaloneMatchesArgs<ExtArgs>
   loginSessions?: boolean | Prisma.User$loginSessionsArgs<ExtArgs>
   timerProjects?: boolean | Prisma.User$timerProjectsArgs<ExtArgs>
+  registrations?: boolean | Prisma.User$registrationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1150,10 +1422,12 @@ export type UserSelectScalar = {
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "password" | "teamId" | "role" | "mode" | "tokenVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   team?: boolean | Prisma.User$teamArgs<ExtArgs>
+  adminOfTeams?: boolean | Prisma.User$adminOfTeamsArgs<ExtArgs>
   teamMemberships?: boolean | Prisma.User$teamMembershipsArgs<ExtArgs>
   standaloneMatches?: boolean | Prisma.User$standaloneMatchesArgs<ExtArgs>
   loginSessions?: boolean | Prisma.User$loginSessionsArgs<ExtArgs>
   timerProjects?: boolean | Prisma.User$timerProjectsArgs<ExtArgs>
+  registrations?: boolean | Prisma.User$registrationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1167,10 +1441,12 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "User"
   objects: {
     team: Prisma.$TeamPayload<ExtArgs> | null
+    adminOfTeams: Prisma.$TeamPayload<ExtArgs>[]
     teamMemberships: Prisma.$TeamMemberPayload<ExtArgs>[]
     standaloneMatches: Prisma.$StandaloneMatchPayload<ExtArgs>[]
     loginSessions: Prisma.$UserLoginSessionPayload<ExtArgs>[]
     timerProjects: Prisma.$DebateTimerProjectPayload<ExtArgs>[]
+    registrations: Prisma.$RegistrationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1577,10 +1853,12 @@ readonly fields: UserFieldRefs;
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   team<T extends Prisma.User$teamArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$teamArgs<ExtArgs>>): Prisma.Prisma__TeamClient<runtime.Types.Result.GetResult<Prisma.$TeamPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  adminOfTeams<T extends Prisma.User$adminOfTeamsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$adminOfTeamsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TeamPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   teamMemberships<T extends Prisma.User$teamMembershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$teamMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TeamMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   standaloneMatches<T extends Prisma.User$standaloneMatchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$standaloneMatchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StandaloneMatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   loginSessions<T extends Prisma.User$loginSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$loginSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserLoginSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   timerProjects<T extends Prisma.User$timerProjectsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$timerProjectsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DebateTimerProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  registrations<T extends Prisma.User$registrationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$registrationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RegistrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2037,6 +2315,30 @@ export type User$teamArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs 
 }
 
 /**
+ * User.adminOfTeams
+ */
+export type User$adminOfTeamsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Team
+   */
+  select?: Prisma.TeamSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Team
+   */
+  omit?: Prisma.TeamOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TeamInclude<ExtArgs> | null
+  where?: Prisma.TeamWhereInput
+  orderBy?: Prisma.TeamOrderByWithRelationInput | Prisma.TeamOrderByWithRelationInput[]
+  cursor?: Prisma.TeamWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TeamScalarFieldEnum | Prisma.TeamScalarFieldEnum[]
+}
+
+/**
  * User.teamMemberships
  */
 export type User$teamMembershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2130,6 +2432,30 @@ export type User$timerProjectsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.DebateTimerProjectScalarFieldEnum | Prisma.DebateTimerProjectScalarFieldEnum[]
+}
+
+/**
+ * User.registrations
+ */
+export type User$registrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Registration
+   */
+  select?: Prisma.RegistrationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Registration
+   */
+  omit?: Prisma.RegistrationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RegistrationInclude<ExtArgs> | null
+  where?: Prisma.RegistrationWhereInput
+  orderBy?: Prisma.RegistrationOrderByWithRelationInput | Prisma.RegistrationOrderByWithRelationInput[]
+  cursor?: Prisma.RegistrationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RegistrationScalarFieldEnum | Prisma.RegistrationScalarFieldEnum[]
 }
 
 /**

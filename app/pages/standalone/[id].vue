@@ -59,14 +59,17 @@ onMounted(() => load())
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-8">
-    <div v-if="loading" class="text-center py-12"><UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto" /></div>
+  <!-- 最外层容器：页面背景 -->
+  <div class="min-h-screen">
+    <!-- 内容容器：居中布局 -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div v-if="loading" class="text-center py-12"><UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-indigo-400" /></div>
 
     <template v-else-if="match">
       <div class="flex items-start justify-between mb-6">
         <div>
           <h1 class="text-2xl font-bold">{{ match.name }}</h1>
-          <p v-if="match.description" class="text-sm text-gray-500 mt-1">{{ match.description }}</p>
+          <p v-if="match.description" class="text-sm text-white/50 mt-1">{{ match.description }}</p>
         </div>
         <UButton color="error" variant="outline" size="sm" @click="handleDelete">删除</UButton>
       </div>
@@ -76,8 +79,8 @@ onMounted(() => load())
         <UButton color="primary" size="sm" @click="showCreateMatch = true">添加场次</UButton>
       </div>
 
-      <UCard>
-        <div v-if="!match.matches?.length" class="text-center py-8 text-gray-400">
+      <div class="glass-card p-6">
+        <div v-if="!match.matches?.length" class="text-center py-8 text-white/40">
           暂无场次，点击添加
         </div>
         <UTable v-else :rows="(match.matches as any)" :columns="[
@@ -90,7 +93,7 @@ onMounted(() => load())
           <template #match-data="{ row }">{{ r(row).teamA || '正方' }} vs {{ r(row).teamB || '反方' }}</template>
           <template #score-data="{ row }">
             <span v-if="r(row).status === 'finished'">{{ r(row).scoreA }} : {{ r(row).scoreB }}</span>
-            <span v-else class="text-gray-400">-</span>
+            <span v-else class="text-white/40">-</span>
           </template>
           <template #status-data="{ row }">
             <UBadge :label="statusLabel(r(row).status)" size="xs" variant="soft" />
@@ -102,7 +105,7 @@ onMounted(() => load())
             </div>
           </template>
         </UTable>
-      </UCard>
+      </div>
     </template>
 
     <!-- 创建场次弹窗 -->
@@ -143,5 +146,6 @@ onMounted(() => load())
         </div>
       </template>
     </UModal>
+  </div>
   </div>
 </template>

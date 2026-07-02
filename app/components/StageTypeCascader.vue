@@ -182,9 +182,9 @@ function onBlurClose() {
   padding: 0 12px;
   font-size: 14px;
   text-align: left;
-  border: 1px solid #D1D5DB;
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 4px;
-  background: #FFFFFF;
+  background: rgba(255,255,255,0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -202,17 +202,17 @@ function onBlurClose() {
 }
 
 .cascader-value {
-  color: #1F2937;
+  color: rgba(255,255,255,0.9);
 }
 
 .cascader-placeholder {
-  color: #9CA3AF;
+  color: rgba(255,255,255,0.4);
 }
 
 .chevron-icon {
   width: 16px;
   height: 16px;
-  color: #9CA3AF;
+  color: rgba(255,255,255,0.4);
   transition: transform 0.2s;
   flex-shrink: 0;
 }
@@ -228,10 +228,11 @@ function onBlurClose() {
   left: 0;
   min-width: 420px;
   z-index: 20;
-  background: #FFFFFF;
-  border: 1px solid #E5E7EB;
+  background: rgba(30, 30, 60, 0.95);
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
   display: flex;
   overflow: hidden;
 }
@@ -239,7 +240,7 @@ function onBlurClose() {
 /* 左栏：一级分类 */
 .cascader-left {
   width: 120px;
-  border-right: 1px solid #F3F4F6;
+  border-right: 1px solid rgba(255,255,255,0.1);
   padding: 4px 0;
   flex-shrink: 0;
 }
@@ -252,17 +253,17 @@ function onBlurClose() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #374151;
+  color: rgba(255,255,255,0.7);
 }
 
 .cascader-cat:hover {
-  background-color: #F9FAFB;
+  background-color: rgba(255,255,255,0.05);
 }
 
 /* 选中项高亮（淡绿色背景 + 绿色文字）*/
 .cascader-cat--active {
   color: #07C160;
-  background-color: #E8F9EE;
+  background-color: rgba(7, 193, 96, 0.15);
   font-weight: 500;
 }
 
@@ -290,16 +291,16 @@ function onBlurClose() {
   padding: 10px 12px;
   cursor: pointer;
   transition: all 0.15s;
-  color: #374151;
+  color: rgba(255,255,255,0.7);
 }
 
 .cascader-item:hover {
-  background-color: #F9FAFB;
+  background-color: rgba(255,255,255,0.05);
 }
 
 .cascader-item--active {
   color: #07C160;
-  background-color: #ECFDF5;
+  background-color: rgba(7, 193, 96, 0.15);
   font-weight: 500;
 }
 
@@ -310,7 +311,7 @@ function onBlurClose() {
 
 .cascader-item-desc {
   font-size: 12px;
-  color: #9CA3AF;
+  color: rgba(255,255,255,0.4);
   display: block;
   margin-top: 2px;
   line-height: 1.4;

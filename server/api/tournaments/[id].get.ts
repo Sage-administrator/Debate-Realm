@@ -1,23 +1,31 @@
 import { prisma } from '../../lib/prisma'
-import { requireReadTournament } from '../../utils/tournament-auth'
+import { getUserFromEvent } from '../../utils/auth'
+import { canReadTournament } from '../../utils/tournament-auth'
 
 export default defineEventHandler(async (event) => {
   try {
     const id = getRouterParam(event, 'id')!
+    const user = getUserFromEvent(event)
 
-    // 权限：系统管理员 或 该赛事所属团队的管理员 / 子账号
-    // 注：这里我们只检查权限不直接使用返回值，后续依然走原来的查询
-    await requireReadTournament(event, prisma, id)
-
+    // 单次查询：同时获取权限所需字段和业务数据
     const tournament = await prisma.tournament.findUnique({
       where: { id },
       include: {
         team: true, teams: true, judges: true,
-        matches: { orderBy: [{ round: 'asc' }, { orderNum: 'asc' }] },
+        regFields: { orderBy: { sortOrder: 'asc' } },
+        matches: {
+          where: { deletedAt: null },
+          orderBy: [{ round: 'asc' }, { orderNum: 'asc' }],
+        },
       },
     })
 
     if (!tournament) throw createError({ statusCode: 404, statusMessage: '赛事不存在' })
+
+    // 权限检查：复用已查询的 tournament.teamId
+    if (!canReadTournament(user, tournament)) {
+      throw createError({ statusCode: 403, statusMessage: '无权限查看此赛事' })
+    }
 
     return {
       id: tournament.id, name: tournament.name, description: tournament.description,
@@ -31,6 +39,13 @@ export default defineEventHandler(async (event) => {
       groupCount: tournament.groupCount,
       topicPool: tournament.topicPool,
       assignments: (tournament as any).assignments,
+      // 报名系统配置字段
+      registrationOpen: tournament.registrationOpen,
+      registrationDeadline: tournament.registrationDeadline,
+      isPublic: tournament.isPublic,
+      teamSize: tournament.teamSize,
+      registrationInfo: tournament.registrationInfo,
+      fields: (tournament as any).regFields || [],
       matches: tournament.matches.map((m) => ({
         id: m.id, round: m.round, orderNum: m.orderNum,
         teamA: m.teamA, teamB: m.teamB, winner: m.winner,

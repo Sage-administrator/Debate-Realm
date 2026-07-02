@@ -1,12 +1,13 @@
 import { readBody } from 'h3'
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
 import { generateShortId } from '../../../utils/id'
 import { notifyTournamentCreate } from '../../../lib/bot-notifications'
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion
+    const user = await getUserFromEventWithSession(event, prisma)
     const teamId = getRouterParam(event, 'teamId')!
     const { name, description, format, scheduledAt, venue, teams, judges } = await readBody<{
       name: string; description?: string; format?: string  // format 非必填：赛程页可选择
@@ -31,7 +32,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 403, statusMessage: '权限不足' })
     }
 
-    // 生成7位短ID并查重
+    // 生成8位短ID并查重
     let shortId = generateShortId()
     while (await prisma.tournament.findUnique({ where: { id: shortId } })) {
       shortId = generateShortId()

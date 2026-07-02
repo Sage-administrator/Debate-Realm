@@ -97,6 +97,16 @@ export type TournamentTeam = Prisma.TournamentTeamModel
  */
 export type TournamentJudge = Prisma.TournamentJudgeModel
 /**
+ * Model TopicVote
+ * 
+ */
+export type TopicVote = Prisma.TopicVoteModel
+/**
+ * Model TopicVoteRecord
+ * 
+ */
+export type TopicVoteRecord = Prisma.TopicVoteRecordModel
+/**
  * Model Match
  * 
  */
@@ -136,3 +146,18 @@ export type DebateTimerProject = Prisma.DebateTimerProjectModel
  * 
  */
 export type DebateTimerStage = Prisma.DebateTimerStageModel
+/**
+ * Model Registration
+ * 
+ */
+export type Registration = Prisma.RegistrationModel
+/**
+ * Model RegistrationMember
+ * 
+ */
+export type RegistrationMember = Prisma.RegistrationMemberModel
+/**
+ * Model RegistrationField
+ * 
+ */
+export type RegistrationField = Prisma.RegistrationFieldModel

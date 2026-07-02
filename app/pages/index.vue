@@ -353,121 +353,141 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- 系统管理员仪表盘 -->
+  <!-- 外层容器：不额外设置背景（body 已有深色渐变） -->
+  <div class="min-h-screen p-8 fade-in">
+    <div class="max-w-7xl mx-auto">
+
+    <!-- ════════════════════════════════════════
+         系统管理员仪表盘
+         ════════════════════════════════════════ -->
     <ClientOnly v-if="isSystemAdmin">
+      <!-- 页面标题区域 -->
       <div class="mb-8">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold mb-2">系统管理仪表盘</h1>
-            <p class="text-gray-500">管理系统中的所有团队和用户</p>
+            <h1 class="text-3xl font-bold text-white">系统管理仪表盘</h1>
+            <p class="text-white/60 mt-2">管理系统中的所有团队和用户</p>
           </div>
-          <!-- 当前模式标识 -->
-          <div class="flex items-center gap-2 px-4 py-2 bg-red-50 rounded-lg">
+          <!-- 当前模式标识：玻璃拟态标签 -->
+          <div class="glass-card p-3 flex items-center gap-2">
             <UBadge label="系统管理员模式" color="error" variant="soft" />
-            <span class="text-sm text-gray-600">拥有最高权限</span>
+            <span class="text-sm text-white/50">拥有最高权限</span>
           </div>
         </div>
       </div>
 
       <!-- 加载状态 -->
       <div v-if="loading" class="text-center py-12">
-        <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-primary" />
-        <p class="text-gray-400 mt-2">加载中...</p>
+        <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-indigo-400" />
+        <p class="text-white/50 mt-2">加载中...</p>
       </div>
 
       <template v-else>
-        <!-- 快捷操作卡片 -->
+        <!-- 快捷操作卡片（4个） -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <UCard class="text-center cursor-pointer hover:shadow-md transition-shadow" @click="showCreateTeamModal = true">
-            <UIcon name="i-lucide-plus-circle" class="w-8 h-8 mx-auto mb-2 text-primary" />
-            <div class="text-sm font-medium">创建团队</div>
-          </UCard>
-          <UCard class="text-center cursor-pointer hover:shadow-md transition-shadow" @click="showCreateUserModal = true">
-            <UIcon name="i-lucide-user-plus" class="w-8 h-8 mx-auto mb-2 text-primary" />
-            <div class="text-sm font-medium">创建用户</div>
-          </UCard>
-          <UCard class="text-center">
-            <div class="text-2xl font-bold text-primary">{{ teams.length }}</div>
-            <div class="text-sm text-gray-500">团队总数</div>
-          </UCard>
-          <UCard class="text-center">
-            <div class="text-2xl font-bold text-primary">{{ users.length }}</div>
-            <div class="text-sm text-gray-500">用户总数</div>
-          </UCard>
+          <!-- 创建团队 -->
+          <div class="glass-card-strong p-6 text-center cursor-pointer hover:bg-white/10 transition-all" @click="showCreateTeamModal = true">
+            <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+              <UIcon name="i-lucide-plus-circle" class="w-6 h-6" />
+            </div>
+            <div class="text-sm font-medium text-white">创建团队</div>
+          </div>
+          <!-- 创建用户 -->
+          <div class="glass-card-strong p-6 text-center cursor-pointer hover:bg-white/10 transition-all" @click="showCreateUserModal = true">
+            <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+              <UIcon name="i-lucide-user-plus" class="w-6 h-6" />
+            </div>
+            <div class="text-sm font-medium text-white">创建用户</div>
+          </div>
+          <!-- 团队总数 -->
+          <div class="glass-card-strong p-6 text-center">
+            <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+              <UIcon name="i-lucide-users" class="w-6 h-6" />
+            </div>
+            <div class="text-3xl font-bold text-white">{{ teams.length }}</div>
+            <div class="text-sm text-white/50">团队总数</div>
+          </div>
+          <!-- 用户总数 -->
+          <div class="glass-card-strong p-6 text-center">
+            <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+              <UIcon name="i-lucide-user" class="w-6 h-6" />
+            </div>
+            <div class="text-3xl font-bold text-white">{{ users.length }}</div>
+            <div class="text-sm text-white/50">用户总数</div>
+          </div>
         </div>
 
         <!-- 团队列表 -->
-        <h2 class="text-lg font-bold mb-4">团队列表</h2>
-        <UCard class="mb-8">
-          <div v-if="teams.length === 0" class="text-center py-8 text-gray-400">
+        <h2 class="text-xl font-bold text-white mb-4">团队列表</h2>
+        <div class="glass-card p-6 mb-8">
+          <div v-if="teams.length === 0" class="text-center py-8 text-white/50">
             暂无团队，点击"创建团队"开始
           </div>
-          <!-- 团队列表 - 使用自定义 HTML 表格替代 UTable -->
+          <!-- 团队列表 - 玻璃拟态表格 -->
           <div v-else class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm table-glass">
               <thead>
-                <tr class="border-b border-gray-200">
-                  <th class="text-left py-2 px-3 font-medium text-gray-600">团队名称</th>
-                  <th class="text-left py-2 px-3 font-medium text-gray-600">模式</th>
-                  <th class="text-left py-2 px-3 font-medium text-gray-600">成员数</th>
-                  <th class="text-left py-2 px-3 font-medium text-gray-600">赛事数</th>
-                  <th class="text-right py-2 px-3 font-medium text-gray-600">操作</th>
+                <tr>
+                  <th class="text-left">团队名称</th>
+                  <th class="text-left">模式</th>
+                  <th class="text-left">成员数</th>
+                  <th class="text-left">赛事数</th>
+                  <th class="text-right">操作</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="t in teams" :key="t.id" class="border-b border-gray-100 hover:bg-gray-50"
+                <tr v-for="t in teams" :key="t.id"
                   @click="t.isVirtual ? router.push('/individual-team') : router.push(`/teams/${t.id}`)">
-                  <td class="py-2 px-3 font-medium">
+                  <td class="font-medium text-white/90">
                     {{ t.name }}
-                    <span v-if="t.isVirtual" class="text-xs text-gray-400 ml-2">(虚拟团队)</span>
+                    <span v-if="t.isVirtual" class="text-xs text-white/40 ml-2">(虚拟团队)</span>
                   </td>
-                  <td class="py-2 px-3">
+                  <td>
                     <UBadge v-if="t.isVirtual" label="个人模式" color="success" size="xs" variant="soft" />
                     <UBadge v-else :label="t.mode === 'qq_bot' ? 'QQ频道' : '普通'" :color="t.mode === 'qq_bot' ? 'primary' : 'neutral'" size="xs" variant="soft" />
                   </td>
-                  <td class="py-2 px-3">{{ t.memberCount ?? 0 }}</td>
-                  <td class="py-2 px-3">{{ t.tournamentCount ?? 0 }}</td>
-                  <td class="py-2 px-3 text-right">
+                  <td>{{ t.memberCount ?? 0 }}</td>
+                  <td>{{ t.tournamentCount ?? 0 }}</td>
+                  <td class="text-right">
                     <!-- 虚拟团队不允许删除 -->
                     <UButton v-if="!t.isVirtual" color="error" variant="ghost" size="xs" @click="handleDeleteTeam(t.id, t.name)">删除</UButton>
-                    <span v-else class="text-xs text-gray-400">不可删除</span>
+                    <span v-else class="text-xs text-white/40">不可删除</span>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </UCard>
+        </div>
 
         <!-- 系统/个人用户列表 -->
-        <h2 class="text-lg font-bold mb-4">系统与个人用户</h2>
-        <UCard>
-          <div v-if="individualUsers.length === 0" class="text-center py-8 text-gray-400">
+        <h2 class="text-xl font-bold text-white mb-4">系统与个人用户</h2>
+        <div class="glass-card p-6">
+          <div v-if="individualUsers.length === 0" class="text-center py-8 text-white/50">
             暂无系统或个人用户
           </div>
-          <!-- 系统/个人用户 - 使用自定义 HTML 表格 -->
+          <!-- 系统/个人用户 - 玻璃拟态表格 -->
           <div v-else class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table class="w-full text-sm table-glass">
               <thead>
-                <tr class="border-b border-gray-200">
-                  <th class="text-left py-2 px-3 font-medium text-gray-600">用户名</th>
-                  <th class="text-left py-2 px-3 font-medium text-gray-600">角色</th>
-                  <th class="text-left py-2 px-3 font-medium text-gray-600">模式</th>
-                  <th class="text-left py-2 px-3 font-medium text-gray-600">创建时间</th>
-                  <th class="text-right py-2 px-3 font-medium text-gray-600">操作</th>
+                <tr>
+                  <th class="text-left">用户名</th>
+                  <th class="text-left">角色</th>
+                  <th class="text-left">模式</th>
+                  <th class="text-left">创建时间</th>
+                  <th class="text-right">操作</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="u in individualUsers" :key="u.id" class="border-b border-gray-100 hover:bg-gray-50">
-                  <td class="py-2 px-3 font-medium">{{ u.username }}</td>
-                  <td class="py-2 px-3">
+                <tr v-for="u in individualUsers" :key="u.id">
+                  <td class="font-medium text-white/90">{{ u.username }}</td>
+                  <td>
                     <UBadge :label="roleLabel(u.role)" :color="roleColor(u.role)" size="xs" variant="soft" />
                   </td>
-                  <td class="py-2 px-3">
+                  <td>
                     <UBadge :label="u.mode === 'individual' ? '个人' : '系统'" size="xs" variant="soft" />
                   </td>
-                  <td class="py-2 px-3">{{ new Date(u.createdAt).toLocaleDateString('zh-CN') }}</td>
-                  <td class="py-2 px-3 text-right">
+                  <td>{{ new Date(u.createdAt).toLocaleDateString('zh-CN') }}</td>
+                  <td class="text-right">
                     <UButton color="neutral" variant="ghost" size="xs" @click="openResetPassword(u.id)">重置密码</UButton>
                     <UButton color="error" variant="ghost" size="xs" @click="handleDeleteUser(u.id, u.username)">删除</UButton>
                   </td>
@@ -475,9 +495,13 @@ onMounted(() => {
               </tbody>
             </table>
           </div>
-        </UCard>
+        </div>
       </template>
     </ClientOnly>
+
+    <!-- ════════════════════════════════════════
+         弹窗们（保持 UModal 不变）
+         ════════════════════════════════════════ -->
 
     <!-- 创建团队弹窗 - Bot字段已移除 -->
     <UModal v-model:open="showCreateTeamModal" title="创建团队">
@@ -568,50 +592,61 @@ onMounted(() => {
       </template>
     </UModal>
 
-    <!-- 团队管理员仪表盘 -->
+    <!-- ════════════════════════════════════════
+         团队管理员仪表盘
+         ════════════════════════════════════════ -->
     <ClientOnly v-if="isAdmin">
+      <!-- 页面标题区域 -->
       <div class="mb-8">
-        <h1 class="text-2xl font-bold mb-2">团队管理面板</h1>
-        <p class="text-gray-500" v-if="store.user?.team">
+        <h1 class="text-3xl font-bold text-white">团队管理面板</h1>
+        <p class="text-white/60 mt-2" v-if="store.user?.team">
           {{ store.user.team.name }}（{{ isQQBotMode ? 'QQ频道模式' : '普通模式' }}）
         </p>
       </div>
 
-      <!-- 快捷操作卡片 -->
+      <!-- 快捷操作卡片（3个） -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <UCard class="text-center cursor-pointer hover:shadow-md transition-shadow" @click="navigateTo('/tournaments/create')">
-          <UIcon name="i-lucide-trophy" class="w-8 h-8 mx-auto mb-2 text-primary" />
-          <div class="text-sm font-medium">创建赛事</div>
-        </UCard>
-        <!-- 登记赛果：直接跳转到团队赛事列表，用户可在赛事详情中登记 -->
-        <UCard class="text-center cursor-pointer hover:shadow-md transition-shadow" @click="navigateTo('/')">
-          <UIcon name="i-lucide-clipboard-check" class="w-8 h-8 mx-auto mb-2 text-primary" />
-          <div class="text-sm font-medium">登记赛果</div>
-          <div class="text-xs text-gray-400 mt-1">在赛事详情中登记</div>
-        </UCard>
-        <UCard class="text-center cursor-pointer hover:shadow-md transition-shadow" @click="navigateTo(`/teams/${store.user?.team?.id}`)">
-          <UIcon name="i-lucide-users" class="w-8 h-8 mx-auto mb-2 text-primary" />
-          <div class="text-sm font-medium">团队管理</div>
-        </UCard>
+        <!-- 创建赛事 -->
+        <div class="glass-card-strong p-6 text-center cursor-pointer hover:bg-white/10 transition-all" @click="navigateTo('/tournaments/create')">
+          <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+            <UIcon name="i-lucide-trophy" class="w-6 h-6" />
+          </div>
+          <div class="text-sm font-medium text-white">创建赛事</div>
+        </div>
+        <!-- 登记赛果 -->
+        <div class="glass-card-strong p-6 text-center cursor-pointer hover:bg-white/10 transition-all" @click="navigateTo('/')">
+          <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+            <UIcon name="i-lucide-clipboard-check" class="w-6 h-6" />
+          </div>
+          <div class="text-sm font-medium text-white">登记赛果</div>
+          <div class="text-xs text-white/50 mt-1">在赛事详情中登记</div>
+        </div>
+        <!-- 团队管理 -->
+        <div class="glass-card-strong p-6 text-center cursor-pointer hover:bg-white/10 transition-all" @click="navigateTo(`/teams/${store.user?.team?.id}`)">
+          <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+            <UIcon name="i-lucide-users" class="w-6 h-6" />
+          </div>
+          <div class="text-sm font-medium text-white">团队管理</div>
+        </div>
       </div>
 
-      <!-- QQ机器人状态 -->
-      <UCard v-if="isQQBotMode" class="mb-6">
+      <!-- QQ机器人状态卡片 -->
+      <div v-if="isQQBotMode" class="glass-card p-4 mb-6">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <UIcon name="i-lucide-bot" class="w-6 h-6" :class="homeConnectionStatus === 'connected' ? 'text-green-500' : homeConnectionStatus === 'connecting' ? 'text-blue-500' : 'text-gray-400'" />
+            <UIcon name="i-lucide-bot" class="w-6 h-6" :class="homeConnectionStatus === 'connected' ? 'text-green-400' : homeConnectionStatus === 'connecting' ? 'text-blue-400' : 'text-white/40'" />
             <div>
-              <div class="font-medium">QQ机器人</div>
-              <div class="text-sm text-gray-500">
+              <div class="font-medium text-white/90">QQ机器人</div>
+              <div class="text-sm text-white/50">
                 <template v-if="homeConnectionStatus === 'connected'">
-                  <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block mr-1" />
+                  <span class="w-1.5 h-1.5 rounded-full bg-green-400 inline-block mr-1" />
                   在线 · 已运行 {{ formatHomeDuration(homeConnectedDuration) }}
                 </template>
                 <template v-else-if="homeConnectionStatus === 'connecting'">
                   连接中...
                 </template>
                 <template v-else-if="homeConnectionStatus === 'disconnected' || homeConnectionStatus === 'error'">
-                  <span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block mr-1" />
+                  <span class="w-1.5 h-1.5 rounded-full bg-red-400 inline-block mr-1" />
                   离线 · {{ botAppIdMasked }}
                 </template>
                 <template v-else>
@@ -622,127 +657,165 @@ onMounted(() => {
           </div>
           <UButton color="primary" variant="outline" size="xs" to="/bot">管理</UButton>
         </div>
-      </UCard>
+      </div>
 
       <!-- 赛事列表 -->
-      <h2 class="text-lg font-bold mb-4">赛事列表</h2>
-      <UCard>
+      <h2 class="text-xl font-bold text-white mb-4">赛事列表</h2>
+      <div class="glass-card p-6">
         <div v-if="loadingTournaments" class="text-center py-8">
-          <UIcon name="i-lucide-loader" class="w-6 h-6 animate-spin mx-auto text-primary" />
+          <UIcon name="i-lucide-loader" class="w-6 h-6 animate-spin mx-auto text-indigo-400" />
         </div>
-        <div v-else-if="tournaments.length === 0" class="text-center py-8 text-gray-400">
+        <div v-else-if="tournaments.length === 0" class="text-center py-8 text-white/50">
           暂无赛事，点击"创建赛事"开始
         </div>
-        <!-- 使用自定义 HTML 表格替代 UTable，确保稳定显示 -->
+        <!-- 使用玻璃拟态表格 -->
         <div v-else class="overflow-x-auto">
-          <table class="w-full text-sm">
+          <table class="w-full text-sm table-glass">
             <thead>
-              <tr class="border-b border-gray-200">
-                <th class="text-left py-2 px-3 font-medium text-gray-600">赛事名称</th>
-                <th class="text-left py-2 px-3 font-medium text-gray-600">赛制</th>
-                <th class="text-left py-2 px-3 font-medium text-gray-600">状态</th>
-                <th class="text-left py-2 px-3 font-medium text-gray-600">场次数</th>
-                <th class="text-right py-2 px-3 font-medium text-gray-600">操作</th>
+              <tr>
+                <th class="text-left">赛事名称</th>
+                <th class="text-left">赛制</th>
+                <th class="text-left">状态</th>
+                <th class="text-left">场次数</th>
+                <th class="text-right">操作</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="t in tournaments" :key="t.id" class="border-b border-gray-100 hover:bg-gray-50">
-                <td class="py-2 px-3 font-medium">{{ t.name }}</td>
-                <td class="py-2 px-3">{{ t.format === 'knockout' ? '淘汰赛' : '循环赛' }}</td>
-                <td class="py-2 px-3">
+              <tr v-for="t in tournaments" :key="t.id">
+                <td class="font-medium text-white/90">{{ t.name }}</td>
+                <td>{{ t.format === 'knockout' ? '淘汰赛' : '循环赛' }}</td>
+                <td>
                   <UBadge :label="({ pending: '待开始', running: '进行中', finished: '已完成' } as Record<string,string>)[t.status] || t.status"
                     :color="(({ pending: 'neutral', running: 'primary', finished: 'success' } as Record<string,string>)[t.status] || 'neutral') as any"
                     size="xs" variant="soft" />
                 </td>
-                <td class="py-2 px-3">{{ t.matchCount ?? 0 }}</td>
-                <td class="py-2 px-3 text-right">
+                <td>{{ t.matchCount ?? 0 }}</td>
+                <td class="text-right">
                   <UButton color="neutral" variant="ghost" size="xs" :to="`/tournaments/${t.id}`">详情</UButton>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-      </UCard>
+      </div>
     </ClientOnly>
 
-    <!-- 子账号仪表盘 -->
+    <!-- ════════════════════════════════════════
+         子账号仪表盘
+         ════════════════════════════════════════ -->
     <template v-else-if="isSubaccount">
+      <!-- 页面标题区域 -->
       <div class="mb-8">
-        <h1 class="text-2xl font-bold mb-2">欢迎回来</h1>
-        <p class="text-gray-500" v-if="store.user?.team">
+        <h1 class="text-3xl font-bold text-white">欢迎回来</h1>
+        <p class="text-white/60 mt-2" v-if="store.user?.team">
           团队：{{ store.user.team.name }}（子账号）
         </p>
       </div>
 
-      <UAlert color="warning" variant="soft" title="提示：您是子账号，部分功能不可用" class="mb-6" />
+      <!-- 子账号提示：玻璃拟态卡片 + 琥珀色左边框 -->
+      <div class="glass-card p-4 mb-6 border-l-4 border-l-amber-400/60">
+        <div class="flex items-center gap-2">
+          <UIcon name="i-lucide-info" class="w-4 h-4 text-amber-400" />
+          <span class="text-sm text-white/80">您是子账号，部分功能不可用</span>
+        </div>
+      </div>
 
-      <h2 class="text-lg font-bold mb-4">赛事列表</h2>
-      <UCard>
-        <div class="text-center py-8 text-gray-400">
+      <!-- 赛事列表 -->
+      <h2 class="text-xl font-bold text-white mb-4">赛事列表</h2>
+      <div class="glass-card p-6">
+        <div class="text-center py-8 text-white/50">
           暂无可查看的赛事，请联系团队管理员分配任务
         </div>
-      </UCard>
+      </div>
     </template>
 
-    <!-- 个人用户仪表盘 -->
+    <!-- ════════════════════════════════════════
+         个人用户仪表盘
+         ════════════════════════════════════════ -->
     <ClientOnly v-if="isIndividual">
+      <!-- 页面标题区域 -->
       <div class="mb-8">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold mb-2">个人中心</h1>
-            <p class="text-gray-500">管理您的独立赛事</p>
+            <h1 class="text-3xl font-bold text-white">个人中心</h1>
+            <p class="text-white/60 mt-2">管理您的独立赛事</p>
           </div>
-          <!-- 当前模式标识 -->
-          <div class="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg">
+          <!-- 当前模式标识：玻璃拟态标签 -->
+          <div class="glass-card p-3 flex items-center gap-2">
             <UBadge label="个人模式" color="success" variant="soft" />
-            <span class="text-sm text-gray-600">独立使用，无需团队</span>
+            <span class="text-sm text-white/50">独立使用，无需团队</span>
           </div>
         </div>
       </div>
 
+      <!-- 快捷操作卡片 -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        <UCard class="text-center cursor-pointer hover:shadow-md transition-shadow" @click="navigateTo('/standalone/create')">
-          <UIcon name="i-lucide-plus-circle" class="w-8 h-8 mx-auto mb-2 text-primary" />
-          <div class="text-sm font-medium">创建独立赛事</div>
-        </UCard>
+        <!-- 创建独立赛事 -->
+        <div class="glass-card-strong p-6 text-center cursor-pointer hover:bg-white/10 transition-all" @click="navigateTo('/standalone/create')">
+          <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+            <UIcon name="i-lucide-plus-circle" class="w-6 h-6" />
+          </div>
+          <div class="text-sm font-medium text-white">创建独立赛事</div>
+        </div>
       </div>
 
-      <h2 class="text-lg font-bold mb-4">我的赛事</h2>
-      <UCard>
+      <!-- 我的赛事列表 -->
+      <h2 class="text-xl font-bold text-white mb-4">我的赛事</h2>
+      <div class="glass-card p-6">
         <div v-if="loadingStandalone" class="text-center py-8">
-          <UIcon name="i-lucide-loader" class="w-6 h-6 animate-spin mx-auto text-primary" />
+          <UIcon name="i-lucide-loader" class="w-6 h-6 animate-spin mx-auto text-indigo-400" />
         </div>
-        <div v-else-if="standaloneMatches.length === 0" class="text-center py-8 text-gray-400">
+        <div v-else-if="standaloneMatches.length === 0" class="text-center py-8 text-white/50">
           暂无独立赛事，点击上方按钮创建
         </div>
-        <!-- 个人赛事列表 - 使用自定义 HTML 表格 -->
+        <!-- 个人赛事列表 - 玻璃拟态表格 -->
         <div v-else class="overflow-x-auto">
-          <table class="w-full text-sm">
+          <table class="w-full text-sm table-glass">
             <thead>
-              <tr class="border-b border-gray-200">
-                <th class="text-left py-2 px-3 font-medium text-gray-600">赛事名称</th>
-                <th class="text-left py-2 px-3 font-medium text-gray-600">状态</th>
-                <th class="text-left py-2 px-3 font-medium text-gray-600">场次数</th>
-                <th class="text-right py-2 px-3 font-medium text-gray-600">操作</th>
+              <tr>
+                <th class="text-left">赛事名称</th>
+                <th class="text-left">状态</th>
+                <th class="text-left">场次数</th>
+                <th class="text-right">操作</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="m in standaloneMatches" :key="m.id" class="border-b border-gray-100 hover:bg-gray-50">
-                <td class="py-2 px-3 font-medium">{{ m.name }}</td>
-                <td class="py-2 px-3">
+              <tr v-for="m in standaloneMatches" :key="m.id">
+                <td class="font-medium text-white/90">{{ m.name }}</td>
+                <td>
                   <UBadge :label="({ pending: '待开始', running: '进行中', finished: '已完成' } as Record<string,string>)[m.status] || m.status"
                     :color="(({ pending: 'neutral', running: 'primary', finished: 'success' } as Record<string,string>)[m.status] || 'neutral') as any"
                     size="xs" variant="soft" />
                 </td>
-                <td class="py-2 px-3">{{ m.matchCount ?? 0 }}</td>
-                <td class="py-2 px-3 text-right">
+                <td>{{ m.matchCount ?? 0 }}</td>
+                <td class="text-right">
                   <UButton color="neutral" variant="ghost" size="xs" :to="`/standalone/${m.id}`">详情</UButton>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-      </UCard>
+      </div>
     </ClientOnly>
+
+    </div>
   </div>
 </template>
+
+<style scoped>
+/* ════════════════════════════════════════
+   首页仪表盘 —— 深色玻璃拟态局部样式
+   （基础 glass-card / table-glass 等复用 main.css 全局定义）
+   ════════════════════════════════════════ */
+
+/* 确保 UTable 内部 tr 在 hover 时有可见反馈（配合全局 table-glass） */
+.table-glass tbody tr {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+/* 子账号提示卡片的琥珀色左边框 */
+.border-l-amber-400\/60 {
+  border-left-color: rgba(251, 191, 36, 0.6);
+}
+</style>

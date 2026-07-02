@@ -138,7 +138,7 @@ onBeforeUnmount(() => {
       @click.stop="openDropdown"
       :class="{ 'is-active': open, 'has-value': hasValue }"
     >
-      <span class="cascader-text" :class="hasValue ? 'text-gray-900' : 'text-gray-400'">
+      <span class="cascader-text" :class="hasValue ? 'text-white/80' : 'text-white/40'">
         {{ displayText }}
       </span>
       <UIcon name="i-lucide-chevron-down" class="cascader-icon" :class="{ 'is-open': open }" />
@@ -209,16 +209,16 @@ onBeforeUnmount(() => {
   align-items: center;
   height: 40px;
   padding: 0 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 6px;
-  background: #ffffff;
+  background: rgba(255,255,255,0.08);
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   min-width: 220px;
 }
 
 .cascader-trigger:hover {
-  border-color: #9ca3af;
+  border-color: rgba(255,255,255,0.25);
 }
 
 .cascader-trigger.is-active {
@@ -241,7 +241,7 @@ onBeforeUnmount(() => {
 .cascader-icon {
   width: 16px;
   height: 16px;
-  color: #9ca3af;
+  color: rgba(255,255,255,0.4);
   transition: transform 0.2s ease;
   flex-shrink: 0;
 }
@@ -258,10 +258,12 @@ onBeforeUnmount(() => {
   top: calc(100% + 4px);
   min-width: 240px;
   max-height: 320px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: rgba(30, 30, 62, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
   z-index: 100;
   overflow: hidden;
   display: flex;
@@ -279,10 +281,10 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  border-bottom: 1px solid #f3f4f6;
-  background: #fafafa;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
   font-size: 13px;
-  color: #6b7280;
+  color: rgba(255,255,255,0.5);
   flex-wrap: wrap;
 }
 
@@ -291,12 +293,12 @@ onBeforeUnmount(() => {
   padding: 2px 4px;
   border-radius: 4px;
   transition: background 0.15s ease, color 0.15s ease;
-  color: #6b7280;
+  color: rgba(255,255,255,0.5);
 }
 
 .crumb:hover {
-  background: #e5e7eb;
-  color: #374151;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
 }
 
 .crumb.is-active {
@@ -305,13 +307,13 @@ onBeforeUnmount(() => {
 }
 
 .crumb.is-placeholder {
-  color: #9ca3af;
+  color: rgba(255,255,255,0.4);
   font-weight: normal;
 }
 
 .crumb-sep {
   margin: 0 4px;
-  color: #d1d5db;
+  color: rgba(255,255,255,0.15);
 }
 
 /* ── 选项列表 ── */
@@ -334,11 +336,11 @@ onBeforeUnmount(() => {
   background: transparent;
 }
 .cascader-list-inner::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
+  background: rgba(255,255,255,0.15);
   border-radius: 3px;
 }
 .cascader-list-inner::-webkit-scrollbar-thumb:hover {
-  background: #d1d5db;
+  background: rgba(255,255,255,0.25);
 }
 
 .cascader-option {
@@ -347,7 +349,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   padding: 8px 12px;
   font-size: 14px;
-  color: #374151;
+  color: rgba(255,255,255,0.7);
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.12s ease, color 0.12s ease;
@@ -367,7 +369,7 @@ onBeforeUnmount(() => {
 .cascader-arrow {
   width: 14px;
   height: 14px;
-  color: #9ca3af;
+  color: rgba(255,255,255,0.4);
   margin-left: 8px;
   flex-shrink: 0;
 }
@@ -380,10 +382,10 @@ onBeforeUnmount(() => {
 .cascader-option-back {
   justify-content: flex-start;
   gap: 4px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
   padding: 6px 12px;
   font-size: 13px;
-  color: #6b7280;
+  color: rgba(255,255,255,0.5);
 }
 
 .cascader-option-back:hover {
@@ -401,6 +403,6 @@ onBeforeUnmount(() => {
   padding: 16px;
   text-align: center;
   font-size: 13px;
-  color: #9ca3af;
+  color: rgba(255,255,255,0.4);
 }
 </style>

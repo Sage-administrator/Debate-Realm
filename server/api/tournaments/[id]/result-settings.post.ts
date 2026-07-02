@@ -46,9 +46,10 @@ export default defineEventHandler(async (event) => {
     })
 
     return { success: true, bestDebaterMode }
-  } catch (error) {
-    if ((error as any).statusCode) throw error
-    console.error('[result-settings] 保存失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '保存失败' })
-  }
+  } catch (error: any) {
+    if (error.statusCode) throw error
+    const errMsg = error instanceof Error ? `${error.message}\n${error.stack}` : String(error)
+    console.error('[result-settings] 保存失败:', errMsg)
+    throw createError({ statusCode: 500, statusMessage: error?.message || error?.toString() || '保存失败' })
+}
 })

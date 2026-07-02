@@ -67,10 +67,11 @@ export interface GenerateOptions {
 // ─────────────────────────────────────────────────────────────
 
 // 计算下一个 2 的幂（用于单败淘汰赛补足队伍数）
+// 使用位运算，O(1) 时间复杂度
 function nextPowerOfTwo(n: number): number {
-  let power = 1
-  while (power < n) power *= 2
-  return power
+  if (n <= 0) return 1
+  if ((n & (n - 1)) === 0) return n
+  return 1 << (32 - Math.clz32(n - 1))
 }
 
 // 按种子方法排序队伍
@@ -844,19 +845,35 @@ export async function autoPairNextSwissRound(tournamentId: string): Promise<{ pa
 
   // 按积分排序 → 依次按序配对
   const teams = standings.map((s) => s.team)
+  const updates: { id: string; teamA?: string; teamB?: string }[] = []
   let filled = 0
+
   for (let i = 0; i < nextRoundMatches.length; i++) {
-    const m = nextRoundMatches[i]
+    const m = nextRoundMatches[i]!
     const a = teams[i * 2] || null
     const b = teams[i * 2 + 1] || null
+    const update: { id: string; teamA?: string; teamB?: string } = { id: m.id }
+    let hasUpdate = false
+
     if ((m.teamA === null || m.teamA === undefined) && a) {
-      await prisma.match.update({ where: { id: m.id }, data: { teamA: a } })
+      update.teamA = a
       filled++
+      hasUpdate = true
     }
     if ((m.teamB === null || m.teamB === undefined) && b) {
-      await prisma.match.update({ where: { id: m.id }, data: { teamB: b } })
+      update.teamB = b
       filled++
+      hasUpdate = true
     }
+
+    if (hasUpdate) updates.push(update)
+  }
+
+  // 批量更新
+  if (updates.length > 0) {
+    await prisma.$transaction(
+      updates.map((u) => prisma.match.update({ where: { id: u.id }, data: { teamA: u.teamA, teamB: u.teamB } }))
+    )
   }
 
   return { paired: filled, info: `已根据积分自动配对 "${nextRoundLabel}"（共 ${Math.ceil(teams.length / 2)} 场）` }
@@ -919,13 +936,29 @@ export async function autoPromoteFromGroupsToKnockout(
   }
 
   let idx = 0
+  const updates: { id: string; teamA?: string; teamB?: string }[] = []
+
   for (const m of koMatches) {
+    const update: { id: string; teamA?: string; teamB?: string } = { id: m.id }
+    let hasUpdate = false
+
     if (idx < promoted.length && m.teamA === null) {
-      await prisma.match.update({ where: { id: m.id }, data: { teamA: promoted[idx++] } })
+      update.teamA = promoted[idx++]
+      hasUpdate = true
     }
     if (idx < promoted.length && m.teamB === null) {
-      await prisma.match.update({ where: { id: m.id }, data: { teamB: promoted[idx++] } })
+      update.teamB = promoted[idx++]
+      hasUpdate = true
     }
+
+    if (hasUpdate) updates.push(update)
+  }
+
+  // 批量更新
+  if (updates.length > 0) {
+    await prisma.$transaction(
+      updates.map((u) => prisma.match.update({ where: { id: u.id }, data: { teamA: u.teamA, teamB: u.teamB } }))
+    )
   }
 
   return { promoted, info: `共 ${promoted.length} 支队伍晋级淘汰赛（每组前 ${promotePerGroup} 名）` }

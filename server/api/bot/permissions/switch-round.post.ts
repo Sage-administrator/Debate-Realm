@@ -4,13 +4,14 @@
 // targetSide 可选值：affirmative / negative / judge / audience
 // ════════════════════════════════════════════════════
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
 import { getBotInstance } from '../../../lib/bot-ws'
 import { switchRoundWhitelist } from '../../../lib/bot-permissions'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion
+    const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
       throw createError({ statusCode: 403, statusMessage: '仅团队管理员可切换环节' })

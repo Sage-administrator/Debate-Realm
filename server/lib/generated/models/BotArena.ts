@@ -234,6 +234,7 @@ export type BotArenaOrderByWithRelationInput = {
 
 export type BotArenaWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  channelId?: string
   AND?: Prisma.BotArenaWhereInput | Prisma.BotArenaWhereInput[]
   OR?: Prisma.BotArenaWhereInput[]
   NOT?: Prisma.BotArenaWhereInput | Prisma.BotArenaWhereInput[]
@@ -242,12 +243,11 @@ export type BotArenaWhereUniqueInput = Prisma.AtLeast<{
   matchFormat?: Prisma.StringFilter<"BotArena"> | string
   status?: Prisma.StringFilter<"BotArena"> | string
   guildId?: Prisma.StringNullableFilter<"BotArena"> | string | null
-  channelId?: Prisma.StringNullableFilter<"BotArena"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BotArena"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BotArena"> | Date | string
   team?: Prisma.XOR<Prisma.TeamScalarRelationFilter, Prisma.TeamWhereInput>
   roles?: Prisma.BotArenaRoleListRelationFilter
-}, "id">
+}, "id" | "channelId">
 
 export type BotArenaOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

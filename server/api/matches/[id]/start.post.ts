@@ -3,12 +3,14 @@
 // 将比赛状态从 pending 改为 in_progress，并发送 Bot 通知
 // ════════════════════════════════════════════════════
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
+import { canWriteTournament } from '../../../utils/tournament-auth'
 import { notifyMatchStart } from '../../../lib/bot-notifications'
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion
+    const user = await getUserFromEventWithSession(event, prisma)
     const matchId = getRouterParam(event, 'id')!
 
     // 获取比赛信息（用于权限校验）
@@ -20,10 +22,12 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!match) throw createError({ statusCode: 404, statusMessage: '比赛不存在' })
+    if (!match.tournament) throw createError({ statusCode: 400, statusMessage: '赛事不存在' })
 
-    // 权限校验
-    const isAdmin = user.role === 'system_admin' || (match.tournament && match.tournament.team.adminId === user.userId)
-    if (!isAdmin) throw createError({ statusCode: 403, statusMessage: '权限不足' })
+    // 权限校验：使用统一的权限判定函数
+    if (!canWriteTournament(user, match.tournament, match.tournament.team)) {
+      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+    }
 
     // 校验比赛状态
     if (match.status !== 'pending') {

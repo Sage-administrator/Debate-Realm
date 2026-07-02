@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     if (!name) throw createError({ statusCode: 400, statusMessage: '赛事名称不能为空' })
     if (user.mode !== 'individual') throw createError({ statusCode: 403, statusMessage: '只有个人用户可以创建独立赛事' })
 
-    // 生成7位短ID并查重
+    // 生成8位短ID并查重
     let shortId = generateShortId()
     while (await prisma.standaloneMatch.findUnique({ where: { id: shortId } })) {
       shortId = generateShortId()

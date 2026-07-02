@@ -25,12 +25,15 @@
 
 import { readBody } from 'h3'
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
+import { canWriteTournament } from '../../../utils/tournament-auth'
 import { runDrawLots } from '../../../utils/bracket-generator'
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion，
+    // 否则被踢下线的旧 token 在 7 天过期前仍可执行抽签操作
+    const user = await getUserFromEventWithSession(event, prisma)
     const id = getRouterParam(event, 'id')!
 
     const body = await readBody<{
@@ -42,7 +45,7 @@ export default defineEventHandler(async (event) => {
 
     const drawType = body.drawType || 'all'
 
-    // 1) 加载赛事和队伍
+    // 1) 单次查询：加载赛事和所有关联数据，同时用于权限检查
     const tournament = await prisma.tournament.findUnique({
       where: { id },
       include: { teams: true, matches: true, team: true },
@@ -51,8 +54,8 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: '赛事不存在' })
     }
 
-    // 权限校验
-    if (user.role !== 'system_admin' && user.userId !== tournament.team?.adminId) {
+    // 权限校验：使用统一的权限判定函数
+    if (!canWriteTournament(user, tournament, tournament.team)) {
       throw createError({ statusCode: 403, statusMessage: '权限不足' })
     }
 
@@ -104,64 +107,79 @@ export default defineEventHandler(async (event) => {
     })
 
     // 5) 将抽签结果写入数据库
+    // 修复：原代码在循环内逐条 await update，且未使用事务，
+    // 任一步骤失败将导致抽签数据部分写入不一致。
+    // 改为使用 prisma.$transaction 批量执行，保证原子性 + 性能提升。
+    await prisma.$transaction(async (tx) => {
+      // 5a) 分组：更新 TournamentTeam.groupLabel 和 seed
+      if (drawResult.groupAssignments.length > 0) {
+        // 并发批量更新所有队伍的分组
+        await Promise.all(
+          drawResult.groupAssignments.map((ga) =>
+            tx.tournamentTeam.updateMany({
+              where: { tournamentId: id, name: ga.team },
+              data: { groupLabel: ga.group, seed: ga.seed },
+            }),
+          ),
+        )
 
-    // 5a) 分组：更新 TournamentTeam.groupLabel 和 seed
-    if (drawResult.groupAssignments.length > 0) {
-      for (const ga of drawResult.groupAssignments) {
-        await prisma.tournamentTeam.updateMany({
-          where: { tournamentId: id, name: ga.team },
-          data: { groupLabel: ga.group, seed: ga.seed },
-        })
-      }
+        // 额外处理：如果是小组+淘汰赛 / 小组循环赛，
+        // 已有的比赛 round 标签可能需要更新为 "A组-第1轮" 格式
+        // 这里的做法是：读取 match 的 teamA/teamB → 找到它们所在组 → 重命名 round
+        // 仅在比赛尚无明确分组标签（如仅"第1轮"）时触发
+        const plainMatches = tournament.matches.filter((m) =>
+          !/^[A-H]组-/.test(m.round) && m.teamA && m.teamB
+        )
+        if (plainMatches.length > 0) {
+          // 构造 team → group 的映射
+          const teamToGroup: Record<string, string> = {}
+          for (const ga of drawResult.groupAssignments) teamToGroup[ga.team] = ga.group
 
-      // 额外处理：如果是小组+淘汰赛 / 小组循环赛，
-      // 已有的比赛 round 标签可能需要更新为 "A组-第1轮" 格式
-      // 这里的做法是：读取 match 的 teamA/teamB → 找到它们所在组 → 重命名 round
-      // 仅在比赛尚无明确分组标签（如仅"第1轮"）时触发
-      const plainMatches = tournament.matches.filter((m) =>
-        !/^[A-H]组-/.test(m.round) && m.teamA && m.teamB
-      )
-      if (plainMatches.length > 0) {
-        // 构造 team → group 的映射
-        const teamToGroup: Record<string, string> = {}
-        for (const ga of drawResult.groupAssignments) teamToGroup[ga.team] = ga.group
-
-        for (const m of plainMatches) {
-          const groupA = m.teamA ? teamToGroup[m.teamA] : null
-          const groupB = m.teamB ? teamToGroup[m.teamB] : null
-          // 只有同组时才重命名
-          if (groupA && groupB && groupA === groupB) {
-            await prisma.match.update({
-              where: { id: m.id },
-              data: { round: `${groupA}-${m.round}` },
+          // 并发批量更新比赛 round 标签
+          const matchUpdates = plainMatches
+            .map((m) => {
+              const groupA = m.teamA ? teamToGroup[m.teamA] : null
+              const groupB = m.teamB ? teamToGroup[m.teamB] : null
+              // 只有同组时才重命名
+              if (groupA && groupB && groupA === groupB) {
+                return tx.match.update({
+                  where: { id: m.id },
+                  data: { round: `${groupA}-${m.round}` },
+                })
+              }
+              return null
             })
-          }
+            .filter((u): u is NonNullable<typeof u> => u !== null)
+
+          await Promise.all(matchUpdates)
         }
       }
-    }
 
-    // 5b) 辩题 & 正反方：更新 Match.topic / Match.affirmativeSide
-    if (drawResult.matchAssignments.length > 0) {
-      for (const ma of drawResult.matchAssignments) {
-        await prisma.match.update({
-          where: { id: ma.matchId },
-          data: {
-            topic: ma.topic || null,
-            affirmativeSide: ma.affirmativeSide,
-          },
-        })
+      // 5b) 辩题 & 正反方：更新 Match.topic / Match.affirmativeSide
+      if (drawResult.matchAssignments.length > 0) {
+        await Promise.all(
+          drawResult.matchAssignments.map((ma) =>
+            tx.match.update({
+              where: { id: ma.matchId },
+              data: {
+                topic: ma.topic || null,
+                affirmativeSide: ma.affirmativeSide,
+              },
+            }),
+          ),
+        )
       }
-    }
 
-    // 6) 缓存抽签结果到 tournament.assignments（便于前端查看历史）
-    const snapshot = {
-      drawnAt: new Date().toISOString(),
-      drawType,
-      ...drawResult,
-    }
-    await prisma.tournament.update({
-      where: { id },
-      data: { assignments: JSON.stringify(snapshot) },
+      // 6) 缓存抽签结果到 tournament.assignments（便于前端查看历史）
+      const snapshot = {
+        drawnAt: new Date().toISOString(),
+        drawType,
+        ...drawResult,
+      }
+      await tx.tournament.update({
+        where: { id },
+        data: { assignments: JSON.stringify(snapshot) },
+      })
     })
 
     return {

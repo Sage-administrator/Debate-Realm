@@ -3,12 +3,13 @@
 // 请求体：{ teamId, priority, customDelayMs?, enabled }
 // ════════════════════════════════════════════════════
 import { prisma } from '../../lib/prisma'
-import { getUserFromEvent } from '../../utils/auth'
+import { getUserFromEventWithSession } from '../../utils/auth'
 import { setBotSchedule, getScheduleConfigs } from '../../lib/bot-manager'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion
+    const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
       throw createError({ statusCode: 403, statusMessage: '仅团队管理员可设置调度配置' })

@@ -164,41 +164,44 @@ async function handleCreate() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-100 py-10">
-    <!-- 页面标题区 -->
-    <div class="max-w-[800px] mx-auto px-6 mb-6">
-      <h1 class="text-2xl font-bold text-gray-900 leading-8">创建赛事</h1>
-      <p class="text-sm text-gray-500 mt-2">快速开始创建赛事，填写以下信息完成创建</p>
-    </div>
+  <!-- 外层容器：不额外设置背景（body 已有深色渐变），渐入动画 -->
+  <div class="min-h-screen p-8 fade-in">
+    <div class="max-w-3xl mx-auto">
 
-    <!-- 主表单卡片 -->
-    <div class="max-w-[800px] mx-auto px-6">
-      <div class="bg-white rounded-lg shadow-sm p-8 space-y-6">
+      <!-- 页面标题区 -->
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-white mb-2">创建赛事</h1>
+        <p class="text-white/60 text-sm">快速开始创建赛事，填写以下信息完成创建</p>
+      </div>
+
+      <!-- 主表单卡片：深色玻璃拟态风格 -->
+      <div class="glass-card-strong p-6 sm:p-8">
+        <div class="space-y-6">
 
         <!-- 1. 赛事名称 -->
         <div>
-          <label class="block text-sm text-gray-700 mb-1.5">
-            赛事名称 <span class="text-red-500">*</span>
+          <label class="block text-white/70 text-sm font-medium mb-1.5">
+            赛事名称 <span class="text-red-400">*</span>
           </label>
           <input
             v-model="form.name"
             type="text"
             placeholder="请输入赛事名称"
-            class="w-full h-10 px-3 text-sm text-gray-900 border border-gray-300 rounded focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/20 transition-colors placeholder:text-gray-400"
-            :class="errors.name ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : ''"
+            class="input-glass w-full h-10"
+            :class="errors.name ? '!border-red-400 focus:!border-red-400' : ''"
             @input="validateName"
             @blur="validateName"
           />
-          <p v-if="errors.name" class="text-xs text-red-500 mt-1.5">{{ errors.name }}</p>
-          <p v-else class="text-xs text-gray-400 mt-1.5">请不要在这里填写辩题，辩题将在赛事详情中设置</p>
+          <p v-if="errors.name" class="text-red-400 text-xs mt-1.5">{{ errors.name }}</p>
+          <p v-else class="text-white/30 text-xs mt-1.5">请不要在这里填写辩题，辩题将在赛事详情中设置</p>
         </div>
 
         <!-- 2. 举办周期（月范围） + 3. 赛事地区（级联选择） 同一行 -->
         <div class="grid grid-cols-2 gap-4">
-          <!-- 左：举办周期 - MonthRangePicker -->
+          <!-- 左：举办周期 - MonthRangePicker（自定义组件保持原样） -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1.5">
-              举办周期 <span class="text-red-500">*</span>
+            <label class="block text-white/70 text-sm font-medium mb-1.5">
+              举办周期 <span class="text-red-400">*</span>
             </label>
             <div
               class="period-wrapper"
@@ -211,13 +214,13 @@ async function handleCreate() {
                 @update:end-date="form.endDate = $event; clearError('period')"
               />
             </div>
-            <p v-if="errors.period" class="text-xs text-red-500 mt-1.5">{{ errors.period }}</p>
+            <p v-if="errors.period" class="text-red-400 text-xs mt-1.5">{{ errors.period }}</p>
           </div>
 
-          <!-- 右：赛事地区 - 省市二级级联 -->
+          <!-- 右：赛事地区 - 省市二级级联（自定义组件保持原样） -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1.5">
-              赛事地区 <span class="text-red-500">*</span>
+            <label class="block text-white/70 text-sm font-medium mb-1.5">
+              赛事地区 <span class="text-red-400">*</span>
             </label>
             <RegionCascader
               :province="form.regionProvince"
@@ -225,70 +228,71 @@ async function handleCreate() {
               @update:province="form.regionProvince = $event; clearError('region')"
               @update:city="form.regionCity = $event; clearError('region')"
             />
-            <p v-if="errors.region" class="text-xs text-red-500 mt-1.5">{{ errors.region }}</p>
+            <p v-if="errors.region" class="text-red-400 text-xs mt-1.5">{{ errors.region }}</p>
           </div>
         </div>
 
-        <!-- 4-5. 主办方类别 + 赛事主办方（两列并排，比例 1 : 1.5） -->
+        <!-- 4-5. 主办方类别 + 赛事主办方（两列并排，比例 1 : 3） -->
         <div class="grid gap-4 two-col-form">
-          <!-- 4. 主办方类别 - Segmented Control -->
+          <!-- 4. 主办方类别 - Segmented Control（深色风格） -->
           <div class="col-category">
-            <label class="block text-sm text-gray-700 mb-1.5">
-              主办方类别 <span class="text-red-500">*</span>
+            <label class="block text-white/70 text-sm font-medium mb-1.5">
+              主办方类别 <span class="text-red-400">*</span>
             </label>
             <div
-              class="flex bg-gray-100 rounded p-0.5 gap-0.5 h-10"
+              class="flex bg-white/10 rounded-lg p-0.5 gap-0.5 h-10"
               :class="errors.organizerCategory ? 'ring-1 ring-red-400' : ''"
             >
               <button
                 v-for="cat in organizerCategoryOptions"
                 :key="cat.value"
                 type="button"
-                class="flex-1 px-3 text-sm rounded transition-all cursor-pointer flex items-center justify-center"
+                class="flex-1 px-3 text-sm rounded-md transition-all cursor-pointer flex items-center justify-center"
                 :class="form.organizerCategory === cat.value
-                  ? 'bg-white text-gray-900 font-medium shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'"
+                  ? 'bg-indigo-500/30 text-white font-medium'
+                  : 'text-white/50 hover:text-white/70'"
                 @click="form.organizerCategory = cat.value; clearError('organizerCategory')"
               >
                 {{ cat.label }}
               </button>
             </div>
-            <p v-if="errors.organizerCategory" class="text-xs text-red-500 mt-1.5">{{ errors.organizerCategory }}</p>
+            <p v-if="errors.organizerCategory" class="text-red-400 text-xs mt-1.5">{{ errors.organizerCategory }}</p>
           </div>
 
           <!-- 5. 赛事主办方（加宽列宽） -->
           <div class="col-organizer">
-            <label class="block text-sm text-gray-700 mb-1.5">
-              赛事主办方 <span class="text-red-500">*</span>
+            <label class="block text-white/70 text-sm font-medium mb-1.5">
+              赛事主办方 <span class="text-red-400">*</span>
             </label>
             <input
               v-model="form.organizer"
               type="text"
               placeholder="请输入主办单位名称"
-              class="w-full h-10 px-3 text-sm text-gray-900 border border-gray-300 rounded focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/20 transition-colors placeholder:text-gray-400"
-              :class="errors.organizer ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : form.organizer ? 'border-green-500' : ''"
+              class="input-glass w-full h-10"
+              :class="errors.organizer ? '!border-red-400 focus:!border-red-400' : ''"
               @input="validateOrganizer"
               @blur="validateOrganizer"
             />
-            <p v-if="errors.organizer" class="text-xs text-red-500 mt-1.5">{{ errors.organizer }}</p>
+            <p v-if="errors.organizer" class="text-red-400 text-xs mt-1.5">{{ errors.organizer }}</p>
           </div>
         </div>
 
         <!-- 底部：协议 + 提交 -->
         <div class="pt-2 space-y-4">
-          <!-- 协议勾选 -->
+          <!-- 协议勾选（深色风格） -->
           <label class="inline-flex items-start gap-2 cursor-pointer group">
             <span
               class="relative flex items-center justify-center w-4 h-4 mt-0.5 shrink-0"
               @click="clearError('agreedToTerms')"
             >
+              <!-- 深色风格复选框：未选中为白色半透明边框，选中为紫色 -->
               <span
                 class="absolute inset-0 rounded-sm border transition-colors"
                 :class="form.agreedToTerms
-                  ? 'bg-green-500 border-green-500'
+                  ? 'bg-indigo-500 border-indigo-500'
                   : errors.agreedToTerms
                     ? 'border-red-400'
-                    : 'border-gray-300 group-hover:border-gray-400'"
+                    : 'border-white/20 group-hover:border-white/40'"
               />
               <UIcon v-if="form.agreedToTerms" name="i-lucide-check" class="relative w-3 h-3 text-white" />
             </span>
@@ -298,19 +302,19 @@ async function handleCreate() {
               class="sr-only"
               @change="clearError('agreedToTerms')"
             />
-            <span class="text-xs text-gray-500 leading-relaxed">
+            <span class="text-white/50 text-xs leading-relaxed">
               创建赛事即代表您已同意
-              <span class="text-green-600 cursor-pointer hover:underline">服务协议</span>
+              <span class="text-indigo-400 cursor-pointer hover:underline">服务协议</span>
               和
-              <span class="text-green-600 cursor-pointer hover:underline">隐私政策</span>
+              <span class="text-indigo-400 cursor-pointer hover:underline">隐私政策</span>
             </span>
           </label>
-          <p v-if="errors.agreedToTerms" class="text-xs text-red-500">{{ errors.agreedToTerms }}</p>
+          <p v-if="errors.agreedToTerms" class="text-red-400 text-xs">{{ errors.agreedToTerms }}</p>
 
-          <!-- 提交按钮 -->
+          <!-- 提交按钮：渐变紫色主按钮 -->
           <button
             type="button"
-            class="w-full h-11 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-base font-medium rounded flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            class="btn-primary w-full py-3 text-base font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="loading"
             @click="handleCreate"
           >
@@ -320,6 +324,7 @@ async function handleCreate() {
           </button>
         </div>
 
+        </div>
       </div>
     </div>
   </div>

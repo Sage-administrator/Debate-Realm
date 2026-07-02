@@ -4,13 +4,14 @@
 // 注意：channelId 是赛场主阵地，guildId 仅用于 QQ API 调用（创建身份组需要）
 // ════════════════════════════════════════════════════
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
 import { getBotInstance } from '../../../lib/bot-ws'
 import { createArena, getNextArenaLetter } from '../../../lib/bot-roles'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion
+    const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
       throw createError({ statusCode: 403, statusMessage: '仅团队管理员可创建赛场' })

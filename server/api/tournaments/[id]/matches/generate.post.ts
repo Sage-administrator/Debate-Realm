@@ -9,28 +9,14 @@
 
 import { readBody } from 'h3'
 import { prisma } from '../../../../lib/prisma'
-import { getUserFromEvent } from '../../../../utils/auth'
+import { requireWriteTournament } from '../../../../utils/tournament-auth'
 import { generateBracket, type TournamentFormat, type GenerateOptions, type MatchInput } from '../../../../utils/bracket-generator'
 
 export default defineEventHandler(async (event) => {
   try {
     // ── 1. 鉴权：登录 + 是赛事管理员 / 团队 owner ──
-    const user = getUserFromEvent(event)
     const tournamentId = getRouterParam(event, 'id')!
-
-    const tournament = await prisma.tournament.findUnique({
-      where: { id: tournamentId },
-      include: { team: true },
-    })
-
-    if (!tournament) {
-      throw createError({ statusCode: 404, statusMessage: '赛事不存在' })
-    }
-
-    const isAdmin = user.role === 'system_admin' || tournament.team.adminId === user.userId
-    if (!isAdmin) {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
-    }
+    const { tournament } = await requireWriteTournament(event, prisma, tournamentId)
 
     // ── 2. 解析请求体 ──
     const body = await readBody<{
@@ -111,12 +97,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: '瑞士制轮数必须在 1-20 之间' })
     }
 
-    // ── 4. 可选：清空已有赛程 ──
-    if (clearExisting) {
-      await prisma.match.deleteMany({ where: { tournamentId } })
-    }
-
-    // ── 5. 使用 bracket-generator 生成赛程 ──
+    // ── 4. 使用 bracket-generator 生成赛程 ──
     const normalizedTeams = teams.map((t, i) => ({
       name: t.name.trim(),
       seed: t.seed ?? i + 1,
@@ -136,29 +117,37 @@ export default defineEventHandler(async (event) => {
 
     const result = generateBracket(generateOpts)
 
-    // ── 6. 写入数据库 ──
-    const savedMatches = await Promise.all(
-      result.matches.map((match: MatchInput) =>
-        prisma.match.create({
-          data: {
-            tournamentId,
-            round: match.round,
-            orderNum: match.orderNum,
-            teamA: match.teamA,
-            teamB: match.teamB,
-            status: 'pending',
-          },
-        })
-      )
-    )
+    // ── 5. 写入数据库（事务保证原子性 + createMany 批量插入） ──
+    const matchData = result.matches.map((match: MatchInput) => ({
+      tournamentId,
+      round: match.round,
+      orderNum: match.orderNum,
+      teamA: match.teamA,
+      teamB: match.teamB,
+      status: 'pending',
+      promotedFromA: match.promotedFromA,
+      promotedFromB: match.promotedFromB,
+      isBye: match.isBye,
+    }))
 
-    // ── 7. 更新赛事 format（方便前端显示） ──
-    await prisma.tournament.update({
-      where: { id: tournamentId },
-      data: { format },
+    const savedMatches = await prisma.$transaction(async (tx) => {
+      if (clearExisting) {
+        await tx.match.deleteMany({ where: { tournamentId } })
+      }
+      await tx.tournament.update({
+        where: { id: tournamentId },
+        data: { format },
+      })
+      // SQLite 不支持 createManyAndReturn，使用 createMany + findMany
+      await tx.match.createMany({ data: matchData })
+      return await tx.match.findMany({
+        where: { tournamentId },
+        select: { id: true },
+        orderBy: [{ round: 'asc' }, { orderNum: 'asc' }],
+      })
     })
 
-    // ── 8. 返回结果 ──
+    // ── 7. 返回结果 ──
     return {
       code: 0,
       message: `赛程生成成功：${result.formatLabel}，共 ${result.totalMatches} 场比赛`,

@@ -4,7 +4,7 @@
 // ════════════════════════════════════════════════════
 
 import type { PrismaClient } from './generated/client'
-import { getAllBotInstances, getBotInstance } from './bot-ws'
+import { getAllBotInstances, getBotInstance, createBotInstance } from './bot-ws'
 import type { BotInstance } from './bot-ws'
 
 // ---------- 类型定义 ----------
@@ -141,7 +141,7 @@ export async function startAllBotsWithSchedule(
 
     setTimeout(() => {
       console.log(`[BotManager] 错峰启动「${team.name}」（优先级 ${config.priority}，延迟 ${delayMs}ms）`)
-      const { createBotInstance } = require('./bot-ws')
+      // 修复：原代码使用 require() 在 ESM 环境下会报错，改为顶部已 import 的 createBotInstance
       createBotInstance({
         appId: botAppId,
         appSecret: botAppSecret,

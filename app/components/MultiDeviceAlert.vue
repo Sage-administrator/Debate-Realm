@@ -192,12 +192,12 @@ async function handleTerminateOthers() {
                     class="w-10 h-10 text-amber-500 flex-shrink-0 mt-1"
                   />
                   <div class="flex-1">
-                    <p class="font-medium text-gray-800 dark:text-gray-200">
+                    <p class="font-medium text-white/80">
                       检测到您的账号同时在其他设备登录
                     </p>
                     <p
                       id="modal-description"
-                      class="text-sm text-gray-500 dark:text-gray-400 mt-1"
+                      class="text-sm text-white/40 mt-1"
                     >
                       以下是其他设备的登录信息。您可以选择忽略，或强制下线其他设备以保障账号安全。
                     </p>
@@ -218,17 +218,17 @@ async function handleTerminateOthers() {
                       当前设备
                     </span>
                   </div>
-                  <div class="text-sm text-gray-700 dark:text-gray-300 pl-6 space-y-0.5">
+                  <div class="text-sm text-white/70 pl-6 space-y-0.5">
                     <p>
-                      <span class="text-gray-500 dark:text-gray-400">设备：</span>
+                      <span class="text-white/40">设备：</span>
                       {{ currentSession.deviceInfo }}
                     </p>
                     <p v-if="currentSession.ipAddress">
-                      <span class="text-gray-500 dark:text-gray-400">IP：</span>
+                      <span class="text-white/40">IP：</span>
                       {{ currentSession.ipAddress }}
                     </p>
                     <p>
-                      <span class="text-gray-500 dark:text-gray-400">登录时间：</span>
+                      <span class="text-white/40">登录时间：</span>
                       {{ formatTime(currentSession.loggedInAt) }}
                     </p>
                   </div>
@@ -249,21 +249,21 @@ async function handleTerminateOthers() {
                       其他设备
                     </span>
                   </div>
-                  <div class="text-sm text-gray-700 dark:text-gray-300 pl-6 space-y-0.5">
+                  <div class="text-sm text-white/70 pl-6 space-y-0.5">
                     <p>
-                      <span class="text-gray-500 dark:text-gray-400">设备：</span>
+                      <span class="text-white/40">设备：</span>
                       {{ session.deviceInfo }}
                     </p>
                     <p v-if="session.ipAddress">
-                      <span class="text-gray-500 dark:text-gray-400">IP：</span>
+                      <span class="text-white/40">IP：</span>
                       {{ session.ipAddress }}
                     </p>
                     <p>
-                      <span class="text-gray-500 dark:text-gray-400">登录时间：</span>
+                      <span class="text-white/40">登录时间：</span>
                       {{ formatTime(session.loggedInAt) }}
                     </p>
                     <p>
-                      <span class="text-gray-500 dark:text-gray-400">最后活跃：</span>
+                      <span class="text-white/40">最后活跃：</span>
                       {{ formatTime(session.lastSeenAt || '') }}
                     </p>
                   </div>
@@ -342,21 +342,23 @@ async function handleTerminateOthers() {
   width: 100%;
   max-width: 540px;
   max-height: calc(100vh - 2rem);
-  background-color: #ffffff;
+  background-color: rgba(30, 30, 62, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 0.75rem;
   box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04),
-    0 0 0 1px rgba(0, 0, 0, 0.05);
+    0 20px 25px -5px rgba(0, 0, 0, 0.3),
+    0 10px 10px -5px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-/* 暗色模式适配 */
+/* 暗色模式适配（已默认深色，此块可保留做额外调整） */
 @media (prefers-color-scheme: dark) {
   .modal-dialog {
-    background-color: #1f2937;
+    background-color: rgba(30, 30, 62, 0.95);
     box-shadow:
       0 20px 25px -5px rgba(0, 0, 0, 0.5),
       0 10px 10px -5px rgba(0, 0, 0, 0.3),
@@ -376,7 +378,7 @@ async function handleTerminateOthers() {
   justify-content: center;
   border-radius: 0.5rem;
   background: transparent;
-  color: #6b7280;
+  color: rgba(255,255,255,0.5);
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -384,9 +386,9 @@ async function handleTerminateOthers() {
 }
 
 .modal-close-btn:hover {
-  background-color: #f3f4f6;
-  color: #374151;
-  border-color: #e5e7eb;
+  background-color: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  border-color: rgba(255,255,255,0.15);
 }
 
 .modal-close-btn:focus-visible {
@@ -396,39 +398,39 @@ async function handleTerminateOthers() {
 
 @media (prefers-color-scheme: dark) {
   .modal-close-btn {
-    color: #9ca3af;
+    color: rgba(255,255,255,0.5);
   }
   .modal-close-btn:hover {
-    background-color: #374151;
-    color: #f3f4f6;
-    border-color: #4b5563;
+    background-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+    border-color: rgba(255,255,255,0.15);
   }
 }
 
 /* 弹窗头部 */
 .modal-header {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #e5e7eb;
-  background-color: #fafafa;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  background-color: rgba(255,255,255,0.05);
 }
 
 @media (prefers-color-scheme: dark) {
   .modal-header {
-    border-bottom-color: #374151;
-    background-color: #111827;
+    border-bottom-color: rgba(255,255,255,0.15);
+    background-color: rgba(255,255,255,0.05);
   }
 }
 
 .modal-title {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #111827;
+  color: rgba(255,255,255,0.9);
   margin: 0;
 }
 
 @media (prefers-color-scheme: dark) {
   .modal-title {
-    color: #f9fafb;
+    color: rgba(255,255,255,0.9);
   }
 }
 
@@ -454,13 +456,13 @@ async function handleTerminateOthers() {
 }
 
 .session-card-current {
-  background-color: #ecfdf5;
-  border-color: #a7f3d0;
+  background-color: rgba(7, 193, 96, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
 }
 
 .session-card-other {
-  background-color: #fffbeb;
-  border-color: #fde68a;
+  background-color: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.35);
 }
 
 .session-card-label {
@@ -469,11 +471,11 @@ async function handleTerminateOthers() {
 }
 
 .session-card-label-current {
-  color: #047857;
+  color: #34d399;
 }
 
 .session-card-label-other {
-  color: #b45309;
+  color: #fbbf24;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -496,8 +498,8 @@ async function handleTerminateOthers() {
 /* 弹窗底部 */
 .modal-footer {
   padding: 1rem 1.25rem;
-  border-top: 1px solid #e5e7eb;
-  background-color: #fafafa;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  background-color: rgba(255,255,255,0.05);
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
@@ -506,8 +508,8 @@ async function handleTerminateOthers() {
 
 @media (prefers-color-scheme: dark) {
   .modal-footer {
-    border-top-color: #374151;
-    background-color: #111827;
+    border-top-color: rgba(255,255,255,0.15);
+    background-color: rgba(255,255,255,0.05);
   }
 }
 
@@ -540,25 +542,25 @@ async function handleTerminateOthers() {
 
 /* 次要按钮（取消/忽略） */
 .btn-outline {
-  background-color: #ffffff;
-  color: #374151;
-  border-color: #d1d5db;
+  background-color: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
+  border-color: rgba(255,255,255,0.15);
 }
 
 .btn-outline:hover:not(:disabled) {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
+  background-color: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.25);
 }
 
 @media (prefers-color-scheme: dark) {
   .btn-outline {
-    background-color: transparent;
-    color: #d1d5db;
-    border-color: #4b5563;
+    background-color: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.7);
+    border-color: rgba(255,255,255,0.15);
   }
   .btn-outline:hover:not(:disabled) {
-    background-color: #374151;
-    border-color: #6b7280;
+    background-color: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.25);
   }
 }
 

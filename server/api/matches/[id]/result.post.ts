@@ -10,24 +10,29 @@
 
 import { readBody } from 'h3'
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
+import { canWriteTournament } from '../../../utils/tournament-auth'
 import {
   advanceWinnerToNextRound,
   autoPairNextSwissRound,
   autoPromoteFromGroupsToKnockout,
 } from '../../../utils/bracket-generator'
+import { recalculateRankings } from '../../../lib/bot-scoring'
 import { notifyMatchResult } from '../../../lib/bot-notifications'
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion
+    const user = await getUserFromEventWithSession(event, prisma)
     const id = getRouterParam(event, 'id')!
     // 新增：bestDebaterA / bestDebaterB + judge 支持评委姓名
-    const { winner, scoreA, scoreB, bestDebaterA, bestDebaterB, judge } = await readBody<{
+    // currentVersion：前端传入的乐观锁版本号
+    const { winner, scoreA, scoreB, bestDebaterA, bestDebaterB, judge, currentVersion } = await readBody<{
       winner: string; scoreA: number; scoreB: number
       bestDebaterA?: string | null
       bestDebaterB?: string | null
       judge?: string | null
+      currentVersion?: number
     }>(event)
 
     if (!winner || scoreA === undefined || scoreB === undefined) {
@@ -37,26 +42,43 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: '40011无效的获胜方' })
     }
 
-    // 获取比赛信息（用于权限校验和晋级计算）
-    const match = await prisma.match.findUnique({
-      where: { id },
+    // 修复：使用 findFirst + deletedAt: null 过滤软删除记录
+    const match = await prisma.match.findFirst({
+      where: { id, deletedAt: null },
       include: {
         tournament: { include: { team: true } },
       },
     })
 
-    if (!match) throw createError({ statusCode: 404, statusMessage: '40001场次不存在' })
+    if (!match) throw createError({ statusCode: 404, statusMessage: '40001场次不存在或已删除' })
+    if (!match.tournament) throw createError({ statusCode: 400, statusMessage: '赛事不存在' })
 
-    // 权限校验：仅系统管理员或所属团队的管理员可以录赛果
-    const isAdmin = user.role === 'system_admin' || (match.tournament && match.tournament.team.adminId === user.userId)
-    if (!isAdmin) throw createError({ statusCode: 403, statusMessage: '40003权限不足' })
+    // 权限校验：使用统一的权限判定函数
+    if (!canWriteTournament(user, match.tournament, match.tournament.team)) {
+      throw createError({ statusCode: 403, statusMessage: '40003权限不足' })
+    }
+
+    // 修复：乐观锁校验，防止两个管理员同时录入赛果导致积分翻倍
+    if (currentVersion !== undefined && currentVersion !== match.version) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: '数据版本冲突，请刷新后重试',
+      })
+    }
+
+    // 修复：防止重复录入赛果（已 finished 的比赛不允许再次录入，必须先撤销）
+    if (match.status === 'finished') {
+      throw createError({
+        statusCode: 400,
+        statusMessage: '该比赛已录入赛果，请先撤销后再重新录入',
+      })
+    }
 
     // 计算胜者队伍名
     const resolvedWinner = winner === 'draw' ? null : (winner === 'A' ? match.teamA : match.teamB)
 
     // ====== 新增：根据 bestDebaterMode 校验最佳辩手合法性 ======
     const tournament = match.tournament
-    if (!tournament) throw createError({ statusCode: 400, statusMessage: '赛事不存在' })
     const bdMode = (tournament as any)?.bestDebaterMode || 'both'
 
     let finalBestA = bestDebaterA
@@ -68,22 +90,34 @@ export default defineEventHandler(async (event) => {
     }
     // ============================================================
 
-    // 更新比赛结果（包含最佳辩手 + 评委）
-    const updated = await prisma.match.update({
-      where: { id },
+    // 修复：使用 updateMany + version 条件实现乐观锁更新，避免并发覆盖
+    const updateResult = await prisma.match.updateMany({
+      where: { id, deletedAt: null, version: match.version },
       data: {
         winner: resolvedWinner,
         scoreA, scoreB, status: 'finished',
         bestDebaterA: finalBestA ?? null,
         bestDebaterB: finalBestB ?? null,
         judge: judge ?? null,  // 评委姓名
+        version: { increment: 1 },
       },
     })
 
+    if (updateResult.count === 0) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: '数据版本冲突，请刷新后重试',
+      })
+    }
+
+    const updated = await prisma.match.findUnique({ where: { id } })
+
     // 4.2 积分累计逻辑（非手动赛制才会累计积分）
+    // 修复：统一使用 recalculateRankings 全量重算积分，
+    // 替代原有的 updateTeamPoints increment 累加方式，避免与 bot-scoring.ts 的全量重算机制冲突
     const format = tournament.format || 'single_elimination'
     if (format !== 'manual') {
-      await updateTeamPoints(tournament.id, match, winner, scoreA, scoreB, tournament as any)
+      await recalculateRankings(prisma, tournament.id)
     }
 
     // ── 自动晋级：根据赛事 format 选择不同的晋级策略 ──
@@ -155,11 +189,12 @@ export default defineEventHandler(async (event) => {
       code: 0,
       message: 'success',
       data: {
-        id: updated.id,
-        winner: updated.winner,
-        scoreA: updated.scoreA,
-        scoreB: updated.scoreB,
-        status: updated.status,
+        id: updated!.id,
+        winner: updated!.winner,
+        scoreA: updated!.scoreA,
+        scoreB: updated!.scoreB,
+        status: updated!.status,
+        version: updated!.version,
         advanced: advanceResult,
         format,
       },
@@ -170,72 +205,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: '50000登记赛果失败' })
   }
 })
-
-// =====================================================================
-// 积分累计逻辑
-// =====================================================================
-async function updateTeamPoints(
-  tournamentId: string,
-  match: any,
-  winner: string,
-  scoreA: number,
-  scoreB: number,
-  tournament: any,
-) {
-  const winPoints = tournament.winPoints ?? tournament.meta?.winPoints ?? 3
-  const teamA = match.teamA
-  const teamB = match.teamB
-  if (!teamA || !teamB) return
-
-  // 更新两队 TournamentTeam 记录
-  if (winner === 'draw') {
-    await Promise.all([
-      prisma.tournamentTeam.updateMany({
-        where: { tournamentId, name: teamA },
-        data: {
-          draws: { increment: 1 },
-          points: { increment: 1 },
-          scoreFor: { increment: scoreA },
-          scoreAgainst: { increment: scoreB },
-        },
-      }),
-      prisma.tournamentTeam.updateMany({
-        where: { tournamentId, name: teamB },
-        data: {
-          draws: { increment: 1 },
-          points: { increment: 1 },
-          scoreFor: { increment: scoreB },
-          scoreAgainst: { increment: scoreA },
-        },
-      }),
-    ])
-  } else {
-    const winnerTeam = winner === 'A' ? teamA : teamB
-    const loserTeam = winner === 'A' ? teamB : teamA
-    const winnerScore = winner === 'A' ? scoreA : scoreB
-    const loserScore = winner === 'A' ? scoreB : scoreA
-
-    await Promise.all([
-      prisma.tournamentTeam.updateMany({
-        where: { tournamentId, name: winnerTeam },
-        data: {
-          wins: { increment: 1 },
-          points: { increment: winPoints },
-          scoreFor: { increment: winnerScore },
-          scoreAgainst: { increment: loserScore },
-        },
-      }),
-      prisma.tournamentTeam.updateMany({
-        where: { tournamentId, name: loserTeam },
-        data: {
-          losses: { increment: 1 },
-          scoreFor: { increment: loserScore },
-          scoreAgainst: { increment: winnerScore },
-        },
-      }),
-    ])
-  }
-}
 
 // =====================================================================
 // 佩寄制外部晋级逻辑（R1、R2、R3 晋级关系处理

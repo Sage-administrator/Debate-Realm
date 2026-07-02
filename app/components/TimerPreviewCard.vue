@@ -89,7 +89,7 @@ const stagesLength = computed(() => props.fullConfig.stages?.length ?? 0)
 
 <template>
   <!-- ═══ 左侧：实时预览卡片 ═══ -->
-  <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+  <div class="bg-white/8 rounded-lg overflow-hidden border border-white/10">
 
     <!-- 16:9 黑色预览区域 -->
     <div class="bg-black" style="aspect-ratio: 16/9;">
@@ -112,9 +112,9 @@ const stagesLength = computed(() => props.fullConfig.stages?.length ?? 0)
     </div>
 
     <!-- 底部：三按钮控制栏（上一环节 / 跳转计时 / 下一环节） -->
-    <div class="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+    <div class="px-4 py-3 border-t border-white/10 flex items-center justify-between">
       <button
-        class="px-4 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="px-4 py-1.5 text-sm text-white/80 bg-white/5 border border-white/15 rounded hover:bg-white/10 transition flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
         :disabled="currentIndex <= 0"
         @click="currentIndex--"
       >
@@ -132,7 +132,7 @@ const stagesLength = computed(() => props.fullConfig.stages?.length ?? 0)
       </NuxtLink>
 
       <button
-        class="px-4 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="px-4 py-1.5 text-sm text-white/80 bg-white/5 border border-white/15 rounded hover:bg-white/10 transition flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
         :disabled="stagesLength === 0 || currentIndex >= stagesLength - 1"
         @click="currentIndex++"
       >

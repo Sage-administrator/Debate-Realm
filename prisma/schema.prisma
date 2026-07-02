@@ -12,23 +12,26 @@ model User {
   username     String   @unique
   password     String
   teamId       String?
-  role         String   @default("individual")
+  role         String   @default("individual") // system_admin / admin / subaccount / debater / individual
   mode         String   @default("individual")
   tokenVersion Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   team              Team?             @relation(fields: [teamId], references: [id])
+  adminOfTeams      Team[]            @relation("TeamAdmin") // 用户作为管理员管理的团队
   teamMemberships   TeamMember[]
   standaloneMatches StandaloneMatch[]
   loginSessions     UserLoginSession[]
   timerProjects     DebateTimerProject[]
+  registrations     Registration[]    // 用户提交的报名记录
 }
 
 model Team {
   id           String   @id @default(uuid())
   name         String
   adminId      String
+  admin        User     @relation("TeamAdmin", fields: [adminId], references: [id], onDelete: Restrict)
   mode         String
   botAppId     String?
   botAppSecret String?
@@ -52,7 +55,7 @@ model BotArena {
   matchFormat String   @default("4v4") // 比赛形式：4v4 / 3v3 / 2v2
   status      String   @default("active") // active / closed
   guildId     String?  // QQ 频道 ID（赛场所在频道）
-  channelId   String?  // QQ 子频道 ID（消息来源频道，区分同频道不同赛场）
+  channelId   String?  @unique // QQ 子频道 ID（消息来源频道，一个子频道只能绑定一个赛场）
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -171,7 +174,9 @@ model Tournament {
   teamId          String
   name            String
   description     String?
-  format          String    @default("knockout")
+  // 赛制：single_elimination / double_elimination / round_robin / page_playoff / swiss / group_knockout / manual
+  // 注意：与 server/utils/bracket-generator.ts 中 TournamentFormat 常量保持一致
+  format          String    @default("single_elimination")
   status          String    @default("pending")
   scheduledAt     DateTime?
   venue           String?
@@ -184,6 +189,14 @@ model Tournament {
   assignments       String? // 抽签结果缓存（JSON：{ groupAssignments, topicAssignments, sides }）
   // ====================================
 
+  // ====== 新增：报名系统配置 ======
+  registrationOpen     Boolean   @default(false) // 是否开放报名
+  registrationDeadline DateTime?                  // 报名截止时间
+  isPublic             Boolean   @default(false) // 是否公开（允许免登录报名）
+  teamSize             Int?                       // 队伍人数要求（如 4v4 → 4）
+  registrationInfo     String?   // 报名须知/说明文本
+  // =================================
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -193,7 +206,10 @@ model Tournament {
   matches           Match[]
   timerTemplate     TimerTemplate?
   timerProject      DebateTimerProject? // 关联到计时器配置项目
-  scores            MatchScore[] // 评委评分记录
+  scores            MatchScore[]        // 评委评分记录
+  registrations     Registration[]      // 报名记录
+  regFields         RegistrationField[] // 自定义报名字段
+  topicVotes        TopicVote[]         // 辩题投票
 }
 
 model TournamentTeam {
@@ -226,6 +242,55 @@ model TournamentJudge {
   tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
 
   @@index([tournamentId])
+}
+
+// ════════════════════════════════════════════════════
+// 辩题投票系统 — 赛前从候选辩题池投票选定辩题
+// 支持赛事级（matchId=null）与场次级（关联某场 Match）两层粒度
+// 投票主体：参赛辩手 / 评委 / 团队管理员 / 公开投票
+// ════════════════════════════════════════════════════
+
+// 辩题投票主表（一次投票会话）
+model TopicVote {
+  id            String    @id @default(uuid())
+  tournamentId  String
+  matchId       String?   // 关联单场比赛；null 表示赛事级投票
+  title         String    // 投票标题
+  description   String?   // 投票说明
+  topics        String    // JSON 数组：候选辩题列表 ["辩题1","辩题2",...]
+  status        String    @default("open") // draft | open | closed
+  allowedVoters String?   // JSON: 允许的投票者类型，如 ["debater","judge","admin","public"]；null 视为全部允许
+  multipleChoice Boolean   @default(false) // 是否允许多选
+  deadline      DateTime? // 投票截止时间
+  showResults   Boolean   @default(true) // 是否向投票者展示实时统计
+  createdBy     String?   // 创建人 userId
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tournament Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  match      Match?           @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  records    TopicVoteRecord[]
+
+  @@index([tournamentId])
+  @@index([matchId])
+  @@index([tournamentId, status])
+}
+
+// 辩题投票记录（每个投票者对某次投票的选票）
+model TopicVoteRecord {
+  id               String   @id @default(uuid())
+  voteId           String
+  topicIndices     String   // JSON 数组：选中的辩题索引列表，如 "[0]" 或 "[0,2]"
+  userId           String?  // 登录用户 ID（公开投票时为 null）
+  voterType        String   // debater | judge | admin | public
+  voterName        String?  // 公开投票时的标识/昵称
+  voterFingerprint String?  // 公开投票防刷标识（IP+UA 哈希）
+  createdAt        DateTime @default(now())
+
+  vote TopicVote @relation(fields: [voteId], references: [id], onDelete: Cascade)
+
+  @@unique([voteId, userId])
+  @@index([voteId])
 }
 
 model Match {
@@ -266,9 +331,14 @@ model Match {
   assignedMembers MemberAssignedMatch[]
   timer           Timer?
   scores          MatchScore[] // 评委评分记录
+  topicVotes      TopicVote[] // 辩题投票（场次级）
 
   @@index([tournamentId])
   @@index([standaloneMatchId])
+  @@index([tournamentId, round, orderNum])
+  @@index([tournamentId, status])
+  @@index([tournamentId, deletedAt])
+  @@index([standaloneMatchId, deletedAt])
 }
 
 model StandaloneMatch {
@@ -397,4 +467,72 @@ model DebateTimerStage {
   project DebateTimerProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
+}
+
+// ════════════════════════════════════════════════════
+// 报名系统 — 支持个人报名与队伍报名
+// ════════════════════════════════════════════════════
+
+// 报名记录主表
+model Registration {
+  id            String    @id @default(uuid())
+  tournamentId  String
+  type          String    // "individual" | "team"
+  status        String    @default("pending") // "pending" | "approved" | "rejected"
+  userId        String?   // 关联登录用户（免登录报名时为 null）
+  teamName      String?   // 队伍报名时的队伍名称
+  submitterName String    // 报名提交人姓名
+  contactPhone  String    // 联系电话
+  contactEmail  String?   // 联系邮箱
+  notes         String?   // 报名备注
+  customData    String?   // JSON: 自定义字段数据 { "fieldKey": "value", ... }
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  reviewedAt    DateTime? // 审核时间
+  reviewedBy    String?   // 审核人 userId
+  reviewNote    String?   // 审核备注
+  convertedTeamId String? // 审核通过后转为参赛队伍的 TournamentTeam.id
+  accountCreated Boolean  @default(false) // 是否已为辩手创建子账号
+
+  tournament Tournament            @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  // 用户被删除时，保留报名记录（用于审计），仅解除关联
+  user       User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  members    RegistrationMember[]
+
+  @@index([tournamentId])
+  @@index([tournamentId, status])
+  @@index([tournamentId, type])
+  @@index([userId])
+}
+
+// 报名成员（个人报名 = 1人，队伍报名 = N人）
+model RegistrationMember {
+  id              String   @id @default(uuid())
+  registrationId  String
+  name            String   // 成员姓名
+  preferredPosition String? // preferred 辩位：一辩/二辩/三辩/四辩/不限
+  experience      String?   // 辩论经验描述
+  userId          String?   // 创建子账号后的系统用户 ID
+  createdAt       DateTime @default(now())
+
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@index([registrationId])
+}
+
+// 自定义报名字段配置
+model RegistrationField {
+  id           String   @id @default(uuid())
+  tournamentId String
+  fieldName    String   // 字段显示名称（中文标签）
+  fieldKey     String   // 字段键名（英文标识，用于 customData 存储）
+  fieldType    String   @default("text") // text | textarea | select | checkbox | radio
+  fieldOptions String?  // JSON: 选项列表（select/radio/checkbox 用）
+  required     Boolean  @default(false)
+  sortOrder    Int      @default(0)
+  appliesTo    String   @default("both") // individual | team | both
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@index([tournamentId])
 }

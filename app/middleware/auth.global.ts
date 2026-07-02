@@ -19,6 +19,17 @@ export default defineNuxtRouteMiddleware((to) => {
     return
   }
 
+  // 公开报名页：允许免登录访问（/tournaments/[id]/register）
+  if (/^\/tournaments\/[^/]+\/register$/.test(to.path)) {
+    return
+  }
+
+  // 公开辩题投票页：允许免登录访问（/tournaments/[id]/topic-vote）
+  // 仅投票页本身放行，管理页 topic-votes 仍需登录
+  if (/^\/tournaments\/[^/]+\/topic-vote$/.test(to.path)) {
+    return
+  }
+
   // 其他页面需要认证
   if (!store.isAuthenticated) {
     if (import.meta.client) {

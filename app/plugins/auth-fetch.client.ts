@@ -24,12 +24,44 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   /**
+   * 检查请求 URL 是否为 API 请求（只对 API 请求做认证错误处理）
+   * 避免拦截 Vite 内部请求（如 /@vite/client、/__vite_ping 等）导致 Vue Router 警告
+   */
+  function isApiRequest(request: any): boolean {
+    let url: string
+    if (typeof request === 'string') {
+      url = request
+    } else if (request instanceof URL) {
+      url = request.pathname + request.search
+    } else if (typeof Request !== 'undefined' && request instanceof Request) {
+      try {
+        const urlObj = new URL(request.url)
+        url = urlObj.pathname + urlObj.search
+      } catch {
+        return false
+      }
+    } else if (request?.url) {
+      url = String(request.url)
+    } else {
+      return false
+    }
+    // 只拦截 /api/ 开头的请求
+    return url.startsWith('/api/')
+  }
+
+  /**
    * 包装后的 fetch：截获 401/403 响应，自动清除认证并跳转登录
+   * 注意：只对 /api/ 开头的请求做认证错误处理，避免干扰 Vite 内部请求
    */
   async function wrappedFetch(request: any, options?: any): Promise<any> {
     try {
       return await _originalFetch(request, options)
     } catch (error: any) {
+      // 只对 API 请求做认证错误处理
+      if (!isApiRequest(request)) {
+        throw error
+      }
+
       // 检测 401 / 403 未认证响应
       const status = error?.response?.status || error?.statusCode
       const isAuthError = status === 401 || status === 403

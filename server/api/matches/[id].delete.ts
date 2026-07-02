@@ -1,35 +1,38 @@
 import { readBody } from 'h3'
 import { prisma } from '../../lib/prisma'
-import { getUserFromEvent } from '../../utils/auth'
+import { getUserFromEventWithSession } from '../../utils/auth'
+import { canWriteTournament } from '../../utils/tournament-auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion，
+    // 否则被踢下线的旧 token 在 7 天过期前仍可删除比赛
+    const user = await getUserFromEventWithSession(event, prisma)
     const id = getRouterParam(event, 'id')!
 
     // 读取请求体（含 currentVersion 和可选 deleteReason
     const body = await readBody<{ currentVersion?: number; deleteReason?: string }>(event) || {}
 
     // 1. 查找比赛（含所属 tournament 信息，用于权限校验）
-    const match = await prisma.match.findUnique({
-      where: { id },
+    // 修复：使用 findFirst + deletedAt: null 过滤软删除记录
+    const match = await prisma.match.findFirst({
+      where: { id, deletedAt: null },
       include: { tournament: { include: { team: true } } },
     })
 
     if (!match) {
-      throw createError({ statusCode: 404, statusMessage: '40001场次不存在' })
+      throw createError({ statusCode: 404, statusMessage: '40001场次不存在或已删除' })
     }
 
-    // 2. 权限校验
-    if (user.role !== 'system_admin') {
-      if (match.tournament?.team.adminId !== user.userId) {
-        throw createError({ statusCode: 403, statusMessage: '40003权限不足' })
-      }
+    // 2. 权限校验：使用统一的权限判定函数
+    if (!match.tournament || !canWriteTournament(user, match.tournament, match.tournament.team)) {
+      throw createError({ statusCode: 403, statusMessage: '40003权限不足' })
     }
 
     // 3. 禁止删除已晋级比赛的校验：查询所有 match 中 promotedFromA === id 或 promotedFromB === id 的记录
     const dependentMatches = await prisma.match.findMany({
       where: {
+        deletedAt: null,
         OR: [
           { promotedFromA: id },
           { promotedFromB: id },
@@ -61,6 +64,7 @@ export default defineEventHandler(async (event) => {
     const updateResult = await prisma.match.updateMany({
       where: {
         id,
+        deletedAt: null,
         version: currentVersion !== undefined ? currentVersion : match.version,
       },
       data: {

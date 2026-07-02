@@ -24,7 +24,10 @@ onMounted(() => load())
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-8">
+  <!-- 最外层容器：页面背景 -->
+  <div class="min-h-screen">
+    <!-- 内容容器：居中布局 -->
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-bold">我的独立赛事</h1>
       <UButton color="primary" to="/standalone/create">创建独立赛事</UButton>
@@ -32,15 +35,15 @@ onMounted(() => load())
 
     <div v-if="loading" class="text-center py-12"><UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto" /></div>
 
-    <UCard v-else>
-      <div v-if="matches.length === 0" class="text-center py-8 text-gray-400">
+    <div v-else class="glass-card p-6">
+      <div v-if="matches.length === 0" class="text-center py-8 text-white/40">
         暂无独立赛事，点击"创建独立赛事"开始
       </div>
-      <div v-else class="divide-y">
+      <div v-else class="divide-y divide-white/10">
         <div v-for="m in matches" :key="m.id" class="flex items-center justify-between py-3">
           <div>
-            <div class="font-medium">{{ m.name }}</div>
-            <div class="text-xs text-gray-500 mt-0.5">
+            <div class="font-medium text-white">{{ m.name }}</div>
+            <div class="text-xs text-white/50 mt-0.5">
               <UBadge :label="statusLabel(m.status)" size="xs" variant="soft" />
               <span class="ml-2">{{ m.matchCount }} 场</span>
               <span v-if="m.scheduledAt" class="ml-2">· {{ new Date(m.scheduledAt).toLocaleDateString() }}</span>
@@ -52,6 +55,7 @@ onMounted(() => load())
           </div>
         </div>
       </div>
-    </UCard>
+    </div>
+  </div>
   </div>
 </template>

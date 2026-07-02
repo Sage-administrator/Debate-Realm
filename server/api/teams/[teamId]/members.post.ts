@@ -1,11 +1,12 @@
 import { readBody } from 'h3'
 import { prisma } from '../../../lib/prisma'
 import { hashPassword } from '../../../lib/jwt'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion
+    const currentUser = await getUserFromEventWithSession(event, prisma)
     const id = getRouterParam(event, 'teamId')!
     const { username, password } = await readBody<{ username: string; password: string }>(event)
 

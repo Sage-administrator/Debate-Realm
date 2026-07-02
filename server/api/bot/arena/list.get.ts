@@ -8,7 +8,13 @@ export default defineEventHandler(async (event) => {
   try {
     const currentUser = getUserFromEvent(event)
 
-    if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin' && currentUser.role !== 'member') {
+    // 权限校验：system_admin / 团队 admin / 团队 subaccount（只读） 均可查看赛场列表
+    // 注意：系统不存在 'member' 角色，合法角色见 prisma/schema.prisma User.role 注释
+    if (
+      currentUser.role !== 'admin' &&
+      currentUser.role !== 'system_admin' &&
+      currentUser.role !== 'subaccount'
+    ) {
       throw createError({ statusCode: 403, statusMessage: '权限不足' })
     }
 

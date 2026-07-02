@@ -1,10 +1,22 @@
 import { PrismaClient } from './generated/client'
 import { PrismaLibSql } from '@prisma/adapter-libsql'
 
+// 数据库连接 URL：优先使用环境变量，默认使用本地开发库
+const dbUrl = process.env.DATABASE_URL || 'file:./prisma/dev.db'
+
 const adapter = new PrismaLibSql({
-  url: 'file:./prisma/dev.db',
+  url: dbUrl,
 })
 
-const prisma = new PrismaClient({ adapter })
+// Prisma 客户端配置：
+// - 开发环境：打印 query/warn/error 日志，便于排查慢查询与 N+1 问题
+// - 生产环境：仅打印 error 日志，避免日志量过大
+const prisma = new PrismaClient({
+  adapter,
+  log:
+    process.env.NODE_ENV === 'development'
+      ? ['warn', 'error']
+      : ['error'],
+})
 
 export { prisma }

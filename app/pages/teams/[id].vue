@@ -123,19 +123,22 @@ onMounted(() => loadTeam())
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- 最外层容器 -->
+  <div class="min-h-screen">
+    <!-- 内容容器：居中布局 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 fade-in">
     <div v-if="loading" class="text-center py-12">
-      <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto" />
+      <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-indigo-400" />
     </div>
 
     <template v-else-if="team">
       <!-- 团队基本信息 -->
       <div class="flex items-start justify-between mb-8">
         <div>
-          <h1 class="text-2xl font-bold">{{ team.name }}</h1>
+          <h1 class="text-2xl font-bold text-white">{{ team.name }}</h1>
           <div class="flex items-center gap-2 mt-2">
             <UBadge :label="team.mode === 'qq_bot' ? 'QQ频道' : '普通团队'" :color="team.mode === 'qq_bot' ? 'primary' : 'neutral'" size="sm" variant="soft" />
-            <span class="text-sm text-gray-500">{{ team.tournaments?.length ?? 0 }} 个赛事 · {{ team.memberCount ?? 0 }} 个成员</span>
+            <span class="text-sm text-white/50">{{ team.tournaments?.length ?? 0 }} 个赛事 · {{ team.memberCount ?? 0 }} 个成员</span>
             <!-- 成员数量过多警告 -->
             <UBadge v-if="(team.memberCount ?? 0) > 100" color="warning" size="xs" variant="solid">
               成员过多
@@ -148,7 +151,7 @@ onMounted(() => loadTeam())
       </div>
 
       <!-- 编辑团队信息 -->
-      <UCard v-if="editMode" class="mb-6">
+      <div v-if="editMode" class="glass-card p-6 mb-6">
         <div class="space-y-4">
           <UFormField label="团队名称" required>
             <UInput v-model="editForm.name" />
@@ -166,40 +169,38 @@ onMounted(() => loadTeam())
           </template>
           <UButton color="primary" @click="handleUpdateTeam">保存修改</UButton>
         </div>
-      </UCard>
+      </div>
 
       <!-- 团队信息展示 -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <!-- 团队成员 -->
-        <UCard>
-          <template #header>
-            <div class="flex items-center justify-between">
-              <h2 class="font-bold">团队成员</h2>
-              <div class="flex gap-2">
-                <!-- 成员过多时显示清理按钮 -->
-                <UButton
-                  v-if="isAdmin && members.filter((m: any) => m.role === 'subaccount').length > 0"
-                  color="warning"
-                  variant="ghost"
-                  size="xs"
-                  :loading="cleaningMember"
-                  @click="handleCleanupMembers"
-                >
-                  清理子账号
-                </UButton>
-                <UButton v-if="isAdmin" color="primary" size="xs" @click="showAddMember = true">
-                  添加子账号
-                </UButton>
-              </div>
+        <div class="glass-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-white">团队成员</h2>
+            <div class="flex gap-2">
+              <!-- 成员过多时显示清理按钮 -->
+              <UButton
+                v-if="isAdmin && members.filter((m: any) => m.role === 'subaccount').length > 0"
+                color="warning"
+                variant="ghost"
+                size="xs"
+                :loading="cleaningMember"
+                @click="handleCleanupMembers"
+              >
+                清理子账号
+              </UButton>
+              <UButton v-if="isAdmin" color="primary" size="xs" @click="showAddMember = true">
+                添加子账号
+              </UButton>
             </div>
-          </template>
+          </div>
 
-          <div v-if="members.length === 0" class="text-center py-4 text-gray-400">暂无成员</div>
-          <div v-else class="divide-y">
+          <div v-if="members.length === 0" class="text-center py-4 text-white/40">暂无成员</div>
+          <div v-else class="divide-y divide-white/10">
             <div v-for="m in displayedMembers" :key="m.id" class="flex items-center justify-between py-2">
               <div>
-                <div class="font-medium text-sm">{{ m.username }}</div>
-                <div class="text-xs text-gray-500">
+                <div class="font-medium text-sm text-white/90">{{ m.username }}</div>
+                <div class="text-xs text-white/50">
                   <UBadge :label="roleCN(m.role)" :color="roleColor(m.role)" size="xs" variant="soft" />
                   <span v-if="m.assignedMatches?.length">
                     · 分配 {{ m.assignedMatches.length }} 场
@@ -223,25 +224,25 @@ onMounted(() => loadTeam())
               </UButton>
             </div>
           </div>
-        </UCard>
+        </div>
 
         <!-- 赛事列表 -->
-        <UCard>
-          <template #header>
-            <h2 class="font-bold">赛事列表</h2>
-          </template>
-          <div v-if="!team.tournaments?.length" class="text-center py-4 text-gray-400">
+        <div class="glass-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-white">赛事列表</h2>
+          </div>
+          <div v-if="!team.tournaments?.length" class="text-center py-4 text-white/40">
             暂无赛事
           </div>
-          <div v-else class="divide-y">
+          <div v-else class="divide-y divide-white/10">
             <div v-for="t in team.tournaments" :key="t.id" class="flex items-center justify-between py-2">
               <div>
-                <div class="font-medium text-sm">{{ t.name }}</div>
+                <div class="font-medium text-sm text-white/90">{{ t.name }}</div>
               </div>
               <UBadge :label="t.status" size="xs" variant="soft" />
             </div>
           </div>
-        </UCard>
+        </div>
       </div>
 
       <!-- 添加子账号弹窗 -->
@@ -265,8 +266,9 @@ onMounted(() => loadTeam())
       </UModal>
     </template>
 
-    <div v-else class="text-center py-12 text-gray-400">
+    <div v-else class="text-center py-12 text-white/40">
       团队不存在或已被删除
     </div>
+  </div>
   </div>
 </template>

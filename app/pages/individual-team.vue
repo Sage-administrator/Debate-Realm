@@ -75,55 +75,58 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="isSystemAdmin" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- 最外层容器 -->
+  <div v-if="isSystemAdmin" class="min-h-screen">
+    <!-- 内容容器：居中布局 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 fade-in">
     <!-- 页面头部 -->
     <div class="mb-8">
       <div class="flex items-center gap-4">
-        <button @click="router.back()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <UIcon name="i-lucide-arrow-left" class="w-5 h-5 text-gray-600" />
+        <button @click="router.back()" class="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/60">
+          <UIcon name="i-lucide-arrow-left" class="w-5 h-5" />
         </button>
         <div>
-          <h1 class="text-2xl font-bold">个人团队详情</h1>
-          <p class="text-gray-500 mt-1">管理系统中的所有个人用户及其独立赛事</p>
+          <h1 class="text-2xl font-bold text-white">个人团队详情</h1>
+          <p class="text-white/50 mt-1">管理系统中的所有个人用户及其独立赛事</p>
         </div>
       </div>
     </div>
 
     <!-- 加载状态 -->
     <div v-if="loading" class="text-center py-12">
-      <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-primary" />
-      <p class="text-gray-400 mt-2">加载中...</p>
+      <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-indigo-400" />
+      <p class="text-white/40 mt-2">加载中...</p>
     </div>
 
     <template v-else>
       <!-- 统计卡片 -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <UCard class="text-center">
-          <div class="text-2xl font-bold text-primary">{{ individualUsers.length }}</div>
-          <div class="text-sm text-gray-500">个人用户总数</div>
-        </UCard>
-        <UCard class="text-center">
-          <div class="text-2xl font-bold text-primary">
+        <div class="glass-card-strong p-6 text-center">
+          <div class="text-2xl font-bold text-indigo-400">{{ individualUsers.length }}</div>
+          <div class="text-sm text-white/50">个人用户总数</div>
+        </div>
+        <div class="glass-card-strong p-6 text-center">
+          <div class="text-2xl font-bold text-indigo-400">
             {{ individualUsers.reduce((sum, u) => sum + u.standaloneMatchCount, 0) }}
           </div>
-          <div class="text-sm text-gray-500">独立赛事总数</div>
-        </UCard>
-        <UCard class="text-center">
-          <div class="text-2xl font-bold text-primary">
+          <div class="text-sm text-white/50">独立赛事总数</div>
+        </div>
+        <div class="glass-card-strong p-6 text-center">
+          <div class="text-2xl font-bold text-indigo-400">
             {{ individualUsers.reduce((sum, u) => sum + u.standaloneMatches.reduce((s, m) => s + m.matchCount, 0), 0) }}
           </div>
-          <div class="text-sm text-gray-500">比赛场次总数</div>
-        </UCard>
+          <div class="text-sm text-white/50">比赛场次总数</div>
+        </div>
       </div>
 
       <!-- 个人用户列表 -->
-      <UCard class="mb-6">
+      <div class="glass-card p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold">个人用户列表</h2>
-          <span class="text-sm text-gray-500">共 {{ individualUsers.length }} 位个人用户</span>
+          <h2 class="text-lg font-bold text-white">个人用户列表</h2>
+          <span class="text-sm text-white/50">共 {{ individualUsers.length }} 位个人用户</span>
         </div>
 
-        <div v-if="individualUsers.length === 0" class="text-center py-8 text-gray-400">
+        <div v-if="individualUsers.length === 0" class="text-center py-8 text-white/40">
           暂无个人用户
         </div>
 
@@ -131,7 +134,7 @@ onMounted(() => {
           <div
             v-for="user in individualUsers"
             :key="user.id"
-            class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+            class="border border-white/10 rounded-lg p-4 hover:shadow-md transition-shadow"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
@@ -139,8 +142,8 @@ onMounted(() => {
                   {{ user.username.charAt(0) }}
                 </div>
                 <div>
-                  <div class="font-medium">{{ user.username }}</div>
-                  <div class="text-sm text-gray-500">注册于 {{ formatDate(user.createdAt) }}</div>
+                  <div class="font-medium text-white/90">{{ user.username }}</div>
+                  <div class="text-sm text-white/50">注册于 {{ formatDate(user.createdAt) }}</div>
                 </div>
               </div>
               <div class="flex items-center gap-2">
@@ -150,36 +153,37 @@ onMounted(() => {
             </div>
 
             <!-- 用户的独立赛事列表 -->
-            <div v-if="user.standaloneMatches.length > 0" class="mt-4 pt-4 border-t border-gray-100">
-              <div class="text-sm font-medium text-gray-700 mb-2">独立赛事（{{ user.standaloneMatchCount }} 个）</div>
+            <div v-if="user.standaloneMatches.length > 0" class="mt-4 pt-4 border-t border-white/10">
+              <div class="text-sm font-medium text-white/80 mb-2">独立赛事（{{ user.standaloneMatchCount }} 个）</div>
               <div class="flex flex-wrap gap-2">
                 <div
                   v-for="match in user.standaloneMatches"
                   :key="match.id"
-                  class="px-3 py-1.5 bg-gray-50 rounded-lg text-sm"
+                  class="px-3 py-1.5 bg-white/5 rounded-lg text-sm"
                 >
-                  <span class="font-medium text-gray-800">{{ match.name }}</span>
-                  <span class="text-gray-500 ml-2">
+                  <span class="font-medium text-white/90">{{ match.name }}</span>
+                  <span class="text-white/50 ml-2">
                     <UBadge :label="({ pending: '待开始', running: '进行中', finished: '已完成' } as Record<string,string>)[match.status] || match.status"
                       :color="(({ pending: 'neutral', running: 'primary', finished: 'success' } as Record<string,string>)[match.status] || 'neutral') as any"
                       size="xs" variant="soft" />
                   </span>
-                  <span class="text-gray-400 ml-1">({{ match.matchCount }}场)</span>
+                  <span class="text-white/40 ml-1">({{ match.matchCount }}场)</span>
                 </div>
               </div>
             </div>
 
-            <div v-else class="mt-4 pt-4 border-t border-gray-100">
-              <div class="text-sm text-gray-400">暂无独立赛事</div>
+            <div v-else class="mt-4 pt-4 border-t border-white/10">
+              <div class="text-sm text-white/40">暂无独立赛事</div>
             </div>
           </div>
         </div>
-      </UCard>
+      </div>
 
       <!-- 提示信息 -->
       <UAlert color="info" variant="soft" title="关于个人团队"
         description="个人团队是系统中的虚拟团队，包含所有注册为个人模式的用户。这些用户可以创建和管理自己的独立赛事，不受团队限制。" />
     </template>
+  </div>
   </div>
 
   <!-- 重置密码弹窗 -->

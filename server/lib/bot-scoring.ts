@@ -118,8 +118,12 @@ export async function submitScore(
  * 更新比赛总分（汇总所有评委评分）
  */
 async function updateMatchScores(prisma: PrismaClient, matchId: string): Promise<void> {
+  // 修复：通过 join Match 过滤软删除记录，避免对已删除比赛累计评分
   const scores = await prisma.matchScore.findMany({
-    where: { matchId },
+    where: {
+      matchId,
+      match: { deletedAt: null },
+    },
   })
 
   if (scores.length === 0) return
@@ -169,7 +173,7 @@ export async function recalculateRankings(
   const matches = await prisma.match.findMany({
     where: {
       tournamentId,
-      status: 'completed',
+      status: 'finished', // 修复：与 result.post.ts 保持一致，使用 'finished' 而非 'completed'
       deletedAt: null,
     },
     select: {
@@ -219,23 +223,28 @@ export async function recalculateRankings(
     }
   }
 
-  // 更新数据库
-  for (const team of teams) {
-    const s = stats[team.name]
-    if (!s) continue
-
-    await prisma.tournamentTeam.update({
-      where: { id: team.id },
-      data: {
-        points: s.points,
-        wins: s.wins,
-        draws: s.draws,
-        losses: s.losses,
-        scoreFor: s.scoreFor,
-        scoreAgainst: s.scoreAgainst,
-      },
+  // 修复：原代码在 for 循环内逐条 await update，N 支队伍就 N 次串行 DB 写入，
+  // 且非事务原子操作。改为使用 $transaction + Promise.all 并发批量更新，
+  // 既提升性能（一次往返），又保证原子性（全成功或全失败）。
+  const updates = teams
+    .map((team) => {
+      const s = stats[team.name]
+      if (!s) return null
+      return prisma.tournamentTeam.update({
+        where: { id: team.id },
+        data: {
+          points: s.points,
+          wins: s.wins,
+          draws: s.draws,
+          losses: s.losses,
+          scoreFor: s.scoreFor,
+          scoreAgainst: s.scoreAgainst,
+        },
+      })
     })
-  }
+    .filter((u): u is NonNullable<typeof u> => u !== null)
+
+  await prisma.$transaction(updates)
 
   console.log(`[Ranking] 赛事 ${tournamentId} 排名已更新，共 ${teams.length} 支队伍`)
 }
@@ -325,13 +334,14 @@ export async function getMatchScores(
     createdAt: Date
   }>
 }> {
-  const match = await prisma.match.findUnique({
-    where: { id: matchId },
+  // 修复：使用 findFirst + deletedAt: null 过滤软删除比赛
+  const match = await prisma.match.findFirst({
+    where: { id: matchId, deletedAt: null },
     select: { teamA: true, teamB: true, winner: true },
   })
 
   const scores = await prisma.matchScore.findMany({
-    where: { matchId },
+    where: { matchId, match: { deletedAt: null } },
     orderBy: { createdAt: 'desc' },
   })
 

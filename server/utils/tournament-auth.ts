@@ -17,10 +17,10 @@ import type { PrismaClient, Tournament, Team } from '../lib/generated/client'
 export function canReadTournament(user: JWTPayload | null, tournament: { teamId: string }): boolean {
   if (!user) return false
   if (user.role === 'system_admin') return true
-  if (user.role === 'admin' || user.role === 'subaccount') {
+  if (user.role === 'admin' || user.role === 'subaccount' || user.role === 'debater') {
     return !!user.teamId && user.teamId === tournament.teamId
   }
-  // individual / 其他角色：当前没有“个人赛事”的数据库支持
+  // individual / 其他角色：当前没有"个人赛事"的数据库支持
   return false
 }
 

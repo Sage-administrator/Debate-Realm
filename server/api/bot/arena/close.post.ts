@@ -3,13 +3,14 @@
 // 请求体：{ channelId: "子频道ID（必填）", guildId?: "频道ID（仅用于 QQ API）" }
 // ════════════════════════════════════════════════════
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
 import { getBotInstance } from '../../../lib/bot-ws'
 import { closeArena } from '../../../lib/bot-roles'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion
+    const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
       throw createError({ statusCode: 403, statusMessage: '仅团队管理员可关闭赛场' })

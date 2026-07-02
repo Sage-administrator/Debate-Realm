@@ -23,6 +23,7 @@ interface BotWsState {
   authenticated: boolean
   status: BotStatus | null
   lastError: string
+  shouldReconnect: boolean  // 修复：控制是否自动重连
   // 待处理请求的回调
   pendingRequests: Map<string, {
     resolve: (data: any) => void
@@ -38,6 +39,7 @@ export function useBotWs() {
     authenticated: false,
     status: null,
     lastError: '',
+    shouldReconnect: true,  // 默认开启自动重连
     pendingRequests: new Map(),
   })
 
@@ -99,9 +101,12 @@ export function useBotWs() {
     ws.onclose = () => {
       state.connected = false
       state.authenticated = false
-      // 自动重连（延迟 3 秒）
-      if (reconnectTimer) clearTimeout(reconnectTimer)
-      reconnectTimer = setTimeout(() => connect(), 3000)
+      // 修复：根据 shouldReconnect 标志决定是否自动重连
+      // auth_error 时会将 shouldReconnect 设为 false，避免认证失败→断开→重连→认证失败的死循环
+      if (state.shouldReconnect) {
+        if (reconnectTimer) clearTimeout(reconnectTimer)
+        reconnectTimer = setTimeout(() => connect(), 3000)
+      }
     }
 
     ws.onerror = () => {
@@ -117,11 +122,13 @@ export function useBotWs() {
       case 'auth_ok':
         state.authenticated = true
         state.lastError = ''
+        state.shouldReconnect = true  // 认证成功，开启自动重连
         break
 
       case 'auth_error':
         state.authenticated = false
         state.lastError = data.message || '认证失败'
+        state.shouldReconnect = false  // 修复：认证失败时关闭自动重连，避免死循环
         state.ws?.close()
         break
 
@@ -167,6 +174,7 @@ export function useBotWs() {
       clearTimeout(reconnectTimer)
       reconnectTimer = null
     }
+    state.shouldReconnect = false  // 修复：主动断开时关闭自动重连
     state.ws?.close()
     state.ws = null
     state.connected = false

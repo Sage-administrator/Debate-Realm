@@ -159,9 +159,9 @@ function selectDebater(value: string) {
   padding: 0 16px;
   font-size: 16px;
   text-align: left;
-  border: 1px solid #DCDFE6;
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 6px;
-  background: #FFFFFF;
+  background: rgba(255,255,255,0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -179,17 +179,17 @@ function selectDebater(value: string) {
 }
 
 .role-picker-value {
-  color: #1F2937;
+  color: rgba(255,255,255,0.9);
 }
 
 .role-picker-placeholder {
-  color: #9CA3AF;
+  color: rgba(255,255,255,0.4);
 }
 
 .role-picker-chevron {
   width: 16px;
   height: 16px;
-  color: #333333;
+  color: rgba(255,255,255,0.5);
   transition: transform 0.2s;
   flex-shrink: 0;
 }
@@ -205,17 +205,18 @@ function selectDebater(value: string) {
   left: 0;
   min-width: 280px;
   z-index: 20;
-  background: #FFFFFF;
-  border: 1px solid #E5E7EB;
+  background: rgba(30, 30, 60, 0.95);
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
   display: flex;
   overflow: hidden;
 }
 
 .role-picker-left {
   width: 100px;
-  border-right: 1px solid #F3F4F6;
+  border-right: 1px solid rgba(255,255,255,0.1);
   padding: 4px 0;
 }
 
@@ -227,16 +228,16 @@ function selectDebater(value: string) {
   align-items: center;
   justify-content: space-between;
   transition: all 0.15s;
-  color: #374151;
+  color: rgba(255,255,255,0.7);
 }
 
 .role-picker-side:hover {
-  background-color: #F9FAFB;
+  background-color: rgba(255,255,255,0.05);
 }
 
 .role-picker-side--active {
   color: #07C160;
-  background-color: #E8F9EE;
+  background-color: rgba(7, 193, 96, 0.15);
   font-weight: 500;
 }
 
@@ -256,16 +257,16 @@ function selectDebater(value: string) {
   font-size: 14px;
   cursor: pointer;
   transition: all 0.15s;
-  color: #374151;
+  color: rgba(255,255,255,0.7);
 }
 
 .role-picker-item:hover {
-  background-color: #F9FAFB;
+  background-color: rgba(255,255,255,0.05);
 }
 
 .role-picker-item--active {
   color: #07C160;
-  background-color: #ECFDF5;
+  background-color: rgba(7, 193, 96, 0.15);
   font-weight: 500;
 }
 </style>

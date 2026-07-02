@@ -839,7 +839,10 @@ export function getAllBotInstances(): Map<string, BotInstance> {
 export function disconnectBot(teamId: string): void {
   const state = stateMap.get(teamId)
   if (state) {
+    // 修复：先 removeAllListeners 再 close，防止 close 事件触发 scheduleReconnect
+    // connectWebSocket 中也做了同样的处理（第348-353行），这里保持一致
     if (state.ws) {
+      state.ws.removeAllListeners()
       state.ws.close()
       state.ws = null
     }

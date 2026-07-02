@@ -32,12 +32,42 @@ export default defineNuxtConfig({
         allow: ['..'],
       },
     },
+    build: {
+      // 启用 CSS 代码分割
+      cssCodeSplit: true,
+      // 生产环境 sourcemap 关闭以减小构建体积
+      sourcemap: false,
+      // 资源内联阈值（小于此大小的图片转为 base64）
+      assetsInlineLimit: 4096,
+      rollupOptions: {
+        output: {
+          // 手动分包：将大依赖拆分为独立 chunk，优化缓存命中率
+          manualChunks: (id: string) => {
+            if (id.includes('node_modules/vue') || id.includes('node_modules/vue-router')) return 'vendor-vue'
+            if (id.includes('node_modules/pinia')) return 'vendor-pinia'
+            if (id.includes('node_modules/@prisma')) return 'vendor-prisma'
+          },
+        },
+      },
+    },
+  },
+
+  // 生产环境优化
+  $production: {
+    devtools: { enabled: false },
   },
 
   nitro: {
     experimental: {
       openAPI: true,
       websocket: true,
+    },
+    // 启用 gzip/brotli 压缩
+    compressPublicAssets: true,
+    // 静态资源缓存
+    routeRules: {
+      '/_nuxt/**': { headers: { 'cache-control': 'max-age=31536000, immutable' } },
+      '/assets/**': { headers: { 'cache-control': 'max-age=31536000, immutable' } },
     },
   },
 })

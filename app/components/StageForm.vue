@@ -206,9 +206,9 @@ function isPpt(type: string) { return type === 'ppt_replace' }
 
 /* 黑字白底/浅灰底标签（"单方发言"/"单方发问"/时间值） */
 .status-tag--white {
-  color: #333333;
-  background-color: #FFFFFF;
-  border: 1px solid #E5E7EB;
+  color: rgba(255,255,255,0.9);
+  background-color: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
   font-weight: 500;
 }
 
@@ -233,7 +233,7 @@ function isPpt(type: string) { return type === 'ppt_replace' }
 
 .form-label {
   font-size: 14px;
-  color: #374151;
+  color: rgba(255,255,255,0.7);
   font-weight: 500;
 }
 
@@ -242,10 +242,11 @@ function isPpt(type: string) { return type === 'ppt_replace' }
   height: 48px;
   padding: 0 16px;
   font-size: 16px;
-  border: 1px solid #DCDFE6;
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 6px;
   outline: none;
-  background: #FFFFFF;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.9);
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 }
@@ -258,7 +259,7 @@ function isPpt(type: string) { return type === 'ppt_replace' }
 /* 辅助文本 */
 .form-hint {
   font-size: 12px;
-  color: #9CA3AF;
+  color: rgba(255,255,255,0.4);
   margin-top: 2px;
   line-height: 1.4;
 }
@@ -273,10 +274,10 @@ function isPpt(type: string) { return type === 'ppt_replace' }
 /* 带后缀的输入框 */
 .input-with-suffix {
   display: flex;
-  border: 1px solid #DCDFE6;
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 6px;
   overflow: hidden;
-  background: #FFFFFF;
+  background: rgba(255,255,255,0.08);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -297,9 +298,9 @@ function isPpt(type: string) { return type === 'ppt_replace' }
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #F5F7FA;
-  border-left: 1px solid #DCDFE6;
-  color: #333333;
+  background-color: rgba(255,255,255,0.05);
+  border-left: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7);
   font-size: 16px;
   flex-shrink: 0;
 }
@@ -310,11 +311,11 @@ function isPpt(type: string) { return type === 'ppt_replace' }
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background-color: #F5F7FA;
-  border: 1px dashed #D1D5DB;
+  background-color: rgba(255,255,255,0.05);
+  border: 1px dashed rgba(255,255,255,0.15);
   border-radius: 6px;
   font-size: 14px;
-  color: #6B7280;
+  color: rgba(255,255,255,0.6);
 }
 
 .info-note-icon {

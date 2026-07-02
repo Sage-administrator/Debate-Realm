@@ -11,12 +11,17 @@ export function useTeam() {
   }
 
   async function getUsers() {
-    return await $fetch<{
-      id: string; username: string; role: string; mode: string
-      team: { id: string; name: string } | null; createdAt: string
-    }[]>('/api/admin/users', {
+    const res = await $fetch<{
+      users: {
+        id: string; username: string; role: string; mode: string
+        team: { id: string; name: string } | null; createdAt: string
+      }[]
+      pagination: { page: number; pageSize: number; total: number; totalPages: number }
+    }>('/api/admin/users', {
       headers: { Authorization: `Bearer ${store.token}` },
     })
+    // 修复：API 返回分页对象，需要提取 users 数组
+    return res.users
   }
 
   // 获取所有个人用户及其独立赛事（系统管理员专用）

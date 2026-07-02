@@ -3,13 +3,14 @@
 // 请求体：{ userId, username, channelId, durationMs? }
 // ════════════════════════════════════════════════════
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
 import { getBotInstance } from '../../../lib/bot-ws'
 import { grantAudienceSpeak } from '../../../lib/bot-permissions'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    // 修复：使用 getUserFromEventWithSession 校验 tokenVersion
+    const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
       throw createError({ statusCode: 403, statusMessage: '仅团队管理员可授权发言' })
