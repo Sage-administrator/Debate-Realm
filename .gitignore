@@ -38,10 +38,8 @@ prisma/*.db
 prisma/**/*.db
 prisma/migrations_lock.toml
 
-# BOT 相关密钥文件（本地备份、参考项目中的数据库）
-reference/**/*.db
-reference/**/dev.db
-reference/**/prisma/*.db
+# 参考项目代码（往期项目、设计文档等，仅作本地参考，不纳入版本管理）
+reference/
 
 # 测试脚本（可能包含敏感数据）
 test-api.ts
