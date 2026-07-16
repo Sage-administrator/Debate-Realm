@@ -1,4 +1,10 @@
 <script setup lang="ts">
+// ════════════════════════════════════════════════════
+// 独立赛事列表页 —— 个人用户赛事首页
+// - 展示当前用户的所有独立赛事
+// - 跳转创建赛事页面
+// - 进入赛事详情或删除赛事
+// ════════════════════════════════════════════════════
 const toast = useToast()
 const { getStandaloneMatches, deleteStandaloneMatch } = useTournament()
 
@@ -36,14 +42,14 @@ onMounted(() => load())
     <div v-if="loading" class="text-center py-12"><UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto" /></div>
 
     <div v-else class="glass-card p-6">
-      <div v-if="matches.length === 0" class="text-center py-8 text-white/40">
+      <div v-if="matches.length === 0" class="text-center py-8 text-[var(--color-text-muted)]">
         暂无独立赛事，点击"创建独立赛事"开始
       </div>
       <div v-else class="divide-y divide-white/10">
         <div v-for="m in matches" :key="m.id" class="flex items-center justify-between py-3">
           <div>
-            <div class="font-medium text-white">{{ m.name }}</div>
-            <div class="text-xs text-white/50 mt-0.5">
+            <div class="font-medium text-[var(--color-text-primary)]">{{ m.name }}</div>
+            <div class="text-xs text-[var(--color-text-muted)] mt-0.5">
               <UBadge :label="statusLabel(m.status)" size="xs" variant="soft" />
               <span class="ml-2">{{ m.matchCount }} 场</span>
               <span v-if="m.scheduledAt" class="ml-2">· {{ new Date(m.scheduledAt).toLocaleDateString() }}</span>
