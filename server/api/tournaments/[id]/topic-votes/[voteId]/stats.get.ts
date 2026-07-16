@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
       include: { records: true, match: true },
     })
     if (!vote) {
-      throw createError({ statusCode: 404, statusMessage: '投票不存在' })
+      throw createError({ statusCode: 404, message: '投票不存在' })
     }
 
     // 2. 计算统计
@@ -57,6 +57,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get topic vote stats error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取投票统计失败' })
+    throw createError({ statusCode: 500, message: '获取投票统计失败' })
   }
 })

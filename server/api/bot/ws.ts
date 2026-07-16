@@ -25,7 +25,7 @@
 import { defineWebSocketHandler } from 'h3'
 import { verifyToken, type JWTPayload } from '../../lib/jwt'
 import { prisma } from '../../lib/prisma'
-import { connectBot, disconnectBot, getBotRuntimeStatus, getBotInstance } from '../../lib/bot-ws'
+import { connectBot, disconnectBot, readBotRuntimeStatus, getBotInstance } from '../../lib/bot-ws'
 import { sendChannelMessage, sendGroupMessage, sendPrivateMessage } from '../../lib/bot-http'
 import { getResourceSummary, getAllResourceSnapshots, getResourceAlert, getBotHealth } from '../../lib/bot-manager'
 
@@ -97,6 +97,7 @@ async function authenticate(peer: any, token: string): Promise<PeerState | null>
       botAppId: true,
       botAppSecret: true,
       botChannelId: true,
+      botIsPrivate: true,
     },
   })
 
@@ -116,12 +117,13 @@ async function authenticate(peer: any, token: string): Promise<PeerState | null>
 
 // 获取实时状态并推送
 function pushStatus(peer: any, state: PeerState): void {
-  const runtimeStatus = getBotRuntimeStatus(state.team.id, {
+  const runtimeStatus = readBotRuntimeStatus(state.team.id, {
     name: state.team.name,
     mode: state.team.mode,
     botAppId: state.team.botAppId,
     botAppSecret: state.team.botAppSecret,
     botChannelId: state.team.botChannelId,
+    botIsPrivate: state.team.botIsPrivate,
   })
   send(peer, { type: 'status', data: runtimeStatus })
 }
@@ -131,18 +133,23 @@ function watchBotStatus(peer: any, state: PeerState): void {
   const instance = getBotInstance(state.team.id)
   if (!instance) return
 
-  // 状态变化时推送（已连接/断开）
-  const originalStatus = instance.status
+  // 仅在状态发生变化时推送（已连接/断开/重连中...）
+  // 每次推送后更新基准值，避免状态一旦变化就每秒重复推送
+  let baseline = instance.status
   const interval = setInterval(() => {
     const inst = getBotInstance(state.team.id)
     if (!inst) {
       clearInterval(interval)
+      ;(peer as any)._botStatusInterval = undefined
       return
     }
-    if (inst.status !== originalStatus) {
+    if (inst.status !== baseline) {
+      baseline = inst.status
       pushStatus(peer, state)
     }
   }, 1000)
+  // 记录到 peer 上，close() 时才清得掉，避免连接关闭后定时器泄漏
+  ;(peer as any)._botStatusInterval = interval
 }
 
 export default defineWebSocketHandler({
@@ -194,7 +201,7 @@ export default defineWebSocketHandler({
             send(peer, { type: 'connect_result', success: false, message: 'Bot 未配置，请先完成配置' })
             return
           }
-          connectBot(state.team.id, state.team.botAppId, state.team.botAppSecret, state.team.name, state.team.botChannelId)
+          connectBot(state.team.id, state.team.botAppId, state.team.botAppSecret, state.team.name, state.team.botChannelId, state.team.botIsPrivate ?? false)
           send(peer, { type: 'connect_result', success: true, message: 'Bot 正在连接...' })
           // 延迟推送最新状态（等连接建立）
           setTimeout(() => pushStatus(peer, state), 2000)

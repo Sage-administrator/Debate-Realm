@@ -229,45 +229,45 @@ watch(
     <div class="col-span-8 space-y-4">
       <UCard>
         <template #header>
-          <h2 class="text-base font-semibold text-white flex items-center gap-2">
-            <UIcon name="i-lucide-shield" class="w-4 h-4 text-white/40" />
+          <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+            <UIcon name="i-lucide-shield" class="w-4 h-4 text-[var(--color-text-muted)]" />
             队徽设置
           </h2>
         </template>
 
         <!-- 显示开关 -->
-        <div class="flex items-center justify-between py-2 px-3 bg-white/5 rounded mb-4">
+        <div class="flex items-center justify-between py-2 px-3 bg-[var(--color-bg-secondary)] rounded mb-4">
           <div>
-            <label class="text-sm text-white/80 font-medium">在计时器中显示队徽</label>
-            <p class="text-xs text-white/40">控制队伍名称旁是否显示队徽</p>
+            <label class="text-sm text-[var(--color-text-primary)] font-medium">在计时器中显示队徽</label>
+            <p class="text-xs text-[var(--color-text-muted)]">控制队伍名称旁是否显示队徽</p>
           </div>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" v-model="fullConfig.teamLogoConfig.showTeamLogo" class="sr-only peer">
-            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+          <label class="toggle-switch">
+            <input type="checkbox" v-model="fullConfig.teamLogoConfig.showTeamLogo">
+            <span class="toggle-slider"></span>
           </label>
         </div>
 
         <!-- 队徽设置（正反方并排） -->
         <div class="grid grid-cols-2 gap-4 mb-4">
           <!-- 正方队伍队徽 -->
-          <div class="border border-white/10 rounded-lg p-4">
-            <label class="block text-sm font-medium text-white/80 mb-3 flex items-center gap-2">
+          <div class="border border-[var(--color-border)] rounded-lg p-4">
+            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
               <span class="inline-block w-3 h-3 rounded-full bg-red-500"></span>
               正方队伍队徽
             </label>
             <!-- 预览框和操作按钮上下排列 -->
             <div class="flex flex-col items-center gap-3">
               <!-- 预览框 -->
-              <div class="w-24 h-24 border-2 border-dashed border-white/15 rounded-lg overflow-hidden flex items-center justify-center bg-white/5">
+              <div class="w-24 h-24 border-2 border-dashed border-[var(--color-border)] rounded-lg overflow-hidden flex items-center justify-center bg-[var(--color-bg-secondary)]">
                 <img v-if="fullConfig.teamLogoConfig.positiveLogoUrl" :src="fullConfig.teamLogoConfig.positiveLogoUrl" class="w-full h-full object-cover" alt="正方队徽" />
-                <div v-else class="flex flex-col items-center justify-center text-white/40">
+                <div v-else class="flex flex-col items-center justify-center text-[var(--color-text-muted)]">
                   <UIcon name="i-lucide-image" class="w-8 h-8 mb-1" />
                   <span class="text-xs">暂无图片</span>
                 </div>
               </div>
               <!-- 操作按钮 -->
               <div class="flex gap-2">
-                <label class="px-4 py-2 border border-white/15 rounded text-sm cursor-pointer hover:bg-white/5 transition-colors flex items-center gap-2">
+                <label class="px-4 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2">
                   <UIcon name="i-lucide-upload" class="w-4 h-4" />
                   选择图片
                   <input type="file" accept="image/*" class="hidden" @change="(e: Event) => onLogoSelect(e, 'positiveLogoUrl')" />
@@ -285,24 +285,24 @@ watch(
           </div>
 
           <!-- 反方队伍队徽 -->
-          <div class="border border-white/10 rounded-lg p-4">
-            <label class="block text-sm font-medium text-white/80 mb-3 flex items-center gap-2">
+          <div class="border border-[var(--color-border)] rounded-lg p-4">
+            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
               <span class="inline-block w-3 h-3 rounded-full bg-blue-500"></span>
               反方队伍队徽
             </label>
             <!-- 预览框和操作按钮上下排列 -->
             <div class="flex flex-col items-center gap-3">
               <!-- 预览框 -->
-              <div class="w-24 h-24 border-2 border-dashed border-white/15 rounded-lg overflow-hidden flex items-center justify-center bg-white/5">
+              <div class="w-24 h-24 border-2 border-dashed border-[var(--color-border)] rounded-lg overflow-hidden flex items-center justify-center bg-[var(--color-bg-secondary)]">
                 <img v-if="fullConfig.teamLogoConfig.negativeLogoUrl" :src="fullConfig.teamLogoConfig.negativeLogoUrl" class="w-full h-full object-cover" alt="反方队徽" />
-                <div v-else class="flex flex-col items-center justify-center text-white/40">
+                <div v-else class="flex flex-col items-center justify-center text-[var(--color-text-muted)]">
                   <UIcon name="i-lucide-image" class="w-8 h-8 mb-1" />
                   <span class="text-xs">暂无图片</span>
                 </div>
               </div>
               <!-- 操作按钮 -->
               <div class="flex gap-2">
-                <label class="px-4 py-2 border border-white/15 rounded text-sm cursor-pointer hover:bg-white/5 transition-colors flex items-center gap-2">
+                <label class="px-4 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2">
                   <UIcon name="i-lucide-upload" class="w-4 h-4" />
                   选择图片
                   <input type="file" accept="image/*" class="hidden" @change="(e: Event) => onLogoSelect(e, 'negativeLogoUrl')" />
@@ -321,8 +321,8 @@ watch(
         </div>
 
         <!-- 说明文字 -->
-        <div class="pt-4 border-t border-white/10">
-          <p class="text-xs text-white/40">
+        <div class="pt-4 border-t border-[var(--color-border)]">
+          <p class="text-xs text-[var(--color-text-muted)]">
             提示：修改后会自动保存。支持 JPG、PNG、GIF，单个文件最大 10MB。建议使用 256x256 以上的方形图片。
           </p>
         </div>

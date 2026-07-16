@@ -1,4 +1,4 @@
-// ════════════════════════════════════════════════════
+﻿// ════════════════════════════════════════════════════
 // POST /api/bot/arena/unclaim — 通过 HTTP 取消认领（管理员操作）
 // 请求体：{ arenaId, userId, roleId? }
 // ════════════════════════════════════════════════════
@@ -12,14 +12,14 @@ export default defineEventHandler(async (event) => {
     const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
-      throw createError({ statusCode: 403, statusMessage: '仅团队管理员可操作认领' })
+      throw createError({ statusCode: 403, message: '仅团队管理员可操作认领' })
     }
 
     const body = await readBody(event)
     const { arenaId, userId, roleId } = body
 
     if (!arenaId || !userId) {
-      throw createError({ statusCode: 400, statusMessage: '缺少必要参数：arenaId、userId' })
+      throw createError({ statusCode: 400, message: '缺少必要参数：arenaId、userId' })
     }
 
     // 查找认领记录
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!claim) {
-      throw createError({ statusCode: 404, statusMessage: '未找到该用户的认领记录' })
+      throw createError({ statusCode: 404, message: '未找到该用户的认领记录' })
     }
 
     const arena = await prisma.botArena.findUnique({
@@ -74,6 +74,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Arena Unclaim] 取消认领失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '取消认领操作失败' })
+    throw createError({ statusCode: 500, message: '取消认领操作失败' })
   }
 })

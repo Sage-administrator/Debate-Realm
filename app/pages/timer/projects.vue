@@ -96,10 +96,10 @@ onMounted(() => {
       <!-- 页面标题 -->
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-bold text-white">辩论赛计时器项目</h1>
-          <p class="text-sm text-white/50 mt-1">管理您的辩论赛计时器配置</p>
+          <h1 class="text-2xl font-bold text-[var(--color-text-primary)]">辩论赛计时器项目</h1>
+          <p class="text-sm text-[var(--color-text-muted)] mt-1">管理您的辩论赛计时器配置</p>
         </div>
-      <UButton color="primary" @click="showCreateModal = true">
+      <UButton color="primary" @click="() => { showCreateModal = true }">
         <UIcon name="i-lucide-plus" class="w-4 h-4 mr-1" />
         新建项目
       </UButton>
@@ -111,10 +111,10 @@ onMounted(() => {
     </div>
 
     <!-- 空状态 -->
-    <div v-else-if="!projects.length" class="border border-white/10 border-dashed rounded-lg p-12 text-center">
-      <UIcon name="i-lucide-timer" class="w-12 h-12 mx-auto text-white/20 mb-3" />
-      <p class="text-white/50 mb-4">暂无计时器项目，开始创建您的第一个辩论赛配置</p>
-      <UButton color="primary" @click="showCreateModal = true">
+    <div v-else-if="!projects.length" class="border border-[var(--color-border)] border-dashed rounded-lg p-12 text-center">
+      <UIcon name="i-lucide-timer" class="w-12 h-12 mx-auto text-[var(--color-border-muted)] mb-3" />
+      <p class="text-[var(--color-text-muted)] mb-4">暂无计时器项目，开始创建您的第一个辩论赛配置</p>
+      <UButton color="primary" @click="() => { showCreateModal = true }">
         <UIcon name="i-lucide-plus" class="w-4 h-4 mr-1" />
         新建项目
       </UButton>
@@ -129,21 +129,21 @@ onMounted(() => {
       >
         <div class="flex items-start justify-between">
           <div class="flex-1">
-            <h3 class="font-bold text-lg text-white">{{ p.name }}</h3>
-            <p v-if="p.title" class="text-sm text-white/70 mt-1">{{ p.title }}</p>
+            <h3 class="font-bold text-lg text-[var(--color-text-primary)]">{{ p.name }}</h3>
+            <p v-if="p.title" class="text-sm text-[var(--color-text-secondary)] mt-1">{{ p.title }}</p>
 
             <!-- 辩题信息 -->
             <div v-if="p.positiveTopic || p.negativeTopic" class="mt-2 text-sm space-y-1">
-              <div v-if="p.positiveTopic" class="text-white/70">
+              <div v-if="p.positiveTopic" class="text-[var(--color-text-secondary)]">
                 <span class="text-green-400 font-medium">正方：</span>{{ p.positiveTopic }}
               </div>
-              <div v-if="p.negativeTopic" class="text-white/70">
+              <div v-if="p.negativeTopic" class="text-[var(--color-text-secondary)]">
                 <span class="text-blue-400 font-medium">反方：</span>{{ p.negativeTopic }}
               </div>
             </div>
 
             <!-- 环节数量 -->
-            <div class="mt-2 text-xs text-white/50">
+            <div class="mt-2 text-xs text-[var(--color-text-muted)]">
               {{ p.stages?.length || 0 }} 个环节
               <span class="mx-1">·</span>
               更新于 {{ formatDate(p.updatedAt) }}
@@ -169,12 +169,13 @@ onMounted(() => {
     </div>
 
     <!-- 创建项目弹窗 -->
-    <UModal v-model:open="showCreateModal">
-      <div class="glass-modal p-6 space-y-4">
-        <h3 class="text-lg font-bold text-white">新建计时器项目</h3>
+    <UModal v-model:open="showCreateModal" :class="'max-w-lg'">
+      <template #content>
+        <div class="glass-modal p-6 space-y-4">
+        <h3 class="text-lg font-bold text-[var(--color-text-primary)]">新建计时器项目</h3>
 
         <div>
-          <label class="block text-sm font-medium text-white/80 mb-1">项目名称</label>
+          <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">项目名称</label>
           <UInput
             v-model="newProjectForm.name"
             placeholder="例：2024春季辩论赛"
@@ -183,7 +184,7 @@ onMounted(() => {
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-white/80 mb-1">比赛标题（显示用）</label>
+          <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1">比赛标题（显示用）</label>
           <UInput
             v-model="newProjectForm.title"
             placeholder="例：三社联合辩论赛"
@@ -192,12 +193,13 @@ onMounted(() => {
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-          <UButton color="neutral" variant="ghost" @click="showCreateModal = false">取消</UButton>
+          <UButton color="neutral" variant="ghost" @click="() => { showCreateModal = false }">取消</UButton>
           <UButton color="primary" @click="createProject">
             创建
           </UButton>
         </div>
-      </div>
+        </div>
+      </template>
     </UModal>
   </div>
   </div>

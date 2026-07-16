@@ -1,3 +1,15 @@
+/**
+ * debate store —— 辩论计时器核心状态管理（Pinia）
+ * 维护辩论项目的环节定义、各环节计时状态（单计时器/双计时器）、当前环节、已完成环节等。
+ * 提供环节切换、计时控制（开始/暂停/重置/递减）、音效提示、时间警告/危急判定等能力。
+ *
+ * 计时引擎说明（性能/精度优化）：
+ * - 不再用 `timeRemaining--` 逐秒递减，而是采用「时间戳锚定」模型：
+ *   开始计时时记录 endAt = Date.now() + 剩余秒*1000，心跳每 250ms 用
+ *   remaining = max(0, round((endAt - Date.now())/1000)) 计算剩余时间。
+ * - 这样后台标签页被浏览器节流时计时不会漂移（按真实墙钟修正），且每帧只做廉价计算。
+ * - 心跳循环由 store 统一管理（单一 setInterval），页面不再各自持有 timerInterval。
+ */
 import { defineStore } from 'pinia'
 
 // ============ 类型定义 ============
@@ -8,6 +20,8 @@ interface SingleTimerState {
   timeRemaining: number
   isRunning: boolean
   isPaused: boolean
+  /** 倒计时锚点（ms 时间戳，到达此值即剩余 0）；null 表示未运行/已暂停 */
+  endAt: number | null
 }
 
 /** 双计时器环节的状态（对辩、自由辩论等） */
@@ -18,6 +32,8 @@ interface DualTimerState {
   activeTimer: 'positive' | 'negative'
   isRunning: boolean
   isPaused: boolean
+  /** 当前 activeTimer 一侧的锚点（ms 时间戳）；null 表示未运行/已暂停 */
+  endAt: number | null
 }
 
 type StageState = SingleTimerState | DualTimerState
@@ -34,6 +50,11 @@ export interface DebateStage {
   // 双计时器可选的独立时长
   positiveDuration?: number
   negativeDuration?: number
+  // ponytail: 以下为环节扩展字段（TimerPreview 等组件使用），可选兼容
+  speaker?: string
+  questioner?: string
+  responder?: string
+  firstSpeaker?: string
 }
 
 /** 辩论项目的全局配置 */
@@ -78,6 +99,18 @@ interface DebateState {
 
 // ============ 辅助函数 ============
 
+// 音频对象缓存：避免每次播放都 new Audio()，减少 GC 压力
+const audioCache: Record<string, HTMLAudioElement> = {}
+
+/** 获取（或创建）缓存的 Audio 对象，复用已加载的音频资源 */
+function getCachedAudio(file: string): HTMLAudioElement {
+  if (!audioCache[file]) {
+    audioCache[file] = typeof Audio !== 'undefined' ? new Audio(file) : null as any
+  }
+  // ponytail: 上面 if 已保证缓存中存在，非空断言
+  return audioCache[file]!
+}
+
 /** 基于给定的项目环节生成初始运行状态 */
 function generateInitialStatesFrom(stages: DebateStage[]): Record<number, StageState> {
   const states: Record<number, StageState> = {}
@@ -90,6 +123,7 @@ function generateInitialStatesFrom(stages: DebateStage[]): Record<number, StageS
         activeTimer: 'positive',
         isRunning: false,
         isPaused: false,
+        endAt: null,
       }
     } else {
       states[stage.id] = {
@@ -97,10 +131,90 @@ function generateInitialStatesFrom(stages: DebateStage[]): Record<number, StageS
         timeRemaining: stage.duration,
         isRunning: false,
         isPaused: false,
+        endAt: null,
       }
     }
   })
   return states
+}
+
+// ============ 计时心跳引擎（store 层，单一循环） ============
+// 由 start* 动作启动，所有运行中环节共用一个 250ms 心跳。
+let loopHandle: ReturnType<typeof setInterval> | null = null
+// 提示音穿越检测用的「上一帧剩余秒」快照（按侧记录）
+let prevSingle: number | null = null
+let prevPos: number | null = null
+let prevNeg: number | null = null
+
+/** 根据锚点计算当前剩余秒（向上取整到整秒，最小 0） */
+function remainingFrom(endAt: number): number {
+  return Math.max(0, Math.round((endAt - Date.now()) / 1000))
+}
+
+/** 提示音穿越检测：当剩余秒从上方向下穿过 30/5/0 时触发对应音效 */
+function fireCues(prev: number | null, remaining: number) {
+  if (prev === null) return
+  if (prev > 30 && remaining <= 30) getStore().playTimerSound(30)
+  if (prev > 5 && remaining <= 5) getStore().playTimerSound(5)
+  if (prev > 0 && remaining <= 0) getStore().playTimerSound(0)
+}
+
+/** 心跳主循环（模块级，运行时由 store 动作启动） */
+function runLoop() {
+  const store = getStore()
+  const s = store.currentStageState as StageState | null
+  // 没有任何在计时的环节 → 停止循环，省电
+  if (!s || !s.isRunning || s.endAt == null) {
+    stopLoop()
+    return
+  }
+  if (s.type === 'dual-timer') {
+    const st = s as DualTimerState
+    const remaining = remainingFrom(st.endAt)
+    if (st.activeTimer === 'positive') {
+      fireCues(prevPos, remaining)
+      prevPos = remaining
+      st.positiveTime = remaining
+    } else {
+      fireCues(prevNeg, remaining)
+      prevNeg = remaining
+      st.negativeTime = remaining
+    }
+    // 当前激活侧耗尽：冻结（endAt 置空），保留 isRunning 以便空格切换另一侧
+    if (remaining <= 0) {
+      st.endAt = null
+      stopLoop()
+    }
+  } else {
+    const st = s as SingleTimerState
+    const remaining = remainingFrom(st.endAt)
+    fireCues(prevSingle, remaining)
+    prevSingle = remaining
+    st.timeRemaining = remaining
+    if (remaining <= 0) {
+      st.isRunning = false
+      st.endAt = null
+      getStore().completeCurrentStage()
+      stopLoop()
+    }
+  }
+}
+
+function ensureLoop() {
+  if (loopHandle) return
+  loopHandle = setInterval(runLoop, 250)
+}
+
+function stopLoop() {
+  if (loopHandle) {
+    clearInterval(loopHandle)
+    loopHandle = null
+  }
+}
+
+// 在模块函数里延迟获取 store 实例（调用时 Pinia 已激活）
+function getStore(): any {
+  return useDebateStore()
 }
 
 // ============ Store 定义 ============
@@ -158,6 +272,7 @@ export const useDebateStore = defineStore('debate', {
         activeTimer: 'positive',
         isRunning: false,
         isPaused: false,
+        endAt: null,
       }
     },
 
@@ -204,12 +319,10 @@ export const useDebateStore = defineStore('debate', {
       )
       this.stages = sorted
 
-      // 为所有环节构建初始状态
+      // ponytail: 直接赋值，StageState 都是纯数据对象无引用共享风险
       const initialStates = generateInitialStatesFrom(sorted)
       for (const s of sorted) {
-        this.stageStates[s.id] = JSON.parse(
-          JSON.stringify(initialStates[s.id]),
-        )
+        this.stageStates[s.id] = initialStates[s.id]!
       }
 
       // 清理已不存在的状态和完成列表
@@ -238,6 +351,7 @@ export const useDebateStore = defineStore('debate', {
               activeTimer: 'positive',
               isRunning: false,
               isPaused: false,
+              endAt: null,
             }
           } else {
             this.stageStates[s.id] = {
@@ -245,6 +359,7 @@ export const useDebateStore = defineStore('debate', {
               timeRemaining: s.duration,
               isRunning: false,
               isPaused: false,
+              endAt: null,
             }
           }
         }
@@ -261,9 +376,20 @@ export const useDebateStore = defineStore('debate', {
 
     // ============ 环节切换 ============
 
+    /** 停止当前环节计时（切换环节/跳转前调用） */
+    stopCurrentTimer() {
+      const s = this.currentStageState as StageState | null
+      if (s && s.isRunning) {
+        s.isRunning = false
+        s.isPaused = false
+        s.endAt = null
+      }
+      stopLoop()
+    },
+
     /** 跳转到指定环节（1-based index） */
     goToStage(target: number) {
-      this.ensureStagesUpToDate()
+      this.stopCurrentTimer()
       const max = this.stages.length
       if (!Number.isFinite(target)) return
       if (target < 1) target = 1
@@ -274,7 +400,7 @@ export const useDebateStore = defineStore('debate', {
 
     /** 进入下一环节 */
     nextStage() {
-      this.ensureStagesUpToDate()
+      this.stopCurrentTimer()
       if (this.currentStage < this.stages.length) {
         this.completeCurrentStage()
         this.currentStage++
@@ -283,9 +409,8 @@ export const useDebateStore = defineStore('debate', {
         if (currentStageInfo && !this.stageStates[currentStageInfo.id]) {
           const initialStates = generateInitialStatesFrom(this.stages)
           if (initialStates[currentStageInfo.id]) {
-            this.stageStates[currentStageInfo.id] = JSON.parse(
-              JSON.stringify(initialStates[currentStageInfo.id]),
-            )
+            // ponytail: 直接赋值，无需 JSON 深拷贝
+            this.stageStates[currentStageInfo.id] = initialStates[currentStageInfo.id]!
           }
         }
       }
@@ -293,16 +418,15 @@ export const useDebateStore = defineStore('debate', {
 
     /** 返回上一环节 */
     previousStage() {
-      this.ensureStagesUpToDate()
+      this.stopCurrentTimer()
       if (this.currentStage > 1) {
         this.currentStage--
         const currentStageInfo = this.stages[this.currentStage - 1]
         if (currentStageInfo && !this.stageStates[currentStageInfo.id]) {
           const initialStates = generateInitialStatesFrom(this.stages)
           if (initialStates[currentStageInfo.id]) {
-            this.stageStates[currentStageInfo.id] = JSON.parse(
-              JSON.stringify(initialStates[currentStageInfo.id]),
-            )
+            // ponytail: 直接赋值，无需 JSON 深拷贝
+            this.stageStates[currentStageInfo.id] = initialStates[currentStageInfo.id]!
           }
         }
         // 从完成列表中移除该环节
@@ -322,202 +446,230 @@ export const useDebateStore = defineStore('debate', {
 
     // ============ 单计时器控制 ============
 
-    /** 开始计时 */
+    /** 开始计时（单计时器） */
     startTimer() {
-      const state = this.currentStageState
-      if (!state) return
-      state.isRunning = true
-      state.isPaused = false
+      const s = this.currentStageState as StageState | null
+      if (!s || s.type === 'dual-timer') return
+      const st = s as SingleTimerState
+      st.endAt = Date.now() + Math.max(0, st.timeRemaining) * 1000
+      st.isRunning = true
+      st.isPaused = false
+      prevSingle = st.timeRemaining
+      ensureLoop()
     },
 
-    /** 暂停计时 */
+    /** 暂停计时（单/双通用） */
     pauseTimer() {
-      const state = this.currentStageState
-      if (!state) return
-      state.isRunning = false
-      state.isPaused = true
+      const s = this.currentStageState as StageState | null
+      if (!s) return
+      if (s.isRunning && s.endAt != null) {
+        const remaining = remainingFrom(s.endAt)
+        if (s.type === 'dual-timer') {
+          const st = s as DualTimerState
+          if (st.activeTimer === 'positive') st.positiveTime = remaining
+          else st.negativeTime = remaining
+        } else {
+          (s as SingleTimerState).timeRemaining = remaining
+        }
+      }
+      s.isRunning = false
+      s.isPaused = true
+      s.endAt = null
+      stopLoop()
     },
 
     /** 重置计时器（恢复到环节初始时长） */
     resetTimer() {
       const info = this.currentStageInfo
-      const state = this.currentStageState
-      if (!state || !info) return
-      if (state.type === 'dual-timer') {
-        // 双计时器兼容处理
-        ;(state as DualTimerState).positiveTime =
-          info.positiveDuration ?? info.duration
-        ;(state as DualTimerState).negativeTime =
-          info.negativeDuration ?? info.duration
-        ;(state as DualTimerState).activeTimer = 'positive'
-        state.isRunning = false
-        state.isPaused = false
+      const s = this.currentStageState as StageState | null
+      if (!s || !info) return
+      if (s.type === 'dual-timer') {
+        const st = s as DualTimerState
+        st.positiveTime = info.positiveDuration ?? info.duration
+        st.negativeTime = info.negativeDuration ?? info.duration
+        st.activeTimer = 'positive'
       } else {
-        ;(state as SingleTimerState).timeRemaining = info.duration
-        state.isRunning = false
-        state.isPaused = false
+        ;(s as SingleTimerState).timeRemaining = info.duration
       }
+      s.isRunning = false
+      s.isPaused = false
+      s.endAt = null
+      stopLoop()
     },
 
     /** 设置自定义时间（单计时器） */
     setCustomTime(seconds: number) {
-      const state = this.currentStageState
-      if (state && state.type !== 'dual-timer') {
-        ;(state as SingleTimerState).timeRemaining = seconds
-        state.isRunning = false
-        state.isPaused = false
+      const s = this.currentStageState as StageState | null
+      if (s && s.type !== 'dual-timer') {
+        ;(s as SingleTimerState).timeRemaining = seconds
+        s.isRunning = false
+        s.isPaused = false
+        s.endAt = null
+        stopLoop()
       }
     },
 
     /** 设置自定义时间（双计时器） */
     setCustomDualTime(positiveTime: number, negativeTime: number) {
-      const state = this.currentStageState
-      if (state && state.type === 'dual-timer') {
-        ;(state as DualTimerState).positiveTime = positiveTime
-        ;(state as DualTimerState).negativeTime = negativeTime
-        state.isRunning = false
-        state.isPaused = false
-      }
-    },
-
-    /** 单计时器每秒递减 */
-    tick() {
-      const state = this.currentStageState
-      if (!state || !state.isRunning || state.type === 'dual-timer') return
-      const s = state as SingleTimerState
-      if (s.timeRemaining > 0) {
-        s.timeRemaining--
-        this.playTimerSound(s.timeRemaining)
-      }
-      if (s.timeRemaining === 0) {
+      const s = this.currentStageState as StageState | null
+      if (s && s.type === 'dual-timer') {
+        const st = s as DualTimerState
+        st.positiveTime = positiveTime
+        st.negativeTime = negativeTime
         s.isRunning = false
-        this.completeCurrentStage()
+        s.isPaused = false
+        s.endAt = null
+        stopLoop()
       }
     },
 
     // ============ 双计时器控制 ============
 
-    /** 双计时器每秒递减 */
-    tickDualTimer() {
-      const state = this.currentStageState
-      if (!state || !state.isRunning || state.type !== 'dual-timer') return
-      const s = state as DualTimerState
-
-      if (s.activeTimer === 'positive' && s.positiveTime > 0) {
-        s.positiveTime--
-        this.playTimerSound(s.positiveTime)
-      } else if (s.activeTimer === 'negative' && s.negativeTime > 0) {
-        s.negativeTime--
-        this.playTimerSound(s.negativeTime)
-      }
-    },
-
-    /** 开始双计时 */
+    /** 双计时器开始（取有剩余的一侧作为激活侧） */
     startDualTimer() {
-      const state = this.currentStageState
-      if (state && state.type === 'dual-timer') {
-        const s = state as DualTimerState
-        if (s.positiveTime > 0 || s.negativeTime > 0) {
-          // 若当前侧已耗尽，自动切到有剩余的一侧
-          if (s.activeTimer === 'positive' && s.positiveTime === 0 && s.negativeTime > 0) {
-            s.activeTimer = 'negative'
-          } else if (s.activeTimer === 'negative' && s.negativeTime === 0 && s.positiveTime > 0) {
-            s.activeTimer = 'positive'
-          }
-          s.isRunning = true
-          s.isPaused = false
-        }
+      const s = this.currentStageState as StageState | null
+      if (!s || s.type !== 'dual-timer') return
+      const st = s as DualTimerState
+      // 若当前侧已耗尽，自动切到有剩余的一侧
+      if (st.activeTimer === 'positive' && st.positiveTime === 0 && st.negativeTime > 0) {
+        st.activeTimer = 'negative'
+      } else if (st.activeTimer === 'negative' && st.negativeTime === 0 && st.positiveTime > 0) {
+        st.activeTimer = 'positive'
       }
+      if (st.activeTimer === 'positive' && st.positiveTime > 0) {
+        st.endAt = Date.now() + st.positiveTime * 1000
+      } else if (st.activeTimer === 'negative' && st.negativeTime > 0) {
+        st.endAt = Date.now() + st.negativeTime * 1000
+      } else {
+        return // 两侧皆空
+      }
+      st.isRunning = true
+      st.isPaused = false
+      prevPos = st.positiveTime
+      prevNeg = st.negativeTime
+      ensureLoop()
     },
 
-    /** 暂停双计时 */
+    /** 暂停双计时（通用 pauseTimer 已覆盖，保留以兼容潜在调用） */
     pauseDualTimer() {
-      const state = this.currentStageState
-      if (state && state.type === 'dual-timer') {
-        state.isRunning = false
-        state.isPaused = true
-      }
+      this.pauseTimer()
     },
 
     /** 切换双计时器的激活侧 */
     switchDualTimer() {
-      const state = this.currentStageState
-      if (state && state.type === 'dual-timer') {
-        const s = state as DualTimerState
-        const next = s.activeTimer === 'positive' ? 'negative' : 'positive'
-        const nextHas =
-          next === 'positive' ? s.positiveTime > 0 : s.negativeTime > 0
-        const currHas =
-          s.activeTimer === 'positive' ? s.positiveTime > 0 : s.negativeTime > 0
+      const s = this.currentStageState as StageState | null
+      if (!s || s.type !== 'dual-timer') return
+      const st = s as DualTimerState
+      const next = st.activeTimer === 'positive' ? 'negative' : 'positive'
+      const nextHas = next === 'positive' ? st.positiveTime > 0 : st.negativeTime > 0
+      const currHas = st.activeTimer === 'positive' ? st.positiveTime > 0 : st.negativeTime > 0
 
-        if (nextHas) {
-          s.activeTimer = next
-          s.isRunning = true
-          s.isPaused = false
-        } else if (currHas) {
-          // 保持在当前侧继续计时
-          s.isRunning = true
-          s.isPaused = false
-        } else {
-          // 双方均耗尽
-          s.isRunning = false
-          s.isPaused = true
+      if (nextHas) {
+        // 冻结当前激活侧到精确剩余秒
+        if (st.endAt != null) {
+          const rem = remainingFrom(st.endAt)
+          if (st.activeTimer === 'positive') st.positiveTime = rem
+          else st.negativeTime = rem
         }
+        st.activeTimer = next
+        if (st.activeTimer === 'positive') st.endAt = Date.now() + st.positiveTime * 1000
+        else st.endAt = Date.now() + st.negativeTime * 1000
+        st.isRunning = true
+        st.isPaused = false
+        prevPos = st.positiveTime
+        prevNeg = st.negativeTime
+        ensureLoop()
+      } else if (currHas) {
+        // 保持当前侧继续计时（按需重新锚定）
+        if (st.endAt == null && st.activeTimer === 'positive' && st.positiveTime > 0) {
+          st.endAt = Date.now() + st.positiveTime * 1000
+        } else if (st.endAt == null && st.activeTimer === 'negative' && st.negativeTime > 0) {
+          st.endAt = Date.now() + st.negativeTime * 1000
+        }
+        st.isRunning = true
+        st.isPaused = false
+        ensureLoop()
+      } else {
+        // 双方均耗尽
+        st.isRunning = false
+        st.isPaused = true
+        st.endAt = null
+        stopLoop()
       }
     },
 
     /** 直接激活正方计时 */
     startPositiveTimer() {
-      const state = this.currentStageState
-      if (state && state.type === 'dual-timer') {
-        const s = state as DualTimerState
-        s.activeTimer = 'positive'
-        s.isRunning = true
-        s.isPaused = false
+      const s = this.currentStageState as StageState | null
+      if (!s || s.type !== 'dual-timer') return
+      const st = s as DualTimerState
+      if (st.positiveTime <= 0) return
+      // 冻结反方（若正在计）
+      if (st.endAt != null && st.activeTimer === 'negative') {
+        st.negativeTime = remainingFrom(st.endAt)
       }
+      st.activeTimer = 'positive'
+      st.endAt = Date.now() + st.positiveTime * 1000
+      st.isRunning = true
+      st.isPaused = false
+      prevPos = st.positiveTime
+      prevNeg = st.negativeTime
+      ensureLoop()
     },
 
     /** 直接激活反方计时 */
     startNegativeTimer() {
-      const state = this.currentStageState
-      if (state && state.type === 'dual-timer') {
-        const s = state as DualTimerState
-        s.activeTimer = 'negative'
-        s.isRunning = true
-        s.isPaused = false
+      const s = this.currentStageState as StageState | null
+      if (!s || s.type !== 'dual-timer') return
+      const st = s as DualTimerState
+      if (st.negativeTime <= 0) return
+      // 冻结正方（若正在计）
+      if (st.endAt != null && st.activeTimer === 'positive') {
+        st.positiveTime = remainingFrom(st.endAt)
       }
+      st.activeTimer = 'negative'
+      st.endAt = Date.now() + st.negativeTime * 1000
+      st.isRunning = true
+      st.isPaused = false
+      prevPos = st.positiveTime
+      prevNeg = st.negativeTime
+      ensureLoop()
     },
 
     /** 重置指定侧或两侧的双计时器 */
     resetDualTimer(type: 'positive' | 'negative' | 'both' = 'both') {
       const info = this.currentStageInfo
-      const state = this.currentStageState
-      if (!state || state.type !== 'dual-timer' || !info) return
-      const s = state as DualTimerState
+      const s = this.currentStageState as StageState | null
+      if (!s || s.type !== 'dual-timer' || !info) return
+      const st = s as DualTimerState
       const initialPositive = info.positiveDuration ?? info.duration
       const initialNegative = info.negativeDuration ?? info.duration
 
       if (type === 'both') {
-        s.positiveTime = initialPositive
-        s.negativeTime = initialNegative
-        s.isRunning = false
-        s.isPaused = false
-        s.activeTimer = 'positive'
+        st.positiveTime = initialPositive
+        st.negativeTime = initialNegative
+        st.isRunning = false
+        st.isPaused = false
+        st.activeTimer = 'positive'
+        st.endAt = null
       } else if (type === 'positive') {
-        s.positiveTime = initialPositive
+        st.positiveTime = initialPositive
         // 如果正方正在运行，则停止计时
-        if (s.activeTimer === 'positive') {
-          s.isRunning = false
-          s.isPaused = false
+        if (st.activeTimer === 'positive') {
+          st.isRunning = false
+          st.isPaused = false
+          st.endAt = null
         }
       } else if (type === 'negative') {
-        s.negativeTime = initialNegative
+        st.negativeTime = initialNegative
         // 如果反方正在运行，则停止计时
-        if (s.activeTimer === 'negative') {
-          s.isRunning = false
-          s.isPaused = false
+        if (st.activeTimer === 'negative') {
+          st.isRunning = false
+          st.isPaused = false
+          st.endAt = null
         }
       }
+      stopLoop()
     },
 
     // ============ 音效播放 ============
@@ -531,10 +683,14 @@ export const useDebateStore = defineStore('debate', {
         else if (timeRemaining === 0) audioFile = '/End.mp3'
 
         if (audioFile) {
-          const audio = new Audio(audioFile)
-          audio.play().catch(() => {
-            /* 浏览器自动播放策略可能阻止，忽略 */
-          })
+          // 复用缓存的 Audio 对象，避免重复创建和加载
+          const audio = getCachedAudio(audioFile)
+          if (audio) {
+            audio.currentTime = 0  // 从头播放
+            audio.play().catch(() => {
+              /* 浏览器自动播放策略可能阻止，忽略 */
+            })
+          }
         }
       } catch (e) {
         // 静默失败，不影响计时
@@ -544,8 +700,11 @@ export const useDebateStore = defineStore('debate', {
     /** 手动播放测试音效 */
     playTestSound(type: '30' | '5' | 'End') {
       try {
-        const audio = new Audio(`/${type}.mp3`)
-        audio.play().catch(() => {})
+        const audio = getCachedAudio(`/${type}.mp3`)
+        if (audio) {
+          audio.currentTime = 0
+          audio.play().catch(() => {})
+        }
       } catch {}
     },
 
@@ -554,13 +713,21 @@ export const useDebateStore = defineStore('debate', {
     /** 重置整个比赛 */
     resetAll() {
       this.currentStage = 1
+      // ponytail: 直接赋值，无需 JSON 深拷贝
       const initialStates = generateInitialStatesFrom(this.stages)
       for (const s of this.stages) {
-        this.stageStates[s.id] = JSON.parse(
-          JSON.stringify(initialStates[s.id]),
-        )
+        this.stageStates[s.id] = initialStates[s.id]!
       }
       this.completedStages = []
+      stopLoop()
+    },
+
+    /** 页面卸载时调用：停止心跳循环并清空提示音快照 */
+    disposeTimer() {
+      stopLoop()
+      prevSingle = null
+      prevPos = null
+      prevNeg = null
     },
   },
 })

@@ -1,5 +1,5 @@
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
 
 // 已登录用户查询自己在指定赛事中的报名记录
 export default defineEventHandler(async (event) => {
@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, 'id') as string
 
     // 2. 获取当前登录用户（未登录或令牌无效时抛 401）
-    const user = getUserFromEvent(event)
+    const user = await getUserFromEventWithSession(event, prisma)
 
     // 3. 查询该用户在此赛事下的所有报名记录（含成员信息）
     const registrations = await prisma.registration.findMany({
@@ -25,6 +25,6 @@ export default defineEventHandler(async (event) => {
     // 已知的业务错误（如 401 未认证）直接抛出
     if (error.statusCode) throw error
     console.error('Get my registration error:', error)
-    throw createError({ statusCode: 500, statusMessage: '查询报名记录失败' })
+    throw createError({ statusCode: 500, message: '查询报名记录失败' })
   }
 })

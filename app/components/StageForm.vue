@@ -22,12 +22,14 @@ interface StageFormData {
   firstSpeaker?: string  // 如 "正方·一辩"
 }
 
+// 组件入参定义
 interface Props {
-  modelValue: StageFormData
+  modelValue: StageFormData   // 当前环节的表单数据（双向绑定）
 }
 
 const props = defineProps<Props>()
 
+// 内部数据变化时回写父组件
 const emit = defineEmits<{
   'update:modelValue': [value: StageFormData]
 }>()
@@ -38,10 +40,11 @@ const localData = ref<StageFormData>({
   name: props.modelValue?.name || '',
   duration: props.modelValue?.duration ?? 180,
   protectionTime: props.modelValue?.protectionTime ?? 0,
-  speaker: props.modelValue?.speaker || '正方·一辩',
-  questioner: props.modelValue?.questioner || '反方·二辩',
-  responder: props.modelValue?.responder || '正方·一辩',
-  firstSpeaker: props.modelValue?.firstSpeaker || '正方·一辩',
+  // 默认值分隔符 " · "（·前后各有一个空格）
+  speaker: props.modelValue?.speaker || '正方 · 一辩',
+  questioner: props.modelValue?.questioner || '反方 · 二辩',
+  responder: props.modelValue?.responder || '正方 · 一辩',
+  firstSpeaker: props.modelValue?.firstSpeaker || '正方 · 一辩',
 })
 
 // 当外部 modelValue 变化时更新内部
@@ -54,10 +57,11 @@ watch(
         name: val.name || '',
         duration: val.duration ?? 180,
         protectionTime: val.protectionTime ?? 0,
-        speaker: val.speaker || '正方·一辩',
-        questioner: val.questioner || '反方·二辩',
-        responder: val.responder || '正方·一辩',
-        firstSpeaker: val.firstSpeaker || '正方·一辩',
+        // 默认值分隔符 " · "（·前后各有一个空格）
+        speaker: val.speaker || '正方 · 一辩',
+        questioner: val.questioner || '反方 · 二辩',
+        responder: val.responder || '正方 · 一辩',
+        firstSpeaker: val.firstSpeaker || '正方 · 一辩',
       }
     }
   },
@@ -74,11 +78,17 @@ watch(
 )
 
 // === 类型判断 ===
+// 判断是否为单边发言类环节
 function isSpeech(type: string) { return type === 'single_speech' || type === 'speech' }
+// 判断是否为单边发问类环节
 function isQuestion(type: string) { return type === 'single_question' || type === 'question' }
+// 判断是否为双边对辩/自由辩论类环节
 function isBilateral(type: string) { return type === 'bilateral_debate' || type === 'dual-timer' || type === 'free_debate' }
+// 判断是否需要计时器（包含以上所有计时类环节）
 function isTimerType(type: string) { return type === 'single_timer' || type === 'double_timer' || isSpeech(type) || isQuestion(type) || isBilateral(type) }
+// 判断是否为不显示计时器的环节
 function isNoTimer(type: string) { return type === 'no_timer' }
+// 判断是否为 PPT/图片展示类环节
 function isPpt(type: string) { return type === 'ppt_replace' }
 </script>
 
@@ -200,15 +210,15 @@ function isPpt(type: string) { return type === 'ppt_replace' }
 /* 白字深绿底标签（"类"、"时"） */
 .status-tag--green {
   color: #FFFFFF;
-  background-color: #07C160;
+  background-color: var(--color-success);
   font-weight: 500;
 }
 
 /* 黑字白底/浅灰底标签（"单方发言"/"单方发问"/时间值） */
 .status-tag--white {
-  color: rgba(255,255,255,0.9);
-  background-color: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   font-weight: 500;
 }
 
@@ -233,7 +243,7 @@ function isPpt(type: string) { return type === 'ppt_replace' }
 
 .form-label {
   font-size: 14px;
-  color: rgba(255,255,255,0.7);
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
@@ -242,24 +252,24 @@ function isPpt(type: string) { return type === 'ppt_replace' }
   height: 48px;
   padding: 0 16px;
   font-size: 16px;
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   outline: none;
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.9);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 }
 
 .form-input:focus {
-  border-color: #07C160;
-  box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.2);
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 2px var(--color-accent-bg);
 }
 
 /* 辅助文本 */
 .form-hint {
   font-size: 12px;
-  color: rgba(255,255,255,0.4);
+  color: var(--color-text-muted);
   margin-top: 2px;
   line-height: 1.4;
 }
@@ -274,16 +284,16 @@ function isPpt(type: string) { return type === 'ppt_replace' }
 /* 带后缀的输入框 */
 .input-with-suffix {
   display: flex;
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   overflow: hidden;
-  background: rgba(255,255,255,0.08);
+  background: var(--color-bg-secondary);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .input-with-suffix:focus-within {
-  border-color: #07C160;
-  box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.2);
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 2px var(--color-accent-bg);
 }
 
 .input-with-suffix .form-input {
@@ -298,9 +308,9 @@ function isPpt(type: string) { return type === 'ppt_replace' }
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255,255,255,0.05);
-  border-left: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.7);
+  background-color: var(--color-bg-tertiary);
+  border-left: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
   font-size: 16px;
   flex-shrink: 0;
 }
@@ -311,17 +321,17 @@ function isPpt(type: string) { return type === 'ppt_replace' }
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background-color: rgba(255,255,255,0.05);
-  border: 1px dashed rgba(255,255,255,0.15);
+  background-color: var(--color-bg-tertiary);
+  border: 1px dashed var(--color-border);
   border-radius: 6px;
   font-size: 14px;
-  color: rgba(255,255,255,0.6);
+  color: var(--color-text-secondary);
 }
 
 .info-note-icon {
   width: 16px;
   height: 16px;
-  color: #07C160;
+  color: var(--color-success);
   flex-shrink: 0;
 }
 </style>

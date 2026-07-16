@@ -19,16 +19,16 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!match) {
-      throw createError({ statusCode: 404, statusMessage: '40001场次不存在' })
+      throw createError({ statusCode: 404, message: '40001场次不存在' })
     }
 
     if (!match.deletedAt) {
-      throw createError({ statusCode: 400, statusMessage: '40005场次未处于删除状态，无需恢复' })
+      throw createError({ statusCode: 400, message: '40005场次未处于删除状态，无需恢复' })
     }
 
     // 权限校验：使用统一的权限判定函数
     if (!match.tournament || !canWriteTournament(user, match.tournament, match.tournament.team)) {
-      throw createError({ statusCode: 403, statusMessage: '40003权限不足' })
+      throw createError({ statusCode: 403, message: '40003权限不足' })
     }
 
     // 3. 读取请求体的 currentVersion，做乐观锁校验
@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
     if (currentVersion !== undefined && currentVersion !== match.version) {
       throw createError({
         statusCode: 409,
-        statusMessage: `40002版本冲突：当前版本为 ${match.version}，请刷新后重试`,
+        message: `40002版本冲突：当前版本为 ${match.version}，请刷新后重试`,
       })
     }
 
@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
     if (updateResult.count === 0) {
       throw createError({
         statusCode: 409,
-        statusMessage: '40002版本冲突：记录已被其他操作修改',
+        message: '40002版本冲突：记录已被其他操作修改',
       })
     }
 
@@ -76,6 +76,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Restore match error:', error)
-    throw createError({ statusCode: 500, statusMessage: '50000恢复场次失败' })
+    throw createError({ statusCode: 500, message: '50000恢复场次失败' })
   }
 })

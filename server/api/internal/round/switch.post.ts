@@ -1,4 +1,4 @@
-// ════════════════════════════════════════════════════
+﻿// ════════════════════════════════════════════════════
 // POST /api/internal/round/switch — 环节切换时自动调整频道发言权限
 // 由计时程序调用，不需要前端用户认证
 // 请求体：{ teamId, guildId, channelId, targetSide, internalKey }
@@ -16,18 +16,18 @@ export default defineEventHandler(async (event) => {
     const { teamId, guildId, channelId, targetSide } = body
 
     if (!teamId || !guildId || !channelId) {
-      throw createError({ statusCode: 400, statusMessage: '缺少必要参数：teamId、guildId、channelId' })
+      throw createError({ statusCode: 400, message: '缺少必要参数：teamId、guildId、channelId' })
     }
 
     const validSides = ['affirmative', 'negative', 'judge', 'audience']
     if (!targetSide || !validSides.includes(targetSide)) {
-      throw createError({ statusCode: 400, statusMessage: `无效的 targetSide，可选：${validSides.join('、')}` })
+      throw createError({ statusCode: 400, message: `无效的 targetSide，可选：${validSides.join('、')}` })
     }
 
     // 获取 Bot 实例
     const botInstance = getBotInstance(teamId)
     if (!botInstance || !botInstance.config) {
-      throw createError({ statusCode: 400, statusMessage: 'Bot 未启动，请先连接 Bot' })
+      throw createError({ statusCode: 400, message: 'Bot 未启动，请先连接 Bot' })
     }
 
     // 执行环节权限切换
@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
     )
 
     if (!result.success) {
-      throw createError({ statusCode: 400, statusMessage: result.message })
+      throw createError({ statusCode: 400, message: result.message })
     }
 
     return {
@@ -54,6 +54,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Internal Round Switch] 环节切换失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '环节权限切换失败' })
+    throw createError({ statusCode: 500, message: '环节权限切换失败' })
   }
 })

@@ -1,6 +1,7 @@
 import { readBody } from 'h3'
 import { prisma } from '../../../../lib/prisma'
 import { requireWriteTournament } from '../../../../utils/tournament-auth'
+import { syncTopicVoteQuestionnaire } from '../../../../utils/questionnaire'
 
 // 管理端：编辑辩题投票（标题/说明/辩题/配置/状态/截止时间等）
 // 注意：已有投票记录时修改候选辩题可能导致索引错位，前端需提示
@@ -8,7 +9,7 @@ export default defineEventHandler(async (event) => {
   try {
     const id = getRouterParam(event, 'id') as string
     const voteId = getRouterParam(event, 'voteId') as string
-    await requireWriteTournament(event, prisma, id)
+    const { user } = await requireWriteTournament(event, prisma, id)
 
     const body = await readBody<{
       title?: string
@@ -28,13 +29,13 @@ export default defineEventHandler(async (event) => {
       select: { id: true, topics: true },
     })
     if (!existing) {
-      throw createError({ statusCode: 404, statusMessage: '投票不存在' })
+      throw createError({ statusCode: 404, message: '投票不存在' })
     }
 
     // 2. 构建更新数据（仅更新提供的字段）
     const data: Record<string, any> = {}
     if (body.title !== undefined) {
-      if (!body.title.trim()) throw createError({ statusCode: 400, statusMessage: '投票标题不能为空' })
+      if (!body.title.trim()) throw createError({ statusCode: 400, message: '投票标题不能为空' })
       data.title = body.title.trim()
     }
     if (body.description !== undefined) data.description = body.description?.trim() || null
@@ -42,7 +43,7 @@ export default defineEventHandler(async (event) => {
     if (body.showResults !== undefined) data.showResults = !!body.showResults
     if (body.status !== undefined) {
       if (!['draft', 'open', 'closed'].includes(body.status)) {
-        throw createError({ statusCode: 400, statusMessage: '状态值无效' })
+        throw createError({ statusCode: 400, message: '状态值无效' })
       }
       data.status = body.status
     }
@@ -56,21 +57,21 @@ export default defineEventHandler(async (event) => {
           where: { id: body.matchId, tournamentId: id, deletedAt: null },
           select: { id: true },
         })
-        if (!match) throw createError({ statusCode: 400, statusMessage: '指定的比赛不存在或不属于本赛事' })
+        if (!match) throw createError({ statusCode: 400, message: '指定的比赛不存在或不属于本赛事' })
       }
       data.matchId = body.matchId || null
     }
     if (body.deadline !== undefined) {
       data.deadline = body.deadline ? new Date(body.deadline) : null
       if (data.deadline && isNaN(data.deadline.getTime())) {
-        throw createError({ statusCode: 400, statusMessage: '截止时间格式无效' })
+        throw createError({ statusCode: 400, message: '截止时间格式无效' })
       }
     }
     if (body.topics !== undefined) {
       const topics = body.topics.map((t) => String(t).trim()).filter((t) => t.length > 0)
       const uniqueTopics = [...new Set(topics)]
       if (uniqueTopics.length < 2) {
-        throw createError({ statusCode: 400, statusMessage: '至少需要 2 个候选辩题' })
+        throw createError({ statusCode: 400, message: '至少需要 2 个候选辩题' })
       }
       data.topics = JSON.stringify(uniqueTopics)
     }
@@ -80,6 +81,9 @@ export default defineEventHandler(async (event) => {
       where: { id: voteId },
       data,
     })
+
+    // 4. 同步通用投票问卷定义，确保问卷画布与业务投票配置一致。
+    await syncTopicVoteQuestionnaire(prisma, id, voteId, user.userId)
 
     return {
       id: updated.id,
@@ -92,6 +96,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Update topic vote error:', error)
-    throw createError({ statusCode: 500, statusMessage: '更新辩题投票失败' })
+    throw createError({ statusCode: 500, message: '更新辩题投票失败' })
   }
 })

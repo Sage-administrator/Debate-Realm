@@ -3,14 +3,14 @@
 // 请求参数：?arenaId=xxx（可选，不传则返回活跃赛场）
 // ════════════════════════════════════════════════════
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin' && currentUser.role !== 'member') {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     const query = getQuery(event)
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     const teamId = (query.teamId as string) || currentUser.teamId
 
     if (!teamId) {
-      throw createError({ statusCode: 400, statusMessage: '缺少 teamId 参数' })
+      throw createError({ statusCode: 400, message: '缺少 teamId 参数' })
     }
 
     // 查找活跃赛场
@@ -49,6 +49,15 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    // 读取原语音子频道名（originalChannelName 为运行时新增列，Prisma client 未生成）
+    let originalChannelName: string | null = null
+    try {
+      const rows: any = await prisma.$queryRawUnsafe(
+        'SELECT "originalChannelName" FROM "BotArena" WHERE "id" = ?', arena.id,
+      )
+      originalChannelName = rows?.[0]?.originalChannelName || null
+    } catch { /* 列不存在时忽略 */ }
+
     return {
       success: true,
       arena: {
@@ -58,6 +67,7 @@ export default defineEventHandler(async (event) => {
         status: arena.status,
         channelId: arena.channelId,  // 子频道ID（赛场主阵地）
         guildId: arena.guildId,      // 频道ID（容器）
+        originalChannelName,        // 语音子频道原名（赛场期间被改名，结束后还原）
         createdAt: arena.createdAt,
         roles: arena.roles.map(role => ({
           id: role.id,
@@ -78,6 +88,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Arena Claims] 查询失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '查询赛场认领列表失败' })
+    throw createError({ statusCode: 500, message: '查询赛场认领列表失败' })
   }
 })

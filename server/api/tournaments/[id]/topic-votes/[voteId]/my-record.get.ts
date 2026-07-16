@@ -1,5 +1,5 @@
 import { prisma } from '../../../../../lib/prisma'
-import { getUserFromEvent } from '../../../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../../../utils/auth'
 
 // 查询当前登录用户在某投票中的投票记录（用于前端判断"是否已投票"）
 // 未登录时返回 null
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     // 1. 可选鉴权
     let user
     try {
-      user = getUserFromEvent(event)
+      user = await getUserFromEventWithSession(event, prisma)
     } catch {
       return { record: null }
     }
@@ -35,6 +35,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get my vote record error:', error)
-    throw createError({ statusCode: 500, statusMessage: '查询投票记录失败' })
+    throw createError({ statusCode: 500, message: '查询投票记录失败' })
   }
 })

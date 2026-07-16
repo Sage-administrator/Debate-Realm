@@ -1,4 +1,4 @@
-import { prisma } from '../../lib/prisma'
+﻿import { prisma } from '../../lib/prisma'
 import { getUserFromEventWithSession } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
     const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'system_admin') {
-      throw createError({ statusCode: 403, statusMessage: '仅系统管理员可查看用户列表' })
+      throw createError({ statusCode: 403, message: '仅系统管理员可查看用户列表' })
     }
 
     // 分页参数：page 从 1 开始，pageSize 默认 50，最大 200
@@ -46,6 +46,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get users error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取用户列表失败' })
+    throw createError({ statusCode: 500, message: '获取用户列表失败' })
   }
 })

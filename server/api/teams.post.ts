@@ -1,4 +1,4 @@
-import { readBody } from 'h3'
+﻿import { readBody } from 'h3'
 import { prisma } from '../lib/prisma'
 import { hashPassword } from '../lib/jwt'
 import { requireRole } from '../utils/auth'
@@ -19,15 +19,15 @@ export default defineEventHandler(async (event) => {
       }>(event)
 
     if (!name || !mode) {
-      throw createError({ statusCode: 400, statusMessage: '团队名称和模式不能为空' })
+      throw createError({ statusCode: 400, message: '团队名称和模式不能为空' })
     }
 
     if (!['qq_bot', 'team'].includes(mode)) {
-      throw createError({ statusCode: 400, statusMessage: '无效的模式' })
+      throw createError({ statusCode: 400, message: '无效的模式' })
     }
 
     if (!adminUsername || !adminPassword) {
-      throw createError({ statusCode: 400, statusMessage: '管理员用户名和密码不能为空' })
+      throw createError({ statusCode: 400, message: '管理员用户名和密码不能为空' })
     }
 
     const existingAdmin = await prisma.user.findUnique({
@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (existingAdmin) {
-      throw createError({ statusCode: 400, statusMessage: '管理员用户名已存在' })
+      throw createError({ statusCode: 400, message: '管理员用户名已存在' })
     }
 
     // 创建管理员用户（teamId 先留空）
@@ -88,6 +88,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Create team error:', error)
-    throw createError({ statusCode: 500, statusMessage: '创建团队失败' })
+    throw createError({ statusCode: 500, message: '创建团队失败' })
   }
 })

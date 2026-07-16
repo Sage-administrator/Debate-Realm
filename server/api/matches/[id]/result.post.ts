@@ -36,10 +36,10 @@ export default defineEventHandler(async (event) => {
     }>(event)
 
     if (!winner || scoreA === undefined || scoreB === undefined) {
-      throw createError({ statusCode: 400, statusMessage: '40010赛果信息不完整' })
+      throw createError({ statusCode: 400, message: '40010赛果信息不完整' })
     }
     if (!['A', 'B', 'draw'].includes(winner)) {
-      throw createError({ statusCode: 400, statusMessage: '40011无效的获胜方' })
+      throw createError({ statusCode: 400, message: '40011无效的获胜方' })
     }
 
     // 修复：使用 findFirst + deletedAt: null 过滤软删除记录
@@ -50,19 +50,19 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    if (!match) throw createError({ statusCode: 404, statusMessage: '40001场次不存在或已删除' })
-    if (!match.tournament) throw createError({ statusCode: 400, statusMessage: '赛事不存在' })
+    if (!match) throw createError({ statusCode: 404, message: '40001场次不存在或已删除' })
+    if (!match.tournament) throw createError({ statusCode: 400, message: '赛事不存在' })
 
     // 权限校验：使用统一的权限判定函数
     if (!canWriteTournament(user, match.tournament, match.tournament.team)) {
-      throw createError({ statusCode: 403, statusMessage: '40003权限不足' })
+      throw createError({ statusCode: 403, message: '40003权限不足' })
     }
 
     // 修复：乐观锁校验，防止两个管理员同时录入赛果导致积分翻倍
     if (currentVersion !== undefined && currentVersion !== match.version) {
       throw createError({
         statusCode: 409,
-        statusMessage: '数据版本冲突，请刷新后重试',
+        message: '数据版本冲突，请刷新后重试',
       })
     }
 
@@ -70,7 +70,7 @@ export default defineEventHandler(async (event) => {
     if (match.status === 'finished') {
       throw createError({
         statusCode: 400,
-        statusMessage: '该比赛已录入赛果，请先撤销后再重新录入',
+        message: '该比赛已录入赛果，请先撤销后再重新录入',
       })
     }
 
@@ -106,7 +106,7 @@ export default defineEventHandler(async (event) => {
     if (updateResult.count === 0) {
       throw createError({
         statusCode: 409,
-        statusMessage: '数据版本冲突，请刷新后重试',
+        message: '数据版本冲突，请刷新后重试',
       })
     }
 
@@ -202,7 +202,7 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Submit result error:', error)
-    throw createError({ statusCode: 500, statusMessage: '50000登记赛果失败' })
+    throw createError({ statusCode: 500, message: '50000登记赛果失败' })
   }
 })
 

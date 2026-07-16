@@ -16,7 +16,8 @@ const projectId = computed(() => route.params.id as string)
 
 // 页面状态
 const loading = ref(true)
-const project = ref<any>(null)
+// project 加载后通常不再修改内部字段，使用 shallowRef 避免深度响应式开销
+const project = shallowRef<any>(null)
 const showSetupModal = ref(false) // 赛前设置弹窗（队伍名称、辩题）
 const showTimeModal = ref(false)  // 临时设置时间弹窗
 const showProgress = ref(false)   // 环节进度指示
@@ -102,74 +103,36 @@ function formatTime(seconds: number): string {
 // 3. 计时器控制
 // ═══════════════════════════════════════════════
 
-// 单计时器控制
-let timerInterval: ReturnType<typeof setInterval> | null = null
-
+// ═══════════ 计时控制（委托给 debateStore 内部心跳引擎，页面不再持有 timerInterval）═══════════
 function startTimer() {
-  if (debateStore.isRunning) return
-  debateStore.startTimer()
-  if (timerInterval) clearInterval(timerInterval)
-  timerInterval = setInterval(() => {
-    if (debateStore.currentStageInfo?.type === 'dual-timer') {
-      debateStore.tickDualTimer()
-    } else {
-      debateStore.tick()
-    }
-    // 检查时间是否归零
-    if (debateStore.currentStageInfo?.type === 'dual-timer') {
-      const { activeTimer } = debateStore as any
-      const remaining =
-        (debateStore as any).stageStates?.[debateStore.currentStageInfo.id]?.[
-          activeTimer === 'positive' ? 'positiveTime' : 'negativeTime'
-        ] ?? 0
-      if (remaining <= 0 && timerInterval) {
-        clearInterval(timerInterval)
-        timerInterval = null
-      }
-    } else {
-      if ((debateStore as any).timeRemaining <= 0 && timerInterval) {
-        clearInterval(timerInterval)
-        timerInterval = null
-      }
-    }
-  }, 1000)
+  if (isDualTimer.value) debateStore.startDualTimer()
+  else debateStore.startTimer()
 }
 
 function pauseTimer() {
   debateStore.pauseTimer()
-  if (timerInterval) {
-    clearInterval(timerInterval)
-    timerInterval = null
-  }
 }
 
 function resetTimer() {
-  pauseTimer()
   debateStore.resetTimer()
 }
 
 // 双计时器控制
 function switchActiveTimer() {
-  pauseTimer()
   debateStore.switchDualTimer()
 }
 
 function startPositiveTimer() {
-  pauseTimer()
   debateStore.startPositiveTimer()
-  startTimer()
 }
 
 function startNegativeTimer() {
-  pauseTimer()
   debateStore.startNegativeTimer()
-  startTimer()
 }
 
 // 环节切换
 function goToStage(idx: number) {
-  pauseTimer()
-  debateStore.currentStage = idx + 1
+  debateStore.goToStage(idx + 1)
 }
 
 // ═══════════════════════════════════════════════
@@ -305,7 +268,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  pauseTimer()
+  debateStore.disposeTimer()
   window.removeEventListener('keydown', handleKeyPress)
 })
 
@@ -322,19 +285,9 @@ const activeTimer = computed(() => dualTimer.value.activeTimer)
 // 单计时器状态
 const isRunning = computed(() => debateStore.isRunning)
 const timeRemaining = computed(() => (debateStore as any).timeRemaining || 0)
-const isTimeWarning = computed(() => {
-  const info = currentStageInfo.value
-  if (!info || info.type === 'dual-timer') return false
-  return (
-    timeRemaining.value <= info.duration * 0.2 &&
-    timeRemaining.value > info.duration * 0.1
-  )
-})
-const isTimeCritical = computed(() => {
-  const info = currentStageInfo.value
-  if (!info || info.type === 'dual-timer') return false
-  return timeRemaining.value <= info.duration * 0.1
-})
+// 时间警告/紧急状态直接复用 store 的 getter，避免重复计算
+const isTimeWarning = computed(() => debateStore.isTimeWarning)
+const isTimeCritical = computed(() => debateStore.isTimeCritical)
 </script>
 
 <template>
@@ -582,13 +535,13 @@ const isTimeCritical = computed(() => {
           </button>
           <button
             class="timing-btn"
-            @click="showSetupModal = true"
+            @click="() => { showSetupModal = true }"
           >
             设置
           </button>
           <button
             class="timing-btn"
-            @click="showProgress = true"
+            @click="() => { showProgress = true }"
           >
             进度
           </button>
@@ -598,7 +551,7 @@ const isTimeCritical = computed(() => {
         </div>
         <NUseHead>
           <title>
-            {{ debateStore.currentDebate?.title || '辩论赛计时' }}
+            {{ debateStore.project?.title || '辩论赛计时' }}
           </title>
         </NUseHead>
       </div>
@@ -617,8 +570,9 @@ const isTimeCritical = computed(() => {
     </div>
 
     <!-- 赛前设置弹窗 -->
-    <UModal v-model="showSetupModal">
-      <div class="p-6 max-w-lg space-y-4 text-gray-800">
+    <UModal v-model="showSetupModal" :class="'max-w-lg'">
+      <template #content>
+        <div class="p-6 max-w-lg space-y-4 text-gray-800">
         <h3 class="text-lg font-bold">比赛设置</h3>
         <div>
           <label class="block text-sm font-medium mb-1 text-gray-700">正方队伍名称</label>
@@ -653,22 +607,24 @@ const isTimeCritical = computed(() => {
           />
         </div>
         <div class="flex justify-end gap-2 pt-2">
-          <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" @click="showSetupModal = false">
+          <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" @click="() => { showSetupModal = false }">
             关闭
           </button>
           <button
             class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            @click="showSetupModal = false"
+            @click="() => { showSetupModal = false }"
           >
             应用
           </button>
         </div>
-      </div>
+        </div>
+      </template>
     </UModal>
 
     <!-- 时间设置弹窗 -->
-    <UModal v-model="showTimeModal">
-      <div class="p-6 max-w-sm space-y-4 text-gray-800">
+    <UModal v-model="showTimeModal" :class="'max-w-sm'">
+      <template #content>
+        <div class="p-6 max-w-sm space-y-4 text-gray-800">
         <h3 class="text-lg font-bold">设置时间</h3>
 
         <div v-if="isDualTimer" class="space-y-3">
@@ -706,7 +662,7 @@ const isTimeCritical = computed(() => {
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-          <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" @click="showTimeModal = false">
+          <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" @click="() => { showTimeModal = false }">
             取消
           </button>
           <button
@@ -716,12 +672,14 @@ const isTimeCritical = computed(() => {
             应用
           </button>
         </div>
-      </div>
+        </div>
+      </template>
     </UModal>
 
     <!-- 环节进度弹窗 -->
-    <UModal v-model="showProgress">
-      <div class="p-6 max-w-3xl space-y-4 text-gray-800">
+    <UModal v-model="showProgress" :class="'max-w-3xl'">
+      <template #content>
+        <div class="p-6 max-w-3xl space-y-4 text-gray-800">
         <h3 class="text-lg font-bold">环节进度</h3>
 
         <div v-if="!debateStore.stages.length" class="text-center text-gray-500 py-8">
@@ -755,11 +713,12 @@ const isTimeCritical = computed(() => {
         </div>
 
         <div class="flex justify-end pt-2">
-          <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" @click="showProgress = false">
+          <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" @click="() => { showProgress = false }">
             关闭
           </button>
         </div>
-      </div>
+        </div>
+      </template>
     </UModal>
   </div>
 </template>

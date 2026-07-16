@@ -5,7 +5,7 @@ import { getUserFromEventWithSession } from '../../../utils/auth'
 export default defineEventHandler(async (event) => {
   const payload = await getUserFromEventWithSession(event, prisma)
   const id = getRouterParam(event, 'id')
-  if (!id) throw createError({ statusCode: 400, statusMessage: '缺少项目ID' })
+  if (!id) throw createError({ statusCode: 400, message: '缺少项目ID' })
 
   const project = await prisma.debateTimerProject.findUnique({
     where: { id },
@@ -17,12 +17,12 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!project) {
-    throw createError({ statusCode: 404, statusMessage: '项目不存在' })
+    throw createError({ statusCode: 404, message: '项目不存在' })
   }
 
   // 权限检查：仅项目创建者可访问
   if (project.userId !== payload.userId) {
-    throw createError({ statusCode: 403, statusMessage: '无权访问此项目' })
+    throw createError({ statusCode: 403, message: '无权访问此项目' })
   }
 
   return {

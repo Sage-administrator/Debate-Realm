@@ -53,6 +53,6 @@ export default defineEventHandler(async (event) => {
     // 已知的业务错误（含鉴权抛出的 createError）直接抛出
     if (error.statusCode) throw error
     console.error('List registrations error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取报名列表失败' })
+    throw createError({ statusCode: 500, message: '获取报名列表失败' })
   }
 })

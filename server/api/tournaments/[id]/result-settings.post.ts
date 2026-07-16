@@ -10,11 +10,11 @@
 
 import { readBody, createError } from 'h3'
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = getUserFromEvent(event)
+    const user = await getUserFromEventWithSession(event, prisma)
     const id = getRouterParam(event, 'id')!
 
     const body = await readBody<{
@@ -27,12 +27,12 @@ export default defineEventHandler(async (event) => {
       include: { team: true },
     })
     if (!tournament) {
-      throw createError({ statusCode: 404, statusMessage: '赛事不存在' })
+      throw createError({ statusCode: 404, message: '赛事不存在' })
     }
 
     // 2) 权限校验：system_admin 或所属团队的管理员（team.adminId 是创建团队的用户ID）
     if (user.role !== 'system_admin' && user.userId !== tournament.team?.adminId) {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     // 3) 校验参数
@@ -50,6 +50,6 @@ export default defineEventHandler(async (event) => {
     if (error.statusCode) throw error
     const errMsg = error instanceof Error ? `${error.message}\n${error.stack}` : String(error)
     console.error('[result-settings] 保存失败:', errMsg)
-    throw createError({ statusCode: 500, statusMessage: error?.message || error?.toString() || '保存失败' })
+    throw createError({ statusCode: 500, message: error?.message || error?.toString() || '保存失败' })
 }
 })

@@ -123,24 +123,93 @@ async function handleSubmitResult() {
 const statusLabel = (s: string) => ({ pending: '待开始', running: '进行中', finished: '已完成' }[s] || s)
 const statusColor = (s: string): any => ({ pending: 'neutral', running: 'primary', finished: 'success' }[s] || 'neutral')
 const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
+const formatDateMonth = (dateStr: string) => {
+  const d = new Date(dateStr)
+  return `${d.getFullYear()}/${d.getMonth() + 1}`
+}
+
+// ── 解析 description 中的扩展信息 ──
+const extendedInfo = computed(() => {
+  const desc = tournament.value?.description || ''
+  if (!desc.includes('；')) return []
+  return desc.split('；').filter(Boolean)
+})
 </script>
 
 <template>
   <template v-if="tournament">
   <!-- ═══ 比赛信息内容 ═══ -->
   <main class="py-6 space-y-6">
+    <!-- 赛事概览 -->
+    <UCard class="mb-6">
+      <template #header>
+        <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+          <UIcon name="i-lucide-info" class="w-4 h-4 text-[var(--color-text-muted)]" />
+          赛事概览
+        </h2>
+      </template>
+      <!-- 状态徽章 -->
+      <div class="flex items-center gap-2 mb-3 pb-3 border-b border-[var(--color-border)]">
+        <span class="text-xs text-[var(--color-text-muted)]">当前状态：</span>
+        <UBadge :label="statusLabel(tournament.status)" :color="statusColor(tournament.status)" size="xs" variant="soft" />
+        <span class="text-xs text-[var(--color-text-muted)]">·</span>
+        <span class="text-xs text-[var(--color-text-muted)]">{{ formatLabel(tournament.format) }}</span>
+        <span v-if="tournament.scheduledAt" class="text-xs text-[var(--color-text-muted)]">
+          · {{ formatDateMonth(tournament.scheduledAt) }}
+        </span>
+      </div>
+      <!-- 信息网格 -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+        <div class="bg-[var(--color-bg-secondary)] rounded p-2.5">
+          <p class="text-[11px] text-[var(--color-text-muted)] mb-0.5">赛事名称</p>
+          <p class="text-xs font-medium text-[var(--color-text-primary)] truncate">{{ tournament.name }}</p>
+        </div>
+        <div class="bg-[var(--color-bg-secondary)] rounded p-2.5">
+          <p class="text-[11px] text-[var(--color-text-muted)] mb-0.5">赛制</p>
+          <p class="text-xs font-medium text-[var(--color-text-primary)]">{{ formatLabel(tournament.format) }}</p>
+        </div>
+        <div class="bg-[var(--color-bg-secondary)] rounded p-2.5">
+          <p class="text-[11px] text-[var(--color-text-muted)] mb-0.5">举办地点</p>
+          <p class="text-xs font-medium text-[var(--color-text-primary)] truncate">{{ tournament.venue || '未设置' }}</p>
+        </div>
+        <div class="bg-[var(--color-bg-secondary)] rounded p-2.5">
+          <p class="text-[11px] text-[var(--color-text-muted)] mb-0.5">参赛队伍数</p>
+          <p class="text-xs font-medium text-[var(--color-text-primary)]">{{ tournament.teams?.length || 0 }} 支</p>
+        </div>
+        <div class="bg-[var(--color-bg-secondary)] rounded p-2.5">
+          <p class="text-[11px] text-[var(--color-text-muted)] mb-0.5">评委人数</p>
+          <p class="text-xs font-medium text-[var(--color-text-primary)]">{{ tournament.judges?.length || 0 }} 人</p>
+        </div>
+        <div class="bg-[var(--color-bg-secondary)] rounded p-2.5">
+          <p class="text-[11px] text-[var(--color-text-muted)] mb-0.5">场次数</p>
+          <p class="text-xs font-medium text-[var(--color-text-primary)]">{{ tournament.matches?.length || 0 }} 场</p>
+        </div>
+      </div>
+      <!-- 扩展信息 -->
+      <div v-if="extendedInfo.length" class="mt-3 pt-3 border-t border-[var(--color-border)]">
+        <p class="text-[11px] text-[var(--color-text-muted)] mb-1.5">详细信息</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span
+            v-for="info in extendedInfo"
+            :key="info"
+            class="px-2 py-0.5 text-[11px] text-[var(--color-text-primary)] bg-[var(--color-bg-tertiary)] rounded-full"
+          >{{ info }}</span>
+        </div>
+      </div>
+    </UCard>
+
     <!-- 赛事信息编辑 -->
     <UCard class="mb-6">
       <template #header>
         <div class="flex items-center justify-between">
-          <h2 class="text-base font-semibold text-white flex items-center gap-2">
-            <UIcon name="i-lucide-file-text" class="w-4 h-4 text-white/40" />
+          <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+            <UIcon name="i-lucide-file-text" class="w-4 h-4 text-[var(--color-text-muted)]" />
             比赛信息
           </h2>
         <button
           v-if="!editingInfo"
-          class="flex items-center gap-1 px-3 py-1.5 text-sm border border-white/10 rounded-md text-white/70 hover:bg-white/5 transition-colors"
-          @click="editingInfo = true"
+          class="flex items-center gap-1 px-3 py-1.5 text-sm border border-[var(--color-border)] rounded-md text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] transition-colors"
+          @click="() => { editingInfo = true }"
         >
           <UIcon name="i-lucide-pencil" class="w-3.5 h-3.5" />编辑
         </button>
@@ -151,89 +220,93 @@ const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
       <div v-if="!editingInfo" class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs text-white/40 mb-1">赛事名称</label>
-            <p class="text-sm text-white/90">{{ tournament.name }}</p>
+            <label class="block text-xs text-[var(--color-text-muted)] mb-1">赛事名称</label>
+            <p class="text-sm text-[var(--color-text-primary)]">{{ tournament.name }}</p>
           </div>
           <div>
-            <label class="block text-xs text-white/40 mb-1">赛制</label>
-            <p class="text-sm text-white/90">{{ formatLabel(tournament.format) }}</p>
+            <label class="block text-xs text-[var(--color-text-muted)] mb-1">赛制</label>
+            <p class="text-sm text-[var(--color-text-primary)]">{{ formatLabel(tournament.format) }}</p>
           </div>
           <div>
-            <label class="block text-xs text-white/40 mb-1">状态</label>
+            <label class="block text-xs text-[var(--color-text-muted)] mb-1">状态</label>
             <UBadge :label="statusLabel(tournament.status)" :color="statusColor(tournament.status)" size="xs" variant="soft" />
           </div>
           <div>
-            <label class="block text-xs text-white/40 mb-1">举办地点</label>
-            <p class="text-sm text-white/90">{{ tournament.venue || '未设置' }}</p>
+            <label class="block text-xs text-[var(--color-text-muted)] mb-1">举办地点</label>
+            <p class="text-sm text-[var(--color-text-primary)]">{{ tournament.venue || '未设置' }}</p>
           </div>
           <div>
-            <label class="block text-xs text-white/40 mb-1">计划时间</label>
-            <p class="text-sm text-white/90">
+            <label class="block text-xs text-[var(--color-text-muted)] mb-1">计划时间</label>
+            <p class="text-sm text-[var(--color-text-primary)]">
               {{ tournament.scheduledAt ? new Date(tournament.scheduledAt).toLocaleDateString('zh-CN') : '未设置' }}
             </p>
           </div>
           <div>
-            <label class="block text-xs text-white/40 mb-1">创建时间</label>
-            <p class="text-sm text-white/90">{{ new Date(tournament.createdAt).toLocaleDateString('zh-CN') }}</p>
+            <label class="block text-xs text-[var(--color-text-muted)] mb-1">创建时间</label>
+            <p class="text-sm text-[var(--color-text-primary)]">{{ new Date(tournament.createdAt).toLocaleDateString('zh-CN') }}</p>
           </div>
         </div>
         <div>
-          <label class="block text-xs text-white/40 mb-1">描述</label>
-          <p class="text-sm text-white/90">{{ tournament.description || '无' }}</p>
+          <label class="block text-xs text-[var(--color-text-muted)] mb-1">描述</label>
+          <p class="text-sm text-[var(--color-text-primary)]">{{ tournament.description || '无' }}</p>
         </div>
       </div>
 
       <!-- 编辑模式 -->
       <div v-else class="space-y-4">
         <div>
-          <label class="block text-sm text-white/80 mb-1.5">赛事名称 <span class="text-red-500">*</span></label>
+          <label class="block text-sm text-[var(--color-text-primary)] mb-1.5">赛事名称 <span class="text-red-500">*</span></label>
           <input
             v-model="infoForm.name" type="text"
-            class="input-glass w-full h-10 px-3 text-sm border border-white/10 rounded focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/20 transition-colors"
+            class="input-glass w-full h-10 px-3 text-sm border border-[var(--color-border)] rounded focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/20 transition-colors"
           />
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm text-white/80 mb-1.5">赛制</label>
-            <select
+            <label class="block text-sm text-[var(--color-text-primary)] mb-1.5">赛制</label>
+            <USelect
               v-model="infoForm.format"
-              class="input-glass w-full h-10 px-3 text-sm border border-white/10 rounded bg-white/5 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/20 transition-colors"
-            >
-              <option value="knockout">淘汰赛</option>
-              <option value="round_robin">循环赛</option>
-            </select>
+              :items="[
+                { label: '淘汰赛', value: 'knockout' },
+                { label: '循环赛', value: 'round_robin' },
+              ]"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+            />
           </div>
           <div>
-            <label class="block text-sm text-white/80 mb-1.5">状态</label>
-            <select
+            <label class="block text-sm text-[var(--color-text-primary)] mb-1.5">状态</label>
+            <USelect
               v-model="infoForm.status"
-              class="input-glass w-full h-10 px-3 text-sm border border-white/10 rounded bg-white/5 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/20 transition-colors"
-            >
-              <option value="pending">待开始</option>
-              <option value="running">进行中</option>
-              <option value="finished">已完成</option>
-            </select>
+              :items="[
+                { label: '待开始', value: 'pending' },
+                { label: '进行中', value: 'running' },
+                { label: '已完成', value: 'finished' },
+              ]"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+            />
           </div>
         </div>
         <div>
-          <label class="block text-sm text-white/80 mb-1.5">举办地点</label>
+          <label class="block text-sm text-[var(--color-text-primary)] mb-1.5">举办地点</label>
           <input
             v-model="infoForm.venue" type="text" placeholder="如：301教室"
-            class="input-glass w-full h-10 px-3 text-sm border border-white/10 rounded focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/20 transition-colors"
+            class="input-glass w-full h-10 px-3 text-sm border border-[var(--color-border)] rounded focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/20 transition-colors"
           />
         </div>
         <div>
-          <label class="block text-sm text-white/80 mb-1.5">描述</label>
+          <label class="block text-sm text-[var(--color-text-primary)] mb-1.5">描述</label>
           <textarea
             v-model="infoForm.description" rows="3" placeholder="赛事描述、扩展信息等"
-            class="input-glass w-full px-3 py-2 text-sm border border-white/10 rounded focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/20 transition-colors resize-none"
+            class="input-glass w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/20 transition-colors resize-none"
           />
         </div>
         <div class="flex gap-3 pt-2">
           <UButton color="primary" size="sm" :loading="savingInfo" @click="handleUpdateInfo">
             <UIcon name="i-lucide-check" class="w-3.5 h-3.5 mr-1" />保存修改
           </UButton>
-          <UButton color="neutral" variant="outline" size="sm" @click="editingInfo = false">
+          <UButton color="neutral" variant="outline" size="sm" @click="() => { editingInfo = false }">
             取消
           </UButton>
         </div>
@@ -244,10 +317,10 @@ const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
     <UCard class="mb-6">
       <template #header>
         <div class="flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-            <UIcon name="i-lucide-users" class="w-4 h-4 text-white/40" />
+          <h3 class="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+            <UIcon name="i-lucide-users" class="w-4 h-4 text-[var(--color-text-muted)]" />
             参赛队伍
-            <span class="text-xs font-normal text-white/40">(赛程页设置，支持在线添加/删除)</span>
+            <span class="text-xs font-normal text-[var(--color-text-muted)]">(赛程页设置，支持在线添加/删除)</span>
           </h3>
         <NuxtLink
           :to="`/tournaments/${tournamentId}/schedule`"
@@ -259,12 +332,12 @@ const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
         </div>
       </template>
       <!-- 兼容字符串数组和对象数组 -->
-      <div v-if="!(Array.isArray(tournament.teams) && tournament.teams.length > 0)" class="text-sm text-white/40 py-2">暂无队伍</div>
+      <div v-if="!(Array.isArray(tournament.teams) && tournament.teams.length > 0)" class="text-sm text-[var(--color-text-muted)] py-2">暂无队伍</div>
       <div v-else class="flex flex-wrap gap-2">
         <span
           v-for="(t, idx) in tournament.teams"
           :key="typeof t === 'string' ? t : (t.id ?? t.name ?? idx)"
-          class="px-3 py-1 text-sm text-white/80 bg-white/10 rounded-full"
+          class="px-3 py-1 text-sm text-[var(--color-text-primary)] bg-[var(--color-bg-tertiary)] rounded-full"
         >
           {{ typeof t === 'string' ? t : t.name }}
         </span>
@@ -275,10 +348,10 @@ const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
     <UCard class="mb-6">
       <template #header>
         <div class="flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-            <UIcon name="i-lucide-gavel" class="w-4 h-4 text-white/40" />
+          <h3 class="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+            <UIcon name="i-lucide-gavel" class="w-4 h-4 text-[var(--color-text-muted)]" />
             评委
-            <span class="text-xs font-normal text-white/40">(赛程页设置，支持在线添加/删除)</span>
+            <span class="text-xs font-normal text-[var(--color-text-muted)]">(赛程页设置，支持在线添加/删除)</span>
           </h3>
         <NuxtLink
           :to="`/tournaments/${tournamentId}/schedule`"
@@ -289,12 +362,12 @@ const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
         </NuxtLink>
         </div>
       </template>
-      <div v-if="!(Array.isArray(tournament.judges) && tournament.judges.length > 0)" class="text-sm text-white/40 py-2">暂无评委</div>
+      <div v-if="!(Array.isArray(tournament.judges) && tournament.judges.length > 0)" class="text-sm text-[var(--color-text-muted)] py-2">暂无评委</div>
       <div v-else class="flex flex-wrap gap-2">
         <span
           v-for="(j, idx) in tournament.judges"
           :key="typeof j === 'string' ? j : (j.id ?? j.name ?? idx)"
-          class="px-3 py-1 text-sm text-white/80 bg-white/10 rounded-full"
+          class="px-3 py-1 text-sm text-[var(--color-text-primary)] bg-[var(--color-bg-tertiary)] rounded-full"
         >
           {{ typeof j === 'string' ? j : j.name }}
         </span>
@@ -305,31 +378,31 @@ const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
     <UCard class="mb-6">
       <template #header>
         <div class="flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-            <UIcon name="i-lucide-list" class="w-4 h-4 text-white/40" />
+          <h3 class="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+            <UIcon name="i-lucide-list" class="w-4 h-4 text-[var(--color-text-muted)]" />
             场次管理
-            <span class="text-xs font-normal text-white/40">({{ tournament.matches?.length || 0 }} 场)</span>
+            <span class="text-xs font-normal text-[var(--color-text-muted)]">({{ tournament.matches?.length || 0 }} 场)</span>
           </h3>
         <button
           class="flex items-center gap-1 px-3 py-1.5 text-sm border border-green-500/30 rounded text-green-400 hover:bg-green-500/10 transition-colors"
-          @click="showCreateMatch = true"
+          @click="() => { showCreateMatch = true }"
         >
           <UIcon name="i-lucide-plus" class="w-3.5 h-3.5" />添加场次
         </button>
         </div>
       </template>
-      <div v-if="!tournament.matches?.length" class="text-sm text-white/40 py-8 text-center">
+      <div v-if="!tournament.matches?.length" class="text-sm text-[var(--color-text-muted)] py-8 text-center">
         暂未创建场次
       </div>
       <div v-else class="space-y-2">
         <div
           v-for="m in tournament.matches"
           :key="m.id"
-          class="flex items-center justify-between p-3 bg-white/5 rounded"
+          class="flex items-center justify-between p-3 bg-[var(--color-bg-secondary)] rounded"
         >
           <div class="flex items-center gap-3">
-            <span class="text-xs text-white/50">{{ m.round }}</span>
-            <span class="text-sm text-white/90">{{ m.teamA }} vs {{ m.teamB }}</span>
+            <span class="text-xs text-[var(--color-text-muted)]">{{ m.round }}</span>
+            <span class="text-sm text-[var(--color-text-primary)]">{{ m.teamA }} vs {{ m.teamB }}</span>
             <UBadge
               v-if="m.status !== 'pending'"
               :label="m.status === 'running' ? '进行中' : '已完成'"
@@ -345,7 +418,7 @@ const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
             >登记赛果</button>
             <button
               class="text-xs text-red-400 hover:text-red-300"
-              @click="async () => { await deleteMatch(m.id); const updated = await getTournament(tournamentId.value); tournament.value = updated }"
+              @click="async () => { await deleteMatch(m.id); const updated = await getTournament(tournamentId); tournament.value = updated }"
             >删除</button>
           </div>
         </div>
@@ -359,7 +432,7 @@ const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
           <UIcon name="i-lucide-alert-triangle" class="w-4 h-4" />危险操作
         </h3>
       </template>
-      <p class="text-xs text-white/50 mb-3">删除赛事将同时删除所有关联的场次、队伍和评委数据，不可恢复。</p>
+      <p class="text-xs text-[var(--color-text-muted)] mb-3">删除赛事将同时删除所有关联的场次、队伍和评委数据，不可恢复。</p>
       <UButton color="error" size="sm" :loading="deleting" @click="handleDeleteTournament">
         {{ deleting ? '删除中...' : '删除此赛事' }}
       </UButton>
@@ -386,7 +459,7 @@ const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
     </template>
     <template #footer>
       <div class="flex justify-end gap-2">
-        <UButton color="neutral" variant="outline" @click="showCreateMatch = false">取消</UButton>
+        <UButton color="neutral" variant="outline" @click="() => { showCreateMatch = false }">取消</UButton>
         <UButton color="primary" @click="handleCreateMatch">添加</UButton>
       </div>
     </template>
@@ -413,7 +486,7 @@ const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
     </template>
     <template #footer>
       <div class="flex justify-end gap-2">
-        <UButton color="neutral" variant="outline" @click="showResult = false">取消</UButton>
+        <UButton color="neutral" variant="outline" @click="() => { showResult = false }">取消</UButton>
         <UButton color="primary" @click="handleSubmitResult">提交赛果</UButton>
       </div>
     </template>

@@ -1,9 +1,9 @@
 import { prisma } from '../../lib/prisma'
-import { getUserFromEvent } from '../../utils/auth'
+import { getUserFromEventWithSession } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = getUserFromEvent(event)
+    const user = await getUserFromEventWithSession(event, prisma)
     const id = getRouterParam(event, 'id')!
 
     const match = await prisma.standaloneMatch.findUnique({
@@ -11,16 +11,16 @@ export default defineEventHandler(async (event) => {
       include: { matches: { include: { timer: true }, orderBy: { createdAt: 'asc' } } },
     })
 
-    if (!match) throw createError({ statusCode: 404, statusMessage: '独立赛事不存在' })
+    if (!match) throw createError({ statusCode: 404, message: '独立赛事不存在' })
 
     if (match.userId !== user.userId && user.role !== 'system_admin') {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     const firstMatchWithTimer = match.matches.find((m) => m.timer)
 
     return {
-      id: match.id, name: match.name, description: match.description,
+      id: match.id, name: match.name, description: match.description, venue: match.venue,
       status: match.status, scheduledAt: match.scheduledAt,
       matches: match.matches.map((m) => ({
         id: m.id, round: m.round, orderNum: m.orderNum,
@@ -45,6 +45,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get standalone match error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取独立赛事详情失败' })
+    throw createError({ statusCode: 500, message: '获取独立赛事详情失败' })
   }
 })

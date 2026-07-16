@@ -116,13 +116,14 @@ function formatTime(iso: string): string {
 </script>
 
 <template>
-  <!-- 外层容器：不额外设置背景（body 已有深色渐变） -->
-  <div class="min-h-screen flex items-center justify-center px-4">
+  <!-- ponytail: 使用全局hero-padding类，删除自定义px-4 -->
+  <!-- Agency级Macro-Whitespace：hero-padding（py-40 pt-32 pb-24） -->
+  <div class="min-h-screen flex items-center justify-center hero-padding">
 
     <!-- 登录卡片区域 -->
     <div class="w-full max-w-md">
 
-      <!-- 玻璃拟态登录卡片 -->
+      <!-- 玻璃拟态登录卡片（使用全局glass-card-strong，删除scoped定义） -->
       <div class="glass-card-strong p-6 sm:p-8">
 
         <!-- 顶部 Logo 与标题 -->
@@ -134,8 +135,14 @@ function formatTime(iso: string): string {
                     d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <h1 class="text-2xl font-bold text-white">辩境</h1>
-          <p class="text-sm text-white/50 mt-1">辩论赛管理系统</p>
+          
+          <!-- Agency级Eyebrow Tag：microscopic badge -->
+          <div class="eyebrow-tag mx-auto">
+            debaterealm
+          </div>
+          
+          <h1 class="text-heading-2 text-[var(--color-text-primary)]">辩境</h1>
+          <p class="text-caption text-[var(--color-text-muted)] mt-1">辩论赛管理系统</p>
         </div>
 
         <!-- 分隔线 -->
@@ -156,9 +163,9 @@ function formatTime(iso: string): string {
             <span>{{ kickedMessage }}</span>
           </div>
 
-          <!-- 用户名输入框 -->
+          <!-- 用户名输入框（使用全局input-glass和dark-label，删除scoped定义） -->
           <div>
-            <label class="block text-sm font-medium text-white/70 mb-1.5">
+            <label class="dark-label">
               用户名
             </label>
             <input
@@ -173,7 +180,7 @@ function formatTime(iso: string): string {
 
           <!-- 密码输入框 -->
           <div>
-            <label class="block text-sm font-medium text-white/70 mb-1.5">
+            <label class="dark-label">
               密码
             </label>
             <div class="relative">
@@ -185,11 +192,11 @@ function formatTime(iso: string): string {
                 class="input-glass w-full pr-10"
                 placeholder="请输入密码"
               />
-              <!-- 密码显示/隐藏按钮：白色半透明图标 -->
+              <!-- 密码显示/隐藏按钮 -->
               <button
                 type="button"
-                class="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 p-1 transition-colors"
-                @click="showPassword = !showPassword"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] p-1 transition-colors"
+                @click="() => { showPassword = !showPassword }"
                 aria-label="切换密码显示"
               >
                 <!-- 眼睛打开图标 -->
@@ -214,11 +221,11 @@ function formatTime(iso: string): string {
             {{ error }}
           </div>
 
-          <!-- 登录按钮：渐变紫色主按钮 -->
+          <!-- 登录按钮：使用全局btn-primary，删除scoped定义 -->
           <button
             type="submit"
             :disabled="loading"
-            class="btn-primary w-full py-2.5 px-4 text-sm font-medium rounded-xl flex items-center justify-center gap-2"
+            class="btn-primary w-full py-3 px-6 text-sm font-medium rounded-xl flex items-center justify-center gap-2"
           >
             <svg v-if="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
@@ -230,8 +237,8 @@ function formatTime(iso: string): string {
         </form>
       </div>
 
-      <!-- 底部提示文字：白色半透明 -->
-      <p class="text-xs text-center text-white/30 mt-4">
+      <!-- 底部提示文字 -->
+      <p class="text-caption text-center text-[var(--color-text-muted)] mt-4">
         系统管理员账号：system-admin
       </p>
     </div>
@@ -266,7 +273,7 @@ function formatTime(iso: string): string {
               <!-- 关闭按钮 -->
               <button
                 type="button"
-                class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-white/40 hover:text-white/70 hover:bg-white/10 transition-colors"
+                class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
                 @click="cancelMultiDevice"
                 :disabled="confirmLoading"
                 aria-label="关闭"
@@ -277,21 +284,21 @@ function formatTime(iso: string): string {
               </button>
 
               <!-- 弹窗头部 -->
-              <div class="px-6 py-4 border-b border-white/10 bg-white/5">
+              <div class="px-6 py-4 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
                 <div class="flex items-center gap-2">
                   <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
-                  <h2 id="multi-device-title" class="text-lg font-bold text-white">
+                  <h2 id="multi-device-title" class="text-lg font-bold text-[var(--color-text-primary)]">
                     不允许多端登录
                   </h2>
                 </div>
               </div>
 
               <!-- 弹窗主体 -->
-              <div class="p-6 space-y-4">
-                <p class="text-white/70 text-sm leading-relaxed">
+              <div class="px-6 py-4">
+                <p class="text-[var(--color-text-secondary)] text-sm leading-relaxed">
                   您的账号已在其他设备登录。若继续在此设备登录，将强制退出其他设备的登录状态。
                 </p>
 
@@ -307,9 +314,9 @@ function formatTime(iso: string): string {
                     </svg>
                     <span class="text-sm font-medium text-blue-300">当前设备（此浏览器）</span>
                   </div>
-                  <div class="text-sm text-white/60 pl-6 space-y-0.5">
-                    <p><span class="text-white/40">设备：</span>{{ newDevice.deviceInfo }}</p>
-                    <p v-if="newDevice.ipAddress"><span class="text-white/40">IP：</span>{{ newDevice.ipAddress }}</p>
+                  <div class="text-sm text-[var(--color-text-secondary)] pl-6 space-y-0.5">
+                    <p><span class="text-[var(--color-text-muted)]">设备：</span>{{ newDevice.deviceInfo }}</p>
+                    <p v-if="newDevice.ipAddress"><span class="text-[var(--color-text-muted)]">IP：</span>{{ newDevice.ipAddress }}</p>
                   </div>
                 </div>
 
@@ -328,16 +335,16 @@ function formatTime(iso: string): string {
                       已登录设备 {{ existingSessions.length > 1 ? `#${idx + 1}` : '' }}
                     </span>
                   </div>
-                  <div class="text-sm text-white/60 pl-6 space-y-0.5">
-                    <p><span class="text-white/40">设备：</span>{{ session.deviceInfo }}</p>
-                    <p v-if="session.ipAddress"><span class="text-white/40">IP：</span>{{ session.ipAddress }}</p>
-                    <p><span class="text-white/40">登录时间：</span>{{ formatTime(session.loggedInAt) }}</p>
+                  <div class="text-sm text-[var(--color-text-secondary)] pl-6 space-y-0.5">
+                    <p><span class="text-[var(--color-text-muted)]">设备：</span>{{ session.deviceInfo }}</p>
+                    <p v-if="session.ipAddress"><span class="text-[var(--color-text-muted)]">IP：</span>{{ session.ipAddress }}</p>
+                    <p><span class="text-[var(--color-text-muted)]">登录时间：</span>{{ formatTime(session.loggedInAt) }}</p>
                   </div>
                 </div>
               </div>
 
               <!-- 弹窗底部操作按钮 -->
-              <div class="px-6 py-4 border-t border-white/10 bg-white/5 flex gap-3 justify-end">
+              <div class="px-6 py-4 border-t border-[var(--color-border)] bg-[var(--color-bg-tertiary)] flex gap-3 justify-end">
                 <!-- 取消按钮：幽灵按钮样式 -->
                 <button
                   type="button"
@@ -371,111 +378,8 @@ function formatTime(iso: string): string {
 </template>
 
 <style scoped>
-/* ════════════════════════════════════════
-   玻璃拟态样式 —— 深色主题
-   ════════════════════════════════════════ */
-
-/* 玻璃卡片 —— 强效果（半透明白色背景 + 模糊 + 圆角 16px + 白色边框） */
-.glass-card-strong {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 16px;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-/* 玻璃输入框样式 */
-.input-glass {
-  padding: 0.625rem 0.75rem;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.875rem;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.input-glass::placeholder {
-  color: rgba(255, 255, 255, 0.25);
-}
-
-.input-glass:focus {
-  border-color: rgba(139, 92, 246, 0.5);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.input-glass:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 主按钮样式 —— 渐变紫色 */
-.btn-primary {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed, #6d28d9);
-  color: #ffffff;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.35);
-}
-
-.btn-primary:hover:not(:disabled) {
-  opacity: 0.9;
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
-  transform: translateY(-1px);
-}
-
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 幽灵按钮样式 —— 透明边框 */
-.btn-ghost {
-  background: transparent;
-  color: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.btn-ghost:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.25);
-}
-
-.btn-ghost:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 弹窗遮罩层样式 */
-.modal-overlay {
-  background: transparent; /* 遮罩已通过子元素实现 */
-}
-
-/* 玻璃分隔线 */
-.glass-divider {
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(255, 255, 255, 0.15),
-    transparent
-  );
-}
+/* ponytail: 删除scoped style中的重复定义，使用main.css全局类名 */
+/* 仅保留login.vue特有的样式 */
 
 /* Logo 图标 —— 渐变圆角方块 (48px) */
 .logo-icon {
@@ -489,14 +393,23 @@ function formatTime(iso: string): string {
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
 }
 
-/* ════════════════════════════════════════
-   弹窗动画
-   ════════════════════════════════════════ */
+/* 玻璃分隔线 */
+.glass-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+}
 
-/* 弹窗淡入淡出动画 */
+/* ═══════════ Agency级弹窗动画（保留） ═══════════ */
+
+/* 弹窗淡入淡出动画：Agency级Motion Curves */
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 0.25s ease;
+  transition: opacity 250ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-enter-from,
@@ -504,10 +417,10 @@ function formatTime(iso: string): string {
   opacity: 0;
 }
 
-/* 弹窗内容缩放动画 */
+/* 弹窗内容缩放动画：Apple Spring Curve */
 .modal-content-enter-active,
 .modal-content-leave-active {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  transition: transform 500ms cubic-bezier(0.32, 0.72, 0, 1), opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-content-enter-from,

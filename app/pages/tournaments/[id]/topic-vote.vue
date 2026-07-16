@@ -9,8 +9,16 @@ const { getTopicVote, castVote, getMyVoteRecord } = useTopicVote()
 const tournamentId = computed(() => route.params.id as string)
 const voteId = computed(() => (route.query.vote as string) || '')
 
-const loading = ref(false)
-const vote = ref<any>(null)
+// 初始为 true：SSR 阶段 vote 为 null，若 loading=false 会立即渲染"投票信息加载失败"
+// 客户端 onMounted 加载完成后才会显示真实内容，避免首屏闪烁与 SEO 误导
+const loading = ref(true)
+// ponytail: 显式声明 topics 为 string[]，让 v-for 索引 idx 推断为 number
+// 其余字段用 [key: string]: any 兼容服务端返回的动态结构
+interface VoteData {
+  topics: string[]
+  [key: string]: any
+}
+const vote = ref<VoteData | null>(null)
 const myRecord = ref<any>(null)
 const submitting = ref(false)
 const submitted = ref(false)
@@ -130,15 +138,15 @@ onMounted(() => loadData())
 
       <!-- ═══ 投票不存在 ═══ -->
       <div v-if="!vote" class="glass-card p-8 mt-10 text-center">
-        <UIcon name="i-lucide-alert-circle" class="w-10 h-10 text-white/40 mx-auto mb-3" />
-        <p class="text-white/70 text-sm">投票信息加载失败</p>
+        <UIcon name="i-lucide-alert-circle" class="w-10 h-10 text-[var(--color-text-muted)] mx-auto mb-3" />
+        <p class="text-[var(--color-text-secondary)] text-sm">投票信息加载失败</p>
       </div>
 
       <!-- ═══ 投票未开放 ═══ -->
       <div v-else-if="vote.status !== 'open'" class="glass-card p-8 mt-10 text-center">
-        <UIcon name="i-lucide-lock" class="w-10 h-10 text-white/40 mx-auto mb-3" />
-        <h2 class="text-lg font-semibold text-white mb-2">投票未开放</h2>
-        <p class="text-sm text-white/50">该投票当前状态：{{ vote.status === 'draft' ? '草稿' : '已关闭' }}</p>
+        <UIcon name="i-lucide-lock" class="w-10 h-10 text-[var(--color-text-muted)] mx-auto mb-3" />
+        <h2 class="text-lg font-semibold text-[var(--color-text-primary)] mb-2">投票未开放</h2>
+        <p class="text-sm text-[var(--color-text-muted)]">该投票当前状态：{{ vote.status === 'draft' ? '草稿' : '已关闭' }}</p>
       </div>
 
       <!-- ═══ 投票已截止 ═══ -->
@@ -146,9 +154,9 @@ onMounted(() => loadData())
         v-else-if="vote.deadline && new Date(vote.deadline) < new Date()"
         class="glass-card p-8 mt-10 text-center"
       >
-        <UIcon name="i-lucide-calendar-x" class="w-10 h-10 text-white/40 mx-auto mb-3" />
-        <h2 class="text-lg font-semibold text-white mb-2">投票已截止</h2>
-        <p class="text-sm text-white/50">截止时间为 {{ formatDate(vote.deadline) }}</p>
+        <UIcon name="i-lucide-calendar-x" class="w-10 h-10 text-[var(--color-text-muted)] mx-auto mb-3" />
+        <h2 class="text-lg font-semibold text-[var(--color-text-primary)] mb-2">投票已截止</h2>
+        <p class="text-sm text-[var(--color-text-muted)]">截止时间为 {{ formatDate(vote.deadline) }}</p>
       </div>
 
       <!-- ═══ 已投票（登录用户） ═══ -->
@@ -156,13 +164,13 @@ onMounted(() => loadData())
         <div class="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
           <UIcon name="i-lucide-check" class="w-9 h-9 text-green-400" />
         </div>
-        <h2 class="text-xl font-bold text-white mb-2">您已参与过此投票</h2>
-        <p class="text-sm text-white/60 mb-6">您的选择：</p>
-        <div class="bg-white/5 rounded-lg p-4 mb-6 text-left max-w-sm mx-auto space-y-2">
+        <h2 class="text-xl font-bold text-[var(--color-text-primary)] mb-2">您已参与过此投票</h2>
+        <p class="text-sm text-[var(--color-text-secondary)] mb-6">您的选择：</p>
+        <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 mb-6 text-left max-w-sm mx-auto space-y-2">
           <div
             v-for="idx in myRecord.topicIndices"
             :key="idx"
-            class="flex items-center gap-2 text-sm text-white/90"
+            class="flex items-center gap-2 text-sm text-[var(--color-text-primary)]"
           >
             <UIcon name="i-lucide-check-circle-2" class="w-4 h-4 text-green-400" />
             {{ vote.topics[idx] }}
@@ -178,8 +186,8 @@ onMounted(() => loadData())
         <div class="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
           <UIcon name="i-lucide-check" class="w-9 h-9 text-green-400" />
         </div>
-        <h2 class="text-xl font-bold text-white mb-2">投票成功</h2>
-        <p class="text-sm text-white/60 mb-6">感谢您的参与！</p>
+        <h2 class="text-xl font-bold text-[var(--color-text-primary)] mb-2">投票成功</h2>
+        <p class="text-sm text-[var(--color-text-secondary)] mb-6">感谢您的参与！</p>
         <UButton color="primary" variant="outline" @click="() => { navigateTo('/') }">
           返回首页
         </UButton>
@@ -196,7 +204,7 @@ onMounted(() => loadData())
             {{ vote.title }}
           </h1>
           <!-- 元信息 -->
-          <div class="flex flex-wrap items-center gap-3 mt-3 text-xs text-white/50">
+          <div class="flex flex-wrap items-center gap-3 mt-3 text-xs text-[var(--color-text-muted)]">
             <span class="flex items-center gap-1">
               <UIcon name="i-lucide-users" class="w-3.5 h-3.5" />
               {{ allowedVoterTypes.map(t => voterTypeLabel[t] || t).join(' / ') }}
@@ -215,23 +223,23 @@ onMounted(() => loadData())
             </span>
           </div>
           <!-- 关联比赛信息 -->
-          <div v-if="vote.match" class="mt-3 px-3 py-2 bg-white/5 rounded-lg flex items-center gap-2 text-xs text-white/60">
+          <div v-if="vote.match" class="mt-3 px-3 py-2 bg-[var(--color-bg-secondary)] rounded-lg flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
             <UIcon name="i-lucide-swords" class="w-3.5 h-3.5" />
             第 {{ vote.match.round }} 轮：{{ vote.match.teamA || '?' }} vs {{ vote.match.teamB || '?' }}
           </div>
           <!-- 说明 -->
           <div v-if="vote.description" class="mt-4 glass-card p-4">
-            <p class="text-xs text-white/40 mb-1 flex items-center gap-1">
+            <p class="text-xs text-[var(--color-text-muted)] mb-1 flex items-center gap-1">
               <UIcon name="i-lucide-info" class="w-3.5 h-3.5" />投票说明
             </p>
-            <p class="text-sm text-white/80 whitespace-pre-line">{{ vote.description }}</p>
+            <p class="text-sm text-[var(--color-text-primary)] whitespace-pre-line">{{ vote.description }}</p>
           </div>
         </header>
 
         <!-- 投票主体 -->
         <main class="space-y-6 pb-12">
           <!-- 登录状态提示 -->
-          <div v-if="!isLoggedIn" class="glass-card p-3 flex items-center gap-2 text-xs text-white/60">
+          <div v-if="!isLoggedIn" class="glass-card p-3 flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
             <UIcon name="i-lucide-info" class="w-4 h-4 text-indigo-400 shrink-0" />
             <span>
               当前为公开投票，请填写昵称后提交。
@@ -243,10 +251,10 @@ onMounted(() => loadData())
           <!-- 候选辩题列表 -->
           <UCard>
             <template #header>
-              <h2 class="text-base font-semibold text-white flex items-center gap-2">
-                <UIcon name="i-lucide-message-circle-question" class="w-4 h-4 text-white/40" />
+              <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                <UIcon name="i-lucide-message-circle-question" class="w-4 h-4 text-[var(--color-text-muted)]" />
                 选择辩题
-                <span class="text-xs font-normal text-white/40">
+                <span class="text-xs font-normal text-[var(--color-text-muted)]">
                   （{{ vote.multipleChoice ? '可多选' : '单选' }}）
                 </span>
               </h2>
@@ -259,7 +267,7 @@ onMounted(() => loadData())
                 class="cursor-pointer rounded-lg border-2 p-4 transition-colors flex items-start gap-3"
                 :class="selectedIndices.includes(idx)
                   ? 'border-indigo-500 bg-indigo-500/10'
-                  : 'border-white/10 hover:border-white/20'"
+                  : 'border-[var(--color-border)] hover:border-[var(--color-border)]'"
                 @click="toggleTopic(idx)"
               >
                 <!-- 选择标识 -->
@@ -277,10 +285,10 @@ onMounted(() => loadData())
                 </div>
                 <!-- 辩题文本 -->
                 <div class="flex-1">
-                  <p class="text-sm text-white/90 leading-relaxed">{{ topic }}</p>
+                  <p class="text-sm text-[var(--color-text-primary)] leading-relaxed">{{ topic }}</p>
                 </div>
                 <!-- 序号 -->
-                <span class="text-xs text-white/30 shrink-0">#{{ idx + 1 }}</span>
+                <span class="text-xs text-[var(--color-text-muted)] shrink-0">#{{ idx + 1 }}</span>
               </div>
             </div>
           </UCard>
@@ -288,14 +296,14 @@ onMounted(() => loadData())
           <!-- 未登录用户：昵称与身份 -->
           <UCard v-if="!isLoggedIn">
             <template #header>
-              <h2 class="text-base font-semibold text-white flex items-center gap-2">
-                <UIcon name="i-lucide-user" class="w-4 h-4 text-white/40" />
+              <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                <UIcon name="i-lucide-user" class="w-4 h-4 text-[var(--color-text-muted)]" />
                 投票者信息
               </h2>
             </template>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs text-white/40 mb-1">昵称 <span class="text-red-500">*</span></label>
+                <label class="block text-xs text-[var(--color-text-muted)] mb-1">昵称 <span class="text-red-500">*</span></label>
                 <UInput
                   v-model="voterName"
                   placeholder="请输入您的昵称"
@@ -304,15 +312,23 @@ onMounted(() => loadData())
                 />
               </div>
               <div v-if="allowedVoterTypes.includes('judge') || allowedVoterTypes.includes('debater')">
-                <label class="block text-xs text-white/40 mb-1">身份（选填）</label>
-                <select
-                  v-model="selfVoterType"
-                  class="w-full px-3 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/5 text-white/90"
-                >
-                  <option value="public">公开投票</option>
-                  <option v-if="allowedVoterTypes.includes('judge')" value="judge">我是评委</option>
-                  <option v-if="allowedVoterTypes.includes('debater')" value="debater">我是辩手</option>
-                </select>
+                <label class="block text-xs text-[var(--color-text-muted)] mb-1">身份（选填）</label>
+                <!-- USelect 为客户端组件，且 items 依赖 allowedVoterTypes（运行时才有数据），用 ClientOnly 包裹 -->
+                <ClientOnly>
+                  <USelect
+                    v-model="selfVoterType"
+                    :items="[
+                      { label: '公开投票', value: 'public' },
+                      ...(allowedVoterTypes.includes('judge') ? [{ label: '我是评委', value: 'judge' }] : []),
+                      ...(allowedVoterTypes.includes('debater') ? [{ label: '我是辩手', value: 'debater' }] : []),
+                    ]"
+                    class="w-full"
+                    :ui="{ base: 'input-glass' }"
+                  />
+                  <template #fallback>
+                    <div class="w-full h-8 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"></div>
+                  </template>
+                </ClientOnly>
               </div>
             </div>
           </UCard>
@@ -320,10 +336,10 @@ onMounted(() => loadData())
           <!-- 实时结果（若 showResults=true） -->
           <UCard v-if="vote.stats && vote.showResults && vote.stats.results.length > 0">
             <template #header>
-              <h2 class="text-base font-semibold text-white flex items-center gap-2">
-                <UIcon name="i-lucide-bar-chart-3" class="w-4 h-4 text-white/40" />
+              <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                <UIcon name="i-lucide-bar-chart-3" class="w-4 h-4 text-[var(--color-text-muted)]" />
                 实时统计
-                <span class="text-xs font-normal text-white/40">（共 {{ vote.stats.total }} 票）</span>
+                <span class="text-xs font-normal text-[var(--color-text-muted)]">（共 {{ vote.stats.total }} 票）</span>
               </h2>
             </template>
             <div class="space-y-3">
@@ -332,10 +348,10 @@ onMounted(() => loadData())
                 :key="r.index"
               >
                 <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm text-white/80 flex-1 truncate">{{ r.topic }}</span>
+                  <span class="text-sm text-[var(--color-text-primary)] flex-1 truncate">{{ r.topic }}</span>
                   <span class="text-sm text-indigo-400 ml-2">{{ r.count }} 票 ({{ r.percent }}%)</span>
                 </div>
-                <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <div class="h-1.5 bg-[var(--color-bg-secondary)] rounded-full overflow-hidden">
                   <div
                     class="h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full transition-all"
                     :style="{ width: r.percent + '%' }"

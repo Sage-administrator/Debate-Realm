@@ -10,11 +10,11 @@ export default defineEventHandler(async (event) => {
     const { oldPassword, newPassword } = await readBody<{ oldPassword: string; newPassword: string }>(event)
 
     if (!oldPassword || !newPassword) {
-      throw createError({ statusCode: 400, statusMessage: '旧密码和新密码不能为空' })
+      throw createError({ statusCode: 400, message: '旧密码和新密码不能为空' })
     }
 
     if (newPassword.length < 6) {
-      throw createError({ statusCode: 400, statusMessage: '新密码长度至少6位' })
+      throw createError({ statusCode: 400, message: '新密码长度至少6位' })
     }
 
     const dbUser = await prisma.user.findUnique({
@@ -22,12 +22,12 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!dbUser) {
-      throw createError({ statusCode: 404, statusMessage: '用户不存在' })
+      throw createError({ statusCode: 404, message: '用户不存在' })
     }
 
     const isValid = await comparePassword(oldPassword, dbUser.password)
     if (!isValid) {
-      throw createError({ statusCode: 401, statusMessage: '旧密码错误' })
+      throw createError({ statusCode: 401, message: '旧密码错误' })
     }
 
     const hashedPassword = await hashPassword(newPassword)
@@ -51,6 +51,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Change password error:', error)
-    throw createError({ statusCode: 500, statusMessage: '修改密码失败' })
+    throw createError({ statusCode: 500, message: '修改密码失败' })
   }
 })

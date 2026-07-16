@@ -1,4 +1,4 @@
-// ════════════════════════════════════════════════════
+﻿// ════════════════════════════════════════════════════
 // POST /api/bot/arena/close — 关闭当前子频道的赛场
 // 请求体：{ channelId: "子频道ID（必填）", guildId?: "频道ID（仅用于 QQ API）" }
 // ════════════════════════════════════════════════════
@@ -13,12 +13,12 @@ export default defineEventHandler(async (event) => {
     const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
-      throw createError({ statusCode: 403, statusMessage: '仅团队管理员可关闭赛场' })
+      throw createError({ statusCode: 403, message: '仅团队管理员可关闭赛场' })
     }
 
     const teamId = currentUser.teamId
     if (!teamId) {
-      throw createError({ statusCode: 400, statusMessage: '用户不属于任何团队' })
+      throw createError({ statusCode: 400, message: '用户不属于任何团队' })
     }
 
     const team = await prisma.team.findUnique({
@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!team || team.mode !== 'qq_bot') {
-      throw createError({ statusCode: 400, statusMessage: '仅 QQ 频道模式团队可关闭赛场' })
+      throw createError({ statusCode: 400, message: '仅 QQ 频道模式团队可关闭赛场' })
     }
 
     const body = await readBody(event)
@@ -35,24 +35,24 @@ export default defineEventHandler(async (event) => {
     const guildId = body.guildId || ''      // 频道 ID（仅用于 QQ API）
 
     if (!channelId) {
-      throw createError({ statusCode: 400, statusMessage: '请提供子频道 ID（channelId）' })
+      throw createError({ statusCode: 400, message: '请提供子频道 ID（channelId）' })
     }
 
     const botInstance = getBotInstance(teamId)
     if (!botInstance || !botInstance.config) {
-      throw createError({ statusCode: 400, statusMessage: 'Bot 未启动，请先连接 Bot' })
+      throw createError({ statusCode: 400, message: 'Bot 未启动，请先连接 Bot' })
     }
 
     const result = await closeArena(prisma, botInstance.config, channelId, guildId, teamId)
 
     if (!result.success) {
-      throw createError({ statusCode: 400, statusMessage: result.message })
+      throw createError({ statusCode: 400, message: result.message })
     }
 
     return result
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Arena Close] 关闭赛场失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '关闭赛场失败' })
+    throw createError({ statusCode: 500, message: '关闭赛场失败' })
   }
 })

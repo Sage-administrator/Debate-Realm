@@ -10,24 +10,24 @@ export default defineEventHandler(async (event) => {
     const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'system_admin') {
-      throw createError({ statusCode: 403, statusMessage: '仅系统管理员可重置密码' })
+      throw createError({ statusCode: 403, message: '仅系统管理员可重置密码' })
     }
 
     const id = getRouterParam(event, 'id')!
     const { newPassword } = await readBody<{ newPassword: string }>(event)
 
     if (!newPassword) {
-      throw createError({ statusCode: 400, statusMessage: '新密码不能为空' })
+      throw createError({ statusCode: 400, message: '新密码不能为空' })
     }
 
     if (newPassword.length < 6) {
-      throw createError({ statusCode: 400, statusMessage: '密码长度至少6位' })
+      throw createError({ statusCode: 400, message: '密码长度至少6位' })
     }
 
     const user = await prisma.user.findUnique({ where: { id } })
 
     if (!user) {
-      throw createError({ statusCode: 404, statusMessage: '用户不存在' })
+      throw createError({ statusCode: 404, message: '用户不存在' })
     }
 
     const hashedPassword = await hashPassword(newPassword)
@@ -48,6 +48,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Reset password error:', error)
-    throw createError({ statusCode: 500, statusMessage: '重置密码失败' })
+    throw createError({ statusCode: 500, message: '重置密码失败' })
   }
 })

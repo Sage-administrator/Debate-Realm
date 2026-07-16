@@ -1,3 +1,8 @@
+/**
+ * useTopicVote — 辩题投票相关接口集合
+ * 涵盖：投票列表/详情查询、提交投票、统计查询、投票 CRUD（管理员）等
+ * 部分接口支持未登录的公开投票场景
+ */
 export function useTopicVote() {
   const store = useAuthStore()
 

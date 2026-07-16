@@ -3,7 +3,7 @@ import { prisma } from '../../../lib/prisma'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
-  if (!id) throw createError({ statusCode: 400, statusMessage: '缺少赛事ID' })
+  if (!id) throw createError({ statusCode: 400, message: '缺少赛事ID' })
 
   let template = await prisma.timerTemplate.findUnique({
     where: { tournamentId: id },

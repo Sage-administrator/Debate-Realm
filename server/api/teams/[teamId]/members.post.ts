@@ -11,26 +11,26 @@ export default defineEventHandler(async (event) => {
     const { username, password } = await readBody<{ username: string; password: string }>(event)
 
     if (!username || !password) {
-      throw createError({ statusCode: 400, statusMessage: '用户名和密码不能为空' })
+      throw createError({ statusCode: 400, message: '用户名和密码不能为空' })
     }
 
     if (password.length < 6) {
-      throw createError({ statusCode: 400, statusMessage: '密码长度至少6位' })
+      throw createError({ statusCode: 400, message: '密码长度至少6位' })
     }
 
     const team = await prisma.team.findUnique({ where: { id } })
 
     if (!team) {
-      throw createError({ statusCode: 404, statusMessage: '团队不存在' })
+      throw createError({ statusCode: 404, message: '团队不存在' })
     }
 
     if (currentUser.role !== 'system_admin' && team.adminId !== currentUser.userId) {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     const existingUser = await prisma.user.findUnique({ where: { username } })
     if (existingUser) {
-      throw createError({ statusCode: 400, statusMessage: '用户名已存在' })
+      throw createError({ statusCode: 400, message: '用户名已存在' })
     }
 
     const hashedPassword = await hashPassword(password)
@@ -58,6 +58,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Add member error:', error)
-    throw createError({ statusCode: 500, statusMessage: '添加子账号失败' })
+    throw createError({ statusCode: 500, message: '添加子账号失败' })
   }
 })

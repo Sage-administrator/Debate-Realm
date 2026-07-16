@@ -1,4 +1,4 @@
-import { prisma } from '../../lib/prisma'
+﻿import { prisma } from '../../lib/prisma'
 import { requireRole } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
@@ -25,6 +25,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get teams error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取团队列表失败' })
+    throw createError({ statusCode: 500, message: '获取团队列表失败' })
   }
 })

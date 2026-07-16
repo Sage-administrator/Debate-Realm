@@ -18,6 +18,9 @@ export default defineEventHandler(async (event) => {
       id: m.id,
       userId: m.userId,
       username: m.user.username,
+      nickname: m.user.nickname,
+      email: m.user.email,
+      avatar: m.user.avatar,
       role: m.user.role,
       assignedMatches: m.assignedMatches.map((am) => ({
         matchId: am.matchId,
@@ -28,6 +31,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get team members error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取团队成员失败' })
+    throw createError({ statusCode: 500, message: '获取团队成员失败' })
   }
 })

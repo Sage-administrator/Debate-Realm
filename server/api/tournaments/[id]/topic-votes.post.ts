@@ -1,6 +1,7 @@
 import { readBody } from 'h3'
 import { prisma } from '../../../lib/prisma'
 import { requireWriteTournament } from '../../../utils/tournament-auth'
+import { syncTopicVoteQuestionnaire } from '../../../utils/questionnaire'
 
 // 管理端：创建辩题投票
 // 支持赛事级（不传 matchId）与场次级（传 matchId）两种粒度
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
 
     // 3. 校验：标题必填
     if (!body.title?.trim()) {
-      throw createError({ statusCode: 400, statusMessage: '投票标题不能为空' })
+      throw createError({ statusCode: 400, message: '投票标题不能为空' })
     }
 
     // 4. 校验：候选辩题至少 2 个且不重复
@@ -35,7 +36,7 @@ export default defineEventHandler(async (event) => {
     // 去重
     const uniqueTopics = [...new Set(topics)]
     if (uniqueTopics.length < 2) {
-      throw createError({ statusCode: 400, statusMessage: '至少需要 2 个候选辩题' })
+      throw createError({ statusCode: 400, message: '至少需要 2 个候选辩题' })
     }
 
     // 5. 校验：若指定 matchId，需确认该比赛属于本赛事
@@ -45,7 +46,7 @@ export default defineEventHandler(async (event) => {
         select: { id: true },
       })
       if (!match) {
-        throw createError({ statusCode: 400, statusMessage: '指定的比赛不存在或不属于本赛事' })
+        throw createError({ statusCode: 400, message: '指定的比赛不存在或不属于本赛事' })
       }
     }
 
@@ -54,7 +55,7 @@ export default defineEventHandler(async (event) => {
     if (body.deadline) {
       deadline = new Date(body.deadline)
       if (isNaN(deadline.getTime())) {
-        throw createError({ statusCode: 400, statusMessage: '截止时间格式无效' })
+        throw createError({ statusCode: 400, message: '截止时间格式无效' })
       }
     }
 
@@ -75,6 +76,9 @@ export default defineEventHandler(async (event) => {
       },
     })
 
+    // 8. 同步创建通用投票问卷定义，投票也归入统一问卷系统。
+    await syncTopicVoteQuestionnaire(prisma, id, vote.id, user.userId)
+
     setResponseStatus(event, 201)
     return {
       id: vote.id,
@@ -93,6 +97,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Create topic vote error:', error)
-    throw createError({ statusCode: 500, statusMessage: '创建辩题投票失败' })
+    throw createError({ statusCode: 500, message: '创建辩题投票失败' })
   }
 })

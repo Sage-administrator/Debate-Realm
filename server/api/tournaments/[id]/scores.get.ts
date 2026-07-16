@@ -3,12 +3,12 @@
 // 请求参数：?matchId=xxx（可选，指定比赛）&type=rankings（可选，获取排名）
 // ════════════════════════════════════════════════════
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
 import { getMatchScores, getRankings, getTournamentScoreStats } from '../../../lib/bot-scoring'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    const currentUser = await getUserFromEventWithSession(event, prisma)
     const tournamentId = getRouterParam(event, 'id')!
 
     // 权限校验：system_admin / 团队 admin / 团队 subaccount（只读） 可查看评分
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
       currentUser.role !== 'system_admin' &&
       currentUser.role !== 'subaccount'
     ) {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     const query = getQuery(event)
@@ -47,6 +47,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Scores Get] 查询评分失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '查询评分失败' })
+    throw createError({ statusCode: 500, message: '查询评分失败' })
   }
 })

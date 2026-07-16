@@ -3,13 +3,18 @@
 // - 接收上传的图片/音频文件
 // - 将文件保存到 public/uploads 文件夹
 // - 返回文件的相对路径，供前端保存到数据库
-// 注意：这是一个简化的文件上传实现，不涉及复杂的权限控制
+// 权限：需要登录才能上传文件
 
 import fs from 'node:fs'
 import path from 'node:path'
+import { prisma } from '../lib/prisma'
+import { getUserFromEventWithSession } from '../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
+    // 鉴权：必须登录才能上传文件
+    await getUserFromEventWithSession(event, prisma)
+
     // 解析 multipart/form-data 请求体
     const formData = await readFormData(event)
     const file = formData.get('file') as File | null
@@ -18,7 +23,7 @@ export default defineEventHandler(async (event) => {
     if (!file) {
       throw createError({
         statusCode: 400,
-        statusMessage: '未找到上传的文件',
+        message: '未找到上传的文件',
       })
     }
 
@@ -30,7 +35,7 @@ export default defineEventHandler(async (event) => {
     if (file.size > maxSize) {
       throw createError({
         statusCode: 400,
-        statusMessage: '文件大小超过限制（最大10MB）',
+        message: '文件大小超过限制（最大10MB）',
       })
     }
 
@@ -41,7 +46,7 @@ export default defineEventHandler(async (event) => {
     if (!isImage && !isAudio) {
       throw createError({
         statusCode: 400,
-        statusMessage: '不支持的文件类型（仅支持图片和音频文件）',
+        message: '不支持的文件类型（仅支持图片和音频文件）',
       })
     }
 
@@ -51,7 +56,7 @@ export default defineEventHandler(async (event) => {
     let targetDir = uploadBaseDir
 
     // 根据 folder 参数或文件类型确定子文件夹
-    if (folder === 'images' || folder === 'logos' || folder === 'audio') {
+    if (folder === 'images' || folder === 'logos' || folder === 'audio' || folder === 'chat') {
       targetDir = path.join(uploadBaseDir, folder)
     } else if (isImage) {
       targetDir = path.join(uploadBaseDir, 'images')
@@ -97,7 +102,7 @@ export default defineEventHandler(async (event) => {
     console.error('[Upload API] 文件上传失败:', error)
     throw createError({
       statusCode: error.statusCode || 500,
-      statusMessage: error.statusMessage || '文件上传失败',
+      message: error.message || error.statusMessage || '文件上传失败',
     })
   }
 })

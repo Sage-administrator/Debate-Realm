@@ -51,12 +51,12 @@ export default defineEventHandler(async (event) => {
       include: { teams: true, matches: true, team: true },
     })
     if (!tournament) {
-      throw createError({ statusCode: 404, statusMessage: '赛事不存在' })
+      throw createError({ statusCode: 404, message: '赛事不存在' })
     }
 
     // 权限校验：使用统一的权限判定函数
     if (!canWriteTournament(user, tournament, tournament.team)) {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     // 2) 更新赛事配置（topicPool/groupCount/bestDebaterMode）
@@ -192,6 +192,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('draw-lots error:', error)
-    throw createError({ statusCode: 500, statusMessage: error.message || '抽签失败' })
+    throw createError({ statusCode: 500, message: error.message || '抽签失败' })
   }
 })

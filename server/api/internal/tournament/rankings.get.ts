@@ -1,4 +1,4 @@
-// ════════════════════════════════════════════════════
+﻿// ════════════════════════════════════════════════════
 // GET /api/internal/tournament/rankings — 获取赛事排名
 // 请求参数：?teamId=xxx&internalKey=xxx
 // 由计时程序、Bot 后台等内部模块调用
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     const { teamId, format } = query
 
     if (!teamId) {
-      throw createError({ statusCode: 400, statusMessage: '缺少 teamId 参数' })
+      throw createError({ statusCode: 400, message: '缺少 teamId 参数' })
     }
 
     // 查找团队活跃赛事
@@ -50,6 +50,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Internal Rankings] 获取排名失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取赛事排名失败' })
+    throw createError({ statusCode: 500, message: '获取赛事排名失败' })
   }
 })

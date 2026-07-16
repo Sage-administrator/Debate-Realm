@@ -1,6 +1,7 @@
 import { readBody } from 'h3'
 import { prisma } from '../../lib/prisma'
 import { requireWriteTournament } from '../../utils/tournament-auth'
+import { dedupeTrimmedStrings } from '../../utils/common'
 
 // 更新赛事接口：支持更新基础信息 + 队伍列表 + 评委列表
 export default defineEventHandler(async (event) => {
@@ -38,15 +39,7 @@ export default defineEventHandler(async (event) => {
     // 更新队伍列表（整体替换：先删除旧的，再创建新的）
     if (teams !== undefined) {
       await prisma.tournamentTeam.deleteMany({ where: { tournamentId: id } })
-      // 去重，保留顺序
-      const seen = new Set<string>()
-      const uniqueTeams: string[] = []
-      for (const n of teams) {
-        const trimmed = (n || '').trim()
-        if (!trimmed || seen.has(trimmed)) continue
-        seen.add(trimmed)
-        uniqueTeams.push(trimmed)
-      }
+      const uniqueTeams = dedupeTrimmedStrings(teams)
       if (uniqueTeams.length > 0) {
         await prisma.tournamentTeam.createMany({
           data: uniqueTeams.map((teamName) => ({ tournamentId: id, name: teamName })),
@@ -57,14 +50,7 @@ export default defineEventHandler(async (event) => {
     // 更新评委列表（整体替换）
     if (judges !== undefined) {
       await prisma.tournamentJudge.deleteMany({ where: { tournamentId: id } })
-      const seen = new Set<string>()
-      const uniqueJudges: string[] = []
-      for (const n of judges) {
-        const trimmed = (n || '').trim()
-        if (!trimmed || seen.has(trimmed)) continue
-        seen.add(trimmed)
-        uniqueJudges.push(trimmed)
-      }
+      const uniqueJudges = dedupeTrimmedStrings(judges)
       if (uniqueJudges.length > 0) {
         await prisma.tournamentJudge.createMany({
           data: uniqueJudges.map((judgeName) => ({ tournamentId: id, name: judgeName })),
@@ -76,6 +62,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Update tournament error:', error)
-    throw createError({ statusCode: 500, statusMessage: '更新赛事信息失败' })
+    throw createError({ statusCode: 500, message: '更新赛事信息失败' })
   }
 })

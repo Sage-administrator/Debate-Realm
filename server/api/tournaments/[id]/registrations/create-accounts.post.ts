@@ -28,12 +28,15 @@ export default defineEventHandler(async (event) => {
     const body = await readBody<{ registrationIds?: string[] }>(event)
     const registrationIds = body?.registrationIds
 
-    // 3. 查询已通过审核、尚未创建账号的报名记录（含成员），可按 registrationIds 过滤
+    // 3. 查询已通过审核、尚未创建账号、且已转为参赛队伍的报名记录（含成员），可按 registrationIds 过滤
+    //    注：子账号需绑定到参赛队伍(tournamentTeamId)才能进入对应的队伍聊天房，
+    //    因此仅处理已转换(convertedTeamId 非空)的报名；未转换的报名建号无意义。
     const registrations = await prisma.registration.findMany({
       where: {
         tournamentId: id,
         status: 'approved',
         accountCreated: false,
+        convertedTeamId: { not: null },
         // 若指定了 registrationIds，则仅处理这些报名记录
         ...(registrationIds && registrationIds.length > 0
           ? { id: { in: registrationIds } }
@@ -47,6 +50,8 @@ export default defineEventHandler(async (event) => {
       memberId: string
       memberName: string
       registrationId: string
+      convertedTeamId: string | null
+      teamName: string | null
       username: string
       password: string
       passwordHash: string
@@ -87,6 +92,8 @@ export default defineEventHandler(async (event) => {
           memberId: member.id,
           memberName: member.name,
           registrationId: registration.id,
+          convertedTeamId: registration.convertedTeamId,
+          teamName: registration.teamName,
           username,
           password,
           passwordHash,
@@ -104,14 +111,17 @@ export default defineEventHandler(async (event) => {
 
       await prisma.$transaction(async (tx) => {
         for (const p of pendingForReg) {
-          // d. 创建 User：角色 debater、模式 debater，归属赛事所在团队
+          // d. 创建 User：子账号角色(subaccount)，绑定到其所属参赛队伍(tournamentTeamId)
+          //    同时归属赛事所在全局团队(teamId)，以便能进入赛事页与聊天室
           const newUser = await tx.user.create({
             data: {
               username: p.username,
               password: p.passwordHash,
-              role: 'debater',
+              nickname: p.memberName,
+              role: 'subaccount',
               mode: 'debater',
               teamId: tournament.teamId,
+              tournamentTeamId: p.registration.convertedTeamId,
             },
           })
 
@@ -122,6 +132,26 @@ export default defineEventHandler(async (event) => {
               userId: newUser.id,
             },
           })
+
+          // e2. 确保该队伍的聊天房存在（幂等 upsert）
+          if (p.convertedTeamId) {
+            await tx.chatRoom.upsert({
+              where: {
+                tournamentId_type_tournamentTeamId: {
+                  tournamentId: id,
+                  type: 'team',
+                  tournamentTeamId: p.convertedTeamId,
+                },
+              },
+              create: {
+                tournamentId: id,
+                type: 'team',
+                tournamentTeamId: p.convertedTeamId,
+                name: p.teamName ?? '队伍聊天室',
+              },
+              update: {},
+            })
+          }
 
           // f. 回填 RegistrationMember.userId，建立报名成员与系统用户的关联
           await tx.registrationMember.update({
@@ -156,6 +186,6 @@ export default defineEventHandler(async (event) => {
     // 已知的业务错误（含权限/校验错误）直接抛出
     if (error.statusCode) throw error
     console.error('Create debater accounts error:', error)
-    throw createError({ statusCode: 500, statusMessage: '创建辩手账号失败' })
+    throw createError({ statusCode: 500, message: '创建辩手账号失败' })
   }
 })

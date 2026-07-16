@@ -21,17 +21,17 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    if (!match) throw createError({ statusCode: 404, statusMessage: '比赛不存在' })
-    if (!match.tournament) throw createError({ statusCode: 400, statusMessage: '赛事不存在' })
+    if (!match) throw createError({ statusCode: 404, message: '比赛不存在' })
+    if (!match.tournament) throw createError({ statusCode: 400, message: '赛事不存在' })
 
     // 权限校验：使用统一的权限判定函数
     if (!canWriteTournament(user, match.tournament, match.tournament.team)) {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     // 校验比赛状态
     if (match.status !== 'pending') {
-      throw createError({ statusCode: 400, statusMessage: `比赛状态为「${match.status}」，无法开始` })
+      throw createError({ statusCode: 400, message: `比赛状态为「${match.status}」，无法开始` })
     }
 
     // 更新比赛状态为进行中
@@ -58,6 +58,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('[Match Start] 开始比赛失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '开始比赛失败' })
+    throw createError({ statusCode: 500, message: '开始比赛失败' })
   }
 })

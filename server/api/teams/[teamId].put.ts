@@ -17,12 +17,12 @@ export default defineEventHandler(async (event) => {
     const team = await prisma.team.findUnique({ where: { id } })
 
     if (!team) {
-      throw createError({ statusCode: 404, statusMessage: '团队不存在' })
+      throw createError({ statusCode: 404, message: '团队不存在' })
     }
 
     // 检查权限
     if (currentUser.role !== 'system_admin' && team.adminId !== currentUser.userId) {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     const updatedTeam = await prisma.team.update({
@@ -48,6 +48,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Update team error:', error)
-    throw createError({ statusCode: 500, statusMessage: '更新团队信息失败' })
+    throw createError({ statusCode: 500, message: '更新团队信息失败' })
   }
 })

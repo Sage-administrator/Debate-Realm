@@ -5,10 +5,10 @@ import { requireWriteTournament } from '../../../utils/tournament-auth'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
-  if (!id) throw createError({ statusCode: 400, statusMessage: '缺少赛事ID' })
+  if (!id) throw createError({ statusCode: 400, message: '缺少赛事ID' })
 
   const body = await readBody(event)
-  if (!body) throw createError({ statusCode: 400, statusMessage: '缺少请求体' })
+  if (!body) throw createError({ statusCode: 400, message: '缺少请求体' })
 
   // 权限：系统管理员 或 该赛事所属团队的管理员
   const { user } = await requireWriteTournament(event, prisma, id)
@@ -119,7 +119,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!updatedProject) {
-    throw createError({ statusCode: 500, statusMessage: '保存失败' })
+    throw createError({ statusCode: 500, message: '保存失败' })
   }
 
   return {

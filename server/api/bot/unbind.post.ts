@@ -1,4 +1,4 @@
-// ════════════════════════════════════════════════════
+﻿// ════════════════════════════════════════════════════
 // POST /api/bot/unbind — 解绑 Bot（清除数据库配置 + 删除内存实例）
 // 功能：
 //   1. 校验用户权限（仅团队管理员/system_admin可操作）
@@ -18,12 +18,12 @@ export default defineEventHandler(async (event) => {
     const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     const teamId = currentUser.teamId
     if (!teamId) {
-      throw createError({ statusCode: 400, statusMessage: '用户不属于任何团队' })
+      throw createError({ statusCode: 400, message: '用户不属于任何团队' })
     }
 
     const team = await prisma.team.findUnique({
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!team || team.mode !== 'qq_bot') {
-      throw createError({ statusCode: 400, statusMessage: '仅 QQ 频道模式团队可使用机器人功能' })
+      throw createError({ statusCode: 400, message: '仅 QQ 频道模式团队可使用机器人功能' })
     }
 
     // 1. 断开 WebSocket 并删除实例
@@ -52,6 +52,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Bot Unbind] 解绑失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '解绑 Bot 失败' })
+    throw createError({ statusCode: 500, message: '解绑 Bot 失败' })
   }
 })

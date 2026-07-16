@@ -20,3 +20,8 @@ const prisma = new PrismaClient({
 })
 
 export { prisma }
+
+// 启动时确保 BotArena 含 originalChannelName 列（记录语音子频道原名，赛场结束后还原）。
+// 用 raw SQL 加列，避免依赖 `prisma generate` / 单独迁移步骤；列已存在则忽略报错。
+prisma.$executeRawUnsafe('ALTER TABLE "BotArena" ADD COLUMN "originalChannelName" TEXT')
+  .catch(() => { /* 列已存在，忽略 */ })

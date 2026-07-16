@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
       scheduledAt?: string; venue?: string; teams?: string[]; judges?: string[]
     }>(event)
 
-    if (!name) throw createError({ statusCode: 400, statusMessage: '赛事名称不能为空' })
+    if (!name) throw createError({ statusCode: 400, message: '赛事名称不能为空' })
     // 允许的赛制值；空值时默认为 ''（用户将在赛程页选择具体赛制）
     const validFormats = [
       '',
@@ -26,10 +26,10 @@ export default defineEventHandler(async (event) => {
     const formatToSave = validFormats.includes(format || '') ? (format || '') : ''
 
     const team = await prisma.team.findUnique({ where: { id: teamId } })
-    if (!team) throw createError({ statusCode: 404, statusMessage: '团队不存在' })
+    if (!team) throw createError({ statusCode: 404, message: '团队不存在' })
 
     if (user.role !== 'system_admin' && team.adminId !== user.userId) {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     // 生成8位短ID并查重
@@ -71,6 +71,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Create tournament error:', error)
-    throw createError({ statusCode: 500, statusMessage: '创建赛事失败' })
+    throw createError({ statusCode: 500, message: '创建赛事失败' })
   }
 })

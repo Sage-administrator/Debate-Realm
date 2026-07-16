@@ -1,21 +1,21 @@
 import { prisma } from '../../../../lib/prisma'
-import { getUserFromEvent } from '../../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    const currentUser = await getUserFromEventWithSession(event, prisma)
     const teamId = getRouterParam(event, 'teamId')!
 
     // 获取团队信息
     const team = await prisma.team.findUnique({ where: { id: teamId } })
 
     if (!team) {
-      throw createError({ statusCode: 404, statusMessage: '团队不存在' })
+      throw createError({ statusCode: 404, message: '团队不存在' })
     }
 
     // 权限检查：系统管理员或团队管理员
     if (currentUser.role !== 'system_admin' && team.adminId !== currentUser.userId) {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     // 获取所有子账号（role=subaccount 的 TeamMember）
@@ -57,6 +57,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Cleanup members error:', error)
-    throw createError({ statusCode: 500, statusMessage: '清理子账号失败' })
+    throw createError({ statusCode: 500, message: '清理子账号失败' })
   }
 })

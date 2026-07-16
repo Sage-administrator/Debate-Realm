@@ -17,27 +17,28 @@
 // ════════════════════════════════════════════════════
 import { readBody } from 'h3'
 import { prisma } from '../../lib/prisma'
-import { getUserFromEvent } from '../../utils/auth'
-import { createBotInstance, stopBotInstance, getBotInstance } from '../../lib/bot-ws'
+import { getUserFromEventWithSession } from '../../utils/auth'
+import { createBotInstance, stopBotInstance, getBotInstance, resolveIntents } from '../../lib/bot-ws'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    const currentUser = await getUserFromEventWithSession(event, prisma)
 
     // 仅团队管理员可修改
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     const teamId = currentUser.teamId
     if (!teamId) {
-      throw createError({ statusCode: 400, statusMessage: '用户不属于任何团队' })
+      throw createError({ statusCode: 400, message: '用户不属于任何团队' })
     }
 
     const body = await readBody<{
       botAppId?: string | null
       botAppSecret?: string | null
       botChannelId?: string | null
+      botIsPrivate?: boolean
     }>(event)
 
     const team = await prisma.team.findUnique({
@@ -45,29 +46,32 @@ export default defineEventHandler(async (event) => {
       select: {
         id: true, name: true, mode: true,
         botAppId: true, botAppSecret: true, botChannelId: true,
+        botIsPrivate: true,
       },
     })
 
     if (!team) {
-      throw createError({ statusCode: 404, statusMessage: '团队不存在' })
+      throw createError({ statusCode: 404, message: '团队不存在' })
     }
 
     // 仅 QQ 频道模式团队可使用机器人功能
     if (team.mode !== 'qq_bot') {
-      throw createError({ statusCode: 400, statusMessage: '仅 QQ 频道模式团队可使用机器人功能' })
+      throw createError({ statusCode: 400, message: '仅 QQ 频道模式团队可使用机器人功能' })
     }
 
     // 更新团队 Bot 配置（允许传入 null/空串以清除）
-    const updateData: Record<string, string | null> = {}
+    const updateData: Record<string, string | null | boolean> = {}
     if (body.botAppId !== undefined) updateData.botAppId = body.botAppId || null
     if (body.botAppSecret !== undefined) updateData.botAppSecret = body.botAppSecret || null
     if (body.botChannelId !== undefined) updateData.botChannelId = body.botChannelId || null
+    if (body.botIsPrivate !== undefined) updateData.botIsPrivate = body.botIsPrivate
     const updated = await prisma.team.update({
       where: { id: teamId },
       data: updateData,
       select: {
         id: true, name: true, mode: true,
         botAppId: true, botAppSecret: true, botChannelId: true,
+        botIsPrivate: true,
       },
     })
 
@@ -99,7 +103,8 @@ export default defineEventHandler(async (event) => {
           teamId: updated.id,
           teamName: updated.name,
           channelId: updated.botChannelId,
-          intents: ['PUBLIC_GUILD_MESSAGES'],
+          isPrivate: updated.botIsPrivate ?? false,
+          intents: resolveIntents(updated.botIsPrivate ?? false),
         })
         resultMessage = 'Bot 配置已保存并启动'
         console.log(`[Bot Config] 已为团队「${updated.name}」重启 Bot 实例`)
@@ -124,7 +129,7 @@ export default defineEventHandler(async (event) => {
     console.error('[Bot Config] 更新配置失败:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: '更新机器人配置失败',
+      message: '更新机器人配置失败',
     })
   }
 })

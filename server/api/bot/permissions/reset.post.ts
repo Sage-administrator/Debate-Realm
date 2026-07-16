@@ -1,4 +1,4 @@
-// ════════════════════════════════════════════════════
+﻿// ════════════════════════════════════════════════════
 // POST /api/bot/permissions/reset — 重置所有身份组发言权限
 // 请求体：{ channelId }
 // ════════════════════════════════════════════════════
@@ -13,19 +13,19 @@ export default defineEventHandler(async (event) => {
     const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
-      throw createError({ statusCode: 403, statusMessage: '仅团队管理员可重置权限' })
+      throw createError({ statusCode: 403, message: '仅团队管理员可重置权限' })
     }
 
     const teamId = currentUser.teamId
     if (!teamId) {
-      throw createError({ statusCode: 400, statusMessage: '用户不属于任何团队' })
+      throw createError({ statusCode: 400, message: '用户不属于任何团队' })
     }
 
     const body = await readBody(event)
     const { channelId } = body
 
     if (!channelId) {
-      throw createError({ statusCode: 400, statusMessage: '缺少 channelId 参数' })
+      throw createError({ statusCode: 400, message: '缺少 channelId 参数' })
     }
 
     const team = await prisma.team.findUnique({
@@ -34,12 +34,12 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!team || team.mode !== 'qq_bot') {
-      throw createError({ statusCode: 400, statusMessage: '仅 QQ 频道模式团队可使用' })
+      throw createError({ statusCode: 400, message: '仅 QQ 频道模式团队可使用' })
     }
 
     const botInstance = getBotInstance(teamId)
     if (!botInstance || !botInstance.config) {
-      throw createError({ statusCode: 400, statusMessage: 'Bot 未启动，请先连接 Bot' })
+      throw createError({ statusCode: 400, message: 'Bot 未启动，请先连接 Bot' })
     }
 
     const result = await resetAllSpeakPermissions(
@@ -52,13 +52,13 @@ export default defineEventHandler(async (event) => {
     )
 
     if (!result.success) {
-      throw createError({ statusCode: 400, statusMessage: result.message })
+      throw createError({ statusCode: 400, message: result.message })
     }
 
     return result
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Reset Permissions] 重置失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '重置权限失败' })
+    throw createError({ statusCode: 500, message: '重置权限失败' })
   }
 })

@@ -1,4 +1,4 @@
-// ════════════════════════════════════════════════════
+﻿// ════════════════════════════════════════════════════
 // GET /api/internal/tournament/topics — 获取辩题库
 // 请求参数：?teamId=xxx&internalKey=xxx
 // ════════════════════════════════════════════════════
@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     const { teamId } = query
 
     if (!teamId) {
-      throw createError({ statusCode: 400, statusMessage: '缺少 teamId 参数' })
+      throw createError({ statusCode: 400, message: '缺少 teamId 参数' })
     }
 
     const result = await getTopicPool(prisma, teamId as string)
@@ -25,6 +25,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Internal Topics] 获取辩题失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取辩题失败' })
+    throw createError({ statusCode: 500, message: '获取辩题失败' })
   }
 })

@@ -1,10 +1,12 @@
 // 中国地级市数据 - 按省份组织的省市二级级联数据
 
+/** 省市分组结构：一个省份对应其下辖的城市列表 */
 export interface CityGroup {
   province: string
   cities: string[]
 }
 
+/** 省市二级级联数据源（直辖市 cities 为空数组，"线上"为特殊占项） */
 export const cityData: CityGroup[] = [
   {
     province: '线上',

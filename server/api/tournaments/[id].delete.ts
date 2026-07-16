@@ -13,6 +13,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Delete tournament error:', error)
-    throw createError({ statusCode: 500, statusMessage: '删除赛事失败' })
+    throw createError({ statusCode: 500, message: '删除赛事失败' })
   }
 })

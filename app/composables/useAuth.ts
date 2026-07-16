@@ -38,6 +38,9 @@ export interface LoginResponse {
   user: {
     id: string
     username: string
+    nickname: string | null
+    email: string | null
+    avatar: string | null
     role: string
     mode: string
     team: { id: string; name: string; mode: string } | null
@@ -100,6 +103,9 @@ export function useAuth() {
       const data = await $fetch<{
         id: string
         username: string
+        nickname: string | null
+        email: string | null
+        avatar: string | null
         role: string
         mode: string
         team: { id: string; name: string; mode: string } | null
@@ -121,6 +127,9 @@ export function useAuth() {
     }
   }
 
+  /**
+   * 修改密码 —— 需校验旧密码，调用 /api/auth/password 接口更新
+   */
   async function changePassword(oldPassword: string, newPassword: string) {
     await $fetch('/api/auth/password', {
       method: 'PUT',
@@ -131,11 +140,43 @@ export function useAuth() {
     })
   }
 
+  /**
+   * 更新个人信息（用户名、昵称、邮箱、头像 URL）
+   * 成功后同步更新本地 store
+   */
+  async function updateProfile(payload: {
+    username?: string
+    nickname?: string | null
+    email?: string | null
+    avatar?: string | null
+  }) {
+    const data = await $fetch<{
+      id: string
+      username: string
+      nickname: string | null
+      email: string | null
+      avatar: string | null
+      role: string
+      mode: string
+      team: { id: string; name: string; mode: string } | null
+    }>('/api/auth/profile', {
+      method: 'PUT',
+      body: payload,
+      headers: {
+        Authorization: `Bearer ${store.token}`,
+      },
+    })
+    // 同步更新本地用户信息（保留原 token）
+    store.setAuth(store.token!, data)
+    return data
+  }
+
   return {
     login,
     confirmLogin,
     logout,
     fetchUser,
     changePassword,
+    updateProfile,
   }
 }

@@ -3,7 +3,7 @@ import { prisma } from '../../../lib/prisma'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
-  if (!id) throw createError({ statusCode: 400, statusMessage: '缺少赛事ID' })
+  if (!id) throw createError({ statusCode: 400, message: '缺少赛事ID' })
 
   // 1. 查找关联的计时器项目（通过 tournamentId）
   let project = await prisma.debateTimerProject.findUnique({
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
       include: { teams: true },
     })
     if (!tournament) {
-      throw createError({ statusCode: 404, statusMessage: '赛事不存在' })
+      throw createError({ statusCode: 404, message: '赛事不存在' })
     }
 
     // 创建默认配置（空项目，有基础信息）

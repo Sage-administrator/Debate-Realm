@@ -1,11 +1,11 @@
 import { prisma } from '../../lib/prisma'
-import { getUserFromEvent } from '../../utils/auth'
+import { getUserFromEventWithSession } from '../../utils/auth'
 import { canReadTournament } from '../../utils/tournament-auth'
 
 export default defineEventHandler(async (event) => {
   try {
     const id = getRouterParam(event, 'id')!
-    const user = getUserFromEvent(event)
+    const user = await getUserFromEventWithSession(event, prisma)
 
     // 单次查询：同时获取权限所需字段和业务数据
     const tournament = await prisma.tournament.findUnique({
@@ -20,11 +20,18 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    if (!tournament) throw createError({ statusCode: 404, statusMessage: '赛事不存在' })
+    if (!tournament) throw createError({ statusCode: 404, message: '赛事不存在' })
 
     // 权限检查：复用已查询的 tournament.teamId
     if (!canReadTournament(user, tournament)) {
-      throw createError({ statusCode: 403, statusMessage: '无权限查看此赛事' })
+      // 参赛者（已报名用户）也可查看赛事信息（用于聊天室等参赛者功能）
+      const reg = await prisma.registration.findFirst({
+        where: { userId: user.userId, tournamentId: id },
+        select: { id: true },
+      })
+      if (!reg) {
+        throw createError({ statusCode: 403, message: '无权限查看此赛事' })
+      }
     }
 
     return {
@@ -43,8 +50,10 @@ export default defineEventHandler(async (event) => {
       registrationOpen: tournament.registrationOpen,
       registrationDeadline: tournament.registrationDeadline,
       isPublic: tournament.isPublic,
+      registrationType: tournament.registrationType,
       teamSize: tournament.teamSize,
       registrationInfo: tournament.registrationInfo,
+      // 统一字段配置（系统字段 + 自定义字段，已包含所有字段属性）
       fields: (tournament as any).regFields || [],
       matches: tournament.matches.map((m) => ({
         id: m.id, round: m.round, orderNum: m.orderNum,
@@ -61,6 +70,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get tournament error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取赛事详情失败' })
+    throw createError({ statusCode: 500, message: '获取赛事详情失败' })
   }
 })

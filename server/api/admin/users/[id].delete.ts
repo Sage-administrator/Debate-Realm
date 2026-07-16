@@ -8,13 +8,13 @@ export default defineEventHandler(async (event) => {
     const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'system_admin') {
-      throw createError({ statusCode: 403, statusMessage: '仅系统管理员可删除用户' })
+      throw createError({ statusCode: 403, message: '仅系统管理员可删除用户' })
     }
 
     const id = getRouterParam(event, 'id')!
 
     if (id === currentUser.userId) {
-      throw createError({ statusCode: 400, statusMessage: '不能删除自己' })
+      throw createError({ statusCode: 400, message: '不能删除自己' })
     }
 
     const user = await prisma.user.findUnique({
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!user) {
-      throw createError({ statusCode: 404, statusMessage: '用户不存在' })
+      throw createError({ statusCode: 404, message: '用户不存在' })
     }
 
     // 修复：Team.adminId 已建立外键关系（onDelete: Restrict），
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
       const teamNames = user.adminOfTeams.map(t => t.name).join('、')
       throw createError({
         statusCode: 400,
-        statusMessage: `无法删除该用户，因为该用户是以下团队的管理员：${teamNames}。请先将团队管理员转移给其他用户后再删除。`,
+        message: `无法删除该用户，因为该用户是以下团队的管理员：${teamNames}。请先将团队管理员转移给其他用户后再删除。`,
       })
     }
 
@@ -57,6 +57,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Delete user error:', error)
-    throw createError({ statusCode: 500, statusMessage: '删除用户失败' })
+    throw createError({ statusCode: 500, message: '删除用户失败' })
   }
 })

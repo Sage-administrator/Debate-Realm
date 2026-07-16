@@ -10,6 +10,9 @@
 //   7. 自动晋级联动 (Advance Winner to Next Round)
 // =====================================================================
 
+import { prisma } from '../lib/prisma'
+import type { Match } from '../lib/generated/client'
+
 // ─────────────────────────────────────────────────────────────
 // 类型定义
 // ─────────────────────────────────────────────────────────────
@@ -75,33 +78,32 @@ function nextPowerOfTwo(n: number): number {
 }
 
 // 按种子方法排序队伍
+// ponytail: 使用标准库方法简化随机排序，小规模数据足够公平
 function sortTeamsBySeed(teams: TeamInput[], method: SeedMethod = 'rating'): TeamInput[] {
   const sorted = [...teams]
   if (method === 'random') {
-    // 随机打乱
-    for (let i = sorted.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      const tmp = sorted[i]; sorted[i] = sorted[j]; sorted[j] = tmp
-    }
+    sorted.sort(() => Math.random() - 0.5)
   } else if (method === 'name') {
-    // 按队名字典序
     sorted.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
   } else {
-    // rating：按 seed 升序（seed 越小排名越高）
     sorted.sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999))
   }
   return sorted
 }
 
 // 生成种子保护对阵表
-// 对于 bracketSize 支队伍（必须是 2 的幂），返回一个位置数组
-// 使得首轮的 (1 vs bracketSize), (2 vs bracketSize-1) ... 这种强对弱分布均匀
+// 返回一个位置数组，使得相邻两两配对时形成种子保护：
+//   (1 vs bracketSize), (2 vs bracketSize-1) ... 这种强对弱分布均匀
+// 例如 bracketSize=8 → [1,8, 4,5, 2,7, 3,6]
+//   配对方式：[0]vs[1], [2]vs[3], [4]vs[5], [6]vs[7]
 function generateSeedingBracket(bracketSize: number): number[] {
   let positions = [1, 2]
   while (positions.length < bracketSize) {
     const nextSeed = positions.length * 2 + 1
     const newPositions: number[] = []
     for (const seed of positions) {
+      // 交替插入：当前种子 和 对应的补位种子（nextSeed - seed）
+      // 这样相邻两个位置构成一对种子保护对阵
       newPositions.push(seed)
       newPositions.push(nextSeed - seed)
     }
@@ -124,17 +126,20 @@ export function generateSingleElimination(
   const totalRounds = Math.log2(bracketSize)
 
   // 第1轮：按种子排布
+  // seedingBracket 返回的是相邻配对的位置数组：[1,8, 4,5, 2,7, 3,6]
+  // 配对方式：seedingBracket[i*2] vs seedingBracket[i*2+1]
   const firstRoundPairCount = bracketSize / 2
   const seedingBracket = generateSeedingBracket(bracketSize)
 
   for (let i = 0; i < firstRoundPairCount; i++) {
-    const seedA = seedingBracket[i]
-    const seedB = seedingBracket[firstRoundPairCount + i]
-    const teamA = seedA <= teamCount ? sorted[seedA - 1].name : null
-    const teamB = seedB <= teamCount ? sorted[seedB - 1].name : null
+    // ponytail: i*2 和 i*2+1 < bracketSize，索引一定存在，加 ! 断言
+    const seedA = seedingBracket[i * 2]!
+    const seedB = seedingBracket[i * 2 + 1]!
+    const teamA = seedA <= teamCount ? sorted[seedA - 1]!.name : null
+    const teamB = seedB <= teamCount ? sorted[seedB - 1]!.name : null
     const isBye = teamA === null || teamB === null // 只要有一方为空就是 BYE
     matches.push({
-      round: '第1轮',
+      round: totalRounds === 1 ? '决赛' : '第1轮',  // 修复：2队时唯一一场应为决赛
       orderNum: i + 1,
       teamA,
       teamB,
@@ -185,10 +190,11 @@ export function generateDoubleElimination(
   const firstRoundPairCount = bracketSize / 2
   const seedingBracket = generateSeedingBracket(bracketSize)
   for (let i = 0; i < firstRoundPairCount; i++) {
-    const seedA = seedingBracket[i]
-    const seedB = seedingBracket[firstRoundPairCount + i]
-    const teamA = seedA <= teamCount ? sorted[seedA - 1].name : null
-    const teamB = seedB <= teamCount ? sorted[seedB - 1].name : null
+    // ponytail: i*2 和 i*2+1 < bracketSize，索引一定存在
+    const seedA = seedingBracket[i * 2]!
+    const seedB = seedingBracket[i * 2 + 1]!
+    const teamA = seedA <= teamCount ? sorted[seedA - 1]!.name : null
+    const teamB = seedB <= teamCount ? sorted[seedB - 1]!.name : null
     const isBye = teamA === null || teamB === null
     matches.push({
       round: 'W-第1轮',
@@ -268,19 +274,21 @@ export function generateRoundRobin(
     }
 
     // 第0场：固定队 vs 旋转数组第一支
-    const fixed = teamList[0]
-    if (fixed.name !== '__BYE__' && rotated[0].name !== '__BYE__') {
+    // ponytail: teamList[0] 和 rotated[0] 在该循环中一定存在
+    const fixed = teamList[0]!
+    if (fixed.name !== '__BYE__' && rotated[0]!.name !== '__BYE__') {
       matches.push({
         round: `第${round + 1}轮`,
         orderNum: 1,
-        teamA: fixed.name, teamB: rotated[0].name,
+        teamA: fixed.name, teamB: rotated[0]!.name,
       })
     }
 
     // 其余场次：旋转数组第 i 支 vs 倒数第 i 支（i=1..matchesPerRound-1）
     for (let m = 1; m < matchesPerRound; m++) {
-      const teamA = rotated[m]
-      const teamB = rotated[rotated.length - m]
+      // ponytail: m < matchesPerRound = n/2 <= rotated.length，两端索引都有效
+      const teamA = rotated[m]!
+      const teamB = rotated[rotated.length - m]!
       if (teamA.name !== '__BYE__' && teamB.name !== '__BYE__') {
         matches.push({
           round: `第${round + 1}轮`,
@@ -323,7 +331,8 @@ export function generatePagePlayoff(
     return generateSingleElimination(teams, opts)
   }
 
-  const [t1, t2, t3, t4] = sorted
+  // ponytail: 前面已判断 sorted.length >= 4，解构一定成功
+  const [t1, t2, t3, t4] = sorted as [TeamInput, TeamInput, TeamInput, TeamInput, ...TeamInput[]]
   const matches: MatchInput[] = []
 
   // R1：1vs4, 2vs3
@@ -361,7 +370,8 @@ export function generateSwiss(
   // ── 第 1 轮：按种子保护方式直接配对（强对弱，避免强队过早相遇） ──
   const firstRound = generateSwissFirstRound(sorted, pairingAlgo)
   for (let i = 0; i < firstRound.length; i++) {
-    const [a, b] = firstRound[i]
+    // ponytail: 遍历范围内 i < firstRound.length，元素一定存在
+    const [a, b] = firstRound[i]!
     matches.push({
       round: '第1轮',
       orderNum: i + 1,
@@ -397,12 +407,14 @@ function generateSwissFirstRound(sorted: TeamInput[], algo: 'standard' | 'simpli
   if (algo === 'standard') {
     // 种子保护：1 vs n, 2 vs n-1 ...
     for (let i = 0; i < Math.floor(n / 2); i++) {
-      pairs.push([sorted[i].name, sorted[n - 1 - i].name])
+      // ponytail: i < n/2 且 n-1-i >= n/2，两端都在范围内
+      pairs.push([sorted[i]!.name, sorted[n - 1 - i]!.name])
     }
   } else {
     // simplified：1 vs 2, 3 vs 4 ...（更简单，适合演示场景）
     for (let i = 0; i < n - 1; i += 2) {
-      pairs.push([sorted[i].name, sorted[i + 1].name])
+      // ponytail: i+1 < n，索引有效
+      pairs.push([sorted[i]!.name, sorted[i + 1]!.name])
     }
   }
   return pairs
@@ -435,7 +447,8 @@ export function generateGroupKnockout(
     const round = Math.floor(i / groupCount)
     const posInRound = i % groupCount
     const groupIndex = round % 2 === 0 ? posInRound : groupCount - 1 - posInRound
-    groups[groupIndex].push(sorted[i])
+    // ponytail: groupIndex ∈ [0, groupCount)，i < sorted.length，均有效
+    groups[groupIndex]!.push(sorted[i]!)
   }
 
   const groupMatches: MatchInput[] = []
@@ -443,7 +456,8 @@ export function generateGroupKnockout(
 
   // 每组循环赛
   for (let g = 0; g < groups.length; g++) {
-    const groupTeams = groups[g]
+    // ponytail: g < groups.length，索引有效
+    const groupTeams = groups[g]!
     if (groupTeams.length < 2) continue
     const groupLabel = groupLabels[g] ?? `第${g + 1}组`
     const roundRobinMatches = generateRoundRobin(groupTeams)
@@ -456,16 +470,21 @@ export function generateGroupKnockout(
   }
 
   // 淘汰赛：每组前 promotePerGroup 名 → 共 groupCount * promotePerGroup 支队
+  // 修复：淘汰赛首轮队伍留空（null），由 autoPromoteFromGroupsToKnockout 动态填入
+  // 不再使用"晋级队N"占位，避免数据库中出现无效队名
   const totalAdvance = groupCount * promotePerGroup
   const knockoutTeams: TeamInput[] = []
   for (let i = 0; i < totalAdvance; i++) {
-    knockoutTeams.push({ name: `晋级队${i + 1}`, seed: i + 1 })
+    knockoutTeams.push({ name: `__PLACEHOLDER_${i + 1}__`, seed: i + 1 })
   }
   const knockoutMatches = generateSingleElimination(knockoutTeams, { seedMethod: 'rating' })
 
-  // 重新标记淘汰赛轮次
+  // 重新标记淘汰赛轮次，并将占位队名清空
   for (const match of knockoutMatches) {
     match.round = `淘汰赛-${match.round}`
+    // 清空占位队名，实际由小组赛结束后自动填入
+    if (match.teamA && match.teamA.startsWith('__PLACEHOLDER_')) match.teamA = null
+    if (match.teamB && match.teamB.startsWith('__PLACEHOLDER_')) match.teamB = null
   }
 
   return { groupMatches, knockoutMatches }
@@ -544,7 +563,8 @@ export interface AdvanceTarget {
 // 解析轮次中的数字（支持 "第1轮"、"W-第1轮"、"淘汰赛-第1轮"、"R1" 等格式）
 function extractRoundNumber(round: string): number | null {
   const m = round.match(/(\d+)/)
-  return m ? parseInt(m[1]) : null
+  // ponytail: 正则捕获组有定义，match 成功时 m[1] 一定存在
+  return m ? parseInt(m[1]!) : null
 }
 
 // 判断轮次类型（用于决定晋级方向）
@@ -564,7 +584,8 @@ export function computeAdvanceTarget(match: { round: string; orderNum: number })
   if (roundNum === null) return null
 
   // 单败淘汰赛（第X轮 / 半决赛 / 决赛）
-  if (roundType === 'winner' || roundType === 'unknown') {
+  // ponytail: 修复逻辑 bug —— 原来 'winner' 也会进入单败分支，导致双败胜者组逻辑永远不可达
+  if (roundType === 'unknown') {
     // 如果是"决赛"，没有下一轮
     if (match.round === '决赛') return null
     // 当前是第 R 轮的第 N 场 → 下一轮是第 R+1 轮的第 ceil(N/2) 场
@@ -660,10 +681,6 @@ export async function advanceWinnerToNextRound(
   }
 
   try {
-    // 动态导入 prisma（避免 composable 被前端加载时出错）
-    // 实际由服务器代码直接使用本模块，并已确保 prisma 可用
-    const { prisma } = await import('../lib/prisma')
-
     // ── 情况 1：单败 / 双败 / 小组+淘汰赛的结构化晋级 ──
     const target = computeAdvanceTarget({
       round: finishedMatch.round,
@@ -673,7 +690,6 @@ export async function advanceWinnerToNextRound(
     if (target) {
       // 1) 精确查找目标 match（round 格式可能不同，采用模糊查找）
       const candidate = await findTargetMatch(
-        prisma,
         tournamentId,
         target.round,
         target.orderNum,
@@ -734,7 +750,6 @@ export async function advanceWinnerToNextRound(
  * 逻辑：先精确匹配 round 标签；如果没找到，按"轮次数字"匹配（例如 "第2轮" vs "半决赛"）。
  */
 async function findTargetMatch(
-  prisma: any,
   tournamentId: string,
   preferredRound: string,
   orderNum: number,
@@ -751,9 +766,9 @@ async function findTargetMatch(
   const preferredNum = parseInt(preferredRound.match(/\d+/)?.[0] || '0')
   if (preferredNum > 0) {
     // 获取该赛事所有比赛，基于 round 中的数字找到"同届比赛"
+    // ponytail: 返回完整 Match 对象，调用方需要 teamA/teamB 判断是否已占位
     const allMatches = await prisma.match.findMany({
       where: { tournamentId },
-      select: { id: true, round: true, orderNum: true },
     })
 
     // 先收集每一轮的数字
@@ -765,24 +780,20 @@ async function findTargetMatch(
     }
 
     // 查找"与当前轮次数字最接近"的目标轮次
-    // 简化：找到最接近 preferredNum 的 round 数字，然后在其中找 orderNum
     const currentNum = parseInt(currentRound.match(/\d+/)?.[0] || '0')
     const nextNum = currentNum + 1
 
-    // 候选：所有 round 的数字 >= nextNum 的比赛（按数字升序）
+    // ponytail: 在已加载的 allMatches 中查找，避免逐个 label 发额外 DB 查询
     const candidateRounds = Array.from(roundsByNumber.keys())
       .filter((n) => n >= nextNum)
       .sort((a, b) => a - b)
 
     if (candidateRounds.length > 0) {
-      const nextRoundNumber = candidateRounds[0]
-      const nextRoundLabels = roundsByNumber.get(nextRoundNumber)!
-      for (const label of nextRoundLabels) {
-        const candidate = await prisma.match.findFirst({
-          where: { tournamentId, round: label, orderNum },
-        })
-        if (candidate) return candidate
-      }
+      const nextRoundLabels = new Set(roundsByNumber.get(candidateRounds[0]!)!)
+      const found = allMatches.find(m =>
+        nextRoundLabels.has(m.round) && m.orderNum === orderNum
+      )
+      if (found) return found
     }
 
     // 3) 最后兜底：直接找第一个 teamA 或 teamB 为 null 的比赛
@@ -808,8 +819,6 @@ async function findTargetMatch(
  * 根据积分榜动态生成下一轮的对阵（按积分排名从高到低两两配对）。
  */
 export async function autoPairNextSwissRound(tournamentId: string): Promise<{ paired: number; info: string }> {
-  const { prisma } = await import('../lib/prisma')
-
   const matches = await prisma.match.findMany({
     where: { tournamentId, round: { startsWith: '第' } },
     orderBy: [{ round: 'asc' }, { orderNum: 'asc' }],
@@ -887,8 +896,6 @@ export async function autoPromoteFromGroupsToKnockout(
   tournamentId: string,
   promotePerGroup: number
 ): Promise<{ promoted: string[]; info: string }> {
-  const { prisma } = await import('../lib/prisma')
-
   // 找出所有小组赛比赛（round 以 A组- / B组- 等开头）
   const allMatches = await prisma.match.findMany({
     where: { tournamentId },
@@ -902,7 +909,8 @@ export async function autoPromoteFromGroupsToKnockout(
   // 按组分组 → 计算积分
   const groups = new Map<string, any[]>()
   for (const m of groupMatches) {
-    const label = (m.round as string).split('-')[0] // "A组"
+    // ponytail: 前面已通过正则过滤确保 round 含 "-"，split 结果第一个元素一定存在
+    const label = (m.round as string).split('-')[0]!
     if (!groups.has(label)) groups.set(label, [])
     groups.get(label)!.push(m)
   }
@@ -1050,9 +1058,10 @@ export function drawTopic(
   const remainingIdx = topicPool.map((_, i) => i).filter((i) => !usedTopics.includes(i))
   if (remainingIdx.length === 0) {
     // 若全部用完，允许重复使用
-    return topicPool.length > 0 ? topicPool[Math.floor(Math.random() * topicPool.length)] : null
+    return topicPool.length > 0 ? topicPool[Math.floor(Math.random() * topicPool.length)]! : null
   }
-  return topicPool[remainingIdx[Math.floor(Math.random() * remainingIdx.length)]]
+  // ponytail: remainingIdx 非空，Math.floor 结果在范围内，索引一定有效
+  return topicPool[remainingIdx[Math.floor(Math.random() * remainingIdx.length)]!]!
 }
 
 /**

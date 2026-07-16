@@ -50,10 +50,10 @@ const fullConfig = ref<{
   uiConfig: {
     showTitle: true,
     showBanner: true,
-    titleColor: '#FFFFFF',     // ⭐ 标题颜色默认白色
+    titleColor: '#0369a1',     // ⭐ 标题颜色默认深蓝色
     positiveLabel: '正方',
     negativeLabel: '反方',
-    teamNameColor: '#0369a1',  // ⭐ 队伍名称颜色默认深蓝色
+    teamNameColor: '#FFFFFF',  // ⭐ 队伍名称颜色默认白色
   },
   skinConfig: {},
   audioConfig: {},
@@ -84,14 +84,14 @@ async function loadConfig() {
       fullConfig.value.negativeTopic = cfg.negativeTopic || ''
       fullConfig.value.teamPositiveName = cfg.teamPositiveName || ''
       fullConfig.value.teamNegativeName = cfg.teamNegativeName || ''
-      // ⭐ 合并默认值：showTitle 和 showBanner 默认勾选，标题颜色白色，队伍名称颜色深蓝色
+      // ⭐ 合并默认值：showTitle 和 showBanner 默认勾选，标题颜色深蓝色，队伍名称颜色白色
       fullConfig.value.uiConfig = {
         showTitle: true,
         showBanner: true,
-        titleColor: '#FFFFFF',     // ⭐ 标题颜色默认白色
+        titleColor: '#0369a1',     // ⭐ 标题颜色默认深蓝色
         positiveLabel: '正方',
         negativeLabel: '反方',
-        teamNameColor: '#0369a1',  // ⭐ 队伍名称颜色默认深蓝色
+        teamNameColor: '#FFFFFF',  // ⭐ 队伍名称颜色默认白色
         ...cfg.uiConfig, // 数据库值覆盖默认值
       }
       fullConfig.value.skinConfig = cfg.skinConfig || {}
@@ -103,10 +103,10 @@ async function loadConfig() {
       fullConfig.value.uiConfig = {
         showTitle: true,
         showBanner: true,
-        titleColor: '#FFFFFF',     // ⭐ 标题颜色默认白色
+        titleColor: '#0369a1',     // ⭐ 标题颜色默认深蓝色
         positiveLabel: '正方',
         negativeLabel: '反方',
-        teamNameColor: '#0369a1',  // ⭐ 队伍名称颜色默认深蓝色
+        teamNameColor: '#FFFFFF',  // ⭐ 队伍名称颜色默认白色
       }
     }
   } catch (e: any) {
@@ -180,96 +180,84 @@ watch(
       <UCard>
         <template #header>
           <div class="flex items-center gap-2">
-            <UIcon name="i-lucide-palette" class="w-5 h-5 text-indigo-400" />
-            <h2 class="text-lg font-bold text-white">界面元素设置</h2>
+            <UIcon name="i-lucide-palette" class="w-4 h-4 text-[var(--color-text-muted)]" />
+            <h2 class="text-base font-semibold text-[var(--color-text-primary)]">界面元素设置</h2>
           </div>
         </template>
 
       <!-- 比赛标题 -->
       <div class="mb-6">
-        <label class="block text-sm font-bold text-white mb-2 flex items-center gap-1.5">
-          <UIcon name="i-lucide-type" class="w-4 h-4 text-white/50" /> 比赛标题
+        <label class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5">
+          <UIcon name="i-lucide-type" class="w-4 h-4 text-[var(--color-text-muted)]" /> 比赛标题
         </label>
         <input
           v-model="fullConfig.title"
           type="text"
-          class="input-glass w-full px-3 py-2.5 border border-white/10 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+          class="input-glass w-full px-3 py-2.5 border border-[var(--color-border)] rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
           placeholder="例如：2025年度校际辩论赛总决赛"
         />
       </div>
 
       <!-- 显示选项 -->
       <div class="mb-6 space-y-4">
-        <label class="block text-sm font-bold text-white flex items-center gap-1.5">
-          <UIcon name="i-lucide-eye" class="w-4 h-4 text-white/50" /> 显示选项
+        <label class="block text-sm font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+          <UIcon name="i-lucide-eye" class="w-4 h-4 text-[var(--color-text-muted)]" /> 显示选项
         </label>
-        <div class="bg-white/5 rounded-lg p-4 space-y-3">
+        <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 space-y-3">
           <div class="flex items-center justify-between">
             <label class="flex items-center gap-3 cursor-pointer flex-1">
-              <input type="checkbox" v-model="fullConfig.uiConfig.showTitle" class="w-4 h-4 rounded border-white/20 text-indigo-600 focus:ring-2 focus:ring-indigo-500" />
-              <span class="text-sm text-white/80">显示比赛标题</span>
+              <input type="checkbox" v-model="fullConfig.uiConfig.showTitle" class="w-4 h-4 rounded border-[var(--color-border)] text-indigo-600 focus:ring-2 focus:ring-indigo-500" />
+              <span class="text-sm text-[var(--color-text-primary)]">显示比赛标题</span>
             </label>
             <div class="flex items-center gap-2 ml-4">
-              <div class="relative">
-                <input
-                  type="color"
-                  v-model="fullConfig.uiConfig.titleColor"
-                  class="w-11 h-11 rounded-lg cursor-pointer border border-white/10 hover:border-white/20 transition-colors"
-                />
-              </div>
+              <ColorPicker v-model="fullConfig.uiConfig.titleColor" />
               <input
                 type="text"
                 v-model="fullConfig.uiConfig.titleColor"
-                class="input-glass w-24 px-3 py-2 border border-white/10 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                placeholder="#FFFFFF"
+                class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                placeholder="#0369a1"
               />
             </div>
           </div>
           <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" v-model="fullConfig.uiConfig.showBanner" class="w-4 h-4 rounded border-white/20 text-indigo-600 focus:ring-2 focus:ring-indigo-500" />
-            <span class="text-sm text-white/80">显示横幅/辩题</span>
+            <input type="checkbox" v-model="fullConfig.uiConfig.showBanner" class="w-4 h-4 rounded border-[var(--color-border)] text-indigo-600 focus:ring-2 focus:ring-indigo-500" />
+            <span class="text-sm text-[var(--color-text-primary)]">显示横幅/辩题</span>
           </label>
         </div>
       </div>
 
-      <!-- 队伍名称颜色 + 标签（三列并列） -->
-      <div class="mb-6 grid grid-cols-3 gap-4">
+      <!-- 队伍名称颜色 + 标签（第一列自适应，后两列平分） -->
+      <div class="mb-6 grid grid-cols-[auto_1fr_1fr] gap-4">
         <!-- 队伍名称颜色 -->
         <div>
-          <label class="block text-xs font-medium text-white/70 mb-1.5">队伍名称颜色</label>
-          <div class="flex items-center gap-2">
-            <div class="relative">
-              <input
-                type="color"
-                v-model="fullConfig.uiConfig.teamNameColor"
-                class="w-11 h-11 rounded-lg cursor-pointer border border-white/10 hover:border-white/20 transition-colors"
-              />
-            </div>
+          <label class="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">队伍名称颜色</label>
+          <div class="flex items-stretch gap-2">
+            <ColorPicker v-model="fullConfig.uiConfig.teamNameColor" />
             <input
               type="text"
               v-model="fullConfig.uiConfig.teamNameColor"
-              class="input-glass w-20 px-3 py-2 border border-white/10 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              placeholder="#0369a1"
+              class="input-glass w-28 h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              placeholder="#FFFFFF"
             />
           </div>
         </div>
         <!-- 正方标签 -->
         <div>
-          <label class="block text-xs font-medium text-white/70 mb-1.5">正方标签</label>
+          <label class="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">正方标签</label>
           <input
             v-model="fullConfig.uiConfig.positiveLabel"
             type="text"
-            class="input-glass w-full px-3 py-2 border border-white/10 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             placeholder="正方"
           />
         </div>
         <!-- 反方标签 -->
         <div>
-          <label class="block text-xs font-medium text-white/70 mb-1.5">反方标签</label>
+          <label class="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">反方标签</label>
           <input
             v-model="fullConfig.uiConfig.negativeLabel"
             type="text"
-            class="input-glass w-full px-3 py-2 border border-white/10 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             placeholder="反方"
           />
         </div>

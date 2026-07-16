@@ -22,18 +22,18 @@ export default defineEventHandler(async (event) => {
       include: { tournament: { include: { team: true } } },
     })
 
-    if (!match) throw createError({ statusCode: 404, statusMessage: '场次不存在或已删除' })
+    if (!match) throw createError({ statusCode: 404, message: '场次不存在或已删除' })
 
     // 修复：使用统一的权限判定函数，避免内联权限逻辑
     if (!match.tournament || !canWriteTournament(user, match.tournament, match.tournament.team)) {
-      throw createError({ statusCode: 403, statusMessage: '权限不足' })
+      throw createError({ statusCode: 403, message: '权限不足' })
     }
 
     // 修复：乐观锁校验，避免并发覆盖
     if (currentVersion !== undefined && currentVersion !== match.version) {
       throw createError({
         statusCode: 409,
-        statusMessage: '数据版本冲突，请刷新后重试',
+        message: '数据版本冲突，请刷新后重试',
       })
     }
 
@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
     if (updateResult.count === 0) {
       throw createError({
         statusCode: 409,
-        statusMessage: '数据版本冲突，请刷新后重试',
+        message: '数据版本冲突，请刷新后重试',
       })
     }
 
@@ -69,6 +69,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Update match error:', error)
-    throw createError({ statusCode: 500, statusMessage: '更新场次信息失败' })
+    throw createError({ statusCode: 500, message: '更新场次信息失败' })
   }
 })

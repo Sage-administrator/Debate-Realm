@@ -1,4 +1,4 @@
-// ════════════════════════════════════════════════════
+﻿// ════════════════════════════════════════════════════
 // POST /api/internal/round/reset — 重置所有发言权限（取消环节限制）
 // 由计时程序调用
 // 请求体：{ teamId, guildId, channelId, internalKey }
@@ -15,13 +15,13 @@ export default defineEventHandler(async (event) => {
     const { teamId, guildId, channelId } = body
 
     if (!teamId || !guildId || !channelId) {
-      throw createError({ statusCode: 400, statusMessage: '缺少必要参数：teamId、guildId、channelId' })
+      throw createError({ statusCode: 400, message: '缺少必要参数：teamId、guildId、channelId' })
     }
 
     // 获取 Bot 实例
     const botInstance = getBotInstance(teamId)
     if (!botInstance || !botInstance.config) {
-      throw createError({ statusCode: 400, statusMessage: 'Bot 未启动，请先连接 Bot' })
+      throw createError({ statusCode: 400, message: 'Bot 未启动，请先连接 Bot' })
     }
 
     const result = await resetAllSpeakPermissions(
@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
     )
 
     if (!result.success) {
-      throw createError({ statusCode: 400, statusMessage: result.message })
+      throw createError({ statusCode: 400, message: result.message })
     }
 
     return {
@@ -44,6 +44,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Internal Round Reset] 重置失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '重置发言权限失败' })
+    throw createError({ statusCode: 500, message: '重置发言权限失败' })
   }
 })

@@ -5,12 +5,14 @@ import type { CityGroup } from '~~/app/data/cities'
 
 // ── 外部传入/回写 ──
 const props = defineProps<{
-  province: string
-  city: string
+  province: string   // 选中的省份名称
+  city: string       // 选中的城市名称（无二级时为空）
 }>()
 
 const emit = defineEmits<{
+  // 省份变化时回写父组件
   (e: 'update:province', v: string): void
+  // 城市变化时回写父组件
   (e: 'update:city', v: string): void
 }>()
 
@@ -52,6 +54,7 @@ const displayText = computed(() => {
   return props.province
 })
 
+// 判断当前是否已选中有效值（用于触发按钮高亮）
 const hasValue = computed(() => {
   if (!props.province) return false
   // 有二级的必须已选城市；无二级的有省份即可
@@ -138,7 +141,7 @@ onBeforeUnmount(() => {
       @click.stop="openDropdown"
       :class="{ 'is-active': open, 'has-value': hasValue }"
     >
-      <span class="cascader-text" :class="hasValue ? 'text-white/80' : 'text-white/40'">
+      <span class="cascader-text" :class="hasValue ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'">
         {{ displayText }}
       </span>
       <UIcon name="i-lucide-chevron-down" class="cascader-icon" :class="{ 'is-open': open }" />

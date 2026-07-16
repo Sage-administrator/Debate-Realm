@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!team) {
-      throw createError({ statusCode: 404, statusMessage: '团队不存在' })
+      throw createError({ statusCode: 404, message: '团队不存在' })
     }
 
     return {
@@ -35,6 +35,9 @@ export default defineEventHandler(async (event) => {
         id: m.id,
         userId: m.userId,
         username: m.user.username,
+        nickname: m.user.nickname,
+        email: m.user.email,
+        avatar: m.user.avatar,
         role: m.user.role,
       })),
       memberCount: team._count.users,
@@ -44,6 +47,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get team error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取团队详情失败' })
+    throw createError({ statusCode: 500, message: '获取团队详情失败' })
   }
 })

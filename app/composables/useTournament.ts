@@ -1,3 +1,8 @@
+/**
+ * useTournament — 赛事与比赛管理相关接口集合
+ * 涵盖：赛事 CRUD、比赛 CRUD、赛果提交、抽签、自动生成赛程（6 种赛制）、独立赛事管理等
+ * 所有接口均需鉴权
+ */
 export function useTournament() {
   const store = useAuthStore()
 
@@ -52,7 +57,8 @@ export function useTournament() {
   }
 
   async function updateTournament(id: string, data: { name?: string; description?: string; format?: string; status?: string; scheduledAt?: string; venue?: string; teams?: string[]; judges?: string[] }) {
-    return await $fetch(`/api/tournaments/${id}`, {
+    // ponytail: 显式传 <any> 避免 method 类型被推断为只读 GET
+    return await $fetch<any>(`/api/tournaments/${id}`, {
       method: 'PUT', body: data,
       headers: { Authorization: `Bearer ${store.token}` },
     })
@@ -60,7 +66,7 @@ export function useTournament() {
 
   // 单独更新赛事的队伍列表（在线编辑使用）
   async function updateTournamentTeams(id: string, teams: string[]) {
-    return await $fetch(`/api/tournaments/${id}`, {
+    return await $fetch<any>(`/api/tournaments/${id}`, {
       method: 'PUT', body: { teams },
       headers: { Authorization: `Bearer ${store.token}` },
     })
@@ -68,14 +74,14 @@ export function useTournament() {
 
   // 单独更新赛事的评委列表（在线编辑使用）
   async function updateTournamentJudges(id: string, judges: string[]) {
-    return await $fetch(`/api/tournaments/${id}`, {
+    return await $fetch<any>(`/api/tournaments/${id}`, {
       method: 'PUT', body: { judges },
       headers: { Authorization: `Bearer ${store.token}` },
     })
   }
 
   async function deleteTournament(id: string) {
-    await $fetch(`/api/tournaments/${id}`, {
+    await $fetch<any>(`/api/tournaments/${id}`, {
       method: 'DELETE', headers: { Authorization: `Bearer ${store.token}` },
     })
   }
@@ -106,6 +112,7 @@ export function useTournament() {
     })
   }
 
+  // 删除比赛；currentVersion 用于乐观锁校验，避免并发删除冲突
   async function deleteMatch(id: string, currentVersion?: number) {
     await $fetch(`/api/matches/${id}`, {
       method: 'DELETE',
@@ -200,7 +207,7 @@ export function useTournament() {
     })
   }
 
-  async function createStandaloneMatch(data: { name: string; description?: string; scheduledAt?: string }) {
+  async function createStandaloneMatch(data: { name: string; description?: string; venue?: string; scheduledAt?: string }) {
     return await $fetch('/api/standalone-matches', {
       method: 'POST', body: data,
       headers: { Authorization: `Bearer ${store.token}` },

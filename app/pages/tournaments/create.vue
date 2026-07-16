@@ -170,8 +170,8 @@ async function handleCreate() {
 
       <!-- 页面标题区 -->
       <div class="mb-6">
-        <h1 class="text-2xl font-bold text-white mb-2">创建赛事</h1>
-        <p class="text-white/60 text-sm">快速开始创建赛事，填写以下信息完成创建</p>
+        <h1 class="text-2xl font-bold text-[var(--color-text-primary)] mb-2">创建赛事</h1>
+        <p class="text-[var(--color-text-secondary)] text-sm">快速开始创建赛事，填写以下信息完成创建</p>
       </div>
 
       <!-- 主表单卡片：深色玻璃拟态风格 -->
@@ -180,7 +180,7 @@ async function handleCreate() {
 
         <!-- 1. 赛事名称 -->
         <div>
-          <label class="block text-white/70 text-sm font-medium mb-1.5">
+          <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
             赛事名称 <span class="text-red-400">*</span>
           </label>
           <input
@@ -193,14 +193,14 @@ async function handleCreate() {
             @blur="validateName"
           />
           <p v-if="errors.name" class="text-red-400 text-xs mt-1.5">{{ errors.name }}</p>
-          <p v-else class="text-white/30 text-xs mt-1.5">请不要在这里填写辩题，辩题将在赛事详情中设置</p>
+          <p v-else class="text-[var(--color-text-muted)] text-xs mt-1.5">请不要在这里填写辩题，辩题将在赛事详情中设置</p>
         </div>
 
         <!-- 2. 举办周期（月范围） + 3. 赛事地区（级联选择） 同一行 -->
         <div class="grid grid-cols-2 gap-4">
           <!-- 左：举办周期 - MonthRangePicker（自定义组件保持原样） -->
           <div>
-            <label class="block text-white/70 text-sm font-medium mb-1.5">
+            <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
               举办周期 <span class="text-red-400">*</span>
             </label>
             <div
@@ -219,7 +219,7 @@ async function handleCreate() {
 
           <!-- 右：赛事地区 - 省市二级级联（自定义组件保持原样） -->
           <div>
-            <label class="block text-white/70 text-sm font-medium mb-1.5">
+            <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
               赛事地区 <span class="text-red-400">*</span>
             </label>
             <RegionCascader
@@ -236,11 +236,11 @@ async function handleCreate() {
         <div class="grid gap-4 two-col-form">
           <!-- 4. 主办方类别 - Segmented Control（深色风格） -->
           <div class="col-category">
-            <label class="block text-white/70 text-sm font-medium mb-1.5">
+            <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
               主办方类别 <span class="text-red-400">*</span>
             </label>
             <div
-              class="flex bg-white/10 rounded-lg p-0.5 gap-0.5 h-10"
+              class="flex bg-[var(--color-bg-tertiary)] rounded-lg p-0.5 gap-0.5 h-10"
               :class="errors.organizerCategory ? 'ring-1 ring-red-400' : ''"
             >
               <button
@@ -249,9 +249,9 @@ async function handleCreate() {
                 type="button"
                 class="flex-1 px-3 text-sm rounded-md transition-all cursor-pointer flex items-center justify-center"
                 :class="form.organizerCategory === cat.value
-                  ? 'bg-indigo-500/30 text-white font-medium'
-                  : 'text-white/50 hover:text-white/70'"
-                @click="form.organizerCategory = cat.value; clearError('organizerCategory')"
+                  ? 'bg-indigo-500/30 text-[var(--color-text-primary)] font-medium'
+                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'"
+                @click="() => { form.organizerCategory = cat.value; clearError('organizerCategory') }"
               >
                 {{ cat.label }}
               </button>
@@ -261,7 +261,7 @@ async function handleCreate() {
 
           <!-- 5. 赛事主办方（加宽列宽） -->
           <div class="col-organizer">
-            <label class="block text-white/70 text-sm font-medium mb-1.5">
+            <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
               赛事主办方 <span class="text-red-400">*</span>
             </label>
             <input
@@ -292,7 +292,7 @@ async function handleCreate() {
                   ? 'bg-indigo-500 border-indigo-500'
                   : errors.agreedToTerms
                     ? 'border-red-400'
-                    : 'border-white/20 group-hover:border-white/40'"
+                    : 'border-[var(--color-border)] group-hover:border-white/40'"
               />
               <UIcon v-if="form.agreedToTerms" name="i-lucide-check" class="relative w-3 h-3 text-white" />
             </span>
@@ -302,7 +302,7 @@ async function handleCreate() {
               class="sr-only"
               @change="clearError('agreedToTerms')"
             />
-            <span class="text-white/50 text-xs leading-relaxed">
+            <span class="text-[var(--color-text-muted)] text-xs leading-relaxed">
               创建赛事即代表您已同意
               <span class="text-indigo-400 cursor-pointer hover:underline">服务协议</span>
               和

@@ -5,7 +5,7 @@
   不包含"快捷时间"div
 -->
 <template>
-  <div class="h-screen text-white overflow-hidden responsive-container gradient-background scale-wrapper" :style="{ '--ui-scale': uiScale }">
+  <div class="h-screen text-white overflow-hidden responsive-container scale-wrapper" :style="[{ '--ui-scale': uiScale }, backgroundStyle]">
 
     <!-- 顶部辩题展示区（横幅）- 显示横幅/辩题时显示完整横幅 -->
     <div class="debate-header" v-if="(uiConfig.bannerVisible !== false && uiConfig.showBanner !== false)">
@@ -44,7 +44,7 @@
     </div>
 
     <!-- 进入前设置面板 -->
-    <div v-if="showSetup" class="fixed inset-0 z-40 flex items-center justify-center" @click="showSetup = false">
+    <div v-if="showSetup" class="fixed inset-0 z-40 flex items-center justify-center" @click="() => { showSetup = false }">
       <div class="absolute inset-0 bg-black/50"></div>
       <div class="relative bg-white text-gray-800 rounded-lg shadow-2xl w-[45rem] max-w-[90vw] border border-gray-200 p-4" @click.stop>
         <h3 class="font-bold text-lg mb-3">对阵双方和辩题设置</h3>
@@ -74,7 +74,7 @@
     </div>
 
     <!-- 从赛程选择比赛弹窗 -->
-    <div v-if="showMatchSelectModal" class="fixed inset-0 z-50 flex items-center justify-center" @click="showMatchSelectModal = false">
+    <div v-if="showMatchSelectModal" class="fixed inset-0 z-50 flex items-center justify-center" @click="() => { showMatchSelectModal = false }">
       <div class="absolute inset-0 bg-black/50"></div>
       <div class="relative bg-white text-gray-800 rounded-lg shadow-2xl w-[35rem] max-w-[90vw] max-h-[70vh] border border-gray-200 p-4 overflow-hidden flex flex-col" @click.stop>
         <h3 class="font-bold text-lg mb-3">从赛程选择比赛</h3>
@@ -109,7 +109,7 @@
           </div>
         </div>
         <div class="mt-4 flex justify-end">
-          <button class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50" @click="showMatchSelectModal = false">取消</button>
+          <button class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50" @click="() => { showMatchSelectModal = false }">取消</button>
         </div>
       </div>
     </div>
@@ -215,7 +215,7 @@
 
 
     <!-- 进度指示器 -->
-    <div v-if="showProgress" class="fixed inset-0 z-50" @click="showProgress = false">
+    <div v-if="showProgress" class="fixed inset-0 z-50" @click="() => { showProgress = false }">
       <div class="absolute top-32 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 rounded-lg p-4 border border-gray-600" @click.stop>
         <div class="text-center text-white text-base font-bold mb-3">辩论进度 (第{{ currentStage }}/{{ stages.length }}环节)</div>
         <div class="flex space-x-2 mb-2">
@@ -241,7 +241,7 @@
       <div v-if="showQuickTimeToast" class="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-2 bg-orange-500 text-white text-xs rounded shadow-lg whitespace-nowrap overflow-hidden z-10" style="min-width: 180px;">
         <div>请先点击输入框，再选择快捷时间</div>
         <div class="mt-1 h-1 bg-orange-300 rounded-full overflow-hidden">
-          <div class="h-full bg-white" :style="{ width: toastProgress + '%', transition: 'width 0.05s linear' }"></div>
+          <div class="h-full bg-white" :style="{ width: toastProgress + '%', transition: 'width 2s linear' }"></div>
         </div>
       </div>
       <!-- 单计时器：标题 + 调整为 + 输入框 + 秒 同行 -->
@@ -304,14 +304,14 @@
           </div>
         </div>
         <div class="flex justify-end mt-3">
-          <button @click="showResetModal = false" class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors">关闭</button>
+          <button @click="() => { showResetModal = false }" class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors">关闭</button>
         </div>
       </div>
       <div v-else>
         <h3 class="text-base font-bold mb-2 text-gray-800">重置确认</h3>
         <p class="text-gray-600 mb-3 text-xs">确定要重置当前环节的计时器吗？</p>
         <div class="flex justify-end space-x-1.5">
-          <button @click="showResetModal = false" class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors">取消</button>
+          <button @click="() => { showResetModal = false }" class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors">取消</button>
           <button @click="resetTimer" class="px-2.5 py-0.5 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-colors">确定重置</button>
         </div>
       </div>
@@ -388,6 +388,53 @@ const uiConfig = ref({
   negativeLabel: '反方',
 })
 
+// ═══════════ 皮肤配置（背景等整体外观） ═══════════
+// 与皮肤配置页同步，优先级高于 uiConfig 中的背景设置
+const skinConfig = ref({
+  backgroundType: 'default' as 'default' | 'gradient' | 'solid' | 'image',
+  solidColor: '#1F2937',
+  gradientStart: '#1F2937',
+  gradientEnd: '#374151',
+  imageUrl: '',
+  imageOpacity: 1,
+})
+
+// ═══════════ 动态背景样式（根据皮肤配置计算） ═══════════
+// 优先级：skinConfig > uiConfig > 默认径向渐变
+// 与 TimerPreview 组件的 .timer-preview-container 默认背景保持一致
+const backgroundStyle = computed(() => {
+  let background = ''
+  const skin = skinConfig.value
+  const ui = uiConfig.value
+
+  // 优先使用 skinConfig（皮肤配置页的设置）
+  if (skin.backgroundType === 'gradient' && skin.gradientStart && skin.gradientEnd) {
+    background = `radial-gradient(ellipse at center bottom, ${skin.gradientStart} 0%, ${skin.gradientEnd} 100%)`
+  } else if (skin.backgroundType === 'solid' && skin.solidColor) {
+    background = skin.solidColor
+  } else if (skin.backgroundType === 'image' && skin.imageUrl) {
+    background = `url(${skin.imageUrl}) center/cover no-repeat`
+  }
+
+  // 如果 skinConfig 是 default 或没有有效配置，回退到 uiConfig
+  if (!background) {
+    if (ui.backgroundType === 'image' && ui.imageFileName) {
+      background = `url(${ui.imageFileName}) center/cover no-repeat`
+    } else if ((ui as any).backgroundType === 'gradient' && (ui as any).gradientStart && (ui as any).gradientEnd) {
+      background = `radial-gradient(ellipse at center bottom, ${(ui as any).gradientStart} 0%, ${(ui as any).gradientEnd} 100%)`
+    } else if ((ui as any).backgroundType === 'solid' && (ui as any).solidColor) {
+      background = (ui as any).solidColor
+    }
+  }
+
+  // 最终回退：默认径向渐变（与预览组件一致）
+  if (!background) {
+    background = 'radial-gradient(ellipse at center bottom, rgb(57, 76, 86) 0%, rgb(14, 17, 17) 100%)'
+  }
+
+  return { background }
+})
+
 // ═══════════ 辩题文字溢出检测与字体大小调整 ═══════════
 const positiveTopicRef = ref<HTMLElement | null>(null)
 const negativeTopicRef = ref<HTMLElement | null>(null)
@@ -403,6 +450,16 @@ function checkTopicOverflow() {
   }
   check(positiveTopicRef.value)
   check(negativeTopicRef.value)
+}
+
+// 性能优化：resize 时只做强制重排检测，用 rAF 节流避免连续 resize 反复触发同步 layout
+let resizeRaf: number | null = null
+function onResizeThrottled() {
+  if (resizeRaf != null) return
+  resizeRaf = requestAnimationFrame(() => {
+    resizeRaf = null
+    checkTopicOverflow()
+  })
 }
 
 // ═══════════ 设置面板 ═══════════
@@ -439,7 +496,6 @@ let toastProgressTimer: ReturnType<typeof setInterval> | null = null
 // 快捷时间 toast 提示
 const showQuickTimeToast = ref(false)
 let quickTimeToastTimer: ReturnType<typeof setTimeout> | null = null
-let timerInterval: ReturnType<typeof setInterval> | null = null
 
 // ═══════════ 从 debateStore 获取状态 ═══════════
 const currentStage = computed(() => debateStore.currentStage)
@@ -473,38 +529,20 @@ function formatDualTime(seconds: number): string {
 
 // ═══════════ 计时控制 ═══════════
 function startTimer() {
-  debateStore.startTimer()
-  if (timerInterval) clearInterval(timerInterval)
-  timerInterval = setInterval(() => {
-    if (isDualTimerStage.value) {
-      debateStore.tickDualTimer()
-      if (dualTimer.value.positiveTime === 0 && dualTimer.value.negativeTime === 0) {
-        clearInterval(timerInterval!)
-        timerInterval = null
-      }
-    } else {
-      debateStore.tick()
-      if ((debateStore as any).timeRemaining === 0) {
-        clearInterval(timerInterval!)
-        timerInterval = null
-      }
-    }
-  }, 1000)
+  if (isDualTimerStage.value) debateStore.startDualTimer()
+  else debateStore.startTimer()
 }
 
 function pauseTimer() {
   debateStore.pauseTimer()
-  if (timerInterval) { clearInterval(timerInterval); timerInterval = null }
 }
 
 function resetTimer() {
-  if (timerInterval) clearInterval(timerInterval)
   debateStore.resetTimer()
   showResetModal.value = false
 }
 
 function resetDualTimer(type: 'positive' | 'negative') {
-  if (timerInterval) clearInterval(timerInterval)
   debateStore.resetDualTimer(type)
 }
 
@@ -513,31 +551,24 @@ function switchActiveTimer() {
 }
 
 function startPositiveTimer() {
-  if (timerInterval) clearInterval(timerInterval)
   debateStore.startPositiveTimer()
-  startTimer()
 }
 
 function startNegativeTimer() {
-  if (timerInterval) clearInterval(timerInterval)
   debateStore.startNegativeTimer()
-  startTimer()
 }
 
 // ═══════════ 环节切换 ═══════════
 function nextStage() {
-  if (timerInterval) clearInterval(timerInterval)
   if (currentStage.value < stages.value.length) debateStore.nextStage()
 }
 
 function previousStage() {
-  if (timerInterval) clearInterval(timerInterval)
   if (currentStage.value > 1) debateStore.previousStage()
 }
 
 async function jumpTo(id: number) {
   if (id === currentStage.value) return
-  if (timerInterval) { clearInterval(timerInterval); timerInterval = null }
   debateStore.goToStage(id)
   showProgress.value = false
 }
@@ -551,9 +582,9 @@ function toggleFullscreen() {
   }
 }
 
-// ═══════════ 试音播放 ═══════════
+// ═══════════ 试音播放（复用 store 的缓存 Audio，避免每次按键 new Audio） ═══════════
 function playTestSound(type: string) {
-  try { new Audio(`/${type}.mp3`).play().catch(() => {}) } catch {}
+  debateStore.playTestSound(type as '30' | '5' | 'End')
 }
 
 // ═══════════ 弹窗控制 ═══════════
@@ -613,23 +644,24 @@ function closeTimeModal() {
   showTimeModal.value = false
 }
 // 显示 toast 提示（弹窗内居中）
+// 性能优化：用 CSS transition 替代高频 setInterval（原每 50ms 触发响应式更新）
+// 现在仅触发一次响应式更新，过渡动画在合成线程上执行，不阻塞主线程
 function showToast() {
   showQuickTimeToast.value = true
   toastProgress.value = 100
-  // 每50ms减少2.5%，2秒内从100→0
+  // 清理旧的定时器
   if (toastProgressTimer) clearInterval(toastProgressTimer)
-  toastProgressTimer = setInterval(() => {
-    toastProgress.value -= 2.5
-    if (toastProgress.value <= 0) {
-      if (toastProgressTimer) clearInterval(toastProgressTimer)
-      showQuickTimeToast.value = false
-    }
-  }, 50)
-  // 2秒后确保关闭toast
   if (quickTimeToastTimer) clearTimeout(quickTimeToastTimer)
+  // 下一帧再将进度设为 0，让 CSS transition 自动完成 2 秒动画
+  // 双 requestAnimationFrame 确保浏览器先渲染 100% 状态再触发过渡
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      toastProgress.value = 0
+    })
+  })
+  // 2 秒后隐藏 toast
   quickTimeToastTimer = setTimeout(() => {
     showQuickTimeToast.value = false
-    if (toastProgressTimer) clearInterval(toastProgressTimer)
   }, 2000)
 }
 // 从时间弹窗内点击红色"重置"按钮：打开重置确认弹窗（居中在旧弹窗位置，同时旧弹窗消失）
@@ -728,7 +760,6 @@ function applySetupAndStart() {
   showSetup.value = false
 }
 function goBack() {
-  if (timerInterval) clearInterval(timerInterval)
   router.push(`/tournaments/${tournamentId.value}`)
 }
 
@@ -804,30 +835,24 @@ async function loadTournamentData() {
       if (cfg.uiConfig?.negativeLabel) negativeLabel.value = cfg.uiConfig.negativeLabel
       // 同步 UI 配置（标题颜色等）
       if (cfg.uiConfig) Object.assign(uiConfig.value, cfg.uiConfig)
-    } else {
-      // 没有配置时使用赛事名称
-      contestTitle.value = tournamentName
-    }
-
-    // 加载计时器环节配置
-    const template = await $fetch<any>(`/api/tournaments/${tournamentId.value}/timer-template`, {
-      headers: { Authorization: `Bearer ${useAuthStore().token}` },
-    })
-    if (template?.phases) {
-      const phases = typeof template.phases === 'string' ? JSON.parse(template.phases) : template.phases
-      if (Array.isArray(phases) && phases.length > 0) {
-        // 将 phases 转换为 debateStore 能识别的 stages 格式
-        const convertedStages = phases.map((p: any, idx: number) => ({
-          id: Number(p.id) || idx + 1,
-          name: p.name || '未命名环节',
-          duration: p.duration || 60,
-          type: p.type === 'free_debate' || p.type === 'dual-timer' ? 'dual-timer' : (p.type === 'special' ? 'special' : 'speech'),
-          order: p.order ?? idx + 1,
-          positiveDuration: p.positiveDuration || p.duration || 60,
-          negativeDuration: p.negativeDuration || p.duration || 60,
+      // 同步皮肤配置（背景等整体外观）
+      if (cfg.skinConfig) Object.assign(skinConfig.value, cfg.skinConfig)
+      // 同步环节配置（从 timer-config 的 stages 字段读取，与 timing.vue 保存的数据源一致）
+      if (cfg.stages && Array.isArray(cfg.stages) && cfg.stages.length > 0) {
+        const convertedStages = cfg.stages.map((s: any, idx: number) => ({
+          id: Number(s.id) || idx + 1,
+          name: s.name || '未命名环节',
+          duration: s.duration || 60,
+          type: s.type === 'free_debate' || s.type === 'dual-timer' ? 'dual-timer' : (s.type === 'special' ? 'special' : 'speech'),
+          order: typeof s.orderIndex === 'number' ? s.orderIndex : (s.order ?? idx + 1),
+          positiveDuration: s.positiveDuration || s.duration || 60,
+          negativeDuration: s.negativeDuration || s.duration || 60,
         }))
         debateStore.setStages(convertedStages)
       }
+    } else {
+      // 没有配置时使用赛事名称
+      contestTitle.value = tournamentName
     }
 
     // 如果环节为空，使用默认模板
@@ -859,23 +884,35 @@ onMounted(async () => {
   // 等待DOM渲染后检测辩题文字溢出
   setTimeout(() => {
     checkTopicOverflow()
-    window.addEventListener('resize', checkTopicOverflow)
+    window.addEventListener('resize', onResizeThrottled)
   }, 100)
 })
 
 onUnmounted(() => {
-  if (timerInterval) clearInterval(timerInterval)
+  debateStore.disposeTimer()
   if (modalHoverTimer.value) clearTimeout(modalHoverTimer.value)
   document.removeEventListener('keydown', handleKeyPress)
-  window.removeEventListener('resize', checkTopicOverflow)
+  window.removeEventListener('resize', onResizeThrottled)
 })
 </script>
 
 <style scoped>
-/* ═══════════ 字体定义 ═══════════ */
-@font-face { font-family: 'SourceHanSerifCN-Heavy'; src: url('/SourceHanSerifCN-Heavy.otf') format('opentype'); }
-@font-face { font-family: 'Digiface'; src: url('/Digiface.ttf') format('truetype'); }
-*:not(.digital-char) { font-family: 'SourceHanSerifCN-Heavy', 'SimSun', '宋体', serif !important; user-select: none !important; -webkit-user-select: none !important; }
+/* ═══════════ 字体定义（全局main.css已定义，此处仅作引用）═══════════ */
+/* ponytail: 删除重复的@font-face定义，使用全局定义 */
+/* 性能优化：用具体元素选择器替代 * 通配符（原 `*:not(.digital-char)` 会扫描所有 DOM 节点）
+   显式列出页面用到的元素类型，覆盖范围相同但计算成本大幅降低 */
+.responsive-container,
+.responsive-container h1, .responsive-container h2, .responsive-container h3,
+.responsive-container h4, .responsive-container h5, .responsive-container h6,
+.responsive-container p, .responsive-container span, .responsive-container div,
+.responsive-container button, .responsive-container input, .responsive-container label,
+.responsive-container td, .responsive-container th, .responsive-container li,
+.responsive-container a, .responsive-container strong, .responsive-container em {
+  font-family: 'SourceHanSerifCN-Heavy', 'SimSun', '宋体', serif !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+/* digital-char 元素保留 Digiface 字体（在更具体的类中定义） */
 
 /* ═══════════ 缩放容器 ═══════════ */
 .scale-wrapper { transform: scale(var(--ui-scale)); transform-origin: top center; }
@@ -944,7 +981,8 @@ onUnmounted(() => {
 
 /* ═══════════ 数码时钟 ═══════════ */
 .digital-display { display: flex; justify-content: center; align-items: center; gap: 0.1em; }
-.digital-char { font-family: 'Digiface', monospace !important; font-size: 13.75vw; font-weight: normal; line-height: 1; } /* 在原 9.167vw 基础上加 0.5 倍 */
+/* 提权到高于 `.responsive-container span`（ponytail 优化把它圈进了 serif 规则），确保计时数字用 Digiface */
+.digital-display .digital-char { font-family: 'Digiface', monospace !important; font-size: 13.75vw; font-weight: normal; line-height: 1; } /* 在原 9.167vw 基础上加 0.5 倍 */
 
 /* ═══════════ 控制面板：默认透明，悬停可见 ═══════════ */
 .control-panel {
@@ -955,13 +993,16 @@ onUnmounted(() => {
 }
 .control-panel:hover { opacity: 1; }
 
-/* 标签 span：固定宽度，实现左对齐基准（禁止内部换行） */
+/* 标签 span：响应式宽度，实现左对齐基准（禁止内部换行） */
 .control-panel span.text-xs {
   font-size: 1.146vw;
-  min-width: 3vw; /* 确保容纳"计时控制:"等中文标签 */
+  width: 5vw; /* 响应式宽度，与按钮 vw 单位协调，保证不同屏幕下比例一致 */
   display: inline-block;
   flex-shrink: 0;
   white-space: nowrap; /* 禁止文字在标签内换行 */
+  /* 使用阿里巴巴普惠体 Regular（较粗，标签醒目） */
+  font-family: 'AlibabaPuHuiTi', 'SimSun', '宋体', sans-serif !important;
+  font-weight: 400;
 }
 
 /* 每一行：flex 布局，行间距统一，禁止换行 */
@@ -971,15 +1012,6 @@ onUnmounted(() => {
   align-items: center;
   width: 100%;
   flex-wrap: nowrap; /* 防止按钮换行到下一行 */
-}
-
-/* 标签与按钮的分隔：标签固定宽度，按钮区自动延伸 */
-.control-panel > div > span.text-xs + * {
-  display: flex;
-  align-items: center;
-  gap: 0.15vw; /* 按钮间距再缩小 */
-  flex: 1;
-  justify-content: flex-start;
 }
 
 /* 元素间距：统一用 gap 控制 */
@@ -997,16 +1029,20 @@ onUnmounted(() => {
   background: transparent;
   color: white;
   font-size: 1vw; /* 字号略缩小 */
-  font-weight: bold;
-  border: 2px solid #4a5568;
-  border-radius: 0.3vw; /* 圆角也缩小 */
+  border: 0.1vw solid #4a5568;
+  border-radius: 0.3vw;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
   flex: 1;
-  text-align: center;
+  text-align: center; /* 水平居中 */
+  display: flex; /* 垂直居中 */
+  align-items: center; /* 垂直居中 */
+  justify-content: center; /* 水平居中（flex 模式下） */
   min-width: 2.5vw; /* 最小宽度再缩小 */
-  font-family: 'SimSun', '宋体', serif !important;
+  /* 使用阿里巴巴普惠体 Light（轻盈，按钮不厚重） */
+  font-family: 'AlibabaPuHuiTi', 'SimSun', '宋体', sans-serif !important;
+  font-weight: 300;
 }
 .control-btn:hover { border-color: #718096; background: rgba(255, 255, 255, 0.05); }
 .control-btn:disabled { opacity: 0.5; cursor: not-allowed; }

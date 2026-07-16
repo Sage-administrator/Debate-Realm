@@ -148,6 +148,7 @@ function insertDebateTemplate() {
 // 3. 保存项目
 // ════════════════════════════════════════════════
 async function saveProject() {
+  // 保存项目：提交基本信息及所有环节配置（含排序、类型、时长），成功后重新加载
   if (!form.name.trim()) {
     toast.add({ title: '请输入项目名称', color: 'warning' })
     return
@@ -242,12 +243,12 @@ onMounted(() => {
     <!-- 页面标题栏 -->
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center gap-3">
-        <NuxtLink to="/timer/projects" class="text-white/50 hover:text-white/70">
+        <NuxtLink to="/timer/projects" class="text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]">
           <UIcon name="i-lucide-arrow-left" class="w-5 h-5" />
         </NuxtLink>
         <div>
           <h1 class="text-xl font-bold">编辑项目</h1>
-          <p class="text-sm text-white/50">配置辩论赛的环节与时间</p>
+          <p class="text-sm text-[var(--color-text-muted)]">配置辩论赛的环节与时间</p>
         </div>
       </div>
 
@@ -273,7 +274,7 @@ onMounted(() => {
       <UCard class="mb-6">
         <template #header>
           <h2 class="text-lg font-bold flex items-center gap-2">
-            <UIcon name="i-lucide-file-text" class="w-5 h-5 text-white/50" />
+            <UIcon name="i-lucide-file-text" class="w-5 h-5 text-[var(--color-text-muted)]" />
             基本信息
           </h2>
         </template>
@@ -283,7 +284,7 @@ onMounted(() => {
             <label class="block text-sm font-medium mb-1">项目名称</label>
             <input
               v-model="form.name"
-              class="w-full px-3 py-2 border border-white/10 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none bg-white/5 text-white/90"
+              class="w-full px-3 py-2 border border-[var(--color-border)] rounded focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
               placeholder="例：2024春季辩论赛"
             />
           </div>
@@ -291,7 +292,7 @@ onMounted(() => {
             <label class="block text-sm font-medium mb-1">比赛标题（显示用）</label>
             <input
               v-model="form.title"
-              class="w-full px-3 py-2 border border-white/10 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none bg-white/5 text-white/90"
+              class="w-full px-3 py-2 border border-[var(--color-border)] rounded focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
               placeholder="例：三社联合辩论赛"
             />
           </div>
@@ -299,7 +300,7 @@ onMounted(() => {
             <label class="block text-sm font-medium mb-1">正方队伍名称</label>
             <input
               v-model="form.teamPositiveName"
-              class="w-full px-3 py-2 border border-white/10 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none bg-white/5 text-white/90"
+              class="w-full px-3 py-2 border border-[var(--color-border)] rounded focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
               placeholder="例：北京大学辩论队"
             />
           </div>
@@ -307,7 +308,7 @@ onMounted(() => {
             <label class="block text-sm font-medium mb-1">反方队伍名称</label>
             <input
               v-model="form.teamNegativeName"
-              class="w-full px-3 py-2 border border-white/10 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none bg-white/5 text-white/90"
+              class="w-full px-3 py-2 border border-[var(--color-border)] rounded focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
               placeholder="例：清华大学辩论队"
             />
           </div>
@@ -315,7 +316,7 @@ onMounted(() => {
             <label class="block text-sm font-medium mb-1">正方辩题</label>
             <input
               v-model="form.positiveTopic"
-              class="w-full px-3 py-2 border border-white/10 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none bg-white/5 text-white/90"
+              class="w-full px-3 py-2 border border-[var(--color-border)] rounded focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
               placeholder="例：顺境更有利于人的成长"
             />
           </div>
@@ -323,7 +324,7 @@ onMounted(() => {
             <label class="block text-sm font-medium mb-1">反方辩题</label>
             <input
               v-model="form.negativeTopic"
-              class="w-full px-3 py-2 border border-white/10 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none bg-white/5 text-white/90"
+              class="w-full px-3 py-2 border border-[var(--color-border)] rounded focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
               placeholder="例：逆境更有利于人的成长"
             />
           </div>
@@ -335,7 +336,7 @@ onMounted(() => {
         <template #header>
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-bold flex items-center gap-2">
-              <UIcon name="i-lucide-list-ordered" class="w-5 h-5 text-white/50" />
+              <UIcon name="i-lucide-list-ordered" class="w-5 h-5 text-[var(--color-text-muted)]" />
               环节配置（{{ form.stages.length }} 个环节）
             </h2>
 
@@ -349,8 +350,8 @@ onMounted(() => {
         </template>
 
         <!-- 添加新环节按钮 -->
-        <div class="flex flex-wrap gap-2 mb-6 pb-4 border-b border-white/10">
-          <span class="text-sm text-white/50 mr-2 flex items-center">添加新环节：</span>
+        <div class="flex flex-wrap gap-2 mb-6 pb-4 border-b border-[var(--color-border)]">
+          <span class="text-sm text-[var(--color-text-muted)] mr-2 flex items-center">添加新环节：</span>
           <UButton color="neutral" variant="soft" size="sm" @click="() => addStage('speech')">
             <span class="w-2 h-2 bg-blue-500 rounded-full mr-2 inline-block"></span>
             单计时（立论/小结）
@@ -371,8 +372,8 @@ onMounted(() => {
 
         <!-- 空状态 -->
         <div v-if="!form.stages.length" class="text-center py-12 border border-dashed rounded-lg">
-          <UIcon name="i-lucide-timer" class="w-10 h-10 mx-auto text-white/30 mb-2" />
-          <p class="text-white/50 text-sm">暂无环节，点击上方按钮添加或应用模板</p>
+          <UIcon name="i-lucide-timer" class="w-10 h-10 mx-auto text-[var(--color-text-muted)] mb-2" />
+          <p class="text-[var(--color-text-muted)] text-sm">暂无环节，点击上方按钮添加或应用模板</p>
         </div>
 
         <!-- 环节列表 -->
@@ -380,11 +381,11 @@ onMounted(() => {
           <div
             v-for="(stage, idx) in form.stages"
             :key="stage.id"
-            class="border border-white/10 rounded-lg p-4 hover:border-white/20 transition"
+            class="border border-[var(--color-border)] rounded-lg p-4 hover:border-[var(--color-border)] transition"
           >
             <div class="flex items-start gap-3">
               <!-- 序号 -->
-              <div class="text-white/40 font-mono text-sm w-6 text-center pt-1 flex-shrink-0">
+              <div class="text-[var(--color-text-muted)] font-mono text-sm w-6 text-center pt-1 flex-shrink-0">
                 {{ idx + 1 }}
               </div>
 
@@ -397,46 +398,48 @@ onMounted(() => {
               <div class="flex-1 grid grid-cols-12 gap-3">
                 <!-- 名称 -->
                 <div class="col-span-4">
-                  <label class="block text-xs text-white/50 mb-1">环节名称</label>
+                  <label class="block text-xs text-[var(--color-text-muted)] mb-1">环节名称</label>
                   <input
                     v-model="stage.name"
-                    class="w-full px-2 py-1.5 border border-white/10 rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-white/5 text-white/90"
+                    class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
                   />
                 </div>
 
                 <!-- 类型 -->
                 <div class="col-span-3">
-                  <label class="block text-xs text-white/50 mb-1">类型</label>
-                  <select
+                  <label class="block text-xs text-[var(--color-text-muted)] mb-1">类型</label>
+                  <USelect
                     v-model="stage.type"
-                    class="w-full px-2 py-1.5 border border-white/10 rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-white/5 text-white/90"
-                  >
-                    <option value="speech">单计时（立论）</option>
-                    <option value="question">单计时（质询）</option>
-                    <option value="summary">单计时（小结）</option>
-                    <option value="dual-timer">双计时（对辩/自由辩论）</option>
-                    <option value="special">无计时（开场/点评）</option>
-                  </select>
+                    :items="[
+                      { label: '单计时（立论）', value: 'speech' },
+                      { label: '单计时（质询）', value: 'question' },
+                      { label: '单计时（小结）', value: 'summary' },
+                      { label: '双计时（对辩/自由辩论）', value: 'dual-timer' },
+                      { label: '无计时（开场/点评）', value: 'special' },
+                    ]"
+                    class="w-full"
+                    :ui="{ base: 'bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border-[var(--color-border)]' }"
+                  />
                 </div>
 
                 <!-- 时长 -->
                 <template v-if="stage.type === 'dual-timer'">
                   <div class="col-span-2">
-                    <label class="block text-xs text-white/50 mb-1">正方时长(秒)</label>
+                    <label class="block text-xs text-[var(--color-text-muted)] mb-1">正方时长(秒)</label>
                     <input
                       type="number"
                       v-model.number="stage.positiveDuration"
-                      class="w-full px-2 py-1.5 border border-white/10 rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-white/5 text-white/90 text-right"
+                      class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] text-right"
                       min="0"
                       max="3600"
                     />
                   </div>
                   <div class="col-span-2">
-                    <label class="block text-xs text-white/50 mb-1">反方时长(秒)</label>
+                    <label class="block text-xs text-[var(--color-text-muted)] mb-1">反方时长(秒)</label>
                     <input
                       type="number"
                       v-model.number="stage.negativeDuration"
-                      class="w-full px-2 py-1.5 border border-white/10 rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-white/5 text-white/90 text-right"
+                      class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] text-right"
                       min="0"
                       max="3600"
                     />
@@ -445,25 +448,25 @@ onMounted(() => {
 
                 <template v-else-if="stage.type === 'special'">
                   <div class="col-span-4">
-                    <label class="block text-xs text-white/50 mb-1">说明</label>
-                    <div class="text-sm text-white/40 pt-1.5">无计时环节，仅显示环节名称</div>
+                    <label class="block text-xs text-[var(--color-text-muted)] mb-1">说明</label>
+                    <div class="text-sm text-[var(--color-text-muted)] pt-1.5">无计时环节，仅显示环节名称</div>
                   </div>
                 </template>
 
                 <template v-else>
                   <div class="col-span-2">
-                    <label class="block text-xs text-white/50 mb-1">时长(秒)</label>
+                    <label class="block text-xs text-[var(--color-text-muted)] mb-1">时长(秒)</label>
                     <input
                       type="number"
                       v-model.number="stage.duration"
-                      class="w-full px-2 py-1.5 border border-white/10 rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-white/5 text-white/90 text-right"
+                      class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] text-right"
                       min="0"
                       max="3600"
                     />
                   </div>
                   <div class="col-span-2">
-                    <label class="block text-xs text-white/50 mb-1">换算</label>
-                    <div class="text-sm text-white/40 pt-1.5">
+                    <label class="block text-xs text-[var(--color-text-muted)] mb-1">换算</label>
+                    <div class="text-sm text-[var(--color-text-muted)] pt-1.5">
                       {{ Math.floor((stage.duration || 0) / 60) }}分{{ (stage.duration || 0) % 60 }}秒
                     </div>
                   </div>
@@ -471,10 +474,10 @@ onMounted(() => {
 
                 <!-- 描述 -->
                 <div class="col-span-12">
-                  <label class="block text-xs text-white/50 mb-1">描述（可选）</label>
+                  <label class="block text-xs text-[var(--color-text-muted)] mb-1">描述（可选）</label>
                   <input
                     v-model="stage.description"
-                    class="w-full px-2 py-1.5 border border-white/10 rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-white/5 text-white/90"
+                    class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
                     placeholder="对此环节的简单说明"
                   />
                 </div>
@@ -483,7 +486,7 @@ onMounted(() => {
               <!-- 操作按钮 -->
               <div class="flex flex-col gap-1 flex-shrink-0">
                 <button
-                  class="w-7 h-7 flex items-center justify-center text-white/40 hover:text-white/60 hover:bg-white/5 rounded transition"
+                  class="w-7 h-7 flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] rounded transition"
                   :disabled="idx === 0"
                   @click="moveStageUp(idx)"
                   title="上移"
@@ -491,7 +494,7 @@ onMounted(() => {
                   <UIcon name="i-lucide-chevron-up" class="w-4 h-4" />
                 </button>
                 <button
-                  class="w-7 h-7 flex items-center justify-center text-white/40 hover:text-white/60 hover:bg-white/10 rounded transition"
+                  class="w-7 h-7 flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] rounded transition"
                   :disabled="idx === form.stages.length - 1"
                   @click="moveStageDown(idx)"
                   title="下移"
@@ -511,7 +514,7 @@ onMounted(() => {
         </div>
 
         <!-- 底部保存按钮 -->
-        <div class="flex items-center justify-end gap-2 mt-6 pt-4 border-t border-white/10">
+        <div class="flex items-center justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
           <UButton color="neutral" variant="ghost" :to="'/timer/projects'">取消</UButton>
           <UButton color="primary" :loading="saving" @click="saveProject">
             保存

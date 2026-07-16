@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     // 队伍人数：优先请求体 → 赛事配置 → 默认 4
     const teamSize = body?.teamSize ?? tournament.teamSize ?? 4
     if (!Number.isInteger(teamSize) || teamSize < 1) {
-      throw createError({ statusCode: 400, statusMessage: 'teamSize 必须为正整数' })
+      throw createError({ statusCode: 400, message: 'teamSize 必须为正整数' })
     }
 
     // 3. 拉取所有已通过审核、尚未转换为参赛队伍的个人报名记录（含成员）
@@ -174,6 +174,6 @@ export default defineEventHandler(async (event) => {
     // 已知的业务错误（含鉴权 / 校验抛出的 createError）直接抛出
     if (error.statusCode) throw error
     console.error('Auto-match error:', error)
-    throw createError({ statusCode: 500, statusMessage: '自动组队失败' })
+    throw createError({ statusCode: 500, message: '自动组队失败' })
   }
 })

@@ -13,12 +13,15 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!dbUser) {
-      throw createError({ statusCode: 404, statusMessage: '用户不存在' })
+      throw createError({ statusCode: 404, message: '用户不存在' })
     }
 
     return {
       id: dbUser.id,
       username: dbUser.username,
+      nickname: dbUser.nickname,
+      email: dbUser.email,
+      avatar: dbUser.avatar,
       role: dbUser.role,
       mode: dbUser.mode,
       team: dbUser.team
@@ -28,6 +31,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get user error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取用户信息失败' })
+    throw createError({ statusCode: 500, message: '获取用户信息失败' })
   }
 })

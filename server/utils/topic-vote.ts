@@ -1,5 +1,6 @@
 import type { JWTPayload } from './auth'
 import type { TopicVote, TopicVoteRecord } from '../lib/generated/client'
+import { safeJsonParse } from './common'
 
 // ═════════════════════════════════════════════════════════
 // 辩题投票系统 — 工具函数
@@ -14,16 +15,12 @@ export const ALL_VOTER_TYPES = ['debater', 'judge', 'admin', 'public'] as const
  * null / 空 / 解析失败 → 视为全部类型允许
  */
 export function parseAllowedVoters(allowedVoters: string | null): string[] {
-  if (!allowedVoters) return [...ALL_VOTER_TYPES]
-  try {
-    const parsed = JSON.parse(allowedVoters)
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed.filter((t) => ALL_VOTER_TYPES.includes(t))
-    }
-  } catch {
-    // JSON 解析失败，降级为全部允许
+  if (!allowedVoters) return [...ALL_VOTER_TYPES] as string[]
+  const parsed = safeJsonParse<string[] | null>(allowedVoters, null)
+  if (Array.isArray(parsed) && parsed.length > 0) {
+    return parsed.filter((t) => (ALL_VOTER_TYPES as readonly string[]).includes(t))
   }
-  return [...ALL_VOTER_TYPES]
+  return [...ALL_VOTER_TYPES] as string[]
 }
 
 /**
@@ -78,18 +75,12 @@ export function computeVoteStats(
 
   // 遍历投票记录，解析 topicIndices 并累加
   for (const record of records) {
-    let indices: number[] = []
-    try {
-      indices = JSON.parse(record.topicIndices)
-      if (!Array.isArray(indices)) indices = []
-    } catch {
-      indices = []
-    }
+    const indices = safeJsonParse<number[]>(record.topicIndices, [])
     for (const idx of indices) {
       if (idx >= 0 && idx < results.length) {
-        results[idx].count++
+        results[idx]!.count++
         const t = record.voterType
-        results[idx].byType[t] = (results[idx].byType[t] || 0) + 1
+        results[idx]!.byType[t] = (results[idx]!.byType[t] || 0) + 1
       }
     }
   }
@@ -104,16 +95,13 @@ export function computeVoteStats(
 
 /**
  * 从请求事件生成公开投票防刷指纹（IP + User-Agent 简易哈希）。
+ * ponytail: 使用 reduce 简化哈希计算，逻辑等价
  * 不可靠的指纹仅用于基础防刷，不保证唯一性。
  */
 export function buildVoterFingerprint(ip: string | null, userAgent: string | undefined): string {
   const raw = `${ip || 'unknown'}|${userAgent || 'unknown'}`
-  // 简易哈希：base64 编码，避免引入 crypto 依赖
-  let hash = 0
-  for (let i = 0; i < raw.length; i++) {
-    hash = (hash << 5) - hash + raw.charCodeAt(i)
-    hash |= 0
-  }
+  // ponytail: 用 reduce 替代 for 循环，简洁
+  const hash = raw.split('').reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0)
   return `fp_${Math.abs(hash).toString(36)}`
 }
 
@@ -121,11 +109,7 @@ export function buildVoterFingerprint(ip: string | null, userAgent: string | und
  * 解析候选辩题 JSON 字符串为数组
  */
 export function parseTopics(topicsJson: string): string[] {
-  try {
-    const arr = JSON.parse(topicsJson)
-    if (Array.isArray(arr)) return arr.map((t) => String(t))
-  } catch {
-    // 解析失败返回空
-  }
+  const arr = safeJsonParse<string[] | null>(topicsJson, null)
+  if (Array.isArray(arr)) return arr.map((t) => String(t))
   return []
 }

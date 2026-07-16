@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     const team = await prisma.team.findUnique({ where: { id } })
 
     if (!team) {
-      throw createError({ statusCode: 404, statusMessage: '团队不存在' })
+      throw createError({ statusCode: 404, message: '团队不存在' })
     }
 
     await prisma.team.delete({ where: { id } })
@@ -18,6 +18,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Delete team error:', error)
-    throw createError({ statusCode: 500, statusMessage: '删除团队失败' })
+    throw createError({ statusCode: 500, message: '删除团队失败' })
   }
 })

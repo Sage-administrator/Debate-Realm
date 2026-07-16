@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
 
     // 4. 校验 action 取值合法
     if (action !== 'approve' && action !== 'reject') {
-      throw createError({ statusCode: 400, statusMessage: 'action 必须为 approve 或 reject' })
+      throw createError({ statusCode: 400, message: 'action 必须为 approve 或 reject' })
     }
 
     // 5. 查找该报名记录（须同时满足 regId 与 tournamentId，确保归属正确）
@@ -32,12 +32,12 @@ export default defineEventHandler(async (event) => {
 
     // 6. 记录不存在则返回 404
     if (!registration) {
-      throw createError({ statusCode: 404, statusMessage: '报名记录不存在' })
+      throw createError({ statusCode: 404, message: '报名记录不存在' })
     }
 
     // 7. 已审核（非 pending）则拒绝重复审核
     if (registration.status !== 'pending') {
-      throw createError({ statusCode: 400, statusMessage: '该报名已审核' })
+      throw createError({ statusCode: 400, message: '该报名已审核' })
     }
 
     // 8. 映射为新状态值
@@ -60,6 +60,6 @@ export default defineEventHandler(async (event) => {
     // 已知的业务错误（含鉴权 / 校验抛出的 createError）直接抛出
     if (error.statusCode) throw error
     console.error('Review registration error:', error)
-    throw createError({ statusCode: 500, statusMessage: '审核报名失败' })
+    throw createError({ statusCode: 500, message: '审核报名失败' })
   }
 })

@@ -55,6 +55,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Login status error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取登录状态失败' })
+    throw createError({ statusCode: 500, message: '获取登录状态失败' })
   }
 })

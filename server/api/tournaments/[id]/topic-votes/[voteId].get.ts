@@ -1,5 +1,5 @@
 import { prisma } from '../../../../lib/prisma'
-import { getUserFromEvent, type JWTPayload } from '../../../../utils/auth'
+import { getUserFromEventWithSession, type JWTPayload } from '../../../../utils/auth'
 import { canReadTournament } from '../../../../utils/tournament-auth'
 import { parseTopics, parseAllowedVoters, computeVoteStats } from '../../../../utils/topic-vote'
 
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     // 1. 可选鉴权：尝试获取登录用户，未登录时 user 为 null
     let user: JWTPayload | null = null
     try {
-      user = getUserFromEvent(event)
+      user = await getUserFromEventWithSession(event, prisma)
     } catch {
       user = null
     }
@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
       include: { match: true, records: true },
     })
     if (!vote) {
-      throw createError({ statusCode: 404, statusMessage: '投票不存在' })
+      throw createError({ statusCode: 404, message: '投票不存在' })
     }
 
     // 3. 权限判定
@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
 
     // 非公开投票且非管理员 → 拒绝
     if (!isPublic && !isAdmin) {
-      throw createError({ statusCode: 403, statusMessage: '无权限查看此投票' })
+      throw createError({ statusCode: 403, message: '无权限查看此投票' })
     }
 
     // 4. 组装返回数据
@@ -86,6 +86,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get topic vote error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取投票详情失败' })
+    throw createError({ statusCode: 500, message: '获取投票详情失败' })
   }
 })

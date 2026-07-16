@@ -1,4 +1,4 @@
-// ════════════════════════════════════════════════════
+﻿// ════════════════════════════════════════════════════
 // POST /api/internal/audience/revoke — 撤销观众临时发言
 // 由计时程序或管理员调用
 // 请求体：{ teamId, guildId, channelId, userId, username, internalKey }
@@ -15,17 +15,17 @@ export default defineEventHandler(async (event) => {
     const { teamId, guildId, channelId, userId, username } = body
 
     if (!teamId || !guildId || !channelId || !userId) {
-      throw createError({ statusCode: 400, statusMessage: '缺少必要参数：teamId、guildId、channelId、userId' })
+      throw createError({ statusCode: 400, message: '缺少必要参数：teamId、guildId、channelId、userId' })
     }
 
     if (!username) {
-      throw createError({ statusCode: 400, statusMessage: '缺少 username 参数' })
+      throw createError({ statusCode: 400, message: '缺少 username 参数' })
     }
 
     // 获取 Bot 实例
     const botInstance = getBotInstance(teamId)
     if (!botInstance || !botInstance.config) {
-      throw createError({ statusCode: 400, statusMessage: 'Bot 未启动，请先连接 Bot' })
+      throw createError({ statusCode: 400, message: 'Bot 未启动，请先连接 Bot' })
     }
 
     // 撤销临时发言
@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
     )
 
     if (!result.success) {
-      throw createError({ statusCode: 400, statusMessage: result.message })
+      throw createError({ statusCode: 400, message: result.message })
     }
 
     return {
@@ -51,6 +51,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Internal Audience Revoke] 撤销失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '撤销观众临时发言失败' })
+    throw createError({ statusCode: 500, message: '撤销观众临时发言失败' })
   }
 })

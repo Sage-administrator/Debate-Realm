@@ -2,19 +2,21 @@
 // 循环赛积分榜组件
 // 根据赛果自动计算各队排名、胜负、得分等
 
+// 组件入参定义（旧版，下方 withDefaults 处才是实际生效的 props 定义）
 interface Props {
   matches: MatchItem[]
 }
 
+// 单场比赛项的数据结构
 interface MatchItem {
-  id: string
-  round: number
-  teamA?: string | null
-  teamB?: string | null
-  scoreA?: number | null
-  scoreB?: number | null
-  winner?: string | null
-  status: string
+  id: string                 // 对阵唯一标识
+  round: number              // 所属轮次
+  teamA?: string | null      // A 方队伍标识
+  teamB?: string | null      // B 方队伍标识
+  scoreA?: number | null     // A 方得分
+  scoreB?: number | null     // B 方得分
+  winner?: string | null     // 胜出队伍标识（平局为 null）
+  status: string             // 对阵状态：finished/running/pending
 }
 
 // props 定义：matches + 可选晋级提示 + 组标签
@@ -28,16 +30,17 @@ const props = withDefaults(defineProps<{
 })
 
 // 计算各队的排名数据
+// 队伍积分数据结构
 interface TeamStanding {
-  team: string
-  played: number
-  wins: number
-  draws: number
-  losses: number
-  scored: number
-  conceded: number
-  diff: number
-  points: number
+  team: string       // 队伍标识
+  played: number     // 已赛场次
+  wins: number       // 胜场数
+  draws: number      // 平局数
+  losses: number     // 负场数
+  scored: number     // 总得分
+  conceded: number   // 总失分
+  diff: number       // 净胜分（得分 - 失分）
+  points: number     // 积分（胜3平1负0）
 }
 
 const standings = computed<TeamStanding[]>(() => {
@@ -104,11 +107,12 @@ const matchResults = computed(() => {
   return map
 })
 
+// 获取两队之间的比赛结果：team1 视为主队、team2 视为客队
 function getResult(team1: string, team2: string) {
   return matchResults.value.get(`${team1}_${team2}`) || null
 }
 
-// 排名颜色
+// 排名颜色：第 1 金、第 2 银、第 3 铜
 function rankColor(rank: number): string {
   if (rank === 1) return 'text-yellow-500'
   if (rank === 2) return 'text-gray-400'
@@ -116,12 +120,16 @@ function rankColor(rank: number): string {
   return ''
 }
 
+// 队伍名简写：超过 4 字则截断并加省略号
 function shortName(name: string) {
   return name.length > 4 ? name.slice(0, 4) + '.' : name
 }
 
 // 积分规则说明
 const scoringRules = '胜 3 分，平 1 分，负 0 分'
+
+// ponytail: 对阵矩阵缓存变量，避免模板中 getResult 重复调用
+let r: { teamA: string; teamB: string; scoreA: number; scoreB: number; winner: string | null } | null | undefined
 </script>
 
 <template>
@@ -219,22 +227,24 @@ const scoringRules = '胜 3 分，平 1 分，负 0 分'
                   class="py-1.5 px-2 border border-gray-200 dark:border-gray-700 text-center"
                   :class="{ 'bg-gray-100 dark:bg-gray-800': rowTeam.team === colTeam.team }"
                 >
+                  <!-- ponytail: 用单个变量 r 缓存 getResult，避免同格内重复 6 次 Map 查找 -->
                   <template v-if="rowTeam.team === colTeam.team">
                     <span class="text-gray-300">—</span>
                   </template>
-                  <template v-else>
+                  <template v-else-if="(r = getResult(rowTeam.team, colTeam.team))">
                     <span
-                      v-if="getResult(rowTeam.team, colTeam.team)"
                       class="cursor-help"
-                      :title="`${getResult(rowTeam.team, colTeam.team)!.teamA} ${getResult(rowTeam.team, colTeam.team)!.scoreA} : ${getResult(rowTeam.team, colTeam.team)!.scoreB} ${getResult(rowTeam.team, colTeam.team)!.teamB}`"
+                      :title="`${r.teamA} ${r.scoreA} : ${r.scoreB} ${r.teamB}`"
                     >
                       <span
-                        :class="getResult(rowTeam.team, colTeam.team)!.winner === rowTeam.team ? 'text-green-600 font-bold' : getResult(rowTeam.team, colTeam.team)!.winner === null ? 'text-yellow-500' : 'text-red-500'"
+                        :class="r.winner === rowTeam.team ? 'text-green-600 font-bold' : r.winner === null ? 'text-yellow-500' : 'text-red-500'"
                       >
-                        {{ getResult(rowTeam.team, colTeam.team)!.scoreA }}:{{ getResult(rowTeam.team, colTeam.team)!.scoreB }}
+                        {{ r.scoreA }}:{{ r.scoreB }}
                       </span>
                     </span>
-                    <span v-else class="text-gray-300">-</span>
+                  </template>
+                  <template v-else>
+                    <span class="text-gray-300">-</span>
                   </template>
                 </td>
               </tr>

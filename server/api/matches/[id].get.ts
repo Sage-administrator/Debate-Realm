@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    if (!match) throw createError({ statusCode: 404, statusMessage: '场次不存在' })
+    if (!match) throw createError({ statusCode: 404, message: '场次不存在' })
 
     return {
       id: match.id, round: match.round, orderNum: match.orderNum,
@@ -26,6 +26,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get match error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取场次详情失败' })
+    throw createError({ statusCode: 500, message: '获取场次详情失败' })
   }
 })

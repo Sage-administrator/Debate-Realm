@@ -3,23 +3,14 @@
 // 供计时程序、Bot 后台等内部模块调用，使用 INTERNAL_API_KEY 验证
 // ════════════════════════════════════════════════════
 
-// 内部 API 密钥：生产环境必须通过环境变量配置
-const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY
+import { requireEnvVar } from './common'
 
-// 启动时校验：生产环境必须设置 INTERNAL_API_KEY，否则拒绝启动
-if (!INTERNAL_API_KEY) {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('[Security] 生产环境必须设置 INTERNAL_API_KEY 环境变量')
-    console.error('[Security] 请在 .env 文件或系统环境变量中配置：INTERNAL_API_KEY=<随机字符串>')
-    process.exit(1)
-  } else {
-    // 开发环境使用默认值，但打印警告提醒
-    console.warn('[Security] ⚠️  INTERNAL_API_KEY 未设置，使用开发环境默认值。生产环境部署时务必配置！')
-  }
-}
-
-// 最终使用的密钥（开发环境回退到默认值）
-const effectiveKey = INTERNAL_API_KEY || 'debate-timer-dev-internal-key'
+// ponytail: 使用 requireEnvVar 统一处理环境变量校验
+const effectiveKey = requireEnvVar(
+  'INTERNAL_API_KEY',
+  'debate-timer-dev-internal-key',
+  '请在 .env 文件或系统环境变量中配置：INTERNAL_API_KEY=<随机字符串>'
+)
 
 /**
  * 验证内部 API 密钥
@@ -38,7 +29,7 @@ export async function verifyInternalKey(event: any): Promise<void> {
   }
 
   if (!internalKey || internalKey !== effectiveKey) {
-    throw createError({ statusCode: 403, statusMessage: '内部 API 密钥无效' })
+    throw createError({ statusCode: 403, message: '内部 API 密钥无效' })
   }
 }
 

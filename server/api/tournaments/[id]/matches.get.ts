@@ -27,6 +27,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get matches error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取场次列表失败' })
+    throw createError({ statusCode: 500, message: '获取场次列表失败' })
   }
 })

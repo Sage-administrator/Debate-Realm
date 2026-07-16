@@ -9,8 +9,8 @@ export default defineEventHandler(async (event) => {
       round: string; orderNum: number; teamA?: string; teamB?: string; scheduledAt?: string
     }>(event)
 
-    if (!round || orderNum === undefined) throw createError({ statusCode: 400, statusMessage: '轮次和顺序不能为空' })
-    if (teamA && teamB && teamA.trim() === teamB.trim()) throw createError({ statusCode: 400, statusMessage: '两支队伍不能相同' })
+    if (!round || orderNum === undefined) throw createError({ statusCode: 400, message: '轮次和顺序不能为空' })
+    if (teamA && teamB && teamA.trim() === teamB.trim()) throw createError({ statusCode: 400, message: '两支队伍不能相同' })
 
     // 权限：系统管理员 或 该赛事所属团队的管理员
     await requireWriteTournament(event, prisma, id)
@@ -36,6 +36,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Create match error:', error)
-    throw createError({ statusCode: 500, statusMessage: '创建场次失败' })
+    throw createError({ statusCode: 500, message: '创建场次失败' })
   }
 })

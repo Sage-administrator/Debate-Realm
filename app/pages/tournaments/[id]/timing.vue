@@ -357,8 +357,9 @@ function removeStage(idx: number) {
 function duplicateStage(idx: number) {
   const original = fullConfig.value.stages[idx]
   if (!original) return
+  // 使用 structuredClone 替代 JSON.parse(JSON.stringify())，性能更好且支持更多类型
   const copy: Stage = {
-    ...JSON.parse(JSON.stringify(original)),
+    ...structuredClone(original),
     id: ++nextStageId,
     name: original.name + ' (副本)',
     order: fullConfig.value.stages.length + 1,
@@ -557,7 +558,7 @@ watch(
             <!-- 环节卡片列表（可拖拽排序）-->
             <div class="stages-scroll">
               <!-- 顶部：使用模板按钮（随列表滚动） -->
-              <button class="template-btn" @click="showTemplateModal = true">
+              <button class="template-btn" @click="() => { showTemplateModal = true }">
                 <UIcon name="i-lucide-download" class="template-btn-icon" />
                 <span>使用模板</span>
               </button>
@@ -569,18 +570,21 @@ watch(
                   'stage-card--dragging': dragSourceId === stage.id,
                   'stage-card--over': dragOverId === stage.id
                 }"
-                draggable="true"
-                @dragstart="onDragStart($event, stage.id)"
                 @dragover.prevent="onDragOver($event, stage.id)"
                 @dragleave="onDragLeave(stage.id)"
                 @drop.prevent="onDrop(stage.id)"
                 @dragend="onDragEnd"
               >
-                <!-- 卡片头（新状态栏风格，可拖拽排序）-->
-                <div class="stage-card-header" @click="toggleExpand(stage.id)">
+                <!-- 卡片头（可拖拽排序，点击展开/收起）-->
+                <div
+                  class="stage-card-header"
+                  draggable="true"
+                  @dragstart="onDragStart($event, stage.id)"
+                  @click="toggleExpand(stage.id)"
+                >
                   <!-- 拖拽把手 + 序号：用户按住此处拖动 -->
                   <div class="stage-order stage-order--handle" title="拖动调整顺序">
-                    <span class="ml-1">{{ idx + 1 }}</span>
+                    <span>{{ idx + 1 }}</span>
                   </div>
 
                   <!-- 左侧标签组：类/类型/时/时间 -->
@@ -600,13 +604,13 @@ watch(
                   <div class="stage-header-title">
                     <template v-if="hasTimer(stage.type)">
                       <template v-if="stage.type === 'single_speech' || stage.type === 'speech' || stage.type === 'summary'">
-                        {{ (stage.speaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}
+                        {{ (stage.speaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }} · {{ stage.name }}
                       </template>
                       <template v-else-if="stage.type === 'single_question'">
-                        {{ (stage.questioner || '反方·二辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}·{{ (stage.responder || '正方·一辩').replace(/[·\/\s\-]/g, '') }}
+                        {{ (stage.questioner || '反方·二辩').replace(/[·\/\s\-]/g, '') }} · {{ stage.name }} · {{ (stage.responder || '正方·一辩').replace(/[·\/\s\-]/g, '') }}
                       </template>
                       <template v-else-if="isDualTimer(stage.type)">
-                        {{ (stage.firstSpeaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}
+                        {{ (stage.firstSpeaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }} · {{ stage.name }}
                       </template>
                       <template v-else>
                         {{ stage.name }}
@@ -618,7 +622,8 @@ watch(
                   </div>
                 </div>
                 <!-- 展开的详情（使用新的 StageForm 组件）-->
-                <div v-if="expandedId === stage.id" class="stage-card-body">
+                <!-- draggable="false" 防止 body 区域被拖动，拖动只能在卡片头进行 -->
+                <div v-if="expandedId === stage.id" class="stage-card-body" draggable="false" @dragstart.prevent.stop>
                   <!-- 动态表单：根据环节类型展示不同字段 -->
                   <StageForm
                     :model-value="{
@@ -626,10 +631,10 @@ watch(
                       name: stage.name,
                       duration: stage.type === 'dual-timer' ? (stage.positiveDuration ?? 120) : (stage.duration ?? 180),
                       protectionTime: stage.protectionTime ?? 0,
-                      speaker: stage.speaker || '正方·一辩',
-                      questioner: stage.questioner || '反方·二辩',
-                      responder: stage.responder || '正方·一辩',
-                      firstSpeaker: stage.firstSpeaker || '正方·一辩',
+                      speaker: stage.speaker || '正方 · 一辩',
+                      questioner: stage.questioner || '反方 · 二辩',
+                      responder: stage.responder || '正方 · 一辩',
+                      firstSpeaker: stage.firstSpeaker || '正方 · 一辩',
                     }"
                     @update:model-value="(val) => onStageFormUpdate(stage, val)"
                   />
@@ -664,8 +669,8 @@ watch(
     <div v-if="showTemplateModal" class="template-modal-mask" @click.self="showTemplateModal = false">
       <div class="template-modal">
         <div class="template-modal-header">
-          <h3 class="text-lg font-bold text-white/90">选择计时器模板</h3>
-          <button class="template-modal-close" @click="showTemplateModal = false">×</button>
+          <h3 class="text-lg font-bold text-[var(--color-text-primary)]/90">选择计时器模板</h3>
+          <button class="template-modal-close" @click="() => { showTemplateModal = false }">×</button>
         </div>
         <div class="template-modal-body">
           <div
@@ -696,7 +701,7 @@ watch(
 .category-sidebar {
   width: 11.25rem;
   flex-shrink: 0;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid var(--color-border);
   padding: 0.75rem;
 }
 
@@ -707,7 +712,7 @@ watch(
 .category-title {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
@@ -720,9 +725,9 @@ watch(
   justify-content: space-between;
   padding: 0.5rem 0.625rem;
   font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-secondary);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
   border-radius: 0.375rem;
   cursor: pointer;
   transition: all 0.15s;
@@ -730,65 +735,64 @@ watch(
 }
 
 .category-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border);
 }
 
 .empty-state {
   text-align: center;
   padding: 3.75rem 0;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
   font-size: 0.875rem;
 }
 
 /* 环节卡片 —— 可拖拽排序 */
 .stage-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   margin-bottom: 0.5rem;
   overflow: hidden;
-  cursor: grab;
   transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
-  user-select: none;
-}
-
-.stage-card:active {
-  cursor: grabbing;
 }
 
 .stage-card--dragging {
   opacity: 0.5;
   transform: scale(0.98);
-  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
   border-style: dashed;
-  border-color: #07C160;
+  border-color: var(--color-accent-primary);
 }
 
 .stage-card--over {
-  border-color: #07C160;
-  box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.2);
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 .stage-card-header {
   display: flex;
   align-items: center;
   padding: 0.75rem 0.75rem;
-  cursor: pointer;
+  cursor: grab;
   gap: 0.75rem;
-  background-color: rgba(7, 193, 96, 0.08);
+  background-color: rgba(99, 102, 241, 0.08);
   transition: background-color 0.2s;
+  user-select: none;
+}
+
+.stage-card-header:active {
+  cursor: grabbing;
 }
 
 .stage-card-header:hover {
-  background-color: rgba(7, 193, 96, 0.15);
+  background-color: rgba(99, 102, 241, 0.15);
 }
 
 .stage-order {
   min-width: 2rem;
   height: 2rem;
   border-radius: 0.375rem;
-  background: #07C160;
+  background: var(--color-accent-primary);
   color: #FFFFFF;
   display: flex;
   align-items: center;
@@ -824,14 +828,14 @@ watch(
 
 .status-tag--green {
   color: #FFFFFF;
-  background-color: #07C160;
+  background-color: var(--color-accent-primary);
   font-weight: 500;
 }
 
 .status-tag--white {
-  color: rgba(255, 255, 255, 0.9);
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   font-weight: 500;
 }
 
@@ -845,7 +849,7 @@ watch(
   min-width: 0;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #FFFFFF;
+  color: var(--color-text-primary);
   text-align: right;
   white-space: nowrap;
   overflow: hidden;
@@ -855,7 +859,7 @@ watch(
 /* ═══════════ 卡片展开表单 ═══════════ */
 .stage-card-body {
   padding: 1rem 0.75rem 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--color-border);
 }
 
 .stage-card-actions {
@@ -864,7 +868,7 @@ watch(
   gap: 0.5rem;
   padding-top: 1rem;
   margin-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--color-border);
 }
 
 .action-btn {
@@ -873,16 +877,16 @@ watch(
   gap: 0.25rem;
   padding: 0.375rem 0.75rem;
   font-size: 0.8125rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--color-border);
   border-radius: 0.25rem;
   background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .action-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-secondary);
 }
 
 .action-btn--copy:hover {
@@ -904,9 +908,9 @@ watch(
   gap: 0.35rem;
   padding: 0.3rem 0.75rem;
   border-radius: 0.5rem;
-  border: 1.5px dashed #10B981;
+  border: 1.5px dashed var(--color-accent-primary);
   background: transparent;
-  color: #10B981;
+  color: var(--color-accent-primary);
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -915,9 +919,9 @@ watch(
 }
 
 .template-btn:hover {
-  background: rgba(16, 185, 129, 0.06);
-  border-color: #059669;
-  color: #059669;
+  background: rgba(99, 102, 241, 0.06);
+  border-color: var(--color-accent-primary);
+  color: var(--color-accent-primary);
 }
 
 .template-btn-icon {
@@ -937,16 +941,16 @@ watch(
 }
 
 .template-modal {
-  background: rgba(30, 30, 46, 0.95);
+  background: var(--color-bg-secondary);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   width: 32rem;
   max-width: 90vw;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   overflow: hidden;
 }
 
@@ -955,8 +959,8 @@ watch(
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-tertiary);
 }
 
 .template-modal-close {
@@ -966,7 +970,7 @@ watch(
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   background: transparent;
   border: none;
   border-radius: 0.375rem;
@@ -975,8 +979,8 @@ watch(
 }
 
 .template-modal-close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #FFFFFF;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
 }
 
 .template-modal-body {
@@ -990,16 +994,16 @@ watch(
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   margin-bottom: 0.75rem;
   transition: all 0.15s ease;
 }
 
 .template-item:hover {
-  border-color: #10B981;
-  background: rgba(16, 185, 129, 0.04);
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+  border-color: var(--color-accent-primary);
+  background: rgba(99, 102, 241, 0.04);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
 }
 
 .template-item:last-child {
@@ -1014,28 +1018,28 @@ watch(
 .template-item-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #FFFFFF;
+  color: var(--color-text-primary);
   margin-bottom: 0.25rem;
 }
 
 .template-item-desc {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
   margin-bottom: 0.25rem;
 }
 
 .template-item-count {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
 }
 
 .template-item-btn {
   padding: 0.5rem 1rem;
   font-size: 0.85rem;
   font-weight: 500;
-  color: #10B981;
+  color: var(--color-accent-primary);
   background: transparent;
-  border: 1.5px solid #10B981;
+  border: 1.5px solid var(--color-accent-primary);
   border-radius: 0.375rem;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1043,7 +1047,7 @@ watch(
 }
 
 .template-item-btn:hover {
-  background: #10B981;
+  background: var(--color-accent-primary);
   color: #FFFFFF;
 }
 
@@ -1056,9 +1060,9 @@ watch(
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
-  border: 1.5px dashed rgba(255, 255, 255, 0.3);
+  border: 1.5px dashed var(--color-border);
   background: transparent;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -1067,9 +1071,9 @@ watch(
 }
 
 .add-stage-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.4);
-  color: rgba(255, 255, 255, 0.7);
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
 }
 
 .add-stage-plus {
@@ -1079,11 +1083,11 @@ watch(
 
 /* ═══════════ 高度与溢出控制 ═══════════ */
 .stages-config-card {
-  background-color: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   padding: 1rem;
   border-radius: 0.5rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -1101,7 +1105,7 @@ watch(
   top: 0;
   width: 11.25rem;
   height: 100%;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid var(--color-border);
   padding: 0.75rem;
   overflow-y: auto;
   flex-shrink: 0;

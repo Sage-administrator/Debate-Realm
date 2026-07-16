@@ -3,28 +3,28 @@
 const toast = useToast()
 const store = useAuthStore()
 
-const props = defineProps<{ tournamentId: string }>()
-const emit = defineEmits<{ saved: [] }>()
+const props = defineProps<{ tournamentId: string }>()   // 当前赛事 ID
+const emit = defineEmits<{ saved: [] }>()                // 保存成功后触发
 
 // ── 环节数据类型 ──
 interface TimerPhase {
-  id: string
-  type: string
-  name: string
-  questioner?: string
-  responder?: string
-  firstSpeaker?: string
-  duration: number
-  protectionTime: number
-  isSurprise: boolean
+  id: string                 // 环节唯一标识
+  type: string               // 环节类型（如 single_speech、free_debate 等）
+  name: string               // 环节名称（如"立论""对辩"）
+  questioner?: string        // 发问方（仅 single_question 类型）
+  responder?: string         // 接受方（仅 single_question 类型）
+  firstSpeaker?: string      // 率先发言方（仅 free_debate 类型）
+  duration: number           // 环节时长（秒）
+  protectionTime: number     // 保护时间（秒）
+  isSurprise: boolean        // 是否为奇袭环节
 }
 
 // ── 环节类型分组（按L377-567规格：emoji标题 + action-row列表项）──
 interface PhaseGroupItem {
-  label: string
-  type: string
-  presetName?: string
-  custom?: boolean
+  label: string              // 列表项展示文本
+  type: string               // 对应的环节类型 value
+  presetName?: string        // 预设环节名称（如"立论"）
+  custom?: boolean           // 是否为自定义名称项
 }
 
 const phaseGroups: { icon: string; label: string; items: PhaseGroupItem[] }[] = [
@@ -76,23 +76,26 @@ const phaseGroups: { icon: string; label: string; items: PhaseGroupItem[] }[] = 
 ]
 
 // ── 工具函数 ──
-function getTypeLabel(type: string): string {
-  for (const g of phaseGroups) {
-    for (const item of g.items) {
-      if (item.type === type && !item.custom) return item.label
-    }
+// ponytail: 预构建 Map，O(1) 查找替代每次遍历数组
+const typeLabelMap = new Map<string, string>()
+for (const g of phaseGroups) {
+  for (const item of g.items) {
+    if (!item.custom) typeLabelMap.set(item.type, item.label)
   }
-  return type
+}
+function getTypeLabel(type: string): string {
+  return typeLabelMap.get(type) ?? type
 }
 
+// 根据环节类型返回对应颜色（用于类型标签底色）
+const typeColorMap: Record<string, string> = {
+  single_speech: '#10B981', single_question: '#10B981',
+  bilateral_debate: '#10B981', free_debate: '#10B981',
+  no_timer: '#3B82F6', single_timer: '#3B82F6', double_timer: '#3B82F6',
+  ppt_replace: '#8B5CF6',
+}
 function getTypeColor(type: string): string {
-  const map: Record<string, string> = {
-    single_speech: '#10B981', single_question: '#10B981',
-    bilateral_debate: '#10B981', free_debate: '#10B981',
-    no_timer: '#3B82F6', single_timer: '#3B82F6', double_timer: '#3B82F6',
-    ppt_replace: '#8B5CF6',
-  }
-  return map[type] || '#9CA3AF'
+  return typeColorMap[type] || '#9CA3AF'
 }
 
 // ── 状态 ──
@@ -210,10 +213,15 @@ function selectCascaderItem(type: string) {
 }
 
 // ── 显隐条件 ──
+// 是否显示环节时长（无计时器/PPT 不显示）
 function showDuration(type: string) { return !['no_timer', 'ppt_replace'].includes(type) }
+// 是否显示发问人/接受人（仅单方发问）
 function showQuestioner(type: string) { return type === 'single_question' }
+// 是否显示率先发言方（仅自由辩论）
 function showFirstSpeaker(type: string) { return type === 'free_debate' }
+// 是否显示保护时间（仅单方发问/双边对辩）
 function showProtection(type: string) { return ['single_question', 'bilateral_debate'].includes(type) }
+// 是否显示奇袭开关（仅基础计时器类型）
 function showSurprise(type: string) { return ['no_timer', 'single_timer', 'double_timer'].includes(type) }
 
 onMounted(() => loadTemplate())
@@ -273,7 +281,7 @@ onMounted(() => loadTemplate())
         <div
           class="phase-card-header"
           :class="expandedId === phase.id ? 'phase-card-header--active' : ''"
-          @click="expandedId = expandedId === phase.id ? null : phase.id"
+          @click="() => { expandedId = expandedId === phase.id ? null : phase.id }"
         >
           <div class="sort-btns">
             <button class="sort-btn" @click.stop="movePhase(phase.id, 'up')">▲</button>
@@ -345,27 +353,39 @@ onMounted(() => loadTemplate())
             <div v-if="showQuestioner(phase.type)" class="form-row-2col">
               <div class="form-field">
                 <label class="form-label">发问人</label>
-                <select v-model="phase.questioner" class="form-select">
-                  <option value="正方">正方</option>
-                  <option value="反方">反方</option>
-                </select>
+                <USelect
+                  v-model="phase.questioner"
+                  :items="[
+                    { label: '正方', value: '正方' },
+                    { label: '反方', value: '反方' },
+                  ]"
+                  class="w-full"
+                />
               </div>
               <div class="form-field">
                 <label class="form-label">接受人</label>
-                <select v-model="phase.responder" class="form-select">
-                  <option value="正方">正方</option>
-                  <option value="反方">反方</option>
-                </select>
+                <USelect
+                  v-model="phase.responder"
+                  :items="[
+                    { label: '正方', value: '正方' },
+                    { label: '反方', value: '反方' },
+                  ]"
+                  class="w-full"
+                />
               </div>
             </div>
 
             <!-- 率先发言方 -->
             <div v-if="showFirstSpeaker(phase.type)" class="form-field">
               <label class="form-label">率先发言方</label>
-              <select v-model="phase.firstSpeaker" class="form-select">
-                <option value="正方">正方</option>
-                <option value="反方">反方</option>
-              </select>
+              <USelect
+                v-model="phase.firstSpeaker"
+                :items="[
+                  { label: '正方', value: '正方' },
+                  { label: '反方', value: '反方' },
+                ]"
+                class="w-full"
+              />
             </div>
 
             <!-- 环节时长 + 保护时间 -->
@@ -395,7 +415,7 @@ onMounted(() => loadTemplate())
               </div>
               <button type="button" class="toggle-switch"
                 :class="phase.isSurprise ? 'toggle-switch--on' : ''"
-                @click="phase.isSurprise = !phase.isSurprise">
+                @click="() => { phase.isSurprise = !phase.isSurprise }">
                 <span class="toggle-knob" />
               </button>
             </div>

@@ -1,4 +1,4 @@
-// POST /api/auth/terminate-others — 强制下线其他设备（递增 tokenVersion 使旧 JWT 失效，返回新的 token）
+﻿// POST /api/auth/terminate-others — 强制下线其他设备（递增 tokenVersion 使旧 JWT 失效，返回新的 token）
 import { prisma } from '../../lib/prisma'
 import { getUserFromEventWithSession } from '../../utils/auth'
 import { generateToken } from '../../lib/jwt'
@@ -55,6 +55,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Terminate session error:', error)
-    throw createError({ statusCode: 500, statusMessage: '强制下线操作失败' })
+    throw createError({ statusCode: 500, message: '强制下线操作失败' })
   }
 })

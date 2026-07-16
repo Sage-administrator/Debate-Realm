@@ -3,15 +3,15 @@
 // 请求体：{ arenaId, roleId, userId, username, guildId }
 // ════════════════════════════════════════════════════
 import { prisma } from '../../../lib/prisma'
-import { getUserFromEvent } from '../../../utils/auth'
+import { getUserFromEventWithSession } from '../../../utils/auth'
 import { getBotInstance } from '../../../lib/bot-ws'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
-      throw createError({ statusCode: 403, statusMessage: '仅团队管理员可操作认领' })
+      throw createError({ statusCode: 403, message: '仅团队管理员可操作认领' })
     }
 
     // 安全：teamId 必填，确保用户属于团队（system_admin 也需指定目标团队）
@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     const { arenaId, roleId, userId, username, guildId } = body
 
     if (!arenaId || !roleId || !userId || !username) {
-      throw createError({ statusCode: 400, statusMessage: '缺少必要参数：arenaId、roleId、userId、username' })
+      throw createError({ statusCode: 400, message: '缺少必要参数：arenaId、roleId、userId、username' })
     }
 
     // 越权修复：必须校验 arena.teamId === currentUser.teamId，
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
     const arenaWhere: any = { id: arenaId, status: 'active' }
     if (currentUser.role !== 'system_admin') {
       if (!currentUser.teamId) {
-        throw createError({ statusCode: 403, statusMessage: '当前用户未关联团队' })
+        throw createError({ statusCode: 403, message: '当前用户未关联团队' })
       }
       arenaWhere.teamId = currentUser.teamId
     }
@@ -44,17 +44,17 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!arena) {
-      throw createError({ statusCode: 404, statusMessage: '赛场不存在或已关闭' })
+      throw createError({ statusCode: 404, message: '赛场不存在或已关闭' })
     }
 
     const role = arena.roles[0]
     if (!role) {
-      throw createError({ statusCode: 404, statusMessage: '身份组不存在' })
+      throw createError({ statusCode: 404, message: '身份组不存在' })
     }
 
     // 检查是否已满员
     if (role.claims.length >= role.maxCount) {
-      throw createError({ statusCode: 400, statusMessage: `身份「${role.label}」已满员（${role.claims.length}/${role.maxCount}）` })
+      throw createError({ statusCode: 400, message: `身份「${role.label}」已满员（${role.claims.length}/${role.maxCount}）` })
     }
 
     // 检查是否重复认领
@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
       where: { arenaId, roleId, userId },
     })
     if (existing) {
-      throw createError({ statusCode: 400, statusMessage: '该用户已认领过此身份' })
+      throw createError({ statusCode: 400, message: '该用户已认领过此身份' })
     }
 
     // 创建认领记录
@@ -100,6 +100,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Arena Claim] 认领失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '认领操作失败' })
+    throw createError({ statusCode: 500, message: '认领操作失败' })
   }
 })

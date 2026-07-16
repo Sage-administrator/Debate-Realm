@@ -13,10 +13,10 @@ import type { ExistingSessionInfo } from '~/composables/useAuth'
 
 // ─── 状态管理 ───
 const open = ref(false)                  // 弹窗是否显示
-const otherSessions = ref<ExistingSessionInfo[]>([])
-const currentSession = ref<ExistingSessionInfo | null>(null)
-const terminating = ref(false)            // 操作中状态
-const toast = useToast()
+const otherSessions = ref<ExistingSessionInfo[]>([])  // 其他设备的会话列表
+const currentSession = ref<ExistingSessionInfo | null>(null)  // 当前设备的会话信息
+const terminating = ref(false)            // 操作中状态（强制下线进行中）
+const toast = useToast()                 // 通知提示工具
 
 // ─── 暴露给父组件的 API ───
 function show(sessions: ExistingSessionInfo[], current: ExistingSessionInfo | null) {
@@ -192,12 +192,12 @@ async function handleTerminateOthers() {
                     class="w-10 h-10 text-amber-500 flex-shrink-0 mt-1"
                   />
                   <div class="flex-1">
-                    <p class="font-medium text-white/80">
+                    <p class="font-medium text-[var(--color-text-primary)]">
                       检测到您的账号同时在其他设备登录
                     </p>
                     <p
                       id="modal-description"
-                      class="text-sm text-white/40 mt-1"
+                      class="text-sm text-[var(--color-text-muted)] mt-1"
                     >
                       以下是其他设备的登录信息。您可以选择忽略，或强制下线其他设备以保障账号安全。
                     </p>
@@ -218,17 +218,17 @@ async function handleTerminateOthers() {
                       当前设备
                     </span>
                   </div>
-                  <div class="text-sm text-white/70 pl-6 space-y-0.5">
+                  <div class="text-sm text-[var(--color-text-secondary)] pl-6 space-y-0.5">
                     <p>
-                      <span class="text-white/40">设备：</span>
+                      <span class="text-[var(--color-text-muted)]">设备：</span>
                       {{ currentSession.deviceInfo }}
                     </p>
                     <p v-if="currentSession.ipAddress">
-                      <span class="text-white/40">IP：</span>
+                      <span class="text-[var(--color-text-muted)]">IP：</span>
                       {{ currentSession.ipAddress }}
                     </p>
                     <p>
-                      <span class="text-white/40">登录时间：</span>
+                      <span class="text-[var(--color-text-muted)]">登录时间：</span>
                       {{ formatTime(currentSession.loggedInAt) }}
                     </p>
                   </div>
@@ -249,21 +249,21 @@ async function handleTerminateOthers() {
                       其他设备
                     </span>
                   </div>
-                  <div class="text-sm text-white/70 pl-6 space-y-0.5">
+                  <div class="text-sm text-[var(--color-text-secondary)] pl-6 space-y-0.5">
                     <p>
-                      <span class="text-white/40">设备：</span>
+                      <span class="text-[var(--color-text-muted)]">设备：</span>
                       {{ session.deviceInfo }}
                     </p>
                     <p v-if="session.ipAddress">
-                      <span class="text-white/40">IP：</span>
+                      <span class="text-[var(--color-text-muted)]">IP：</span>
                       {{ session.ipAddress }}
                     </p>
                     <p>
-                      <span class="text-white/40">登录时间：</span>
+                      <span class="text-[var(--color-text-muted)]">登录时间：</span>
                       {{ formatTime(session.loggedInAt) }}
                     </p>
                     <p>
-                      <span class="text-white/40">最后活跃：</span>
+                      <span class="text-[var(--color-text-muted)]">最后活跃：</span>
                       {{ formatTime(session.lastSeenAt || '') }}
                     </p>
                   </div>

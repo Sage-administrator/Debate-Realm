@@ -130,11 +130,12 @@ function closePanel() {
 }
 
 // ── 月份格子判断 ──
-// 将面板月份转为全局月份值
+// 将面板月份转为全局月份值（用于跨年份比较先后顺序）
 function toGlobalMonth(year: number, monthIdx: number): number {
   return year * 12 + monthIdx
 }
 
+// 判断某个面板的月份是否被禁用（结束月份不能早于开始月份）
 function isDisabled(panel: 'left' | 'right', monthIdx: number): boolean {
   if (pickingStep.value !== 'end' || selectedStartMonth.value == null) return false
 
@@ -156,6 +157,7 @@ function isDisabled(panel: 'left' | 'right', monthIdx: number): boolean {
   return false
 }
 
+// 判断某个面板的月份是否为当前已选中的开始/结束月份
 function isSelected(panel: 'left' | 'right', monthIdx: number): boolean {
   if (panel === 'left') {
     return selectedStartMonth.value === monthIdx
@@ -166,6 +168,7 @@ function isSelected(panel: 'left' | 'right', monthIdx: number): boolean {
   return false
 }
 
+// 判断某个面板的月份是否落在已选中的范围内（用于高亮区间）
 function isInRange(panel: 'left' | 'right', monthIdx: number): boolean {
   if (selectedStartMonth.value == null || selectedEndMonth.value == null) return false
   const startGlobal = toGlobalMonth(leftYear.value, selectedStartMonth.value)
@@ -270,17 +273,17 @@ function selectYear(panel: 'left' | 'right', year: number) {
     <div
       ref="triggerRef"
       class="flex items-center h-10 border rounded cursor-pointer select-none transition-colors focus-within:outline-none"
-      :class="open ? 'border-green-500' : 'border-white/15 hover:border-white/25'"
+      :class="open ? 'border-green-500' : 'border-[var(--color-border)] hover:border-white/25'"
       style="width: 100%;"
       @click.stop="togglePanel"
     >
-      <span class="flex-1 pl-3 text-sm text-white/90">
+      <span class="flex-1 pl-3 text-sm text-[var(--color-text-primary)]">
         {{ displayStart || '开始' }}
       </span>
-      <span class="text-white/40 text-sm px-1">-</span>
+      <span class="text-[var(--color-text-muted)] text-sm px-1">-</span>
       <span
         class="flex-1 pl-3 text-sm"
-        :class="displayEnd ? 'text-white/90' : 'text-white/40'"
+        :class="displayEnd ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'"
       >
         {{ displayEnd || '结束' }}
       </span>
@@ -292,15 +295,15 @@ function selectYear(panel: 'left' | 'right', year: number) {
       <div
         v-if="open"
         ref="panelRef"
-        class="fixed z-50 bg-[#1e1e3e]/95 backdrop-blur-xl rounded-lg shadow-lg border border-white/15 flex"
+        class="fixed z-50 bg-[#1e1e3e]/95 backdrop-blur-xl rounded-lg shadow-lg border border-[var(--color-border)] flex"
         :style="{ left: panelLeft + 'px', top: panelTop + 'px' }"
       >
         <!-- 左面板：开始月份 -->
-        <div class="p-3 w-[200px] border-r border-white/10">
+        <div class="p-3 w-[200px] border-r border-[var(--color-border)]">
           <!-- 顶部控制栏 -->
           <div class="flex items-center justify-between mb-2">
             <button
-              class="w-6 h-6 flex items-center justify-center rounded text-white/70 hover:bg-white/10 transition-colors"
+              class="w-6 h-6 flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
               @click.stop="prevYear('left')"
             >
               <UIcon name="i-lucide-chevron-left" class="w-3.5 h-3.5" />
@@ -308,28 +311,28 @@ function selectYear(panel: 'left' | 'right', year: number) {
             <!-- 年份选择 -->
             <div class="relative">
               <button
-                class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white/70 border border-white/15 rounded-md hover:bg-white/10 transition-colors"
+                class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--color-text-secondary)] border border-[var(--color-border)] rounded-md hover:bg-[var(--color-bg-tertiary)] transition-colors"
                 @click.stop="showYearSelect = showYearSelect === 'left' ? null : 'left'"
               >
                 {{ leftYear }}
-                <UIcon name="i-lucide-chevron-down" class="w-3 h-3 text-white/40" />
+                <UIcon name="i-lucide-chevron-down" class="w-3 h-3 text-[var(--color-text-muted)]" />
               </button>
               <!-- 年份下拉 -->
               <div
                 v-if="showYearSelect === 'left'"
-                class="absolute top-full left-0 mt-1 w-16 max-h-40 overflow-y-auto bg-[#1e1e3e]/95 backdrop-blur-xl border border-white/15 rounded-md shadow-lg z-10"
+                class="absolute top-full left-0 mt-1 w-16 max-h-40 overflow-y-auto bg-[#1e1e3e]/95 backdrop-blur-xl border border-[var(--color-border)] rounded-md shadow-lg z-10"
               >
                 <div
                   v-for="y in yearList"
                   :key="y"
-                  class="px-2 py-1.5 text-xs cursor-pointer hover:bg-white/10 text-center"
-                  :class="y === leftYear ? 'text-green-600 font-medium' : 'text-white/70'"
+                  class="px-2 py-1.5 text-xs cursor-pointer hover:bg-[var(--color-bg-tertiary)] text-center"
+                  :class="y === leftYear ? 'text-green-600 font-medium' : 'text-[var(--color-text-secondary)]'"
                   @click.stop="selectYear('left', y)"
                 >{{ y }}</div>
               </div>
             </div>
             <button
-              class="w-6 h-6 flex items-center justify-center rounded text-white/70 hover:bg-white/10 transition-colors"
+              class="w-6 h-6 flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
               @click.stop="nextYear('left')"
             >
               <UIcon name="i-lucide-chevron-right" class="w-3.5 h-3.5" />
@@ -337,7 +340,7 @@ function selectYear(panel: 'left' | 'right', year: number) {
           </div>
 
           <!-- 开始提示 -->
-          <div class="text-xs text-white/40 mb-2">
+          <div class="text-xs text-[var(--color-text-muted)] mb-2">
             {{ pickingStep === 'start' ? '请选择开始月份' : '已选 ✓' }}
           </div>
 
@@ -351,12 +354,12 @@ function selectYear(panel: 'left' | 'right', year: number) {
               class="h-7 text-xs rounded flex items-center justify-center transition-all duration-150"
               :class="[
                 isDisabled('left', idx)
-                  ? 'text-white/20 cursor-not-allowed'
+                  ? 'text-[var(--color-border-muted)] cursor-not-allowed'
                   : isSelected('left', idx)
                     ? 'bg-green-500 text-white font-medium'
                     : isInRange('left', idx)
                       ? 'bg-green-50 text-green-700'
-                      : 'text-white/70 hover:bg-white/10 cursor-pointer',
+                      : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] cursor-pointer',
               ]"
               @click.stop="pickMonth('left', idx)"
             >{{ m }}</button>
@@ -368,34 +371,34 @@ function selectYear(panel: 'left' | 'right', year: number) {
           <!-- 顶部控制栏 -->
           <div class="flex items-center justify-between mb-2">
             <button
-              class="w-6 h-6 flex items-center justify-center rounded text-white/70 hover:bg-white/10 transition-colors"
+              class="w-6 h-6 flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
               @click.stop="prevYear('right')"
             >
               <UIcon name="i-lucide-chevron-left" class="w-3.5 h-3.5" />
             </button>
             <div class="relative">
               <button
-                class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white/70 border border-white/15 rounded-md hover:bg-white/10 transition-colors"
+                class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--color-text-secondary)] border border-[var(--color-border)] rounded-md hover:bg-[var(--color-bg-tertiary)] transition-colors"
                 @click.stop="showYearSelect = showYearSelect === 'right' ? null : 'right'"
               >
                 {{ rightYear }}
-                <UIcon name="i-lucide-chevron-down" class="w-3 h-3 text-white/40" />
+                <UIcon name="i-lucide-chevron-down" class="w-3 h-3 text-[var(--color-text-muted)]" />
               </button>
               <div
                 v-if="showYearSelect === 'right'"
-                class="absolute top-full left-0 mt-1 w-16 max-h-40 overflow-y-auto bg-[#1e1e3e]/95 backdrop-blur-xl border border-white/15 rounded-md shadow-lg z-10"
+                class="absolute top-full left-0 mt-1 w-16 max-h-40 overflow-y-auto bg-[#1e1e3e]/95 backdrop-blur-xl border border-[var(--color-border)] rounded-md shadow-lg z-10"
               >
                 <div
                   v-for="y in yearList"
                   :key="y"
-                  class="px-2 py-1.5 text-xs cursor-pointer hover:bg-white/10 text-center"
-                  :class="y === rightYear ? 'text-green-600 font-medium' : 'text-white/70'"
+                  class="px-2 py-1.5 text-xs cursor-pointer hover:bg-[var(--color-bg-tertiary)] text-center"
+                  :class="y === rightYear ? 'text-green-600 font-medium' : 'text-[var(--color-text-secondary)]'"
                   @click.stop="selectYear('right', y)"
                 >{{ y }}</div>
               </div>
             </div>
             <button
-              class="w-6 h-6 flex items-center justify-center rounded text-white/70 hover:bg-white/10 transition-colors"
+              class="w-6 h-6 flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
               @click.stop="nextYear('right')"
             >
               <UIcon name="i-lucide-chevron-right" class="w-3.5 h-3.5" />
@@ -403,7 +406,7 @@ function selectYear(panel: 'left' | 'right', year: number) {
           </div>
 
           <!-- 结束提示 -->
-          <div class="text-xs text-white/40 mb-2">
+          <div class="text-xs text-[var(--color-text-muted)] mb-2">
             {{ pickingStep === 'start'
               ? '请先选择开始月份'
               : selectedEndMonth != null
@@ -422,14 +425,14 @@ function selectYear(panel: 'left' | 'right', year: number) {
               class="h-7 text-xs rounded flex items-center justify-center transition-all duration-150"
               :class="[
                 isDisabled('right', idx)
-                  ? 'text-white/20 cursor-not-allowed'
+                  ? 'text-[var(--color-border-muted)] cursor-not-allowed'
                   : isSelected('right', idx)
                     ? 'bg-green-500 text-white font-medium'
                     : isInRange('right', idx)
                       ? 'bg-green-50 text-green-700'
                       : pickingStep === 'start'
-                        ? 'text-white/20 cursor-not-allowed'
-                        : 'text-white/70 hover:bg-white/10 cursor-pointer',
+                        ? 'text-[var(--color-border-muted)] cursor-not-allowed'
+                        : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] cursor-pointer',
               ]"
               @click.stop="pickMonth('right', idx)"
             >{{ m }}</button>

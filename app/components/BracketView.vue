@@ -2,22 +2,24 @@
 // 淘汰赛对阵表组件 - 思维导图风格
 // 根据轮次数据自动生成淘汰赛对阵树状图
 
+// 组件入参定义
 interface Props {
-  matches: MatchItem[]
-  showScores?: boolean
+  matches: MatchItem[]   // 所有比赛对阵列表
+  showScores?: boolean   // 是否显示比分
 }
 
+// 单场对阵项的数据结构
 interface MatchItem {
-  id: string
-  round: number
-  teamA?: string | null
-  teamB?: string | null
-  scoreA?: number | null
-  scoreB?: number | null
-  winner?: string | null
-  status: string
-  teamAName?: string
-  teamBName?: string
+  id: string                 // 对阵唯一标识
+  round: number              // 所属轮次（1 为第一轮，逐级递增）
+  teamA?: string | null      // A 方队伍标识
+  teamB?: string | null      // B 方队伍标识
+  scoreA?: number | null     // A 方得分
+  scoreB?: number | null     // B 方得分
+  winner?: string | null     // 胜出的队伍标识
+  status: string             // 对阵状态：finished/running/pending
+  teamAName?: string         // A 方展示名
+  teamBName?: string         // B 方展示名
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -63,6 +65,7 @@ function shortName(name: string | null | undefined) {
   return name.length > 6 ? name.slice(0, 6) + '...' : name
 }
 
+// 总轮次数（用于判断决赛/半决赛等标签）
 const totalRounds = computed(() => rounds.value.length)
 </script>
 

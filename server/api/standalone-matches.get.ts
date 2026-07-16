@@ -1,10 +1,10 @@
 import { prisma } from '../lib/prisma'
-import { getUserFromEvent } from '../utils/auth'
+import { getUserFromEventWithSession } from '../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    const user = getUserFromEvent(event)
-    if (user.mode !== 'individual') throw createError({ statusCode: 403, statusMessage: '只有个人用户可以访问独立赛事' })
+    const user = await getUserFromEventWithSession(event, prisma)
+    if (user.mode !== 'individual') throw createError({ statusCode: 403, message: '只有个人用户可以访问独立赛事' })
 
     const matches = await prisma.standaloneMatch.findMany({
       where: { userId: user.userId },
@@ -13,13 +13,13 @@ export default defineEventHandler(async (event) => {
     })
 
     return matches.map((m) => ({
-      id: m.id, name: m.name, description: m.description,
+      id: m.id, name: m.name, description: m.description, venue: m.venue,
       status: m.status, scheduledAt: m.scheduledAt,
       matchCount: m._count.matches, createdAt: m.createdAt,
     }))
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get standalone matches error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取独立赛事列表失败' })
+    throw createError({ statusCode: 500, message: '获取独立赛事列表失败' })
   }
 })

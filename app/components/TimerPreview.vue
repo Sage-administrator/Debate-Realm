@@ -87,7 +87,7 @@
         <!-- 当前环节名称 -->
         <div class="text-center stage-title">
           <h2 class="font-bold text-white" :class="isSpecialStage ? 'special-stage-text' : 'stage-title-text'">
-            {{ currentStageInfo?.name || '彩排·试音' }}
+            {{ currentStageFullTitle }}
           </h2>
         </div>
 
@@ -97,7 +97,7 @@
             <div class="timer-side positive-side">
               <div class="digital-display">
                 <span
-                  v-for="(char, index) in formatDualTime(dualTimer.positiveTime)"
+                  v-for="(char, index) in formatTime(dualTimer.positiveTime)"
                   :key="`pos-${index}`"
                   class="digital-char"
                   :style="{ color: uiConfig.bannerFontColorPos || 'rgb(169, 35, 35)' }"
@@ -108,7 +108,7 @@
             <div class="timer-side negative-side">
               <div class="digital-display">
                 <span
-                  v-for="(char, index) in formatDualTime(dualTimer.negativeTime)"
+                  v-for="(char, index) in formatTime(dualTimer.negativeTime)"
                   :key="`neg-${index}`"
                   class="digital-char"
                   :style="{ color: uiConfig.bannerFontColorNeg || 'rgb(3, 105, 161)' }"
@@ -159,6 +159,11 @@ interface StageInfo {
   positiveDuration?: number
   negativeDuration?: number
   allowedRoles?: string[]
+  // ponytail: 以下为环节扩展字段（展示用），可选兼容
+  speaker?: string
+  questioner?: string
+  responder?: string
+  firstSpeaker?: string
 }
 
 interface UIConfig {
@@ -284,6 +289,27 @@ const currentStageInfo = computed(() => stages.value[currentStageIndex.value] ||
 const isDualTimerStage = computed(() => currentStageInfo.value?.type === 'dual-timer')
 const isSpecialStage = computed(() => currentStageInfo.value?.type === 'special')
 
+// ═══════════ 环节完整标题（辩方辩位 · 环节名称）═══════════
+// 与卡片头 stage-header-title 保持一致的显示格式
+const currentStageFullTitle = computed(() => {
+  const info = currentStageInfo.value
+  if (!info) return '彩排 · 试音'
+  const name = info.name || '未命名'
+  const type = info.type
+  // 去除辩方辩位中的分隔符，用 " · " 重新拼接
+  const stripSep = (s: string) => (s || '').replace(/[·\/\s\-]/g, '')
+  if (type === 'single_speech' || type === 'speech' || type === 'summary') {
+    return `${stripSep(info.speaker || '正方·一辩')} · ${name}`
+  }
+  if (type === 'single_question') {
+    return `${stripSep(info.questioner || '反方·二辩')} · ${name} · ${stripSep(info.responder || '正方·一辩')}`
+  }
+  if (type === 'dual-timer' || type === 'bilateral_debate' || type === 'free_debate') {
+    return `${stripSep(info.firstSpeaker || '正方·一辩')} · ${name}`
+  }
+  return name
+})
+
 // ═══════════ 计时器状态（预览用，不实际倒计时） ═══════════
 // 使用环节的初始时长作为预览的时间显示
 const timeRemaining = computed(() => {
@@ -310,6 +336,7 @@ const isTimeWarning = ref(false)
 const isTimeCritical = ref(false)
 
 // ═══════════ 格式化函数 ═══════════
+// 将秒数格式化为 mm:ss 字符串（不足两位补零）
 function formatTime(seconds: number): string {
   if (!seconds || seconds < 0) return '00:00'
   const m = Math.floor(seconds / 60)
@@ -317,10 +344,9 @@ function formatTime(seconds: number): string {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
-function formatDualTime(seconds: number): string {
-  return formatTime(seconds)
-}
+// ponytail: 双计时器直接复用 formatTime，无需额外包装函数
 
+// 单计时器展示文本：补齐为 5 位（00:00）
 const displayTime = computed(() => formatTime(timeRemaining.value).padStart(5, '0'))
 
 // ═══════════ 1920x1080 基准画布 + 动态缩放计算 ═══════════
@@ -341,21 +367,26 @@ function updatePreviewScale() {
 }
 
 // 窗口尺寸变化时重新计算
-let resizeHandler: (() => void) | null = null
+let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
   // 下一帧再计算（确保 DOM 已渲染完成）
   requestAnimationFrame(() => {
     updatePreviewScale()
   })
-  resizeHandler = () => updatePreviewScale()
-  window.addEventListener('resize', resizeHandler)
+  // 使用 ResizeObserver 监听容器尺寸变化（比 window resize 更精准）
+  if (containerRef.value && typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(() => {
+      updatePreviewScale()
+    })
+    resizeObserver.observe(containerRef.value)
+  }
 })
 
 onUnmounted(() => {
-  if (resizeHandler) {
-    window.removeEventListener('resize', resizeHandler)
-    resizeHandler = null
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
   }
 })
 
@@ -409,15 +440,8 @@ const containerStyle = computed(() => {
 </script>
 
 <style scoped>
-/* ═══════════ 字体定义 ═══════════ */
-@font-face {
-  font-family: 'SourceHanSerifCN-Heavy';
-  src: url('/SourceHanSerifCN-Heavy.otf') format('opentype');
-}
-@font-face {
-  font-family: 'Digiface';
-  src: url('/Digiface.ttf') format('truetype');
-}
+/* ═══════════ 字体定义（全局main.css已定义，此处仅作引用）═══════════ */
+/* ponytail: 删除重复的@font-face定义，使用全局定义 */
 
 /* 字体设置：仅作用于缩放容器内部的元素，避免影响配置页面 */
 .scale-wrapper *:not(.digital-char) {
@@ -595,7 +619,7 @@ const containerStyle = computed(() => {
   align-items: center;
   gap: 0.1em;
 }
-.digital-char {
+.digital-display .digital-char {
   font-family: 'Digiface', monospace !important;
   font-size: 176px;
   font-weight: normal;

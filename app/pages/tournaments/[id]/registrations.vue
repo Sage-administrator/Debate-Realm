@@ -1,4 +1,11 @@
 <script setup lang="ts">
+// 报名管理页面
+// 功能：
+// - 报名列表：查看所有报名记录，支持按状态/类型筛选，审核（通过/拒绝）报名
+// - 报名问卷设置：配置报名开关、公开性、报名类型（个人/队伍/两者）、截止时间、队伍人数、报名须知
+// - 报名问卷设计：使用拖拽式表单设计器配置报名问卷字段（系统字段 + 自定义字段统一管理）
+// - 自动组队：根据个人报名按队伍人数自动匹配成队，确认后转为正式队伍
+// - 创建辩手账号：为已通过的报名批量创建辩手登录账号，支持复制和 CSV 导出
 definePageMeta({ layout: 'tournament' })
 
 const route = useRoute()
@@ -13,36 +20,45 @@ const tournamentId = computed(() => route.params.id as string)
 const loading = ref(false)
 const registrations = ref<any[]>([])
 
+// 当前激活的 Tab：list 报名列表 / settings 报名问卷设置 / fields 报名问卷设计
 const activeTab = ref<'list' | 'settings' | 'fields'>('list')
 
-const filterStatus = ref<string>('')
-const filterType = ref<string>('')
+// 筛选条件
+const filterStatus = ref<string>('all')
+const filterType = ref<string>('all')
 
+// 报名问卷设置表单
 const settingsForm = reactive({
   registrationOpen: false,
   registrationDeadline: '',
   isPublic: false,
+  registrationType: 'both' as 'individual' | 'team' | 'both',
   teamSize: 4,
   registrationInfo: '',
 })
 const savingSettings = ref(false)
 
-const customFields = ref<any[]>([])
+// 报名问卷字段配置（系统字段 + 自定义字段）
+const formFields = ref<any[]>([])
 const savingFields = ref(false)
 
+// 自动组队弹窗状态
 const showAutoMatch = ref(false)
 const matchResult = ref<{ teams: any[]; unmatched: any[] } | null>(null)
 const matching = ref(false)
 
+// 辩手账号创建弹窗状态
 const showAccounts = ref(false)
 const accountResult = ref<any>(null)
 const creatingAccounts = ref(false)
 
+// 报名审核弹窗状态
 const reviewModal = ref(false)
 const reviewTarget = ref<any>(null)
 const reviewAction = ref<'approve' | 'reject'>('approve')
 const reviewNote = ref('')
 
+// 加载页面所有数据：报名列表 + 赛事配置（问卷设置、问卷字段）
 async function loadData() {
   loading.value = true
   try {
@@ -51,9 +67,17 @@ async function loadData() {
     settingsForm.registrationDeadline = tournament.value.registrationDeadline
       ? new Date(tournament.value.registrationDeadline).toISOString().slice(0, 16) : ''
     settingsForm.isPublic = tournament.value.isPublic || false
+    settingsForm.registrationType = tournament.value.registrationType || 'both'
     settingsForm.teamSize = tournament.value.teamSize || 4
     settingsForm.registrationInfo = tournament.value.registrationInfo || ''
-    customFields.value = Array.isArray(tournament.value.fields) ? tournament.value.fields.map((f: any) => ({ ...f })) : []
+    // 报名问卷字段：从 tournament.fields 加载
+    // 仅加载自定义字段，过滤掉系统字段（姓名/电话/邮箱等由后端自动初始化）
+    // 系统字段保留在数据库中供业务逻辑使用，但不在画布显示，让设计器从空状态开始
+    formFields.value = Array.isArray(tournament.value.fields)
+      ? tournament.value.fields
+          .filter((f: any) => !f.systemField)
+          .map((f: any) => ({ ...f }))
+      : []
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '加载失败', color: 'error' })
   } finally {
@@ -61,17 +85,19 @@ async function loadData() {
   }
 }
 
+// 按筛选条件加载报名列表
 async function loadRegistrations() {
   try {
     const params: any = {}
-    if (filterStatus.value) params.status = filterStatus.value
-    if (filterType.value) params.type = filterType.value
+    if (filterStatus.value && filterStatus.value !== 'all') params.status = filterStatus.value
+    if (filterType.value && filterType.value !== 'all') params.type = filterType.value
     registrations.value = await getRegistrations(tournamentId.value, params)
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '加载报名列表失败', color: 'error' })
   }
 }
 
+// 保存报名设置
 async function saveSettings() {
   savingSettings.value = true
   try {
@@ -79,6 +105,7 @@ async function saveSettings() {
       registrationOpen: settingsForm.registrationOpen,
       registrationDeadline: settingsForm.registrationDeadline || null,
       isPublic: settingsForm.isPublic,
+      registrationType: settingsForm.registrationType,
       teamSize: settingsForm.teamSize || null,
       registrationInfo: settingsForm.registrationInfo || null,
     })
@@ -90,11 +117,19 @@ async function saveSettings() {
   }
 }
 
-async function saveFields() {
+// 保存表单字段配置（仅自定义字段，系统字段由后端维护）
+async function saveAllFields() {
   savingFields.value = true
   try {
-    await updateRegistrationFields(tournamentId.value, customFields.value)
-    toast.add({ title: '自定义字段已保存', color: 'success' })
+    const result = await updateRegistrationFields(tournamentId.value, formFields.value)
+    // 更新本地字段列表（后端返回的最新数据，包含 id）
+    // 仅保留自定义字段，过滤系统字段，避免画布出现默认字段
+    if (result?.fields) {
+      formFields.value = result.fields
+        .filter((f: any) => !f.systemField)
+        .map((f: any) => ({ ...f }))
+    }
+    toast.add({ title: '字段配置已保存', color: 'success' })
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '保存失败', color: 'error' })
   } finally {
@@ -102,17 +137,9 @@ async function saveFields() {
   }
 }
 
-function addField() {
-  customFields.value.push({
-    fieldName: '', fieldKey: '', fieldType: 'text',
-    fieldOptions: '', required: false, sortOrder: customFields.value.length, appliesTo: 'both'
-  })
-}
+// addField 和 removeField 已由 FormDesigner 组件内部处理，这里不再需要
 
-function removeField(idx: number) {
-  customFields.value.splice(idx, 1)
-}
-
+// 打开审核弹窗（通过/拒绝）
 function openReview(reg: any, action: 'approve' | 'reject') {
   reviewTarget.value = reg
   reviewAction.value = action
@@ -120,6 +147,7 @@ function openReview(reg: any, action: 'approve' | 'reject') {
   reviewModal.value = true
 }
 
+// 确认审核操作并刷新列表
 async function confirmReview() {
   if (!reviewTarget.value) return
   try {
@@ -132,6 +160,7 @@ async function confirmReview() {
   }
 }
 
+// 自动组队：根据个人报名按 teamSize 自动匹配成队
 async function handleAutoMatch() {
   matching.value = true
   try {
@@ -144,6 +173,7 @@ async function handleAutoMatch() {
   }
 }
 
+// 确认自动组队结果，将建议队伍转为正式队伍
 async function handleConvert() {
   if (!matchResult.value) return
   try {
@@ -161,6 +191,7 @@ async function handleConvert() {
   }
 }
 
+// 为已通过的报名批量创建辩手登录账号
 async function handleCreateAccounts() {
   creatingAccounts.value = true
   try {
@@ -175,6 +206,7 @@ async function handleCreateAccounts() {
   }
 }
 
+// 报名统计：按状态（待审核/已通过/已拒绝）和类型（个人/队伍）汇总
 const stats = computed(() => {
   let pending = 0, approved = 0, rejected = 0, individual = 0, team = 0
   for (const r of registrations.value) {
@@ -190,20 +222,23 @@ const stats = computed(() => {
   }
 })
 
+// 公开报名链接
+// 统一返回相对路径，避免 SSR 返回相对路径而客户端首帧返回绝对 URL 导致 hydration mismatch
+// 用户复制链接时再拼接 origin（见 copyLink）
 const registrationLink = computed(() => {
-  if (import.meta.client) {
-    return `${window.location.origin}/tournaments/${tournamentId.value}/register`
-  }
   return `/tournaments/${tournamentId.value}/register`
 })
 
+// 复制报名链接到剪贴板（拼接完整 URL，便于分享）
 function copyLink() {
   if (import.meta.client) {
-    navigator.clipboard.writeText(registrationLink.value)
+    const fullUrl = `${window.location.origin}${registrationLink.value}`
+    navigator.clipboard.writeText(fullUrl)
     toast.add({ title: '报名链接已复制', color: 'success' })
   }
 }
 
+// 复制全部辩手账号信息到剪贴板（制表符分隔，便于粘贴到 Excel）
 function copyAccounts() {
   if (!accountResult.value?.accounts?.length) return
   const text = accountResult.value.accounts
@@ -215,10 +250,12 @@ function copyAccounts() {
   }
 }
 
+// 下载辩手账号 CSV 文件（含 UTF-8 BOM 防止中文乱码）
 function downloadAccounts() {
   if (!accountResult.value?.accounts?.length) return
   const header = ['姓名', '用户名', '密码']
   const rows = accountResult.value.accounts.map((a: any) => [a.name, a.username, a.password])
+  // CSV 字段转义：包含逗号、引号或换行符的字段需用双引号包裹
   const escape = (v: any) => {
     const s = String(v ?? '')
     if (s.includes(',') || s.includes('"') || s.includes('\n')) return '"' + s.replace(/"/g, '""') + '"'
@@ -236,6 +273,7 @@ function downloadAccounts() {
   URL.revokeObjectURL(url)
 }
 
+// 格式化自定义数据为可读字符串数组（用于列表展示）
 function formatCustomData(data: any): string[] {
   if (!data) return []
   const obj = typeof data === 'string' ? safeParse(data) : data
@@ -243,15 +281,18 @@ function formatCustomData(data: any): string[] {
   return Object.entries(obj).map(([k, v]) => `${k}: ${v}`)
 }
 
+// 安全的 JSON.parse（失败返回 null，不抛异常）
 function safeParse(s: string): any {
   try { return JSON.parse(s) } catch { return null }
 }
 
+// 报名状态元信息（标签文字与颜色）
 const statusMeta: Record<string, { label: string; color: 'warning' | 'success' | 'error' | 'neutral' }> = {
   pending: { label: '待审核', color: 'warning' },
   approved: { label: '已通过', color: 'success' },
   rejected: { label: '已拒绝', color: 'error' },
 }
+// 报名类型元信息（标签文字与图标）
 const typeMeta: Record<string, { label: string; icon: string }> = {
   individual: { label: '个人', icon: 'i-lucide-user' },
   team: { label: '队伍', icon: 'i-lucide-users' },
@@ -263,89 +304,85 @@ onMounted(() => loadData())
 <template>
   <template v-if="tournament">
   <div class="space-y-6">
-    <div class="flex gap-2">
-      <button
-        v-for="tab in [
-          { key: 'list', label: '报名列表', icon: 'i-lucide-list' },
-          { key: 'settings', label: '报名设置', icon: 'i-lucide-settings' },
-          { key: 'fields', label: '自定义字段', icon: 'i-lucide-form-input' },
-        ]"
-        :key="tab.key"
-        @click="activeTab = tab.key as any"
-        class="px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
-        :class="activeTab === tab.key
-          ? 'bg-blue-600 text-white'
-          : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10'"
-      >
-        <UIcon :name="tab.icon" class="w-4 h-4" /> {{ tab.label }}
-      </button>
-    </div>
-
     <template v-if="activeTab === 'list'">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="glass-card p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-xs text-white/50">报名总数</p>
-              <p class="text-2xl font-bold text-white mt-1">{{ stats.total }}</p>
+              <p class="text-xs text-[var(--color-text-muted)]">报名总数</p>
+              <p class="text-2xl font-bold text-[var(--color-text-primary)] mt-1">{{ stats.total }}</p>
             </div>
             <UIcon name="i-lucide-clipboard-list" class="w-8 h-8 text-blue-400/60" />
           </div>
-          <p class="text-xs text-white/40 mt-2">个人 {{ stats.individual }} · 队伍 {{ stats.team }}</p>
+          <p class="text-xs text-[var(--color-text-muted)] mt-2">个人 {{ stats.individual }} · 队伍 {{ stats.team }}</p>
         </div>
         <div class="glass-card p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-xs text-white/50">待审核</p>
+              <p class="text-xs text-[var(--color-text-muted)]">待审核</p>
               <p class="text-2xl font-bold text-amber-400 mt-1">{{ stats.pending }}</p>
             </div>
             <UIcon name="i-lucide-clock" class="w-8 h-8 text-amber-400/60" />
           </div>
-          <p class="text-xs text-white/40 mt-2">需处理</p>
+          <p class="text-xs text-[var(--color-text-muted)] mt-2">需处理</p>
         </div>
         <div class="glass-card p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-xs text-white/50">已通过</p>
+              <p class="text-xs text-[var(--color-text-muted)]">已通过</p>
               <p class="text-2xl font-bold text-green-400 mt-1">{{ stats.approved }}</p>
             </div>
             <UIcon name="i-lucide-check-circle" class="w-8 h-8 text-green-400/60" />
           </div>
-          <p class="text-xs text-white/40 mt-2">已审核通过</p>
+          <p class="text-xs text-[var(--color-text-muted)] mt-2">已审核通过</p>
         </div>
         <div class="glass-card p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-xs text-white/50">已拒绝</p>
+              <p class="text-xs text-[var(--color-text-muted)]">已拒绝</p>
               <p class="text-2xl font-bold text-red-400 mt-1">{{ stats.rejected }}</p>
             </div>
             <UIcon name="i-lucide-x-circle" class="w-8 h-8 text-red-400/60" />
           </div>
-          <p class="text-xs text-white/40 mt-2">未通过</p>
+          <p class="text-xs text-[var(--color-text-muted)] mt-2">未通过</p>
         </div>
       </div>
 
       <UCard>
         <div class="flex flex-wrap items-center gap-3">
-          <select
-            v-model="filterStatus"
-            @change="loadRegistrations"
-            class="px-3 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/5 text-white/90"
-          >
-            <option value="">全部状态</option>
-            <option value="pending">待审核</option>
-            <option value="approved">已通过</option>
-            <option value="rejected">已拒绝</option>
-          </select>
-          <select
-            v-model="filterType"
-            @change="loadRegistrations"
-            class="px-3 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/5 text-white/90"
-          >
-            <option value="">全部类型</option>
-            <option value="individual">个人</option>
-            <option value="team">队伍</option>
-          </select>
+          <ClientOnly>
+            <USelect
+              v-model="filterStatus"
+              @change="loadRegistrations"
+              :items="[
+                { label: '全部状态', value: 'all' },
+                { label: '待审核', value: 'pending' },
+                { label: '已通过', value: 'approved' },
+                { label: '已拒绝', value: 'rejected' },
+              ]"
+              class="w-36"
+              :ui="{ base: 'input-glass' }"
+            />
+            <template #fallback>
+              <div class="w-36 h-9 rounded-lg bg-[var(--color-bg-secondary)]"></div>
+            </template>
+          </ClientOnly>
+          <ClientOnly>
+            <USelect
+              v-model="filterType"
+              @change="loadRegistrations"
+              :items="[
+                { label: '全部类型', value: 'all' },
+                { label: '个人', value: 'individual' },
+                { label: '队伍', value: 'team' },
+              ]"
+              class="w-36"
+              :ui="{ base: 'input-glass' }"
+            />
+            <template #fallback>
+              <div class="w-36 h-9 rounded-lg bg-[var(--color-bg-secondary)]"></div>
+            </template>
+          </ClientOnly>
 
           <div class="flex-1" />
 
@@ -380,26 +417,26 @@ onMounted(() => loadData())
 
       <UCard>
         <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-link" class="w-4 h-4 text-white/40 shrink-0" />
+          <UIcon name="i-lucide-link" class="w-4 h-4 text-[var(--color-text-muted)] shrink-0" />
           <div class="flex-1 min-w-0">
-            <p class="text-xs text-white/50 mb-0.5">报名链接</p>
-            <p class="text-sm text-white/80 truncate font-mono">{{ registrationLink }}</p>
+            <p class="text-xs text-[var(--color-text-muted)] mb-0.5">报名链接</p>
+            <p class="text-sm text-[var(--color-text-primary)] truncate font-mono">{{ registrationLink }}</p>
           </div>
           <UButton size="xs" variant="ghost" icon="i-lucide-copy" @click="copyLink">复制</UButton>
         </div>
       </UCard>
 
       <div v-if="registrations.length === 0" class="glass-card-strong p-12 text-center">
-        <UIcon name="i-lucide-inbox" class="w-16 h-16 text-white/30 mx-auto mb-4" />
-        <h3 class="text-base font-semibold text-white mb-2">暂无报名记录</h3>
-        <p class="text-sm text-white/50">分享报名链接，等待选手报名后此处将显示记录</p>
+        <UIcon name="i-lucide-inbox" class="w-16 h-16 text-[var(--color-text-muted)] mx-auto mb-4" />
+        <h3 class="text-base font-semibold text-[var(--color-text-primary)] mb-2">暂无报名记录</h3>
+        <p class="text-sm text-[var(--color-text-muted)]">分享报名链接，等待选手报名后此处将显示记录</p>
       </div>
 
       <div v-else class="space-y-3">
         <div
           v-for="reg in registrations"
           :key="reg.id"
-          class="glass-card p-5 border border-white/10 hover:border-blue-500/40 transition-colors"
+          class="glass-card p-5 border border-[var(--color-border)] hover:border-blue-500/40 transition-colors"
         >
           <div class="flex items-start justify-between gap-4">
             <div class="flex-1 min-w-0">
@@ -428,22 +465,22 @@ onMounted(() => loadData())
                 >
                   已转队伍
                 </UBadge>
-                <span v-if="reg.teamName" class="text-sm font-semibold text-white">
+                <span v-if="reg.teamName" class="text-sm font-semibold text-[var(--color-text-primary)]">
                   {{ reg.teamName }}
                 </span>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-white/70">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-[var(--color-text-secondary)]">
                 <span class="flex items-center gap-1.5">
-                  <UIcon name="i-lucide-user" class="w-3.5 h-3.5 text-white/40" />
+                  <UIcon name="i-lucide-user" class="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
                   {{ reg.submitterName }}
                 </span>
                 <span v-if="reg.contactPhone" class="flex items-center gap-1.5">
-                  <UIcon name="i-lucide-phone" class="w-3.5 h-3.5 text-white/40" />
+                  <UIcon name="i-lucide-phone" class="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
                   {{ reg.contactPhone }}
                 </span>
                 <span v-if="reg.contactEmail" class="flex items-center gap-1.5">
-                  <UIcon name="i-lucide-mail" class="w-3.5 h-3.5 text-white/40" />
+                  <UIcon name="i-lucide-mail" class="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
                   {{ reg.contactEmail }}
                 </span>
               </div>
@@ -472,36 +509,36 @@ onMounted(() => loadData())
             </div>
           </div>
 
-          <div v-if="reg.members?.length" class="mt-4 pt-4 border-t border-white/10">
-            <p class="text-xs text-white/50 mb-2 flex items-center gap-1.5">
+          <div v-if="reg.members?.length" class="mt-4 pt-4 border-t border-[var(--color-border)]">
+            <p class="text-xs text-[var(--color-text-muted)] mb-2 flex items-center gap-1.5">
               <UIcon name="i-lucide-users" class="w-3.5 h-3.5" /> 成员（{{ reg.members.length }} 人）
             </p>
             <div class="flex flex-wrap gap-2">
               <span
                 v-for="(m, idx) in reg.members"
                 :key="idx"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs text-white/80 bg-white/5 rounded-full"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] rounded-full"
               >
                 {{ m.name }}
-                <span v-if="m.preferredPosition" class="text-white/40">· {{ m.preferredPosition }}</span>
+                <span v-if="m.preferredPosition" class="text-[var(--color-text-muted)]">· {{ m.preferredPosition }}</span>
               </span>
             </div>
           </div>
 
           <div v-if="formatCustomData(reg.customData).length" class="mt-3">
-            <p class="text-xs text-white/50 mb-1.5">附加信息</p>
+            <p class="text-xs text-[var(--color-text-muted)] mb-1.5">附加信息</p>
             <div class="flex flex-wrap gap-2">
               <span
                 v-for="(line, idx) in formatCustomData(reg.customData)"
                 :key="idx"
-                class="px-2.5 py-1 text-xs text-white/70 bg-indigo-500/10 rounded"
+                class="px-2.5 py-1 text-xs text-[var(--color-text-secondary)] bg-indigo-500/10 rounded"
               >
                 {{ line }}
               </span>
             </div>
           </div>
 
-          <div class="mt-3 flex items-center justify-between gap-3 text-xs text-white/40">
+          <div class="mt-3 flex items-center justify-between gap-3 text-xs text-[var(--color-text-muted)]">
             <span v-if="reg.notes" class="flex items-center gap-1.5 truncate">
               <UIcon name="i-lucide-sticky-note" class="w-3.5 h-3.5" />
               <span class="truncate">{{ reg.notes }}</span>
@@ -513,8 +550,8 @@ onMounted(() => loadData())
             </span>
           </div>
 
-          <div v-if="reg.reviewNote" class="mt-2 text-xs text-white/50">
-            <span class="text-white/40">审核备注：</span>{{ reg.reviewNote }}
+          <div v-if="reg.reviewNote" class="mt-2 text-xs text-[var(--color-text-muted)]">
+            <span class="text-[var(--color-text-muted)]">审核备注：</span>{{ reg.reviewNote }}
           </div>
         </div>
       </div>
@@ -523,68 +560,106 @@ onMounted(() => loadData())
     <template v-else-if="activeTab === 'settings'">
       <UCard>
         <template #header>
-          <h2 class="text-base font-semibold text-white flex items-center gap-2">
-            <UIcon name="i-lucide-settings" class="w-4 h-4 text-white/40" />
-            报名设置
+          <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+            <UIcon name="i-lucide-settings" class="w-4 h-4 text-[var(--color-text-muted)]" />
+            报名问卷设置
           </h2>
         </template>
 
         <div class="space-y-5">
-          <div class="flex items-center justify-between py-2 px-3 bg-white/5 rounded">
+          <div class="flex items-center justify-between py-2 px-3 bg-[var(--color-bg-secondary)] rounded">
             <div>
-              <label class="text-sm text-white/80 font-medium">开启报名</label>
-              <p class="text-xs text-white/40">关闭后，选手将无法提交报名</p>
+              <label class="text-sm text-[var(--color-text-primary)] font-medium">开启报名</label>
+              <p class="text-xs text-[var(--color-text-muted)]">关闭后，选手将无法提交这份报名问卷</p>
             </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="settingsForm.registrationOpen" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+            <label class="toggle-switch">
+              <input type="checkbox" v-model="settingsForm.registrationOpen">
+              <span class="toggle-slider"></span>
             </label>
           </div>
 
-          <div class="flex items-center justify-between py-2 px-3 bg-white/5 rounded">
+          <div class="flex items-center justify-between py-2 px-3 bg-[var(--color-bg-secondary)] rounded">
             <div>
-              <label class="text-sm text-white/80 font-medium">公开报名</label>
-              <p class="text-xs text-white/40">允许未登录用户提交报名（无需账号）</p>
+              <label class="text-sm text-[var(--color-text-primary)] font-medium">公开报名</label>
+              <p class="text-xs text-[var(--color-text-muted)]">允许未登录用户提交报名（无需账号）</p>
             </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="settingsForm.isPublic" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+            <label class="toggle-switch">
+              <input type="checkbox" v-model="settingsForm.isPublic">
+              <span class="toggle-slider"></span>
             </label>
+          </div>
+
+          <!-- 报名问卷类型选择 -->
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">报名类型</label>
+            <div class="grid grid-cols-3 gap-3">
+              <button
+                type="button"
+                class="rounded-lg border-2 p-3 transition-colors text-left"
+                :class="settingsForm.registrationType === 'individual' ? 'border-indigo-500 bg-indigo-500/10' : 'border-[var(--color-border)] hover:border-[var(--color-border)]'"
+                @click="() => { settingsForm.registrationType = 'individual' }"
+              >
+                <UIcon name="i-lucide-user" class="w-5 h-5 mb-1" :class="settingsForm.registrationType === 'individual' ? 'text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
+                <div class="text-sm font-medium text-[var(--color-text-primary)]">仅个人</div>
+                <div class="text-xs text-[var(--color-text-muted)]">只允许个人报名</div>
+              </button>
+              <button
+                type="button"
+                class="rounded-lg border-2 p-3 transition-colors text-left"
+                :class="settingsForm.registrationType === 'team' ? 'border-indigo-500 bg-indigo-500/10' : 'border-[var(--color-border)] hover:border-[var(--color-border)]'"
+                @click="() => { settingsForm.registrationType = 'team' }"
+              >
+                <UIcon name="i-lucide-users" class="w-5 h-5 mb-1" :class="settingsForm.registrationType === 'team' ? 'text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
+                <div class="text-sm font-medium text-[var(--color-text-primary)]">仅队伍</div>
+                <div class="text-xs text-[var(--color-text-muted)]">只允许队伍报名</div>
+              </button>
+              <button
+                type="button"
+                class="rounded-lg border-2 p-3 transition-colors text-left"
+                :class="settingsForm.registrationType === 'both' ? 'border-indigo-500 bg-indigo-500/10' : 'border-[var(--color-border)] hover:border-[var(--color-border)]'"
+                @click="() => { settingsForm.registrationType = 'both' }"
+              >
+                <UIcon name="i-lucide-user-plus" class="w-5 h-5 mb-1" :class="settingsForm.registrationType === 'both' ? 'text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
+                <div class="text-sm font-medium text-[var(--color-text-primary)]">个人 + 队伍</div>
+                <div class="text-xs text-[var(--color-text-muted)]">两种方式均可</div>
+              </button>
+            </div>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-white/80 mb-1.5">报名截止时间</label>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">报名截止时间</label>
+            <!-- 原生 datetime-local 输入：SSR/客户端渲染一致，无需 ClientOnly，与 ISO 字符串格式天然兼容 -->
             <input
               v-model="settingsForm.registrationDeadline"
               type="datetime-local"
-              class="w-full px-3 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/5 text-white/90"
+              class="input-glass w-full"
             />
-            <p class="text-xs text-white/40 mt-1">留空表示不设截止时间</p>
+            <p class="text-xs text-[var(--color-text-muted)] mt-1">留空表示不设截止时间</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-white/80 mb-1.5">队伍人数</label>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">队伍人数</label>
             <input
               v-model.number="settingsForm.teamSize"
               type="number"
               min="1"
-              class="w-full px-3 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/5 text-white/90"
+              class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
             />
-            <p class="text-xs text-white/40 mt-1">用于自动组队时每队的人数上限</p>
+            <p class="text-xs text-[var(--color-text-muted)] mt-1">用于自动组队时每队的人数上限</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-white/80 mb-1.5">报名须知</label>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">报名须知</label>
             <textarea
               v-model="settingsForm.registrationInfo"
               rows="4"
               placeholder="例如：请如实填写个人信息，报名截止后将无法修改..."
-              class="w-full px-3 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/5 text-white/90 resize-y"
+              class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] resize-y"
             />
           </div>
         </div>
 
-        <div class="flex justify-end mt-6 pt-4 border-t border-white/10">
+        <div class="flex justify-end mt-6 pt-4 border-t border-[var(--color-border)]">
           <UButton
             color="primary"
             icon="i-lucide-save"
@@ -598,131 +673,25 @@ onMounted(() => loadData())
     </template>
 
     <template v-else-if="activeTab === 'fields'">
-      <UCard>
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold text-white flex items-center gap-2">
-              <UIcon name="i-lucide-form-input" class="w-4 h-4 text-white/40" />
-              自定义字段
-              <span class="text-xs font-normal text-white/40">（报名表单中除默认字段外的额外字段）</span>
-            </h2>
-            <UButton
-              size="xs"
-              variant="soft"
-              color="primary"
-              icon="i-lucide-plus"
-              @click="addField"
-            >
-              添加字段
-            </UButton>
+      <!-- 拖拽式表单设计器（类似腾讯问卷/问卷星） -->
+      <!-- FormDesigner 已自带顶部导航栏（含保存按钮占位），无需外层 UCard 包裹 -->
+      <!-- 用 ClientOnly 包裹：FormDesigner 顶层 import vue-draggable-plus，该库强依赖 window/document，SSR 阶段直接渲染会抛错 -->
+      <ClientOnly>
+        <div class="h-[760px]">
+          <FormDesigner v-model="formFields" />
+        </div>
+        <template #fallback>
+          <div class="h-[760px] flex items-center justify-center text-[var(--color-text-muted)] text-sm">
+            表单设计器加载中...
           </div>
         </template>
-
-        <div v-if="customFields.length === 0" class="text-center py-10">
-          <UIcon name="i-lucide-form-input" class="w-12 h-12 text-white/30 mx-auto mb-3" />
-          <p class="text-sm text-white/50 mb-4">暂无自定义字段，点击下方按钮添加</p>
-          <UButton color="primary" variant="outline" icon="i-lucide-plus" @click="addField">添加字段</UButton>
-        </div>
-
-        <div v-else class="space-y-4">
-          <div
-            v-for="(field, idx) in customFields"
-            :key="idx"
-            class="border border-white/10 rounded-lg p-4 bg-white/5"
-          >
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs text-white/60 mb-1">字段名称</label>
-                <input
-                  v-model="field.fieldName"
-                  type="text"
-                  placeholder="例如：学校"
-                  class="w-full px-3 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/5 text-white/90"
-                />
-              </div>
-              <div>
-                <label class="block text-xs text-white/60 mb-1">字段 Key（英文标识）</label>
-                <input
-                  v-model="field.fieldKey"
-                  type="text"
-                  placeholder="例如：school"
-                  class="w-full px-3 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/5 text-white/90 font-mono"
-                />
-              </div>
-              <div>
-                <label class="block text-xs text-white/60 mb-1">字段类型</label>
-                <select
-                  v-model="field.fieldType"
-                  class="w-full px-3 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/5 text-white/90"
-                >
-                  <option value="text">单行文本</option>
-                  <option value="textarea">多行文本</option>
-                  <option value="select">下拉选择</option>
-                  <option value="checkbox">复选框</option>
-                  <option value="radio">单选框</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs text-white/60 mb-1">应用对象</label>
-                <select
-                  v-model="field.appliesTo"
-                  class="w-full px-3 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/5 text-white/90"
-                >
-                  <option value="both">个人 + 队伍</option>
-                  <option value="individual">仅个人</option>
-                  <option value="team">仅队伍</option>
-                </select>
-              </div>
-              <div class="md:col-span-2" v-if="['select', 'radio', 'checkbox'].includes(field.fieldType)">
-                <label class="block text-xs text-white/60 mb-1">选项（逗号分隔）</label>
-                <input
-                  v-model="field.fieldOptions"
-                  type="text"
-                  placeholder="例如：大一,大二,大三,大四"
-                  class="w-full px-3 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/5 text-white/90"
-                />
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
-              <label class="inline-flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  v-model="field.required"
-                  class="rounded border-white/20 text-blue-500 focus:ring-blue-500"
-                />
-                <span class="text-sm text-white/70">必填</span>
-              </label>
-              <UButton
-                size="xs"
-                color="error"
-                variant="ghost"
-                icon="i-lucide-trash-2"
-                @click="removeField(idx)"
-              >
-                删除
-              </UButton>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="customFields.length > 0" class="flex justify-end mt-6 pt-4 border-t border-white/10">
-          <UButton
-            color="primary"
-            icon="i-lucide-save"
-            :loading="savingFields"
-            @click="saveFields"
-          >
-            保存字段
-          </UButton>
-        </div>
-      </UCard>
+      </ClientOnly>
     </template>
   </div>
 
-  <div v-if="reviewModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="reviewModal = false">
+  <div v-if="reviewModal" class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50" @click.self="reviewModal = false">
     <div class="glass-modal rounded-xl shadow-lg w-full max-w-md p-6">
-      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+      <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-1 flex items-center gap-2">
         <UIcon
           :name="reviewAction === 'approve' ? 'i-lucide-check-circle' : 'i-lucide-x-circle'"
           class="w-5 h-5"
@@ -730,28 +699,28 @@ onMounted(() => loadData())
         />
         {{ reviewAction === 'approve' ? '通过报名' : '拒绝报名' }}
       </h3>
-      <p class="text-sm text-white/50 mb-4">请确认操作，可填写审核备注</p>
+      <p class="text-sm text-[var(--color-text-muted)] mb-4">请确认操作，可填写审核备注</p>
 
-      <div v-if="reviewTarget" class="bg-white/5 rounded-lg p-3 mb-4 text-sm space-y-1">
-        <p class="text-white/80"><span class="text-white/40">提交人：</span>{{ reviewTarget.submitterName }}</p>
-        <p v-if="reviewTarget.teamName" class="text-white/80"><span class="text-white/40">队伍：</span>{{ reviewTarget.teamName }}</p>
-        <p v-if="reviewTarget.contactPhone" class="text-white/80"><span class="text-white/40">电话：</span>{{ reviewTarget.contactPhone }}</p>
-        <p v-if="reviewTarget.members?.length" class="text-white/80">
-          <span class="text-white/40">成员：</span>{{ reviewTarget.members.map((m: any) => m.name).join('、') }}
+      <div v-if="reviewTarget" class="bg-[var(--color-bg-secondary)] rounded-lg p-3 mb-4 text-sm space-y-1">
+        <p class="text-[var(--color-text-primary)]"><span class="text-[var(--color-text-muted)]">提交人：</span>{{ reviewTarget.submitterName }}</p>
+        <p v-if="reviewTarget.teamName" class="text-[var(--color-text-primary)]"><span class="text-[var(--color-text-muted)]">队伍：</span>{{ reviewTarget.teamName }}</p>
+        <p v-if="reviewTarget.contactPhone" class="text-[var(--color-text-primary)]"><span class="text-[var(--color-text-muted)]">电话：</span>{{ reviewTarget.contactPhone }}</p>
+        <p v-if="reviewTarget.members?.length" class="text-[var(--color-text-primary)]">
+          <span class="text-[var(--color-text-muted)]">成员：</span>{{ reviewTarget.members.map((m: any) => m.name).join('、') }}
         </p>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-white/80 mb-1.5">审核备注（选填）</label>
+        <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">审核备注（选填）</label>
         <textarea
           v-model="reviewNote"
           rows="3"
           placeholder="可填写审核说明..."
-          class="w-full px-3 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/5 text-white/90 resize-y"
+          class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] resize-y"
         />
       </div>
 
-      <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-white/10">
+      <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
         <UButton color="neutral" variant="ghost" @click="() => { reviewModal = false }">取消</UButton>
         <UButton
           :color="reviewAction === 'approve' ? 'success' : 'error'"
@@ -764,31 +733,31 @@ onMounted(() => loadData())
     </div>
   </div>
 
-  <div v-if="showAutoMatch" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showAutoMatch = false">
+  <div v-if="showAutoMatch" class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50" @click.self="showAutoMatch = false">
     <div class="glass-modal rounded-xl shadow-lg w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
-      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+      <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-1 flex items-center gap-2">
         <UIcon name="i-lucide-shuffle" class="w-5 h-5 text-amber-400" />
         自动组队结果
       </h3>
-      <p class="text-sm text-white/50 mb-4">系统已根据个人报名自动匹配成队，确认后将创建为正式队伍</p>
+      <p class="text-sm text-[var(--color-text-muted)] mb-4">系统已根据个人报名自动匹配成队，确认后将创建为正式队伍</p>
 
       <div v-if="matchResult" class="space-y-4">
         <div>
-          <p class="text-sm font-semibold text-white mb-2">
+          <p class="text-sm font-semibold text-[var(--color-text-primary)] mb-2">
             建议队伍（{{ matchResult.teams.length }} 支）
           </p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div
               v-for="(team, idx) in matchResult.teams"
               :key="idx"
-              class="border border-white/10 rounded-lg p-3 bg-white/5"
+              class="border border-[var(--color-border)] rounded-lg p-3 bg-[var(--color-bg-secondary)]"
             >
-              <p class="text-sm font-semibold text-white mb-2">{{ team.suggestedName }}</p>
+              <p class="text-sm font-semibold text-[var(--color-text-primary)] mb-2">{{ team.suggestedName }}</p>
               <div class="flex flex-wrap gap-1.5">
                 <span
                   v-for="(m, mIdx) in team.members"
                   :key="mIdx"
-                  class="px-2 py-0.5 text-xs text-white/70 bg-blue-500/15 rounded-full"
+                  class="px-2 py-0.5 text-xs text-[var(--color-text-secondary)] bg-blue-500/15 rounded-full"
                 >
                   {{ m.name || m.submitterName }}
                 </span>
@@ -805,7 +774,7 @@ onMounted(() => loadData())
             <span
               v-for="(m, idx) in matchResult.unmatched"
               :key="idx"
-              class="px-2 py-0.5 text-xs text-white/70 bg-amber-500/15 rounded-full"
+              class="px-2 py-0.5 text-xs text-[var(--color-text-secondary)] bg-amber-500/15 rounded-full"
             >
               {{ m.name || m.submitterName }}
             </span>
@@ -813,7 +782,7 @@ onMounted(() => loadData())
         </div>
       </div>
 
-      <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-white/10">
+      <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
         <UButton color="neutral" variant="ghost" @click="() => { showAutoMatch = false }">取消</UButton>
         <UButton
           color="primary"
@@ -826,20 +795,20 @@ onMounted(() => loadData())
     </div>
   </div>
 
-  <div v-if="showAccounts" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showAccounts = false">
+  <div v-if="showAccounts" class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50" @click.self="showAccounts = false">
     <div class="glass-modal rounded-xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+      <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-1 flex items-center gap-2">
         <UIcon name="i-lucide-user-plus" class="w-5 h-5 text-green-400" />
         辩手账号创建结果
       </h3>
-      <p class="text-sm text-white/50 mb-4" v-if="accountResult">
+      <p class="text-sm text-[var(--color-text-muted)] mb-4" v-if="accountResult">
         共创建 {{ accountResult.created }} 个账号，请妥善保存账号密码并下发给辩手
       </p>
 
       <div v-if="accountResult?.accounts?.length" class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="text-left text-white/60 border-b border-white/10">
+            <tr class="text-left text-[var(--color-text-secondary)] border-b border-[var(--color-border)]">
               <th class="py-2 px-2 font-medium">姓名</th>
               <th class="py-2 px-2 font-medium">用户名</th>
               <th class="py-2 px-2 font-medium">密码</th>
@@ -849,7 +818,7 @@ onMounted(() => loadData())
             <tr
               v-for="(acc, idx) in accountResult.accounts"
               :key="idx"
-              class="border-b border-white/5 text-white/80"
+              class="border-b border-[var(--color-border-muted)] text-[var(--color-text-primary)]"
             >
               <td class="py-2 px-2">{{ acc.name }}</td>
               <td class="py-2 px-2 font-mono">{{ acc.username }}</td>
@@ -859,7 +828,7 @@ onMounted(() => loadData())
         </table>
       </div>
 
-      <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-white/10">
+      <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
         <UButton color="neutral" variant="ghost" icon="i-lucide-copy" @click="copyAccounts">复制全部</UButton>
         <UButton color="primary" variant="outline" icon="i-lucide-download" @click="downloadAccounts">下载 CSV</UButton>
         <UButton color="primary" @click="() => { showAccounts = false }">完成</UButton>

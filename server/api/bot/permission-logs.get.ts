@@ -3,15 +3,15 @@
 // 请求参数：?teamId=xxx&limit=50&action=ROUND_SWITCH_ALLOW
 // ════════════════════════════════════════════════════
 import { prisma } from '../../lib/prisma'
-import { getUserFromEvent } from '../../utils/auth'
+import { getUserFromEventWithSession } from '../../utils/auth'
 import type { BotPermissionLog } from '../../lib/generated/client'
 
 export default defineEventHandler(async (event) => {
   try {
-    const currentUser = getUserFromEvent(event)
+    const currentUser = await getUserFromEventWithSession(event, prisma)
 
     if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin') {
-      throw createError({ statusCode: 403, statusMessage: '仅团队管理员可查看权限日志' })
+      throw createError({ statusCode: 403, message: '仅团队管理员可查看权限日志' })
     }
 
     const query = getQuery(event)
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     const offset = parseInt(query.offset as string) || 0
 
     if (!teamId) {
-      throw createError({ statusCode: 400, statusMessage: '缺少 teamId 参数' })
+      throw createError({ statusCode: 400, message: '缺少 teamId 参数' })
     }
 
     // 构建查询条件
@@ -61,6 +61,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: unknown) {
     if ((error as { statusCode?: number }).statusCode) throw error
     console.error('[Permission Logs] 查询失败:', error)
-    throw createError({ statusCode: 500, statusMessage: '查询权限日志失败' })
+    throw createError({ statusCode: 500, message: '查询权限日志失败' })
   }
 })

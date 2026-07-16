@@ -1,4 +1,4 @@
-import { prisma } from '../../lib/prisma'
+﻿import { prisma } from '../../lib/prisma'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -32,6 +32,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Get individual users error:', error)
-    throw createError({ statusCode: 500, statusMessage: '获取个人用户数据失败' })
+    throw createError({ statusCode: 500, message: '获取个人用户数据失败' })
   }
 })

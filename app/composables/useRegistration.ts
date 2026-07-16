@@ -1,3 +1,8 @@
+/**
+ * useRegistration — 赛事报名相关接口集合
+ * 包含公开报名接口（无需鉴权，鉴权可选）和管理员接口（需鉴权）
+ * 涵盖：报名配置查询、提交报名、审核、自动匹配成队、批量创建账号等
+ */
 export function useRegistration() {
   const store = useAuthStore()
 
@@ -71,6 +76,7 @@ export function useRegistration() {
     registrationOpen?: boolean
     registrationDeadline?: string | null
     isPublic?: boolean
+    registrationType?: string // individual | team | both
     teamSize?: number | null
     registrationInfo?: string | null
   }) {
@@ -80,7 +86,8 @@ export function useRegistration() {
     })
   }
 
-  // 更新自定义字段（管理员）
+  // 更新报名表单字段配置（管理员）
+  // 统一接口：同时处理系统字段和自定义字段
   async function updateRegistrationFields(tournamentId: string, fields: any[]) {
     return await $fetch(`/api/tournaments/${tournamentId}/registration-fields`, {
       method: 'PUT', body: { fields },

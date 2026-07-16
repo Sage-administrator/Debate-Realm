@@ -41,6 +41,23 @@ export function canWriteTournament(
   return team.adminId === user.userId
 }
 
+// ponytail: 提取公共的"获取用户+赛事"逻辑，消除两个 require 函数的重复代码
+async function fetchTournamentWithAuth(
+  event: H3Event,
+  prisma: PrismaClient,
+  tournamentId: string,
+): Promise<{ user: JWTPayload; tournament: Tournament & { team: Team } }> {
+  const user = getUserFromEvent(event)
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    include: { team: true },
+  })
+  if (!tournament) {
+    throw createError({ statusCode: 404, message: '赛事不存在' })
+  }
+  return { user, tournament: tournament as Tournament & { team: Team } }
+}
+
 /**
  * 从 H3 event 解析出当前用户，然后对指定 tournament 做“读权限”断言；
  * 不通过会抛出 createError（401/403），由 Nitro 框架统一处理。
@@ -50,47 +67,25 @@ export async function requireReadTournament(
   prisma: PrismaClient,
   tournamentId: string,
 ): Promise<{ user: JWTPayload; tournament: Tournament & { team: Team } }> {
-  const user = getUserFromEvent(event) // 未登录会在此抛 401
-
-  const tournament = await prisma.tournament.findUnique({
-    where: { id: tournamentId },
-    include: { team: true },
-  })
-  if (!tournament) {
-    throw createError({ statusCode: 404, statusMessage: '赛事不存在' })
-  }
-
+  const { user, tournament } = await fetchTournamentWithAuth(event, prisma, tournamentId)
   if (!canReadTournament(user, tournament)) {
-    throw createError({ statusCode: 403, statusMessage: '无权限查看此赛事' })
+    throw createError({ statusCode: 403, message: '无权限查看此赛事' })
   }
-
-  return { user, tournament: tournament as Tournament & { team: Team } }
+  return { user, tournament }
 }
 
 /**
  * 从 H3 event 解析出当前用户，对指定 tournament 做“写权限”断言；
  * 不通过会抛出 createError（401/403）。
- * 语义等价于原 matches.post.ts:21 的：
- *   user.role !== 'system_admin' && tournament.team.adminId !== user.userId
  */
 export async function requireWriteTournament(
   event: H3Event,
   prisma: PrismaClient,
   tournamentId: string,
 ): Promise<{ user: JWTPayload; tournament: Tournament & { team: Team } }> {
-  const user = getUserFromEvent(event)
-
-  const tournament = await prisma.tournament.findUnique({
-    where: { id: tournamentId },
-    include: { team: true },
-  })
-  if (!tournament) {
-    throw createError({ statusCode: 404, statusMessage: '赛事不存在' })
-  }
-
+  const { user, tournament } = await fetchTournamentWithAuth(event, prisma, tournamentId)
   if (!canWriteTournament(user, tournament, tournament.team)) {
-    throw createError({ statusCode: 403, statusMessage: '无权限修改此赛事' })
+    throw createError({ statusCode: 403, message: '无权限修改此赛事' })
   }
-
-  return { user, tournament: tournament as Tournament & { team: Team } }
+  return { user, tournament }
 }

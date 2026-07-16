@@ -231,21 +231,21 @@ watch(
     <div class="col-span-8 space-y-4">
       <UCard>
         <template #header>
-          <h2 class="text-base font-semibold text-white flex items-center gap-2">
-            <UIcon name="i-lucide-volume-2" class="w-4 h-4 text-white/40" />
+          <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+            <UIcon name="i-lucide-volume-2" class="w-4 h-4 text-[var(--color-text-muted)]" />
             提示音设置
           </h2>
         </template>
 
         <!-- 启用提示音开关 -->
-        <div class="flex items-center justify-between py-2 px-3 bg-white/5 rounded mb-4">
+        <div class="flex items-center justify-between py-2 px-3 bg-[var(--color-bg-secondary)] rounded mb-4">
           <div>
-            <label class="text-sm text-white/80 font-medium">启用提示音</label>
-            <p class="text-xs text-white/40">控制是否在计时器中播放提示音</p>
+            <label class="text-sm text-[var(--color-text-primary)] font-medium">启用提示音</label>
+            <p class="text-xs text-[var(--color-text-muted)]">控制是否在计时器中播放提示音</p>
           </div>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" v-model="fullConfig.audioConfig.enabled" class="sr-only peer">
-            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+          <label class="toggle-switch">
+            <input type="checkbox" v-model="fullConfig.audioConfig.enabled">
+            <span class="toggle-slider"></span>
           </label>
         </div>
 
@@ -253,9 +253,9 @@ watch(
         <div class="flex gap-4 mb-4">
           <!-- 30秒提示音 -->
           <div class="space-y-2 flex-1">
-            <label class="block text-sm text-white/80 font-medium">30秒提示音</label>
+            <label class="block text-sm text-[var(--color-text-primary)] font-medium">30秒提示音</label>
             <div class="flex items-center gap-2">
-              <label class="px-3 py-2 border border-white/15 rounded text-sm cursor-pointer hover:bg-white/5 transition-colors flex items-center gap-2 whitespace-nowrap">
+              <label class="px-3 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2 whitespace-nowrap">
                 <UIcon name="i-lucide-upload" class="w-4 h-4" />
                 选择文件
                 <input
@@ -265,7 +265,7 @@ watch(
                   @change="(e: Event) => onAudioSelect(e, 'warningSound')"
                 >
               </label>
-              <span class="text-xs text-white/50 truncate max-w-[60%]">{{ fullConfig.audioConfig.warningSound || '未选择文件' }}</span>
+              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ fullConfig.audioConfig.warningSound || '未选择文件' }}</span>
             </div>
             <div v-if="fullConfig.audioConfig.warningSound" class="flex items-center gap-2">
               <audio :src="fullConfig.audioConfig.warningSound" controls class="h-8 w-full max-w-xs"></audio>
@@ -274,9 +274,9 @@ watch(
 
           <!-- 5秒提示音 -->
           <div class="space-y-2 flex-1">
-            <label class="block text-sm text-white/80 font-medium">5秒提示音</label>
+            <label class="block text-sm text-[var(--color-text-primary)] font-medium">5秒提示音</label>
             <div class="flex items-center gap-2">
-              <label class="px-3 py-2 border border-white/15 rounded text-sm cursor-pointer hover:bg-white/5 transition-colors flex items-center gap-2 whitespace-nowrap">
+              <label class="px-3 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2 whitespace-nowrap">
                 <UIcon name="i-lucide-upload" class="w-4 h-4" />
                 选择文件
                 <input
@@ -286,7 +286,7 @@ watch(
                   @change="(e: Event) => onAudioSelect(e, 'endSound')"
                 >
               </label>
-              <span class="text-xs text-white/50 truncate max-w-[60%]">{{ fullConfig.audioConfig.endSound || '未选择文件' }}</span>
+              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ fullConfig.audioConfig.endSound || '未选择文件' }}</span>
             </div>
             <div v-if="fullConfig.audioConfig.endSound" class="flex items-center gap-2">
               <audio :src="fullConfig.audioConfig.endSound" controls class="h-8 w-full max-w-xs"></audio>
@@ -295,9 +295,9 @@ watch(
 
           <!-- 时间到提示音 -->
           <div class="space-y-2 flex-1">
-            <label class="block text-sm text-white/80 font-medium">时间到提示音</label>
+            <label class="block text-sm text-[var(--color-text-primary)] font-medium">时间到提示音</label>
             <div class="flex items-center gap-2">
-              <label class="px-3 py-2 border border-white/15 rounded text-sm cursor-pointer hover:bg-white/5 transition-colors flex items-center gap-2 whitespace-nowrap">
+              <label class="px-3 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2 whitespace-nowrap">
                 <UIcon name="i-lucide-upload" class="w-4 h-4" />
                 选择文件
                 <input
@@ -307,7 +307,7 @@ watch(
                   @change="(e: Event) => onAudioSelect(e, 'startSound')"
                 >
               </label>
-              <span class="text-xs text-white/50 truncate max-w-[60%]">{{ fullConfig.audioConfig.startSound || '未选择文件' }}</span>
+              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ fullConfig.audioConfig.startSound || '未选择文件' }}</span>
             </div>
             <div v-if="fullConfig.audioConfig.startSound" class="flex items-center gap-2">
               <audio :src="fullConfig.audioConfig.startSound" controls class="h-8 w-full max-w-xs"></audio>
@@ -316,8 +316,8 @@ watch(
         </div>
 
         <!-- 说明文字 -->
-        <div class="pt-4 border-t border-white/10">
-          <p class="text-xs text-white/40">
+        <div class="pt-4 border-t border-[var(--color-border)]">
+          <p class="text-xs text-[var(--color-text-muted)]">
             提示：修改后会自动保存。支持格式 MP3、WAV、OGG，单个文件最大 10MB。
           </p>
         </div>

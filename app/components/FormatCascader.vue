@@ -12,7 +12,9 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  // 一级赛制变化时回写父组件
   (e: 'update:primary', v: string): void
+  // 二级赛制变化时回写父组件
   (e: 'update:secondary', v: string): void
 }>()
 
@@ -25,10 +27,11 @@ const emit = defineEmits<{
 //   - swiss           : 瑞士制（无二级）
 //   - group_knockout  : 小组+淘汰赛制（无二级）
 
+// 赛制选项的数据结构
 interface FormatOption {
-  value: string
-  label: string
-  children?: { value: string; label: string }[]
+  value: string                                      // 选项值（用于回写）
+  label: string                                      // 选项展示文本
+  children?: { value: string; label: string }[]      // 二级子选项列表（可选）
 }
 
 const formatOptions: FormatOption[] = [
@@ -169,7 +172,7 @@ onBeforeUnmount(() => {
       @click.stop="openDropdown"
       :class="{ 'is-active': open, 'has-value': hasValue }"
     >
-      <span class="cascader-text" :class="hasValue ? 'text-white/80' : 'text-white/40'">
+      <span class="cascader-text" :class="hasValue ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'">
         {{ displayText }}
       </span>
       <UIcon name="i-lucide-chevron-down" class="cascader-icon" :class="{ 'is-open': open }" />

@@ -63,38 +63,38 @@ export default defineEventHandler(async (event) => {
       'group_knockout',
     ]
     if (!validFormats.includes(format)) {
-      throw createError({ statusCode: 400, statusMessage: `不支持的赛制：${format}` })
+      throw createError({ statusCode: 400, message: `不支持的赛制：${format}` })
     }
 
     if (!teams || teams.length < 2) {
-      throw createError({ statusCode: 400, statusMessage: '至少需要 2 支队伍' })
+      throw createError({ statusCode: 400, message: '至少需要 2 支队伍' })
     }
 
     // 队伍名去重校验
     const seenNames = new Set<string>()
     for (const team of teams) {
       if (!team.name || !team.name.trim()) {
-        throw createError({ statusCode: 400, statusMessage: '队伍名不能为空' })
+        throw createError({ statusCode: 400, message: '队伍名不能为空' })
       }
       const trimmed = team.name.trim()
       if (seenNames.has(trimmed)) {
-        throw createError({ statusCode: 400, statusMessage: `队伍名 "${trimmed}" 重复` })
+        throw createError({ statusCode: 400, message: `队伍名 "${trimmed}" 重复` })
       }
       seenNames.add(trimmed)
     }
 
     // 赛制特定校验
     if (format === 'page_playoff' && teams.length < 4) {
-      throw createError({ statusCode: 400, statusMessage: '佩寄制至少需要 4 支队伍' })
+      throw createError({ statusCode: 400, message: '佩寄制至少需要 4 支队伍' })
     }
     if (format === 'group_knockout') {
       const minNeed = Math.max(groupSize * 2, 4)
       if (teams.length < minNeed) {
-        throw createError({ statusCode: 400, statusMessage: `小组+淘汰赛至少需要 ${minNeed} 支队伍（每组 ${groupSize} 支，至少 2 组）` })
+        throw createError({ statusCode: 400, message: `小组+淘汰赛至少需要 ${minNeed} 支队伍（每组 ${groupSize} 支，至少 2 组）` })
       }
     }
     if (format === 'swiss' && rounds && (rounds < 1 || rounds > 20)) {
-      throw createError({ statusCode: 400, statusMessage: '瑞士制轮数必须在 1-20 之间' })
+      throw createError({ statusCode: 400, message: '瑞士制轮数必须在 1-20 之间' })
     }
 
     // ── 4. 使用 bracket-generator 生成赛程 ──
@@ -162,6 +162,6 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('Generate bracket error:', error)
-    throw createError({ statusCode: 500, statusMessage: '赛程生成失败' })
+    throw createError({ statusCode: 500, message: '赛程生成失败' })
   }
 })
