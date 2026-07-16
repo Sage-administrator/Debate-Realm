@@ -27,6 +27,7 @@ export type AggregateTimerTemplate = {
 export type TimerTemplateMinAggregateOutputType = {
   id: string | null
   tournamentId: string | null
+  standaloneMatchId: string | null
   phases: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -35,6 +36,7 @@ export type TimerTemplateMinAggregateOutputType = {
 export type TimerTemplateMaxAggregateOutputType = {
   id: string | null
   tournamentId: string | null
+  standaloneMatchId: string | null
   phases: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -43,6 +45,7 @@ export type TimerTemplateMaxAggregateOutputType = {
 export type TimerTemplateCountAggregateOutputType = {
   id: number
   tournamentId: number
+  standaloneMatchId: number
   phases: number
   createdAt: number
   updatedAt: number
@@ -53,6 +56,7 @@ export type TimerTemplateCountAggregateOutputType = {
 export type TimerTemplateMinAggregateInputType = {
   id?: true
   tournamentId?: true
+  standaloneMatchId?: true
   phases?: true
   createdAt?: true
   updatedAt?: true
@@ -61,6 +65,7 @@ export type TimerTemplateMinAggregateInputType = {
 export type TimerTemplateMaxAggregateInputType = {
   id?: true
   tournamentId?: true
+  standaloneMatchId?: true
   phases?: true
   createdAt?: true
   updatedAt?: true
@@ -69,6 +74,7 @@ export type TimerTemplateMaxAggregateInputType = {
 export type TimerTemplateCountAggregateInputType = {
   id?: true
   tournamentId?: true
+  standaloneMatchId?: true
   phases?: true
   createdAt?: true
   updatedAt?: true
@@ -149,7 +155,8 @@ export type TimerTemplateGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 
 export type TimerTemplateGroupByOutputType = {
   id: string
-  tournamentId: string
+  tournamentId: string | null
+  standaloneMatchId: string | null
   phases: string
   createdAt: Date
   updatedAt: Date
@@ -178,37 +185,44 @@ export type TimerTemplateWhereInput = {
   OR?: Prisma.TimerTemplateWhereInput[]
   NOT?: Prisma.TimerTemplateWhereInput | Prisma.TimerTemplateWhereInput[]
   id?: Prisma.StringFilter<"TimerTemplate"> | string
-  tournamentId?: Prisma.StringFilter<"TimerTemplate"> | string
+  tournamentId?: Prisma.StringNullableFilter<"TimerTemplate"> | string | null
+  standaloneMatchId?: Prisma.StringNullableFilter<"TimerTemplate"> | string | null
   phases?: Prisma.StringFilter<"TimerTemplate"> | string
   createdAt?: Prisma.DateTimeFilter<"TimerTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TimerTemplate"> | Date | string
-  tournament?: Prisma.XOR<Prisma.TournamentScalarRelationFilter, Prisma.TournamentWhereInput>
+  tournament?: Prisma.XOR<Prisma.TournamentNullableScalarRelationFilter, Prisma.TournamentWhereInput> | null
+  standaloneMatch?: Prisma.XOR<Prisma.StandaloneMatchNullableScalarRelationFilter, Prisma.StandaloneMatchWhereInput> | null
 }
 
 export type TimerTemplateOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  tournamentId?: Prisma.SortOrder
+  tournamentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  standaloneMatchId?: Prisma.SortOrderInput | Prisma.SortOrder
   phases?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   tournament?: Prisma.TournamentOrderByWithRelationInput
+  standaloneMatch?: Prisma.StandaloneMatchOrderByWithRelationInput
 }
 
 export type TimerTemplateWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   tournamentId?: string
+  standaloneMatchId?: string
   AND?: Prisma.TimerTemplateWhereInput | Prisma.TimerTemplateWhereInput[]
   OR?: Prisma.TimerTemplateWhereInput[]
   NOT?: Prisma.TimerTemplateWhereInput | Prisma.TimerTemplateWhereInput[]
   phases?: Prisma.StringFilter<"TimerTemplate"> | string
   createdAt?: Prisma.DateTimeFilter<"TimerTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TimerTemplate"> | Date | string
-  tournament?: Prisma.XOR<Prisma.TournamentScalarRelationFilter, Prisma.TournamentWhereInput>
-}, "id" | "tournamentId">
+  tournament?: Prisma.XOR<Prisma.TournamentNullableScalarRelationFilter, Prisma.TournamentWhereInput> | null
+  standaloneMatch?: Prisma.XOR<Prisma.StandaloneMatchNullableScalarRelationFilter, Prisma.StandaloneMatchWhereInput> | null
+}, "id" | "tournamentId" | "standaloneMatchId">
 
 export type TimerTemplateOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  tournamentId?: Prisma.SortOrder
+  tournamentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  standaloneMatchId?: Prisma.SortOrderInput | Prisma.SortOrder
   phases?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -222,7 +236,8 @@ export type TimerTemplateScalarWhereWithAggregatesInput = {
   OR?: Prisma.TimerTemplateScalarWhereWithAggregatesInput[]
   NOT?: Prisma.TimerTemplateScalarWhereWithAggregatesInput | Prisma.TimerTemplateScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"TimerTemplate"> | string
-  tournamentId?: Prisma.StringWithAggregatesFilter<"TimerTemplate"> | string
+  tournamentId?: Prisma.StringNullableWithAggregatesFilter<"TimerTemplate"> | string | null
+  standaloneMatchId?: Prisma.StringNullableWithAggregatesFilter<"TimerTemplate"> | string | null
   phases?: Prisma.StringWithAggregatesFilter<"TimerTemplate"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"TimerTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"TimerTemplate"> | Date | string
@@ -233,12 +248,14 @@ export type TimerTemplateCreateInput = {
   phases?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  tournament: Prisma.TournamentCreateNestedOneWithoutTimerTemplateInput
+  tournament?: Prisma.TournamentCreateNestedOneWithoutTimerTemplateInput
+  standaloneMatch?: Prisma.StandaloneMatchCreateNestedOneWithoutTimerTemplateInput
 }
 
 export type TimerTemplateUncheckedCreateInput = {
   id?: string
-  tournamentId: string
+  tournamentId?: string | null
+  standaloneMatchId?: string | null
   phases?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -249,12 +266,14 @@ export type TimerTemplateUpdateInput = {
   phases?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  tournament?: Prisma.TournamentUpdateOneRequiredWithoutTimerTemplateNestedInput
+  tournament?: Prisma.TournamentUpdateOneWithoutTimerTemplateNestedInput
+  standaloneMatch?: Prisma.StandaloneMatchUpdateOneWithoutTimerTemplateNestedInput
 }
 
 export type TimerTemplateUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
+  tournamentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  standaloneMatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phases?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -262,7 +281,8 @@ export type TimerTemplateUncheckedUpdateInput = {
 
 export type TimerTemplateCreateManyInput = {
   id?: string
-  tournamentId: string
+  tournamentId?: string | null
+  standaloneMatchId?: string | null
   phases?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -277,7 +297,8 @@ export type TimerTemplateUpdateManyMutationInput = {
 
 export type TimerTemplateUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  tournamentId?: Prisma.StringFieldUpdateOperationsInput | string
+  tournamentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  standaloneMatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phases?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -291,6 +312,7 @@ export type TimerTemplateNullableScalarRelationFilter = {
 export type TimerTemplateCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
+  standaloneMatchId?: Prisma.SortOrder
   phases?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -299,6 +321,7 @@ export type TimerTemplateCountOrderByAggregateInput = {
 export type TimerTemplateMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
+  standaloneMatchId?: Prisma.SortOrder
   phases?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -307,6 +330,7 @@ export type TimerTemplateMaxOrderByAggregateInput = {
 export type TimerTemplateMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
+  standaloneMatchId?: Prisma.SortOrder
   phases?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -344,15 +368,49 @@ export type TimerTemplateUncheckedUpdateOneWithoutTournamentNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TimerTemplateUpdateToOneWithWhereWithoutTournamentInput, Prisma.TimerTemplateUpdateWithoutTournamentInput>, Prisma.TimerTemplateUncheckedUpdateWithoutTournamentInput>
 }
 
+export type TimerTemplateCreateNestedOneWithoutStandaloneMatchInput = {
+  create?: Prisma.XOR<Prisma.TimerTemplateCreateWithoutStandaloneMatchInput, Prisma.TimerTemplateUncheckedCreateWithoutStandaloneMatchInput>
+  connectOrCreate?: Prisma.TimerTemplateCreateOrConnectWithoutStandaloneMatchInput
+  connect?: Prisma.TimerTemplateWhereUniqueInput
+}
+
+export type TimerTemplateUncheckedCreateNestedOneWithoutStandaloneMatchInput = {
+  create?: Prisma.XOR<Prisma.TimerTemplateCreateWithoutStandaloneMatchInput, Prisma.TimerTemplateUncheckedCreateWithoutStandaloneMatchInput>
+  connectOrCreate?: Prisma.TimerTemplateCreateOrConnectWithoutStandaloneMatchInput
+  connect?: Prisma.TimerTemplateWhereUniqueInput
+}
+
+export type TimerTemplateUpdateOneWithoutStandaloneMatchNestedInput = {
+  create?: Prisma.XOR<Prisma.TimerTemplateCreateWithoutStandaloneMatchInput, Prisma.TimerTemplateUncheckedCreateWithoutStandaloneMatchInput>
+  connectOrCreate?: Prisma.TimerTemplateCreateOrConnectWithoutStandaloneMatchInput
+  upsert?: Prisma.TimerTemplateUpsertWithoutStandaloneMatchInput
+  disconnect?: Prisma.TimerTemplateWhereInput | boolean
+  delete?: Prisma.TimerTemplateWhereInput | boolean
+  connect?: Prisma.TimerTemplateWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TimerTemplateUpdateToOneWithWhereWithoutStandaloneMatchInput, Prisma.TimerTemplateUpdateWithoutStandaloneMatchInput>, Prisma.TimerTemplateUncheckedUpdateWithoutStandaloneMatchInput>
+}
+
+export type TimerTemplateUncheckedUpdateOneWithoutStandaloneMatchNestedInput = {
+  create?: Prisma.XOR<Prisma.TimerTemplateCreateWithoutStandaloneMatchInput, Prisma.TimerTemplateUncheckedCreateWithoutStandaloneMatchInput>
+  connectOrCreate?: Prisma.TimerTemplateCreateOrConnectWithoutStandaloneMatchInput
+  upsert?: Prisma.TimerTemplateUpsertWithoutStandaloneMatchInput
+  disconnect?: Prisma.TimerTemplateWhereInput | boolean
+  delete?: Prisma.TimerTemplateWhereInput | boolean
+  connect?: Prisma.TimerTemplateWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TimerTemplateUpdateToOneWithWhereWithoutStandaloneMatchInput, Prisma.TimerTemplateUpdateWithoutStandaloneMatchInput>, Prisma.TimerTemplateUncheckedUpdateWithoutStandaloneMatchInput>
+}
+
 export type TimerTemplateCreateWithoutTournamentInput = {
   id?: string
   phases?: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  standaloneMatch?: Prisma.StandaloneMatchCreateNestedOneWithoutTimerTemplateInput
 }
 
 export type TimerTemplateUncheckedCreateWithoutTournamentInput = {
   id?: string
+  standaloneMatchId?: string | null
   phases?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -379,10 +437,60 @@ export type TimerTemplateUpdateWithoutTournamentInput = {
   phases?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  standaloneMatch?: Prisma.StandaloneMatchUpdateOneWithoutTimerTemplateNestedInput
 }
 
 export type TimerTemplateUncheckedUpdateWithoutTournamentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  standaloneMatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phases?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type TimerTemplateCreateWithoutStandaloneMatchInput = {
+  id?: string
+  phases?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tournament?: Prisma.TournamentCreateNestedOneWithoutTimerTemplateInput
+}
+
+export type TimerTemplateUncheckedCreateWithoutStandaloneMatchInput = {
+  id?: string
+  tournamentId?: string | null
+  phases?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type TimerTemplateCreateOrConnectWithoutStandaloneMatchInput = {
+  where: Prisma.TimerTemplateWhereUniqueInput
+  create: Prisma.XOR<Prisma.TimerTemplateCreateWithoutStandaloneMatchInput, Prisma.TimerTemplateUncheckedCreateWithoutStandaloneMatchInput>
+}
+
+export type TimerTemplateUpsertWithoutStandaloneMatchInput = {
+  update: Prisma.XOR<Prisma.TimerTemplateUpdateWithoutStandaloneMatchInput, Prisma.TimerTemplateUncheckedUpdateWithoutStandaloneMatchInput>
+  create: Prisma.XOR<Prisma.TimerTemplateCreateWithoutStandaloneMatchInput, Prisma.TimerTemplateUncheckedCreateWithoutStandaloneMatchInput>
+  where?: Prisma.TimerTemplateWhereInput
+}
+
+export type TimerTemplateUpdateToOneWithWhereWithoutStandaloneMatchInput = {
+  where?: Prisma.TimerTemplateWhereInput
+  data: Prisma.XOR<Prisma.TimerTemplateUpdateWithoutStandaloneMatchInput, Prisma.TimerTemplateUncheckedUpdateWithoutStandaloneMatchInput>
+}
+
+export type TimerTemplateUpdateWithoutStandaloneMatchInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  phases?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tournament?: Prisma.TournamentUpdateOneWithoutTimerTemplateNestedInput
+}
+
+export type TimerTemplateUncheckedUpdateWithoutStandaloneMatchInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tournamentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phases?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -393,57 +501,69 @@ export type TimerTemplateUncheckedUpdateWithoutTournamentInput = {
 export type TimerTemplateSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   tournamentId?: boolean
+  standaloneMatchId?: boolean
   phases?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  tournament?: boolean | Prisma.TournamentDefaultArgs<ExtArgs>
+  tournament?: boolean | Prisma.TimerTemplate$tournamentArgs<ExtArgs>
+  standaloneMatch?: boolean | Prisma.TimerTemplate$standaloneMatchArgs<ExtArgs>
 }, ExtArgs["result"]["timerTemplate"]>
 
 export type TimerTemplateSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   tournamentId?: boolean
+  standaloneMatchId?: boolean
   phases?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  tournament?: boolean | Prisma.TournamentDefaultArgs<ExtArgs>
+  tournament?: boolean | Prisma.TimerTemplate$tournamentArgs<ExtArgs>
+  standaloneMatch?: boolean | Prisma.TimerTemplate$standaloneMatchArgs<ExtArgs>
 }, ExtArgs["result"]["timerTemplate"]>
 
 export type TimerTemplateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   tournamentId?: boolean
+  standaloneMatchId?: boolean
   phases?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  tournament?: boolean | Prisma.TournamentDefaultArgs<ExtArgs>
+  tournament?: boolean | Prisma.TimerTemplate$tournamentArgs<ExtArgs>
+  standaloneMatch?: boolean | Prisma.TimerTemplate$standaloneMatchArgs<ExtArgs>
 }, ExtArgs["result"]["timerTemplate"]>
 
 export type TimerTemplateSelectScalar = {
   id?: boolean
   tournamentId?: boolean
+  standaloneMatchId?: boolean
   phases?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TimerTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tournamentId" | "phases" | "createdAt" | "updatedAt", ExtArgs["result"]["timerTemplate"]>
+export type TimerTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tournamentId" | "standaloneMatchId" | "phases" | "createdAt" | "updatedAt", ExtArgs["result"]["timerTemplate"]>
 export type TimerTemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  tournament?: boolean | Prisma.TournamentDefaultArgs<ExtArgs>
+  tournament?: boolean | Prisma.TimerTemplate$tournamentArgs<ExtArgs>
+  standaloneMatch?: boolean | Prisma.TimerTemplate$standaloneMatchArgs<ExtArgs>
 }
 export type TimerTemplateIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  tournament?: boolean | Prisma.TournamentDefaultArgs<ExtArgs>
+  tournament?: boolean | Prisma.TimerTemplate$tournamentArgs<ExtArgs>
+  standaloneMatch?: boolean | Prisma.TimerTemplate$standaloneMatchArgs<ExtArgs>
 }
 export type TimerTemplateIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  tournament?: boolean | Prisma.TournamentDefaultArgs<ExtArgs>
+  tournament?: boolean | Prisma.TimerTemplate$tournamentArgs<ExtArgs>
+  standaloneMatch?: boolean | Prisma.TimerTemplate$standaloneMatchArgs<ExtArgs>
 }
 
 export type $TimerTemplatePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "TimerTemplate"
   objects: {
-    tournament: Prisma.$TournamentPayload<ExtArgs>
+    tournament: Prisma.$TournamentPayload<ExtArgs> | null
+    standaloneMatch: Prisma.$StandaloneMatchPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    tournamentId: string
+    tournamentId: string | null
+    standaloneMatchId: string | null
     phases: string
     createdAt: Date
     updatedAt: Date
@@ -841,7 +961,8 @@ readonly fields: TimerTemplateFieldRefs;
  */
 export interface Prisma__TimerTemplateClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  tournament<T extends Prisma.TournamentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TournamentDefaultArgs<ExtArgs>>): Prisma.Prisma__TournamentClient<runtime.Types.Result.GetResult<Prisma.$TournamentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  tournament<T extends Prisma.TimerTemplate$tournamentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TimerTemplate$tournamentArgs<ExtArgs>>): Prisma.Prisma__TournamentClient<runtime.Types.Result.GetResult<Prisma.$TournamentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  standaloneMatch<T extends Prisma.TimerTemplate$standaloneMatchArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TimerTemplate$standaloneMatchArgs<ExtArgs>>): Prisma.Prisma__StandaloneMatchClient<runtime.Types.Result.GetResult<Prisma.$StandaloneMatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -873,6 +994,7 @@ export interface Prisma__TimerTemplateClient<T, Null = never, ExtArgs extends ru
 export interface TimerTemplateFieldRefs {
   readonly id: Prisma.FieldRef<"TimerTemplate", 'String'>
   readonly tournamentId: Prisma.FieldRef<"TimerTemplate", 'String'>
+  readonly standaloneMatchId: Prisma.FieldRef<"TimerTemplate", 'String'>
   readonly phases: Prisma.FieldRef<"TimerTemplate", 'String'>
   readonly createdAt: Prisma.FieldRef<"TimerTemplate", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"TimerTemplate", 'DateTime'>
@@ -1272,6 +1394,44 @@ export type TimerTemplateDeleteManyArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many TimerTemplates to delete.
    */
   limit?: number
+}
+
+/**
+ * TimerTemplate.tournament
+ */
+export type TimerTemplate$tournamentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Tournament
+   */
+  select?: Prisma.TournamentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Tournament
+   */
+  omit?: Prisma.TournamentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TournamentInclude<ExtArgs> | null
+  where?: Prisma.TournamentWhereInput
+}
+
+/**
+ * TimerTemplate.standaloneMatch
+ */
+export type TimerTemplate$standaloneMatchArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the StandaloneMatch
+   */
+  select?: Prisma.StandaloneMatchSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the StandaloneMatch
+   */
+  omit?: Prisma.StandaloneMatchOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.StandaloneMatchInclude<ExtArgs> | null
+  where?: Prisma.StandaloneMatchWhereInput
 }
 
 /**

@@ -107,6 +107,21 @@ export type TopicVote = Prisma.TopicVoteModel
  */
 export type TopicVoteRecord = Prisma.TopicVoteRecordModel
 /**
+ * Model Questionnaire
+ * 
+ */
+export type Questionnaire = Prisma.QuestionnaireModel
+/**
+ * Model QuestionnaireQuestion
+ * 
+ */
+export type QuestionnaireQuestion = Prisma.QuestionnaireQuestionModel
+/**
+ * Model QuestionnaireSubmission
+ * 
+ */
+export type QuestionnaireSubmission = Prisma.QuestionnaireSubmissionModel
+/**
  * Model Match
  * 
  */
@@ -161,3 +176,28 @@ export type RegistrationMember = Prisma.RegistrationMemberModel
  * 
  */
 export type RegistrationField = Prisma.RegistrationFieldModel
+/**
+ * Model ChatRoom
+ * 
+ */
+export type ChatRoom = Prisma.ChatRoomModel
+/**
+ * Model ChatMessage
+ * 
+ */
+export type ChatMessage = Prisma.ChatMessageModel
+/**
+ * Model ChatReadReceipt
+ * 
+ */
+export type ChatReadReceipt = Prisma.ChatReadReceiptModel
+/**
+ * Model ScheduledPost
+ * 
+ */
+export type ScheduledPost = Prisma.ScheduledPostModel
+/**
+ * Model ScheduledPostRun
+ * 
+ */
+export type ScheduledPostRun = Prisma.ScheduledPostRunModel

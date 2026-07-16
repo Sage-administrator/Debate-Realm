@@ -64,6 +64,9 @@ export const ModelName = {
   TournamentJudge: 'TournamentJudge',
   TopicVote: 'TopicVote',
   TopicVoteRecord: 'TopicVoteRecord',
+  Questionnaire: 'Questionnaire',
+  QuestionnaireQuestion: 'QuestionnaireQuestion',
+  QuestionnaireSubmission: 'QuestionnaireSubmission',
   Match: 'Match',
   StandaloneMatch: 'StandaloneMatch',
   Timer: 'Timer',
@@ -74,7 +77,12 @@ export const ModelName = {
   DebateTimerStage: 'DebateTimerStage',
   Registration: 'Registration',
   RegistrationMember: 'RegistrationMember',
-  RegistrationField: 'RegistrationField'
+  RegistrationField: 'RegistrationField',
+  ChatRoom: 'ChatRoom',
+  ChatMessage: 'ChatMessage',
+  ChatReadReceipt: 'ChatReadReceipt',
+  ScheduledPost: 'ScheduledPost',
+  ScheduledPostRun: 'ScheduledPostRun'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -94,7 +102,11 @@ export const UserScalarFieldEnum = {
   id: 'id',
   username: 'username',
   password: 'password',
+  nickname: 'nickname',
+  email: 'email',
+  avatar: 'avatar',
   teamId: 'teamId',
+  tournamentTeamId: 'tournamentTeamId',
   role: 'role',
   mode: 'mode',
   tokenVersion: 'tokenVersion',
@@ -113,6 +125,8 @@ export const TeamScalarFieldEnum = {
   botAppId: 'botAppId',
   botAppSecret: 'botAppSecret',
   botChannelId: 'botChannelId',
+  botIsPrivate: 'botIsPrivate',
+  apiToken: 'apiToken',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -228,8 +242,10 @@ export const TournamentScalarFieldEnum = {
   registrationOpen: 'registrationOpen',
   registrationDeadline: 'registrationDeadline',
   isPublic: 'isPublic',
+  registrationType: 'registrationType',
   teamSize: 'teamSize',
   registrationInfo: 'registrationInfo',
+  defaultFieldsConfig: 'defaultFieldsConfig',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -297,6 +313,56 @@ export const TopicVoteRecordScalarFieldEnum = {
 export type TopicVoteRecordScalarFieldEnum = (typeof TopicVoteRecordScalarFieldEnum)[keyof typeof TopicVoteRecordScalarFieldEnum]
 
 
+export const QuestionnaireScalarFieldEnum = {
+  id: 'id',
+  tournamentId: 'tournamentId',
+  sourceType: 'sourceType',
+  sourceId: 'sourceId',
+  title: 'title',
+  description: 'description',
+  status: 'status',
+  settings: 'settings',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type QuestionnaireScalarFieldEnum = (typeof QuestionnaireScalarFieldEnum)[keyof typeof QuestionnaireScalarFieldEnum]
+
+
+export const QuestionnaireQuestionScalarFieldEnum = {
+  id: 'id',
+  questionnaireId: 'questionnaireId',
+  fieldKey: 'fieldKey',
+  title: 'title',
+  questionType: 'questionType',
+  options: 'options',
+  required: 'required',
+  sortOrder: 'sortOrder',
+  visibilityRule: 'visibilityRule',
+  meta: 'meta',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type QuestionnaireQuestionScalarFieldEnum = (typeof QuestionnaireQuestionScalarFieldEnum)[keyof typeof QuestionnaireQuestionScalarFieldEnum]
+
+
+export const QuestionnaireSubmissionScalarFieldEnum = {
+  id: 'id',
+  questionnaireId: 'questionnaireId',
+  sourceType: 'sourceType',
+  sourceId: 'sourceId',
+  respondentUserId: 'respondentUserId',
+  respondentName: 'respondentName',
+  answers: 'answers',
+  meta: 'meta',
+  submittedAt: 'submittedAt'
+} as const
+
+export type QuestionnaireSubmissionScalarFieldEnum = (typeof QuestionnaireSubmissionScalarFieldEnum)[keyof typeof QuestionnaireSubmissionScalarFieldEnum]
+
+
 export const MatchScalarFieldEnum = {
   id: 'id',
   tournamentId: 'tournamentId',
@@ -334,6 +400,7 @@ export const StandaloneMatchScalarFieldEnum = {
   userId: 'userId',
   name: 'name',
   description: 'description',
+  venue: 'venue',
   status: 'status',
   scheduledAt: 'scheduledAt',
   createdAt: 'createdAt',
@@ -376,6 +443,7 @@ export type MemberAssignedMatchScalarFieldEnum = (typeof MemberAssignedMatchScal
 export const TimerTemplateScalarFieldEnum = {
   id: 'id',
   tournamentId: 'tournamentId',
+  standaloneMatchId: 'standaloneMatchId',
   phases: 'phases',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -406,6 +474,7 @@ export const DebateTimerProjectScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   tournamentId: 'tournamentId',
+  standaloneMatchId: 'standaloneMatchId',
   name: 'name',
   title: 'title',
   positiveTopic: 'positiveTopic',
@@ -487,10 +556,92 @@ export const RegistrationFieldScalarFieldEnum = {
   fieldOptions: 'fieldOptions',
   required: 'required',
   sortOrder: 'sortOrder',
-  appliesTo: 'appliesTo'
+  appliesTo: 'appliesTo',
+  placeholder: 'placeholder',
+  description: 'description',
+  width: 'width',
+  systemField: 'systemField'
 } as const
 
 export type RegistrationFieldScalarFieldEnum = (typeof RegistrationFieldScalarFieldEnum)[keyof typeof RegistrationFieldScalarFieldEnum]
+
+
+export const ChatRoomScalarFieldEnum = {
+  id: 'id',
+  tournamentId: 'tournamentId',
+  type: 'type',
+  tournamentTeamId: 'tournamentTeamId',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChatRoomScalarFieldEnum = (typeof ChatRoomScalarFieldEnum)[keyof typeof ChatRoomScalarFieldEnum]
+
+
+export const ChatMessageScalarFieldEnum = {
+  id: 'id',
+  roomId: 'roomId',
+  tournamentId: 'tournamentId',
+  senderId: 'senderId',
+  senderName: 'senderName',
+  senderSide: 'senderSide',
+  content: 'content',
+  imageUrl: 'imageUrl',
+  type: 'type',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[keyof typeof ChatMessageScalarFieldEnum]
+
+
+export const ChatReadReceiptScalarFieldEnum = {
+  id: 'id',
+  roomId: 'roomId',
+  userId: 'userId',
+  lastReadMessageId: 'lastReadMessageId',
+  lastReadAt: 'lastReadAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChatReadReceiptScalarFieldEnum = (typeof ChatReadReceiptScalarFieldEnum)[keyof typeof ChatReadReceiptScalarFieldEnum]
+
+
+export const ScheduledPostScalarFieldEnum = {
+  id: 'id',
+  teamId: 'teamId',
+  title: 'title',
+  content: 'content',
+  type: 'type',
+  channelId: 'channelId',
+  tags: 'tags',
+  pollOptions: 'pollOptions',
+  scheduleType: 'scheduleType',
+  runAt: 'runAt',
+  timeHHMM: 'timeHHMM',
+  weekday: 'weekday',
+  timezone: 'timezone',
+  status: 'status',
+  lastRunAt: 'lastRunAt',
+  lastResult: 'lastResult',
+  nextRunAt: 'nextRunAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ScheduledPostScalarFieldEnum = (typeof ScheduledPostScalarFieldEnum)[keyof typeof ScheduledPostScalarFieldEnum]
+
+
+export const ScheduledPostRunScalarFieldEnum = {
+  id: 'id',
+  scheduledPostId: 'scheduledPostId',
+  runAt: 'runAt',
+  status: 'status',
+  message: 'message',
+  postTaskId: 'postTaskId'
+} as const
+
+export type ScheduledPostRunScalarFieldEnum = (typeof ScheduledPostRunScalarFieldEnum)[keyof typeof ScheduledPostRunScalarFieldEnum]
 
 
 export const SortOrder = {

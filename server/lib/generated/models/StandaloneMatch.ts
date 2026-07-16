@@ -29,6 +29,7 @@ export type StandaloneMatchMinAggregateOutputType = {
   userId: string | null
   name: string | null
   description: string | null
+  venue: string | null
   status: string | null
   scheduledAt: Date | null
   createdAt: Date | null
@@ -40,6 +41,7 @@ export type StandaloneMatchMaxAggregateOutputType = {
   userId: string | null
   name: string | null
   description: string | null
+  venue: string | null
   status: string | null
   scheduledAt: Date | null
   createdAt: Date | null
@@ -51,6 +53,7 @@ export type StandaloneMatchCountAggregateOutputType = {
   userId: number
   name: number
   description: number
+  venue: number
   status: number
   scheduledAt: number
   createdAt: number
@@ -64,6 +67,7 @@ export type StandaloneMatchMinAggregateInputType = {
   userId?: true
   name?: true
   description?: true
+  venue?: true
   status?: true
   scheduledAt?: true
   createdAt?: true
@@ -75,6 +79,7 @@ export type StandaloneMatchMaxAggregateInputType = {
   userId?: true
   name?: true
   description?: true
+  venue?: true
   status?: true
   scheduledAt?: true
   createdAt?: true
@@ -86,6 +91,7 @@ export type StandaloneMatchCountAggregateInputType = {
   userId?: true
   name?: true
   description?: true
+  venue?: true
   status?: true
   scheduledAt?: true
   createdAt?: true
@@ -170,6 +176,7 @@ export type StandaloneMatchGroupByOutputType = {
   userId: string
   name: string
   description: string | null
+  venue: string | null
   status: string
   scheduledAt: Date | null
   createdAt: Date
@@ -202,12 +209,15 @@ export type StandaloneMatchWhereInput = {
   userId?: Prisma.StringFilter<"StandaloneMatch"> | string
   name?: Prisma.StringFilter<"StandaloneMatch"> | string
   description?: Prisma.StringNullableFilter<"StandaloneMatch"> | string | null
+  venue?: Prisma.StringNullableFilter<"StandaloneMatch"> | string | null
   status?: Prisma.StringFilter<"StandaloneMatch"> | string
   scheduledAt?: Prisma.DateTimeNullableFilter<"StandaloneMatch"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"StandaloneMatch"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"StandaloneMatch"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   matches?: Prisma.MatchListRelationFilter
+  timerProject?: Prisma.XOR<Prisma.DebateTimerProjectNullableScalarRelationFilter, Prisma.DebateTimerProjectWhereInput> | null
+  timerTemplate?: Prisma.XOR<Prisma.TimerTemplateNullableScalarRelationFilter, Prisma.TimerTemplateWhereInput> | null
 }
 
 export type StandaloneMatchOrderByWithRelationInput = {
@@ -215,12 +225,15 @@ export type StandaloneMatchOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  venue?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   matches?: Prisma.MatchOrderByRelationAggregateInput
+  timerProject?: Prisma.DebateTimerProjectOrderByWithRelationInput
+  timerTemplate?: Prisma.TimerTemplateOrderByWithRelationInput
 }
 
 export type StandaloneMatchWhereUniqueInput = Prisma.AtLeast<{
@@ -231,12 +244,15 @@ export type StandaloneMatchWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.StringFilter<"StandaloneMatch"> | string
   name?: Prisma.StringFilter<"StandaloneMatch"> | string
   description?: Prisma.StringNullableFilter<"StandaloneMatch"> | string | null
+  venue?: Prisma.StringNullableFilter<"StandaloneMatch"> | string | null
   status?: Prisma.StringFilter<"StandaloneMatch"> | string
   scheduledAt?: Prisma.DateTimeNullableFilter<"StandaloneMatch"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"StandaloneMatch"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"StandaloneMatch"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   matches?: Prisma.MatchListRelationFilter
+  timerProject?: Prisma.XOR<Prisma.DebateTimerProjectNullableScalarRelationFilter, Prisma.DebateTimerProjectWhereInput> | null
+  timerTemplate?: Prisma.XOR<Prisma.TimerTemplateNullableScalarRelationFilter, Prisma.TimerTemplateWhereInput> | null
 }, "id">
 
 export type StandaloneMatchOrderByWithAggregationInput = {
@@ -244,6 +260,7 @@ export type StandaloneMatchOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  venue?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -261,6 +278,7 @@ export type StandaloneMatchScalarWhereWithAggregatesInput = {
   userId?: Prisma.StringWithAggregatesFilter<"StandaloneMatch"> | string
   name?: Prisma.StringWithAggregatesFilter<"StandaloneMatch"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"StandaloneMatch"> | string | null
+  venue?: Prisma.StringNullableWithAggregatesFilter<"StandaloneMatch"> | string | null
   status?: Prisma.StringWithAggregatesFilter<"StandaloneMatch"> | string
   scheduledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"StandaloneMatch"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"StandaloneMatch"> | Date | string
@@ -271,12 +289,15 @@ export type StandaloneMatchCreateInput = {
   id?: string
   name: string
   description?: string | null
+  venue?: string | null
   status?: string
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutStandaloneMatchesInput
   matches?: Prisma.MatchCreateNestedManyWithoutStandaloneMatchInput
+  timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutStandaloneMatchInput
+  timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutStandaloneMatchInput
 }
 
 export type StandaloneMatchUncheckedCreateInput = {
@@ -284,23 +305,29 @@ export type StandaloneMatchUncheckedCreateInput = {
   userId: string
   name: string
   description?: string | null
+  venue?: string | null
   status?: string
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutStandaloneMatchInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutStandaloneMatchInput
+  timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutStandaloneMatchInput
 }
 
 export type StandaloneMatchUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutStandaloneMatchesNestedInput
   matches?: Prisma.MatchUpdateManyWithoutStandaloneMatchNestedInput
+  timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutStandaloneMatchNestedInput
+  timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutStandaloneMatchNestedInput
 }
 
 export type StandaloneMatchUncheckedUpdateInput = {
@@ -308,11 +335,14 @@ export type StandaloneMatchUncheckedUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matches?: Prisma.MatchUncheckedUpdateManyWithoutStandaloneMatchNestedInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutStandaloneMatchNestedInput
+  timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutStandaloneMatchNestedInput
 }
 
 export type StandaloneMatchCreateManyInput = {
@@ -320,6 +350,7 @@ export type StandaloneMatchCreateManyInput = {
   userId: string
   name: string
   description?: string | null
+  venue?: string | null
   status?: string
   scheduledAt?: Date | string | null
   createdAt?: Date | string
@@ -330,6 +361,7 @@ export type StandaloneMatchUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -341,6 +373,7 @@ export type StandaloneMatchUncheckedUpdateManyInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -367,6 +400,7 @@ export type StandaloneMatchCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  venue?: Prisma.SortOrder
   status?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -378,6 +412,7 @@ export type StandaloneMatchMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  venue?: Prisma.SortOrder
   status?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -389,6 +424,7 @@ export type StandaloneMatchMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  venue?: Prisma.SortOrder
   status?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -453,26 +489,64 @@ export type StandaloneMatchUpdateOneWithoutMatchesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.StandaloneMatchUpdateToOneWithWhereWithoutMatchesInput, Prisma.StandaloneMatchUpdateWithoutMatchesInput>, Prisma.StandaloneMatchUncheckedUpdateWithoutMatchesInput>
 }
 
+export type StandaloneMatchCreateNestedOneWithoutTimerTemplateInput = {
+  create?: Prisma.XOR<Prisma.StandaloneMatchCreateWithoutTimerTemplateInput, Prisma.StandaloneMatchUncheckedCreateWithoutTimerTemplateInput>
+  connectOrCreate?: Prisma.StandaloneMatchCreateOrConnectWithoutTimerTemplateInput
+  connect?: Prisma.StandaloneMatchWhereUniqueInput
+}
+
+export type StandaloneMatchUpdateOneWithoutTimerTemplateNestedInput = {
+  create?: Prisma.XOR<Prisma.StandaloneMatchCreateWithoutTimerTemplateInput, Prisma.StandaloneMatchUncheckedCreateWithoutTimerTemplateInput>
+  connectOrCreate?: Prisma.StandaloneMatchCreateOrConnectWithoutTimerTemplateInput
+  upsert?: Prisma.StandaloneMatchUpsertWithoutTimerTemplateInput
+  disconnect?: Prisma.StandaloneMatchWhereInput | boolean
+  delete?: Prisma.StandaloneMatchWhereInput | boolean
+  connect?: Prisma.StandaloneMatchWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StandaloneMatchUpdateToOneWithWhereWithoutTimerTemplateInput, Prisma.StandaloneMatchUpdateWithoutTimerTemplateInput>, Prisma.StandaloneMatchUncheckedUpdateWithoutTimerTemplateInput>
+}
+
+export type StandaloneMatchCreateNestedOneWithoutTimerProjectInput = {
+  create?: Prisma.XOR<Prisma.StandaloneMatchCreateWithoutTimerProjectInput, Prisma.StandaloneMatchUncheckedCreateWithoutTimerProjectInput>
+  connectOrCreate?: Prisma.StandaloneMatchCreateOrConnectWithoutTimerProjectInput
+  connect?: Prisma.StandaloneMatchWhereUniqueInput
+}
+
+export type StandaloneMatchUpdateOneWithoutTimerProjectNestedInput = {
+  create?: Prisma.XOR<Prisma.StandaloneMatchCreateWithoutTimerProjectInput, Prisma.StandaloneMatchUncheckedCreateWithoutTimerProjectInput>
+  connectOrCreate?: Prisma.StandaloneMatchCreateOrConnectWithoutTimerProjectInput
+  upsert?: Prisma.StandaloneMatchUpsertWithoutTimerProjectInput
+  disconnect?: Prisma.StandaloneMatchWhereInput | boolean
+  delete?: Prisma.StandaloneMatchWhereInput | boolean
+  connect?: Prisma.StandaloneMatchWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StandaloneMatchUpdateToOneWithWhereWithoutTimerProjectInput, Prisma.StandaloneMatchUpdateWithoutTimerProjectInput>, Prisma.StandaloneMatchUncheckedUpdateWithoutTimerProjectInput>
+}
+
 export type StandaloneMatchCreateWithoutUserInput = {
   id?: string
   name: string
   description?: string | null
+  venue?: string | null
   status?: string
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   matches?: Prisma.MatchCreateNestedManyWithoutStandaloneMatchInput
+  timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutStandaloneMatchInput
+  timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutStandaloneMatchInput
 }
 
 export type StandaloneMatchUncheckedCreateWithoutUserInput = {
   id?: string
   name: string
   description?: string | null
+  venue?: string | null
   status?: string
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   matches?: Prisma.MatchUncheckedCreateNestedManyWithoutStandaloneMatchInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutStandaloneMatchInput
+  timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutStandaloneMatchInput
 }
 
 export type StandaloneMatchCreateOrConnectWithoutUserInput = {
@@ -508,6 +582,7 @@ export type StandaloneMatchScalarWhereInput = {
   userId?: Prisma.StringFilter<"StandaloneMatch"> | string
   name?: Prisma.StringFilter<"StandaloneMatch"> | string
   description?: Prisma.StringNullableFilter<"StandaloneMatch"> | string | null
+  venue?: Prisma.StringNullableFilter<"StandaloneMatch"> | string | null
   status?: Prisma.StringFilter<"StandaloneMatch"> | string
   scheduledAt?: Prisma.DateTimeNullableFilter<"StandaloneMatch"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"StandaloneMatch"> | Date | string
@@ -518,11 +593,14 @@ export type StandaloneMatchCreateWithoutMatchesInput = {
   id?: string
   name: string
   description?: string | null
+  venue?: string | null
   status?: string
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutStandaloneMatchesInput
+  timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutStandaloneMatchInput
+  timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutStandaloneMatchInput
 }
 
 export type StandaloneMatchUncheckedCreateWithoutMatchesInput = {
@@ -530,10 +608,13 @@ export type StandaloneMatchUncheckedCreateWithoutMatchesInput = {
   userId: string
   name: string
   description?: string | null
+  venue?: string | null
   status?: string
   scheduledAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutStandaloneMatchInput
+  timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutStandaloneMatchInput
 }
 
 export type StandaloneMatchCreateOrConnectWithoutMatchesInput = {
@@ -556,11 +637,14 @@ export type StandaloneMatchUpdateWithoutMatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutStandaloneMatchesNestedInput
+  timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutStandaloneMatchNestedInput
+  timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutStandaloneMatchNestedInput
 }
 
 export type StandaloneMatchUncheckedUpdateWithoutMatchesInput = {
@@ -568,16 +652,164 @@ export type StandaloneMatchUncheckedUpdateWithoutMatchesInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutStandaloneMatchNestedInput
+  timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutStandaloneMatchNestedInput
+}
+
+export type StandaloneMatchCreateWithoutTimerTemplateInput = {
+  id?: string
+  name: string
+  description?: string | null
+  venue?: string | null
+  status?: string
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutStandaloneMatchesInput
+  matches?: Prisma.MatchCreateNestedManyWithoutStandaloneMatchInput
+  timerProject?: Prisma.DebateTimerProjectCreateNestedOneWithoutStandaloneMatchInput
+}
+
+export type StandaloneMatchUncheckedCreateWithoutTimerTemplateInput = {
+  id?: string
+  userId: string
+  name: string
+  description?: string | null
+  venue?: string | null
+  status?: string
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  matches?: Prisma.MatchUncheckedCreateNestedManyWithoutStandaloneMatchInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedCreateNestedOneWithoutStandaloneMatchInput
+}
+
+export type StandaloneMatchCreateOrConnectWithoutTimerTemplateInput = {
+  where: Prisma.StandaloneMatchWhereUniqueInput
+  create: Prisma.XOR<Prisma.StandaloneMatchCreateWithoutTimerTemplateInput, Prisma.StandaloneMatchUncheckedCreateWithoutTimerTemplateInput>
+}
+
+export type StandaloneMatchUpsertWithoutTimerTemplateInput = {
+  update: Prisma.XOR<Prisma.StandaloneMatchUpdateWithoutTimerTemplateInput, Prisma.StandaloneMatchUncheckedUpdateWithoutTimerTemplateInput>
+  create: Prisma.XOR<Prisma.StandaloneMatchCreateWithoutTimerTemplateInput, Prisma.StandaloneMatchUncheckedCreateWithoutTimerTemplateInput>
+  where?: Prisma.StandaloneMatchWhereInput
+}
+
+export type StandaloneMatchUpdateToOneWithWhereWithoutTimerTemplateInput = {
+  where?: Prisma.StandaloneMatchWhereInput
+  data: Prisma.XOR<Prisma.StandaloneMatchUpdateWithoutTimerTemplateInput, Prisma.StandaloneMatchUncheckedUpdateWithoutTimerTemplateInput>
+}
+
+export type StandaloneMatchUpdateWithoutTimerTemplateInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutStandaloneMatchesNestedInput
+  matches?: Prisma.MatchUpdateManyWithoutStandaloneMatchNestedInput
+  timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutStandaloneMatchNestedInput
+}
+
+export type StandaloneMatchUncheckedUpdateWithoutTimerTemplateInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  matches?: Prisma.MatchUncheckedUpdateManyWithoutStandaloneMatchNestedInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutStandaloneMatchNestedInput
+}
+
+export type StandaloneMatchCreateWithoutTimerProjectInput = {
+  id?: string
+  name: string
+  description?: string | null
+  venue?: string | null
+  status?: string
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutStandaloneMatchesInput
+  matches?: Prisma.MatchCreateNestedManyWithoutStandaloneMatchInput
+  timerTemplate?: Prisma.TimerTemplateCreateNestedOneWithoutStandaloneMatchInput
+}
+
+export type StandaloneMatchUncheckedCreateWithoutTimerProjectInput = {
+  id?: string
+  userId: string
+  name: string
+  description?: string | null
+  venue?: string | null
+  status?: string
+  scheduledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  matches?: Prisma.MatchUncheckedCreateNestedManyWithoutStandaloneMatchInput
+  timerTemplate?: Prisma.TimerTemplateUncheckedCreateNestedOneWithoutStandaloneMatchInput
+}
+
+export type StandaloneMatchCreateOrConnectWithoutTimerProjectInput = {
+  where: Prisma.StandaloneMatchWhereUniqueInput
+  create: Prisma.XOR<Prisma.StandaloneMatchCreateWithoutTimerProjectInput, Prisma.StandaloneMatchUncheckedCreateWithoutTimerProjectInput>
+}
+
+export type StandaloneMatchUpsertWithoutTimerProjectInput = {
+  update: Prisma.XOR<Prisma.StandaloneMatchUpdateWithoutTimerProjectInput, Prisma.StandaloneMatchUncheckedUpdateWithoutTimerProjectInput>
+  create: Prisma.XOR<Prisma.StandaloneMatchCreateWithoutTimerProjectInput, Prisma.StandaloneMatchUncheckedCreateWithoutTimerProjectInput>
+  where?: Prisma.StandaloneMatchWhereInput
+}
+
+export type StandaloneMatchUpdateToOneWithWhereWithoutTimerProjectInput = {
+  where?: Prisma.StandaloneMatchWhereInput
+  data: Prisma.XOR<Prisma.StandaloneMatchUpdateWithoutTimerProjectInput, Prisma.StandaloneMatchUncheckedUpdateWithoutTimerProjectInput>
+}
+
+export type StandaloneMatchUpdateWithoutTimerProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutStandaloneMatchesNestedInput
+  matches?: Prisma.MatchUpdateManyWithoutStandaloneMatchNestedInput
+  timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutStandaloneMatchNestedInput
+}
+
+export type StandaloneMatchUncheckedUpdateWithoutTimerProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  matches?: Prisma.MatchUncheckedUpdateManyWithoutStandaloneMatchNestedInput
+  timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutStandaloneMatchNestedInput
 }
 
 export type StandaloneMatchCreateManyUserInput = {
   id?: string
   name: string
   description?: string | null
+  venue?: string | null
   status?: string
   scheduledAt?: Date | string | null
   createdAt?: Date | string
@@ -588,28 +820,35 @@ export type StandaloneMatchUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matches?: Prisma.MatchUpdateManyWithoutStandaloneMatchNestedInput
+  timerProject?: Prisma.DebateTimerProjectUpdateOneWithoutStandaloneMatchNestedInput
+  timerTemplate?: Prisma.TimerTemplateUpdateOneWithoutStandaloneMatchNestedInput
 }
 
 export type StandaloneMatchUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   matches?: Prisma.MatchUncheckedUpdateManyWithoutStandaloneMatchNestedInput
+  timerProject?: Prisma.DebateTimerProjectUncheckedUpdateOneWithoutStandaloneMatchNestedInput
+  timerTemplate?: Prisma.TimerTemplateUncheckedUpdateOneWithoutStandaloneMatchNestedInput
 }
 
 export type StandaloneMatchUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -652,12 +891,15 @@ export type StandaloneMatchSelect<ExtArgs extends runtime.Types.Extensions.Inter
   userId?: boolean
   name?: boolean
   description?: boolean
+  venue?: boolean
   status?: boolean
   scheduledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   matches?: boolean | Prisma.StandaloneMatch$matchesArgs<ExtArgs>
+  timerProject?: boolean | Prisma.StandaloneMatch$timerProjectArgs<ExtArgs>
+  timerTemplate?: boolean | Prisma.StandaloneMatch$timerTemplateArgs<ExtArgs>
   _count?: boolean | Prisma.StandaloneMatchCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["standaloneMatch"]>
 
@@ -666,6 +908,7 @@ export type StandaloneMatchSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   userId?: boolean
   name?: boolean
   description?: boolean
+  venue?: boolean
   status?: boolean
   scheduledAt?: boolean
   createdAt?: boolean
@@ -678,6 +921,7 @@ export type StandaloneMatchSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   userId?: boolean
   name?: boolean
   description?: boolean
+  venue?: boolean
   status?: boolean
   scheduledAt?: boolean
   createdAt?: boolean
@@ -690,16 +934,19 @@ export type StandaloneMatchSelectScalar = {
   userId?: boolean
   name?: boolean
   description?: boolean
+  venue?: boolean
   status?: boolean
   scheduledAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type StandaloneMatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "description" | "status" | "scheduledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["standaloneMatch"]>
+export type StandaloneMatchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "description" | "venue" | "status" | "scheduledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["standaloneMatch"]>
 export type StandaloneMatchInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   matches?: boolean | Prisma.StandaloneMatch$matchesArgs<ExtArgs>
+  timerProject?: boolean | Prisma.StandaloneMatch$timerProjectArgs<ExtArgs>
+  timerTemplate?: boolean | Prisma.StandaloneMatch$timerTemplateArgs<ExtArgs>
   _count?: boolean | Prisma.StandaloneMatchCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type StandaloneMatchIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -714,12 +961,15 @@ export type $StandaloneMatchPayload<ExtArgs extends runtime.Types.Extensions.Int
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
     matches: Prisma.$MatchPayload<ExtArgs>[]
+    timerProject: Prisma.$DebateTimerProjectPayload<ExtArgs> | null
+    timerTemplate: Prisma.$TimerTemplatePayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     userId: string
     name: string
     description: string | null
+    venue: string | null
     status: string
     scheduledAt: Date | null
     createdAt: Date
@@ -1120,6 +1370,8 @@ export interface Prisma__StandaloneMatchClient<T, Null = never, ExtArgs extends 
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   matches<T extends Prisma.StandaloneMatch$matchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.StandaloneMatch$matchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  timerProject<T extends Prisma.StandaloneMatch$timerProjectArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.StandaloneMatch$timerProjectArgs<ExtArgs>>): Prisma.Prisma__DebateTimerProjectClient<runtime.Types.Result.GetResult<Prisma.$DebateTimerProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  timerTemplate<T extends Prisma.StandaloneMatch$timerTemplateArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.StandaloneMatch$timerTemplateArgs<ExtArgs>>): Prisma.Prisma__TimerTemplateClient<runtime.Types.Result.GetResult<Prisma.$TimerTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1153,6 +1405,7 @@ export interface StandaloneMatchFieldRefs {
   readonly userId: Prisma.FieldRef<"StandaloneMatch", 'String'>
   readonly name: Prisma.FieldRef<"StandaloneMatch", 'String'>
   readonly description: Prisma.FieldRef<"StandaloneMatch", 'String'>
+  readonly venue: Prisma.FieldRef<"StandaloneMatch", 'String'>
   readonly status: Prisma.FieldRef<"StandaloneMatch", 'String'>
   readonly scheduledAt: Prisma.FieldRef<"StandaloneMatch", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"StandaloneMatch", 'DateTime'>
@@ -1577,6 +1830,44 @@ export type StandaloneMatch$matchesArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.MatchScalarFieldEnum | Prisma.MatchScalarFieldEnum[]
+}
+
+/**
+ * StandaloneMatch.timerProject
+ */
+export type StandaloneMatch$timerProjectArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DebateTimerProject
+   */
+  select?: Prisma.DebateTimerProjectSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DebateTimerProject
+   */
+  omit?: Prisma.DebateTimerProjectOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DebateTimerProjectInclude<ExtArgs> | null
+  where?: Prisma.DebateTimerProjectWhereInput
+}
+
+/**
+ * StandaloneMatch.timerTemplate
+ */
+export type StandaloneMatch$timerTemplateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TimerTemplate
+   */
+  select?: Prisma.TimerTemplateSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TimerTemplate
+   */
+  omit?: Prisma.TimerTemplateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TimerTemplateInclude<ExtArgs> | null
+  where?: Prisma.TimerTemplateWhereInput
 }
 
 /**

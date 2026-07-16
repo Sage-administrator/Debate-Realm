@@ -11,7 +11,11 @@ model User {
   id           String   @id @default(uuid())
   username     String   @unique
   password     String
+  nickname     String?  // 昵称（显示名），可选
+  email        String?  // 邮箱，可选
+  avatar       String?  // 头像 URL，可选
   teamId       String?
+  tournamentTeamId String? // 参赛队伍聊天室：绑定该用户所属的赛事内参赛队伍(TournamentTeam)，用于判定可进入的队伍聊天房
   role         String   @default("individual") // system_admin / admin / subaccount / debater / individual
   mode         String   @default("individual")
   tokenVersion Int      @default(0)
@@ -25,6 +29,8 @@ model User {
   loginSessions     UserLoginSession[]
   timerProjects     DebateTimerProject[]
   registrations     Registration[]    // 用户提交的报名记录
+
+  @@index([tournamentTeamId])
 }
 
 model Team {
@@ -36,6 +42,8 @@ model Team {
   botAppId     String?
   botAppSecret String?
   botChannelId String?
+  botIsPrivate Boolean?   @default(false) // 机器人公私域：true=私域(仅频道主可用/全量消息), false/null=公域
+  apiToken     String?  @unique // WorkBuddy 自动化服务令牌：自动化用 Bearer <apiToken> 调用 /dispatch* 端点
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -43,6 +51,7 @@ model Team {
   tournaments Tournament[]
   users       User[]
   arenas      BotArena[] // Bot 赛场列表
+  scheduledPosts ScheduledPost[] // 定时发布任务
 }
 
 // ════════════════════════════════════════════════════
@@ -51,8 +60,9 @@ model Team {
 model BotArena {
   id          String   @id @default(uuid())
   teamId      String
-  name        String   @default("") // 赛场名称，如"赛场A"
+  name        String   @default("") // 赛场名称（自定义，必填，≤8字）；同时作为 QQ 身份组前缀
   matchFormat String   @default("4v4") // 比赛形式：4v4 / 3v3 / 2v2
+  originalChannelName String? // 赛场创建前的原语音子频道名；比赛期间频道被改为「赛场名 比赛形式辩论」，结束后还原。运行时由 prisma.ts 启动 ALTER 加列，代码用 raw SQL 读写。
   status      String   @default("active") // active / closed
   guildId     String?  // QQ 频道 ID（赛场所在频道）
   channelId   String?  @unique // QQ 子频道 ID（消息来源频道，一个子频道只能绑定一个赛场）
@@ -193,8 +203,10 @@ model Tournament {
   registrationOpen     Boolean   @default(false) // 是否开放报名
   registrationDeadline DateTime?                  // 报名截止时间
   isPublic             Boolean   @default(false) // 是否公开（允许免登录报名）
+  registrationType     String    @default("both") // 报名类型：individual(仅个人) | team(仅队伍) | both(个人+队伍)
   teamSize             Int?                       // 队伍人数要求（如 4v4 → 4）
   registrationInfo     String?   // 报名须知/说明文本
+  defaultFieldsConfig  String?   // 默认字段配置（JSON）：控制姓名、电话等默认字段的显示/必填/适用类型
   // =================================
 
   createdAt   DateTime  @default(now())
@@ -210,6 +222,8 @@ model Tournament {
   registrations     Registration[]      // 报名记录
   regFields         RegistrationField[] // 自定义报名字段
   topicVotes        TopicVote[]         // 辩题投票
+  questionnaires    Questionnaire[]     // 通用问卷：报名、投票、签到、反馈等统一入口
+  chats            ChatRoom[]          // 赛事聊天室（正方/反方/总）
 }
 
 model TournamentTeam {
@@ -293,6 +307,78 @@ model TopicVoteRecord {
   @@index([voteId])
 }
 
+// ════════════════════════════════════════════════════
+// 通用问卷系统 — 报名、投票、签到、反馈等场景共用
+// 说明：
+// - 现有 Registration / TopicVote 继续保留业务字段，保证兼容当前流程
+// - Questionnaire 作为统一索引层，记录“这是一份什么问卷”
+// - QuestionnaireQuestion 统一记录题目/字段定义
+// - QuestionnaireSubmission 统一记录提交索引，便于后续统一统计、导出、审计
+// ════════════════════════════════════════════════════
+
+model Questionnaire {
+  id           String   @id @default(uuid())
+  tournamentId String
+  sourceType   String   // registration | topic_vote | checkin | feedback
+  sourceId     String   // registration 使用 tournamentId；topic_vote 使用 TopicVote.id
+  title        String
+  description  String?
+  status       String   @default("draft") // draft | open | closed
+  settings     String?  // JSON：开放范围、截止时间、公开性、展示结果等配置
+  createdBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tournament  Tournament                @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  questions   QuestionnaireQuestion[]
+  submissions QuestionnaireSubmission[]
+
+  @@unique([tournamentId, sourceType, sourceId])
+  @@index([tournamentId])
+  @@index([sourceType, sourceId])
+  @@index([tournamentId, sourceType])
+  @@index([tournamentId, status])
+}
+
+model QuestionnaireQuestion {
+  id              String   @id @default(uuid())
+  questionnaireId String
+  fieldKey        String
+  title           String
+  questionType    String   // text | textarea | radio | checkbox | select | number | date | phone | email | members | heading | divider
+  options         String?  // JSON：选择题选项
+  required        Boolean  @default(false)
+  sortOrder       Int      @default(0)
+  visibilityRule  String?  // JSON：适用报名类型、角色范围等显示规则
+  meta            String?  // JSON：占位文本、说明、宽度、系统字段标识等扩展信息
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+
+  @@index([questionnaireId])
+  @@index([questionnaireId, sortOrder])
+}
+
+model QuestionnaireSubmission {
+  id              String   @id @default(uuid())
+  questionnaireId String
+  sourceType      String   // registration | topic_vote | checkin | feedback
+  sourceId        String   // 对应业务提交记录 ID：Registration.id / TopicVoteRecord.id
+  respondentUserId String?
+  respondentName   String?
+  answers         String   // JSON：统一答案快照
+  meta            String?  // JSON：报名类型、投票者类型、来源 IP 指纹等扩展信息
+  submittedAt     DateTime @default(now())
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceType, sourceId])
+  @@index([questionnaireId])
+  @@index([respondentUserId])
+  @@index([submittedAt])
+}
+
 model Match {
   id                String    @id @default(uuid())
   tournamentId      String?
@@ -346,6 +432,7 @@ model StandaloneMatch {
   userId      String
   name        String
   description String?
+  venue       String?
   status      String    @default("pending")
   scheduledAt DateTime?
   createdAt   DateTime  @default(now())
@@ -353,6 +440,8 @@ model StandaloneMatch {
 
   user    User    @relation(fields: [userId], references: [id])
   matches Match[]
+  timerProject DebateTimerProject?
+  timerTemplate TimerTemplate?
 
   @@index([userId])
 }
@@ -393,13 +482,15 @@ model MemberAssignedMatch {
 }
 
 model TimerTemplate {
-  id           String   @id @default(uuid())
-  tournamentId String   @unique
-  phases       String   @default("[]")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               String   @id @default(uuid())
+  tournamentId     String?  @unique
+  standaloneMatchId String?  @unique
+  phases           String   @default("[]")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournament     Tournament?     @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  standaloneMatch StandaloneMatch? @relation(fields: [standaloneMatchId], references: [id], onDelete: Cascade)
 }
 
 model UserLoginSession {
@@ -428,6 +519,7 @@ model DebateTimerProject {
   id               String            @id @default(uuid())
   userId           String
   tournamentId     String?           @unique // 关联到赛事（tournaments 中的配置，一对一）
+  standaloneMatchId String?          @unique // 关联到独立赛事（standalone-matches 中的配置，一对一）
   name             String            // 项目名称（后台管理用）
   title            String            // 比赛标题（显示用，如"三社联合辩论赛"）
   positiveTopic    String?           // 正方辩题
@@ -444,9 +536,11 @@ model DebateTimerProject {
 
   user           User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
   tournament     Tournament?     @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  standaloneMatch StandaloneMatch? @relation(fields: [standaloneMatchId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([tournamentId])
+  @@index([standaloneMatchId])
 }
 
 // 计时器环节：每个项目包含多个环节
@@ -520,19 +614,138 @@ model RegistrationMember {
   @@index([registrationId])
 }
 
-// 自定义报名字段配置
+// 报名表单字段配置（统一存储所有字段：系统字段 + 自定义字段）
 model RegistrationField {
   id           String   @id @default(uuid())
   tournamentId String
   fieldName    String   // 字段显示名称（中文标签）
-  fieldKey     String   // 字段键名（英文标识，用于 customData 存储）
-  fieldType    String   @default("text") // text | textarea | select | checkbox | radio
+  fieldKey     String   // 字段键名（英文标识，用于数据存储与映射）
+  // 字段类型：text | textarea | select | checkbox | radio | number | date | phone | email | members | divider | heading
+  fieldType    String   @default("text")
   fieldOptions String?  // JSON: 选项列表（select/radio/checkbox 用）
   required     Boolean  @default(false)
   sortOrder    Int      @default(0)
   appliesTo    String   @default("both") // individual | team | both
+  // ── 新增：表单设计器属性 ──
+  placeholder  String?  // 占位提示文本
+  description  String?  // 字段描述/帮助文字
+  width        String   @default("full") // "half"（半宽） | "full"（全宽）
+  // ── 新增：系统字段标识 ──
+  // systemField=true 表示系统内置字段（submitterName/contactPhone/contactEmail/teamName/members/notes）
+  // 系统字段不可删除、不可修改 fieldKey/fieldType，但可调整显示名、必填、适用类型等
+  systemField  Boolean  @default(false)
 
   tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
 
   @@index([tournamentId])
+}
+
+// ════════════════════════════════════════════════════
+// 赛事聊天室 — 队伍聊天室 + 总聊天室 实时消息
+// 房间粒度 = 赛事(Tournament) + 类型：
+//   - type='general'           总聊天室（对所有赛事用户开放）
+//   - type='team' + tournamentTeamId  某支参赛队伍(TournamentTeam)的专属房间
+// 每支参赛队伍一间房；该队伍每位队员各持一个子账号(User.role=subaccount,
+// tournamentTeamId=该队)，合在一起共用这间房。
+// ════════════════════════════════════════════════════
+model ChatRoom {
+  id               String   @id @default(uuid())
+  tournamentId     String
+  type             String   // 'general' | 'team'
+  tournamentTeamId String?  // type='team' 时指向 TournamentTeam.id；type='general' 时为 null
+  name             String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  tournament    Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  messages      ChatMessage[]
+  readReceipts  ChatReadReceipt[]
+
+  // 总房：每赛事唯一(type='general', tournamentTeamId=null)
+  // 队伍房：每队唯一(type='team', tournamentTeamId=队id)；SQLite 中 null 视为互异，不冲突
+  @@unique([tournamentId, type, tournamentTeamId])
+  @@index([tournamentId])
+  @@index([tournamentTeamId])
+}
+
+model ChatMessage {
+  id           String   @id @default(uuid())
+  roomId       String
+  tournamentId String   // 冗余字段，便于按赛事查询与权限判断
+  senderId     String
+  senderName   String
+  senderSide   String   // 'member' | 'staff' | 'neutral' —— 发送者在该房间的身份
+  content      String?  // 文本消息（图片消息可为空或作为图注）
+  imageUrl     String?  // 图片消息 URL（/uploads/chat/...）
+  type         String   @default("text") // 'text' | 'image'
+  createdAt    DateTime @default(now())
+
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, createdAt])
+  @@index([tournamentId, createdAt])
+}
+
+model ChatReadReceipt {
+  id                String   @id @default(uuid())
+  roomId            String
+  userId            String
+  lastReadMessageId String   // 该用户在本房间已读到的最新消息 ID
+  lastReadAt        DateTime // 该消息的发送时间（用于统计已读人数）
+  updatedAt         DateTime @updatedAt
+
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@index([roomId])
+}
+
+// ════════════════════════════════════════════════════
+// 定时发布任务 — 定时向 QQ 频道「论坛」子频道发布辩论题目/讨论帖
+// 说明：
+// - 论坛发帖仅私域机器人可用（与 bot-ws 域隔离约束一致）
+// - 调度类型：once(单次) / daily(每天) / weekly(每周)；monthly 等留作升级
+// - 时间统一以 UTC 存储，展示时按 timezone 还原
+// ════════════════════════════════════════════════════
+model ScheduledPost {
+  id          String   @id @default(uuid())
+  teamId      String
+  title       String
+  content     String   // Markdown 正文
+  type        String   @default("discussion") // 'debate'（辩论题目） | 'discussion'（讨论话题）
+  channelId   String   // 目标论坛子频道 ID
+  tags        String?  // 逗号分隔标签，如 "辩题,本周"
+  pollOptions String?  // JSON 数组：投票选项 ["A队","B队"]
+  // 调度配置
+  scheduleType String  @default("once") // 'once' | 'daily' | 'weekly'
+  runAt       DateTime? // 'once'：本地触发时间（存储为 UTC）
+  timeHHMM    String?  // 'daily'/'weekly'：本地时间 "HH:mm"
+  weekday     Int?     // 'weekly'：星期几 0-6（0=周日）
+  timezone    String   @default("Asia/Shanghai")
+  status      String   @default("pending") // pending(待发布) | published(已发布·单次完成) | paused(已暂停) | failed(失败)
+  lastRunAt   DateTime?
+  lastResult  String?  // 最近一次发布结果描述
+  nextRunAt   DateTime? // 下次触发时间（UTC），用于列表展示与调度扫描
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  team Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  runs ScheduledPostRun[]
+
+  @@index([teamId])
+  @@index([teamId, status, nextRunAt])
+}
+
+// 定时发布执行历史（每次触发记一条）
+model ScheduledPostRun {
+  id              String   @id @default(uuid())
+  scheduledPostId String
+  runAt           DateTime @default(now())
+  status          String   // 'success' | 'failed'
+  message         String?  // 结果/错误信息
+  postTaskId      String?  // QQ 论坛返回的 task_id
+
+  scheduledPost ScheduledPost @relation(fields: [scheduledPostId], references: [id], onDelete: Cascade)
+
+  @@index([scheduledPostId])
 }

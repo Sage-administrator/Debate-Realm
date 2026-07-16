@@ -28,6 +28,7 @@ export type DebateTimerProjectMinAggregateOutputType = {
   id: string | null
   userId: string | null
   tournamentId: string | null
+  standaloneMatchId: string | null
   name: string | null
   title: string | null
   positiveTopic: string | null
@@ -46,6 +47,7 @@ export type DebateTimerProjectMaxAggregateOutputType = {
   id: string | null
   userId: string | null
   tournamentId: string | null
+  standaloneMatchId: string | null
   name: string | null
   title: string | null
   positiveTopic: string | null
@@ -64,6 +66,7 @@ export type DebateTimerProjectCountAggregateOutputType = {
   id: number
   userId: number
   tournamentId: number
+  standaloneMatchId: number
   name: number
   title: number
   positiveTopic: number
@@ -84,6 +87,7 @@ export type DebateTimerProjectMinAggregateInputType = {
   id?: true
   userId?: true
   tournamentId?: true
+  standaloneMatchId?: true
   name?: true
   title?: true
   positiveTopic?: true
@@ -102,6 +106,7 @@ export type DebateTimerProjectMaxAggregateInputType = {
   id?: true
   userId?: true
   tournamentId?: true
+  standaloneMatchId?: true
   name?: true
   title?: true
   positiveTopic?: true
@@ -120,6 +125,7 @@ export type DebateTimerProjectCountAggregateInputType = {
   id?: true
   userId?: true
   tournamentId?: true
+  standaloneMatchId?: true
   name?: true
   title?: true
   positiveTopic?: true
@@ -211,6 +217,7 @@ export type DebateTimerProjectGroupByOutputType = {
   id: string
   userId: string
   tournamentId: string | null
+  standaloneMatchId: string | null
   name: string
   title: string
   positiveTopic: string | null
@@ -250,6 +257,7 @@ export type DebateTimerProjectWhereInput = {
   id?: Prisma.StringFilter<"DebateTimerProject"> | string
   userId?: Prisma.StringFilter<"DebateTimerProject"> | string
   tournamentId?: Prisma.StringNullableFilter<"DebateTimerProject"> | string | null
+  standaloneMatchId?: Prisma.StringNullableFilter<"DebateTimerProject"> | string | null
   name?: Prisma.StringFilter<"DebateTimerProject"> | string
   title?: Prisma.StringFilter<"DebateTimerProject"> | string
   positiveTopic?: Prisma.StringNullableFilter<"DebateTimerProject"> | string | null
@@ -265,12 +273,14 @@ export type DebateTimerProjectWhereInput = {
   stages?: Prisma.DebateTimerStageListRelationFilter
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   tournament?: Prisma.XOR<Prisma.TournamentNullableScalarRelationFilter, Prisma.TournamentWhereInput> | null
+  standaloneMatch?: Prisma.XOR<Prisma.StandaloneMatchNullableScalarRelationFilter, Prisma.StandaloneMatchWhereInput> | null
 }
 
 export type DebateTimerProjectOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  standaloneMatchId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   title?: Prisma.SortOrder
   positiveTopic?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -286,11 +296,13 @@ export type DebateTimerProjectOrderByWithRelationInput = {
   stages?: Prisma.DebateTimerStageOrderByRelationAggregateInput
   user?: Prisma.UserOrderByWithRelationInput
   tournament?: Prisma.TournamentOrderByWithRelationInput
+  standaloneMatch?: Prisma.StandaloneMatchOrderByWithRelationInput
 }
 
 export type DebateTimerProjectWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   tournamentId?: string
+  standaloneMatchId?: string
   AND?: Prisma.DebateTimerProjectWhereInput | Prisma.DebateTimerProjectWhereInput[]
   OR?: Prisma.DebateTimerProjectWhereInput[]
   NOT?: Prisma.DebateTimerProjectWhereInput | Prisma.DebateTimerProjectWhereInput[]
@@ -310,12 +322,14 @@ export type DebateTimerProjectWhereUniqueInput = Prisma.AtLeast<{
   stages?: Prisma.DebateTimerStageListRelationFilter
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   tournament?: Prisma.XOR<Prisma.TournamentNullableScalarRelationFilter, Prisma.TournamentWhereInput> | null
-}, "id" | "tournamentId">
+  standaloneMatch?: Prisma.XOR<Prisma.StandaloneMatchNullableScalarRelationFilter, Prisma.StandaloneMatchWhereInput> | null
+}, "id" | "tournamentId" | "standaloneMatchId">
 
 export type DebateTimerProjectOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  standaloneMatchId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   title?: Prisma.SortOrder
   positiveTopic?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -340,6 +354,7 @@ export type DebateTimerProjectScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"DebateTimerProject"> | string
   userId?: Prisma.StringWithAggregatesFilter<"DebateTimerProject"> | string
   tournamentId?: Prisma.StringNullableWithAggregatesFilter<"DebateTimerProject"> | string | null
+  standaloneMatchId?: Prisma.StringNullableWithAggregatesFilter<"DebateTimerProject"> | string | null
   name?: Prisma.StringWithAggregatesFilter<"DebateTimerProject"> | string
   title?: Prisma.StringWithAggregatesFilter<"DebateTimerProject"> | string
   positiveTopic?: Prisma.StringNullableWithAggregatesFilter<"DebateTimerProject"> | string | null
@@ -371,12 +386,14 @@ export type DebateTimerProjectCreateInput = {
   stages?: Prisma.DebateTimerStageCreateNestedManyWithoutProjectInput
   user?: Prisma.UserCreateNestedOneWithoutTimerProjectsInput
   tournament?: Prisma.TournamentCreateNestedOneWithoutTimerProjectInput
+  standaloneMatch?: Prisma.StandaloneMatchCreateNestedOneWithoutTimerProjectInput
 }
 
 export type DebateTimerProjectUncheckedCreateInput = {
   id?: string
   userId: string
   tournamentId?: string | null
+  standaloneMatchId?: string | null
   name: string
   title: string
   positiveTopic?: string | null
@@ -409,12 +426,14 @@ export type DebateTimerProjectUpdateInput = {
   stages?: Prisma.DebateTimerStageUpdateManyWithoutProjectNestedInput
   user?: Prisma.UserUpdateOneWithoutTimerProjectsNestedInput
   tournament?: Prisma.TournamentUpdateOneWithoutTimerProjectNestedInput
+  standaloneMatch?: Prisma.StandaloneMatchUpdateOneWithoutTimerProjectNestedInput
 }
 
 export type DebateTimerProjectUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  standaloneMatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   positiveTopic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -434,6 +453,7 @@ export type DebateTimerProjectCreateManyInput = {
   id?: string
   userId: string
   tournamentId?: string | null
+  standaloneMatchId?: string | null
   name: string
   title: string
   positiveTopic?: string | null
@@ -468,6 +488,7 @@ export type DebateTimerProjectUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  standaloneMatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   positiveTopic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -501,6 +522,7 @@ export type DebateTimerProjectCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
+  standaloneMatchId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   title?: Prisma.SortOrder
   positiveTopic?: Prisma.SortOrder
@@ -519,6 +541,7 @@ export type DebateTimerProjectMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
+  standaloneMatchId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   title?: Prisma.SortOrder
   positiveTopic?: Prisma.SortOrder
@@ -537,6 +560,7 @@ export type DebateTimerProjectMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   tournamentId?: Prisma.SortOrder
+  standaloneMatchId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   title?: Prisma.SortOrder
   positiveTopic?: Prisma.SortOrder
@@ -630,6 +654,38 @@ export type DebateTimerProjectUncheckedUpdateOneWithoutTournamentNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DebateTimerProjectUpdateToOneWithWhereWithoutTournamentInput, Prisma.DebateTimerProjectUpdateWithoutTournamentInput>, Prisma.DebateTimerProjectUncheckedUpdateWithoutTournamentInput>
 }
 
+export type DebateTimerProjectCreateNestedOneWithoutStandaloneMatchInput = {
+  create?: Prisma.XOR<Prisma.DebateTimerProjectCreateWithoutStandaloneMatchInput, Prisma.DebateTimerProjectUncheckedCreateWithoutStandaloneMatchInput>
+  connectOrCreate?: Prisma.DebateTimerProjectCreateOrConnectWithoutStandaloneMatchInput
+  connect?: Prisma.DebateTimerProjectWhereUniqueInput
+}
+
+export type DebateTimerProjectUncheckedCreateNestedOneWithoutStandaloneMatchInput = {
+  create?: Prisma.XOR<Prisma.DebateTimerProjectCreateWithoutStandaloneMatchInput, Prisma.DebateTimerProjectUncheckedCreateWithoutStandaloneMatchInput>
+  connectOrCreate?: Prisma.DebateTimerProjectCreateOrConnectWithoutStandaloneMatchInput
+  connect?: Prisma.DebateTimerProjectWhereUniqueInput
+}
+
+export type DebateTimerProjectUpdateOneWithoutStandaloneMatchNestedInput = {
+  create?: Prisma.XOR<Prisma.DebateTimerProjectCreateWithoutStandaloneMatchInput, Prisma.DebateTimerProjectUncheckedCreateWithoutStandaloneMatchInput>
+  connectOrCreate?: Prisma.DebateTimerProjectCreateOrConnectWithoutStandaloneMatchInput
+  upsert?: Prisma.DebateTimerProjectUpsertWithoutStandaloneMatchInput
+  disconnect?: Prisma.DebateTimerProjectWhereInput | boolean
+  delete?: Prisma.DebateTimerProjectWhereInput | boolean
+  connect?: Prisma.DebateTimerProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DebateTimerProjectUpdateToOneWithWhereWithoutStandaloneMatchInput, Prisma.DebateTimerProjectUpdateWithoutStandaloneMatchInput>, Prisma.DebateTimerProjectUncheckedUpdateWithoutStandaloneMatchInput>
+}
+
+export type DebateTimerProjectUncheckedUpdateOneWithoutStandaloneMatchNestedInput = {
+  create?: Prisma.XOR<Prisma.DebateTimerProjectCreateWithoutStandaloneMatchInput, Prisma.DebateTimerProjectUncheckedCreateWithoutStandaloneMatchInput>
+  connectOrCreate?: Prisma.DebateTimerProjectCreateOrConnectWithoutStandaloneMatchInput
+  upsert?: Prisma.DebateTimerProjectUpsertWithoutStandaloneMatchInput
+  disconnect?: Prisma.DebateTimerProjectWhereInput | boolean
+  delete?: Prisma.DebateTimerProjectWhereInput | boolean
+  connect?: Prisma.DebateTimerProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DebateTimerProjectUpdateToOneWithWhereWithoutStandaloneMatchInput, Prisma.DebateTimerProjectUpdateWithoutStandaloneMatchInput>, Prisma.DebateTimerProjectUncheckedUpdateWithoutStandaloneMatchInput>
+}
+
 export type DebateTimerProjectCreateNestedOneWithoutStagesInput = {
   create?: Prisma.XOR<Prisma.DebateTimerProjectCreateWithoutStagesInput, Prisma.DebateTimerProjectUncheckedCreateWithoutStagesInput>
   connectOrCreate?: Prisma.DebateTimerProjectCreateOrConnectWithoutStagesInput
@@ -660,11 +716,13 @@ export type DebateTimerProjectCreateWithoutUserInput = {
   updatedAt?: Date | string
   stages?: Prisma.DebateTimerStageCreateNestedManyWithoutProjectInput
   tournament?: Prisma.TournamentCreateNestedOneWithoutTimerProjectInput
+  standaloneMatch?: Prisma.StandaloneMatchCreateNestedOneWithoutTimerProjectInput
 }
 
 export type DebateTimerProjectUncheckedCreateWithoutUserInput = {
   id?: string
   tournamentId?: string | null
+  standaloneMatchId?: string | null
   name: string
   title: string
   positiveTopic?: string | null
@@ -712,6 +770,7 @@ export type DebateTimerProjectScalarWhereInput = {
   id?: Prisma.StringFilter<"DebateTimerProject"> | string
   userId?: Prisma.StringFilter<"DebateTimerProject"> | string
   tournamentId?: Prisma.StringNullableFilter<"DebateTimerProject"> | string | null
+  standaloneMatchId?: Prisma.StringNullableFilter<"DebateTimerProject"> | string | null
   name?: Prisma.StringFilter<"DebateTimerProject"> | string
   title?: Prisma.StringFilter<"DebateTimerProject"> | string
   positiveTopic?: Prisma.StringNullableFilter<"DebateTimerProject"> | string | null
@@ -742,11 +801,13 @@ export type DebateTimerProjectCreateWithoutTournamentInput = {
   updatedAt?: Date | string
   stages?: Prisma.DebateTimerStageCreateNestedManyWithoutProjectInput
   user?: Prisma.UserCreateNestedOneWithoutTimerProjectsInput
+  standaloneMatch?: Prisma.StandaloneMatchCreateNestedOneWithoutTimerProjectInput
 }
 
 export type DebateTimerProjectUncheckedCreateWithoutTournamentInput = {
   id?: string
   userId: string
+  standaloneMatchId?: string | null
   name: string
   title: string
   positiveTopic?: string | null
@@ -794,11 +855,105 @@ export type DebateTimerProjectUpdateWithoutTournamentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stages?: Prisma.DebateTimerStageUpdateManyWithoutProjectNestedInput
   user?: Prisma.UserUpdateOneWithoutTimerProjectsNestedInput
+  standaloneMatch?: Prisma.StandaloneMatchUpdateOneWithoutTimerProjectNestedInput
 }
 
 export type DebateTimerProjectUncheckedUpdateWithoutTournamentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  standaloneMatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  positiveTopic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negativeTopic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teamPositiveName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teamNegativeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uiConfig?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skinConfig?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  audioConfig?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teamLogoConfig?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stages?: Prisma.DebateTimerStageUncheckedUpdateManyWithoutProjectNestedInput
+}
+
+export type DebateTimerProjectCreateWithoutStandaloneMatchInput = {
+  id?: string
+  name: string
+  title: string
+  positiveTopic?: string | null
+  negativeTopic?: string | null
+  teamPositiveName?: string | null
+  teamNegativeName?: string | null
+  uiConfig?: string | null
+  skinConfig?: string | null
+  audioConfig?: string | null
+  teamLogoConfig?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  stages?: Prisma.DebateTimerStageCreateNestedManyWithoutProjectInput
+  user?: Prisma.UserCreateNestedOneWithoutTimerProjectsInput
+  tournament?: Prisma.TournamentCreateNestedOneWithoutTimerProjectInput
+}
+
+export type DebateTimerProjectUncheckedCreateWithoutStandaloneMatchInput = {
+  id?: string
+  userId: string
+  tournamentId?: string | null
+  name: string
+  title: string
+  positiveTopic?: string | null
+  negativeTopic?: string | null
+  teamPositiveName?: string | null
+  teamNegativeName?: string | null
+  uiConfig?: string | null
+  skinConfig?: string | null
+  audioConfig?: string | null
+  teamLogoConfig?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  stages?: Prisma.DebateTimerStageUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type DebateTimerProjectCreateOrConnectWithoutStandaloneMatchInput = {
+  where: Prisma.DebateTimerProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.DebateTimerProjectCreateWithoutStandaloneMatchInput, Prisma.DebateTimerProjectUncheckedCreateWithoutStandaloneMatchInput>
+}
+
+export type DebateTimerProjectUpsertWithoutStandaloneMatchInput = {
+  update: Prisma.XOR<Prisma.DebateTimerProjectUpdateWithoutStandaloneMatchInput, Prisma.DebateTimerProjectUncheckedUpdateWithoutStandaloneMatchInput>
+  create: Prisma.XOR<Prisma.DebateTimerProjectCreateWithoutStandaloneMatchInput, Prisma.DebateTimerProjectUncheckedCreateWithoutStandaloneMatchInput>
+  where?: Prisma.DebateTimerProjectWhereInput
+}
+
+export type DebateTimerProjectUpdateToOneWithWhereWithoutStandaloneMatchInput = {
+  where?: Prisma.DebateTimerProjectWhereInput
+  data: Prisma.XOR<Prisma.DebateTimerProjectUpdateWithoutStandaloneMatchInput, Prisma.DebateTimerProjectUncheckedUpdateWithoutStandaloneMatchInput>
+}
+
+export type DebateTimerProjectUpdateWithoutStandaloneMatchInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  positiveTopic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negativeTopic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teamPositiveName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teamNegativeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uiConfig?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skinConfig?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  audioConfig?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teamLogoConfig?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stages?: Prisma.DebateTimerStageUpdateManyWithoutProjectNestedInput
+  user?: Prisma.UserUpdateOneWithoutTimerProjectsNestedInput
+  tournament?: Prisma.TournamentUpdateOneWithoutTimerProjectNestedInput
+}
+
+export type DebateTimerProjectUncheckedUpdateWithoutStandaloneMatchInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  tournamentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   positiveTopic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -830,12 +985,14 @@ export type DebateTimerProjectCreateWithoutStagesInput = {
   updatedAt?: Date | string
   user?: Prisma.UserCreateNestedOneWithoutTimerProjectsInput
   tournament?: Prisma.TournamentCreateNestedOneWithoutTimerProjectInput
+  standaloneMatch?: Prisma.StandaloneMatchCreateNestedOneWithoutTimerProjectInput
 }
 
 export type DebateTimerProjectUncheckedCreateWithoutStagesInput = {
   id?: string
   userId: string
   tournamentId?: string | null
+  standaloneMatchId?: string | null
   name: string
   title: string
   positiveTopic?: string | null
@@ -882,12 +1039,14 @@ export type DebateTimerProjectUpdateWithoutStagesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneWithoutTimerProjectsNestedInput
   tournament?: Prisma.TournamentUpdateOneWithoutTimerProjectNestedInput
+  standaloneMatch?: Prisma.StandaloneMatchUpdateOneWithoutTimerProjectNestedInput
 }
 
 export type DebateTimerProjectUncheckedUpdateWithoutStagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  standaloneMatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   positiveTopic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -905,6 +1064,7 @@ export type DebateTimerProjectUncheckedUpdateWithoutStagesInput = {
 export type DebateTimerProjectCreateManyUserInput = {
   id?: string
   tournamentId?: string | null
+  standaloneMatchId?: string | null
   name: string
   title: string
   positiveTopic?: string | null
@@ -935,11 +1095,13 @@ export type DebateTimerProjectUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stages?: Prisma.DebateTimerStageUpdateManyWithoutProjectNestedInput
   tournament?: Prisma.TournamentUpdateOneWithoutTimerProjectNestedInput
+  standaloneMatch?: Prisma.StandaloneMatchUpdateOneWithoutTimerProjectNestedInput
 }
 
 export type DebateTimerProjectUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  standaloneMatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   positiveTopic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -958,6 +1120,7 @@ export type DebateTimerProjectUncheckedUpdateWithoutUserInput = {
 export type DebateTimerProjectUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tournamentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  standaloneMatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   positiveTopic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1007,6 +1170,7 @@ export type DebateTimerProjectSelect<ExtArgs extends runtime.Types.Extensions.In
   id?: boolean
   userId?: boolean
   tournamentId?: boolean
+  standaloneMatchId?: boolean
   name?: boolean
   title?: boolean
   positiveTopic?: boolean
@@ -1022,6 +1186,7 @@ export type DebateTimerProjectSelect<ExtArgs extends runtime.Types.Extensions.In
   stages?: boolean | Prisma.DebateTimerProject$stagesArgs<ExtArgs>
   user?: boolean | Prisma.DebateTimerProject$userArgs<ExtArgs>
   tournament?: boolean | Prisma.DebateTimerProject$tournamentArgs<ExtArgs>
+  standaloneMatch?: boolean | Prisma.DebateTimerProject$standaloneMatchArgs<ExtArgs>
   _count?: boolean | Prisma.DebateTimerProjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["debateTimerProject"]>
 
@@ -1029,6 +1194,7 @@ export type DebateTimerProjectSelectCreateManyAndReturn<ExtArgs extends runtime.
   id?: boolean
   userId?: boolean
   tournamentId?: boolean
+  standaloneMatchId?: boolean
   name?: boolean
   title?: boolean
   positiveTopic?: boolean
@@ -1043,12 +1209,14 @@ export type DebateTimerProjectSelectCreateManyAndReturn<ExtArgs extends runtime.
   updatedAt?: boolean
   user?: boolean | Prisma.DebateTimerProject$userArgs<ExtArgs>
   tournament?: boolean | Prisma.DebateTimerProject$tournamentArgs<ExtArgs>
+  standaloneMatch?: boolean | Prisma.DebateTimerProject$standaloneMatchArgs<ExtArgs>
 }, ExtArgs["result"]["debateTimerProject"]>
 
 export type DebateTimerProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   userId?: boolean
   tournamentId?: boolean
+  standaloneMatchId?: boolean
   name?: boolean
   title?: boolean
   positiveTopic?: boolean
@@ -1063,12 +1231,14 @@ export type DebateTimerProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.
   updatedAt?: boolean
   user?: boolean | Prisma.DebateTimerProject$userArgs<ExtArgs>
   tournament?: boolean | Prisma.DebateTimerProject$tournamentArgs<ExtArgs>
+  standaloneMatch?: boolean | Prisma.DebateTimerProject$standaloneMatchArgs<ExtArgs>
 }, ExtArgs["result"]["debateTimerProject"]>
 
 export type DebateTimerProjectSelectScalar = {
   id?: boolean
   userId?: boolean
   tournamentId?: boolean
+  standaloneMatchId?: boolean
   name?: boolean
   title?: boolean
   positiveTopic?: boolean
@@ -1083,20 +1253,23 @@ export type DebateTimerProjectSelectScalar = {
   updatedAt?: boolean
 }
 
-export type DebateTimerProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "tournamentId" | "name" | "title" | "positiveTopic" | "negativeTopic" | "teamPositiveName" | "teamNegativeName" | "uiConfig" | "skinConfig" | "audioConfig" | "teamLogoConfig" | "createdAt" | "updatedAt", ExtArgs["result"]["debateTimerProject"]>
+export type DebateTimerProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "tournamentId" | "standaloneMatchId" | "name" | "title" | "positiveTopic" | "negativeTopic" | "teamPositiveName" | "teamNegativeName" | "uiConfig" | "skinConfig" | "audioConfig" | "teamLogoConfig" | "createdAt" | "updatedAt", ExtArgs["result"]["debateTimerProject"]>
 export type DebateTimerProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   stages?: boolean | Prisma.DebateTimerProject$stagesArgs<ExtArgs>
   user?: boolean | Prisma.DebateTimerProject$userArgs<ExtArgs>
   tournament?: boolean | Prisma.DebateTimerProject$tournamentArgs<ExtArgs>
+  standaloneMatch?: boolean | Prisma.DebateTimerProject$standaloneMatchArgs<ExtArgs>
   _count?: boolean | Prisma.DebateTimerProjectCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DebateTimerProjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.DebateTimerProject$userArgs<ExtArgs>
   tournament?: boolean | Prisma.DebateTimerProject$tournamentArgs<ExtArgs>
+  standaloneMatch?: boolean | Prisma.DebateTimerProject$standaloneMatchArgs<ExtArgs>
 }
 export type DebateTimerProjectIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.DebateTimerProject$userArgs<ExtArgs>
   tournament?: boolean | Prisma.DebateTimerProject$tournamentArgs<ExtArgs>
+  standaloneMatch?: boolean | Prisma.DebateTimerProject$standaloneMatchArgs<ExtArgs>
 }
 
 export type $DebateTimerProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1105,11 +1278,13 @@ export type $DebateTimerProjectPayload<ExtArgs extends runtime.Types.Extensions.
     stages: Prisma.$DebateTimerStagePayload<ExtArgs>[]
     user: Prisma.$UserPayload<ExtArgs> | null
     tournament: Prisma.$TournamentPayload<ExtArgs> | null
+    standaloneMatch: Prisma.$StandaloneMatchPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     userId: string
     tournamentId: string | null
+    standaloneMatchId: string | null
     name: string
     title: string
     positiveTopic: string | null
@@ -1519,6 +1694,7 @@ export interface Prisma__DebateTimerProjectClient<T, Null = never, ExtArgs exten
   stages<T extends Prisma.DebateTimerProject$stagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DebateTimerProject$stagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DebateTimerStagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   user<T extends Prisma.DebateTimerProject$userArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DebateTimerProject$userArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   tournament<T extends Prisma.DebateTimerProject$tournamentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DebateTimerProject$tournamentArgs<ExtArgs>>): Prisma.Prisma__TournamentClient<runtime.Types.Result.GetResult<Prisma.$TournamentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  standaloneMatch<T extends Prisma.DebateTimerProject$standaloneMatchArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DebateTimerProject$standaloneMatchArgs<ExtArgs>>): Prisma.Prisma__StandaloneMatchClient<runtime.Types.Result.GetResult<Prisma.$StandaloneMatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1551,6 +1727,7 @@ export interface DebateTimerProjectFieldRefs {
   readonly id: Prisma.FieldRef<"DebateTimerProject", 'String'>
   readonly userId: Prisma.FieldRef<"DebateTimerProject", 'String'>
   readonly tournamentId: Prisma.FieldRef<"DebateTimerProject", 'String'>
+  readonly standaloneMatchId: Prisma.FieldRef<"DebateTimerProject", 'String'>
   readonly name: Prisma.FieldRef<"DebateTimerProject", 'String'>
   readonly title: Prisma.FieldRef<"DebateTimerProject", 'String'>
   readonly positiveTopic: Prisma.FieldRef<"DebateTimerProject", 'String'>
@@ -2021,6 +2198,25 @@ export type DebateTimerProject$tournamentArgs<ExtArgs extends runtime.Types.Exte
    */
   include?: Prisma.TournamentInclude<ExtArgs> | null
   where?: Prisma.TournamentWhereInput
+}
+
+/**
+ * DebateTimerProject.standaloneMatch
+ */
+export type DebateTimerProject$standaloneMatchArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the StandaloneMatch
+   */
+  select?: Prisma.StandaloneMatchSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the StandaloneMatch
+   */
+  omit?: Prisma.StandaloneMatchOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.StandaloneMatchInclude<ExtArgs> | null
+  where?: Prisma.StandaloneMatchWhereInput
 }
 
 /**

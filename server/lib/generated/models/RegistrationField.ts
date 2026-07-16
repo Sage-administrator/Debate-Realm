@@ -44,6 +44,10 @@ export type RegistrationFieldMinAggregateOutputType = {
   required: boolean | null
   sortOrder: number | null
   appliesTo: string | null
+  placeholder: string | null
+  description: string | null
+  width: string | null
+  systemField: boolean | null
 }
 
 export type RegistrationFieldMaxAggregateOutputType = {
@@ -56,6 +60,10 @@ export type RegistrationFieldMaxAggregateOutputType = {
   required: boolean | null
   sortOrder: number | null
   appliesTo: string | null
+  placeholder: string | null
+  description: string | null
+  width: string | null
+  systemField: boolean | null
 }
 
 export type RegistrationFieldCountAggregateOutputType = {
@@ -68,6 +76,10 @@ export type RegistrationFieldCountAggregateOutputType = {
   required: number
   sortOrder: number
   appliesTo: number
+  placeholder: number
+  description: number
+  width: number
+  systemField: number
   _all: number
 }
 
@@ -90,6 +102,10 @@ export type RegistrationFieldMinAggregateInputType = {
   required?: true
   sortOrder?: true
   appliesTo?: true
+  placeholder?: true
+  description?: true
+  width?: true
+  systemField?: true
 }
 
 export type RegistrationFieldMaxAggregateInputType = {
@@ -102,6 +118,10 @@ export type RegistrationFieldMaxAggregateInputType = {
   required?: true
   sortOrder?: true
   appliesTo?: true
+  placeholder?: true
+  description?: true
+  width?: true
+  systemField?: true
 }
 
 export type RegistrationFieldCountAggregateInputType = {
@@ -114,6 +134,10 @@ export type RegistrationFieldCountAggregateInputType = {
   required?: true
   sortOrder?: true
   appliesTo?: true
+  placeholder?: true
+  description?: true
+  width?: true
+  systemField?: true
   _all?: true
 }
 
@@ -213,6 +237,10 @@ export type RegistrationFieldGroupByOutputType = {
   required: boolean
   sortOrder: number
   appliesTo: string
+  placeholder: string | null
+  description: string | null
+  width: string
+  systemField: boolean
   _count: RegistrationFieldCountAggregateOutputType | null
   _avg: RegistrationFieldAvgAggregateOutputType | null
   _sum: RegistrationFieldSumAggregateOutputType | null
@@ -248,6 +276,10 @@ export type RegistrationFieldWhereInput = {
   required?: Prisma.BoolFilter<"RegistrationField"> | boolean
   sortOrder?: Prisma.IntFilter<"RegistrationField"> | number
   appliesTo?: Prisma.StringFilter<"RegistrationField"> | string
+  placeholder?: Prisma.StringNullableFilter<"RegistrationField"> | string | null
+  description?: Prisma.StringNullableFilter<"RegistrationField"> | string | null
+  width?: Prisma.StringFilter<"RegistrationField"> | string
+  systemField?: Prisma.BoolFilter<"RegistrationField"> | boolean
   tournament?: Prisma.XOR<Prisma.TournamentScalarRelationFilter, Prisma.TournamentWhereInput>
 }
 
@@ -261,6 +293,10 @@ export type RegistrationFieldOrderByWithRelationInput = {
   required?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   appliesTo?: Prisma.SortOrder
+  placeholder?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  width?: Prisma.SortOrder
+  systemField?: Prisma.SortOrder
   tournament?: Prisma.TournamentOrderByWithRelationInput
 }
 
@@ -277,6 +313,10 @@ export type RegistrationFieldWhereUniqueInput = Prisma.AtLeast<{
   required?: Prisma.BoolFilter<"RegistrationField"> | boolean
   sortOrder?: Prisma.IntFilter<"RegistrationField"> | number
   appliesTo?: Prisma.StringFilter<"RegistrationField"> | string
+  placeholder?: Prisma.StringNullableFilter<"RegistrationField"> | string | null
+  description?: Prisma.StringNullableFilter<"RegistrationField"> | string | null
+  width?: Prisma.StringFilter<"RegistrationField"> | string
+  systemField?: Prisma.BoolFilter<"RegistrationField"> | boolean
   tournament?: Prisma.XOR<Prisma.TournamentScalarRelationFilter, Prisma.TournamentWhereInput>
 }, "id">
 
@@ -290,6 +330,10 @@ export type RegistrationFieldOrderByWithAggregationInput = {
   required?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   appliesTo?: Prisma.SortOrder
+  placeholder?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  width?: Prisma.SortOrder
+  systemField?: Prisma.SortOrder
   _count?: Prisma.RegistrationFieldCountOrderByAggregateInput
   _avg?: Prisma.RegistrationFieldAvgOrderByAggregateInput
   _max?: Prisma.RegistrationFieldMaxOrderByAggregateInput
@@ -310,6 +354,10 @@ export type RegistrationFieldScalarWhereWithAggregatesInput = {
   required?: Prisma.BoolWithAggregatesFilter<"RegistrationField"> | boolean
   sortOrder?: Prisma.IntWithAggregatesFilter<"RegistrationField"> | number
   appliesTo?: Prisma.StringWithAggregatesFilter<"RegistrationField"> | string
+  placeholder?: Prisma.StringNullableWithAggregatesFilter<"RegistrationField"> | string | null
+  description?: Prisma.StringNullableWithAggregatesFilter<"RegistrationField"> | string | null
+  width?: Prisma.StringWithAggregatesFilter<"RegistrationField"> | string
+  systemField?: Prisma.BoolWithAggregatesFilter<"RegistrationField"> | boolean
 }
 
 export type RegistrationFieldCreateInput = {
@@ -321,6 +369,10 @@ export type RegistrationFieldCreateInput = {
   required?: boolean
   sortOrder?: number
   appliesTo?: string
+  placeholder?: string | null
+  description?: string | null
+  width?: string
+  systemField?: boolean
   tournament: Prisma.TournamentCreateNestedOneWithoutRegFieldsInput
 }
 
@@ -334,6 +386,10 @@ export type RegistrationFieldUncheckedCreateInput = {
   required?: boolean
   sortOrder?: number
   appliesTo?: string
+  placeholder?: string | null
+  description?: string | null
+  width?: string
+  systemField?: boolean
 }
 
 export type RegistrationFieldUpdateInput = {
@@ -345,6 +401,10 @@ export type RegistrationFieldUpdateInput = {
   required?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   appliesTo?: Prisma.StringFieldUpdateOperationsInput | string
+  placeholder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  width?: Prisma.StringFieldUpdateOperationsInput | string
+  systemField?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tournament?: Prisma.TournamentUpdateOneRequiredWithoutRegFieldsNestedInput
 }
 
@@ -358,6 +418,10 @@ export type RegistrationFieldUncheckedUpdateInput = {
   required?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   appliesTo?: Prisma.StringFieldUpdateOperationsInput | string
+  placeholder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  width?: Prisma.StringFieldUpdateOperationsInput | string
+  systemField?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type RegistrationFieldCreateManyInput = {
@@ -370,6 +434,10 @@ export type RegistrationFieldCreateManyInput = {
   required?: boolean
   sortOrder?: number
   appliesTo?: string
+  placeholder?: string | null
+  description?: string | null
+  width?: string
+  systemField?: boolean
 }
 
 export type RegistrationFieldUpdateManyMutationInput = {
@@ -381,6 +449,10 @@ export type RegistrationFieldUpdateManyMutationInput = {
   required?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   appliesTo?: Prisma.StringFieldUpdateOperationsInput | string
+  placeholder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  width?: Prisma.StringFieldUpdateOperationsInput | string
+  systemField?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type RegistrationFieldUncheckedUpdateManyInput = {
@@ -393,6 +465,10 @@ export type RegistrationFieldUncheckedUpdateManyInput = {
   required?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   appliesTo?: Prisma.StringFieldUpdateOperationsInput | string
+  placeholder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  width?: Prisma.StringFieldUpdateOperationsInput | string
+  systemField?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type RegistrationFieldListRelationFilter = {
@@ -415,6 +491,10 @@ export type RegistrationFieldCountOrderByAggregateInput = {
   required?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   appliesTo?: Prisma.SortOrder
+  placeholder?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  width?: Prisma.SortOrder
+  systemField?: Prisma.SortOrder
 }
 
 export type RegistrationFieldAvgOrderByAggregateInput = {
@@ -431,6 +511,10 @@ export type RegistrationFieldMaxOrderByAggregateInput = {
   required?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   appliesTo?: Prisma.SortOrder
+  placeholder?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  width?: Prisma.SortOrder
+  systemField?: Prisma.SortOrder
 }
 
 export type RegistrationFieldMinOrderByAggregateInput = {
@@ -443,6 +527,10 @@ export type RegistrationFieldMinOrderByAggregateInput = {
   required?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   appliesTo?: Prisma.SortOrder
+  placeholder?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  width?: Prisma.SortOrder
+  systemField?: Prisma.SortOrder
 }
 
 export type RegistrationFieldSumOrderByAggregateInput = {
@@ -500,6 +588,10 @@ export type RegistrationFieldCreateWithoutTournamentInput = {
   required?: boolean
   sortOrder?: number
   appliesTo?: string
+  placeholder?: string | null
+  description?: string | null
+  width?: string
+  systemField?: boolean
 }
 
 export type RegistrationFieldUncheckedCreateWithoutTournamentInput = {
@@ -511,6 +603,10 @@ export type RegistrationFieldUncheckedCreateWithoutTournamentInput = {
   required?: boolean
   sortOrder?: number
   appliesTo?: string
+  placeholder?: string | null
+  description?: string | null
+  width?: string
+  systemField?: boolean
 }
 
 export type RegistrationFieldCreateOrConnectWithoutTournamentInput = {
@@ -551,6 +647,10 @@ export type RegistrationFieldScalarWhereInput = {
   required?: Prisma.BoolFilter<"RegistrationField"> | boolean
   sortOrder?: Prisma.IntFilter<"RegistrationField"> | number
   appliesTo?: Prisma.StringFilter<"RegistrationField"> | string
+  placeholder?: Prisma.StringNullableFilter<"RegistrationField"> | string | null
+  description?: Prisma.StringNullableFilter<"RegistrationField"> | string | null
+  width?: Prisma.StringFilter<"RegistrationField"> | string
+  systemField?: Prisma.BoolFilter<"RegistrationField"> | boolean
 }
 
 export type RegistrationFieldCreateManyTournamentInput = {
@@ -562,6 +662,10 @@ export type RegistrationFieldCreateManyTournamentInput = {
   required?: boolean
   sortOrder?: number
   appliesTo?: string
+  placeholder?: string | null
+  description?: string | null
+  width?: string
+  systemField?: boolean
 }
 
 export type RegistrationFieldUpdateWithoutTournamentInput = {
@@ -573,6 +677,10 @@ export type RegistrationFieldUpdateWithoutTournamentInput = {
   required?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   appliesTo?: Prisma.StringFieldUpdateOperationsInput | string
+  placeholder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  width?: Prisma.StringFieldUpdateOperationsInput | string
+  systemField?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type RegistrationFieldUncheckedUpdateWithoutTournamentInput = {
@@ -584,6 +692,10 @@ export type RegistrationFieldUncheckedUpdateWithoutTournamentInput = {
   required?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   appliesTo?: Prisma.StringFieldUpdateOperationsInput | string
+  placeholder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  width?: Prisma.StringFieldUpdateOperationsInput | string
+  systemField?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type RegistrationFieldUncheckedUpdateManyWithoutTournamentInput = {
@@ -595,6 +707,10 @@ export type RegistrationFieldUncheckedUpdateManyWithoutTournamentInput = {
   required?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   appliesTo?: Prisma.StringFieldUpdateOperationsInput | string
+  placeholder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  width?: Prisma.StringFieldUpdateOperationsInput | string
+  systemField?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -609,6 +725,10 @@ export type RegistrationFieldSelect<ExtArgs extends runtime.Types.Extensions.Int
   required?: boolean
   sortOrder?: boolean
   appliesTo?: boolean
+  placeholder?: boolean
+  description?: boolean
+  width?: boolean
+  systemField?: boolean
   tournament?: boolean | Prisma.TournamentDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["registrationField"]>
 
@@ -622,6 +742,10 @@ export type RegistrationFieldSelectCreateManyAndReturn<ExtArgs extends runtime.T
   required?: boolean
   sortOrder?: boolean
   appliesTo?: boolean
+  placeholder?: boolean
+  description?: boolean
+  width?: boolean
+  systemField?: boolean
   tournament?: boolean | Prisma.TournamentDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["registrationField"]>
 
@@ -635,6 +759,10 @@ export type RegistrationFieldSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   required?: boolean
   sortOrder?: boolean
   appliesTo?: boolean
+  placeholder?: boolean
+  description?: boolean
+  width?: boolean
+  systemField?: boolean
   tournament?: boolean | Prisma.TournamentDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["registrationField"]>
 
@@ -648,9 +776,13 @@ export type RegistrationFieldSelectScalar = {
   required?: boolean
   sortOrder?: boolean
   appliesTo?: boolean
+  placeholder?: boolean
+  description?: boolean
+  width?: boolean
+  systemField?: boolean
 }
 
-export type RegistrationFieldOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tournamentId" | "fieldName" | "fieldKey" | "fieldType" | "fieldOptions" | "required" | "sortOrder" | "appliesTo", ExtArgs["result"]["registrationField"]>
+export type RegistrationFieldOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tournamentId" | "fieldName" | "fieldKey" | "fieldType" | "fieldOptions" | "required" | "sortOrder" | "appliesTo" | "placeholder" | "description" | "width" | "systemField", ExtArgs["result"]["registrationField"]>
 export type RegistrationFieldInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tournament?: boolean | Prisma.TournamentDefaultArgs<ExtArgs>
 }
@@ -676,6 +808,10 @@ export type $RegistrationFieldPayload<ExtArgs extends runtime.Types.Extensions.I
     required: boolean
     sortOrder: number
     appliesTo: string
+    placeholder: string | null
+    description: string | null
+    width: string
+    systemField: boolean
   }, ExtArgs["result"]["registrationField"]>
   composites: {}
 }
@@ -1109,6 +1245,10 @@ export interface RegistrationFieldFieldRefs {
   readonly required: Prisma.FieldRef<"RegistrationField", 'Boolean'>
   readonly sortOrder: Prisma.FieldRef<"RegistrationField", 'Int'>
   readonly appliesTo: Prisma.FieldRef<"RegistrationField", 'String'>
+  readonly placeholder: Prisma.FieldRef<"RegistrationField", 'String'>
+  readonly description: Prisma.FieldRef<"RegistrationField", 'String'>
+  readonly width: Prisma.FieldRef<"RegistrationField", 'String'>
+  readonly systemField: Prisma.FieldRef<"RegistrationField", 'Boolean'>
 }
     
 

@@ -32,6 +32,8 @@ export type TeamMinAggregateOutputType = {
   botAppId: string | null
   botAppSecret: string | null
   botChannelId: string | null
+  botIsPrivate: boolean | null
+  apiToken: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +46,8 @@ export type TeamMaxAggregateOutputType = {
   botAppId: string | null
   botAppSecret: string | null
   botChannelId: string | null
+  botIsPrivate: boolean | null
+  apiToken: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +60,8 @@ export type TeamCountAggregateOutputType = {
   botAppId: number
   botAppSecret: number
   botChannelId: number
+  botIsPrivate: number
+  apiToken: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -70,6 +76,8 @@ export type TeamMinAggregateInputType = {
   botAppId?: true
   botAppSecret?: true
   botChannelId?: true
+  botIsPrivate?: true
+  apiToken?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -82,6 +90,8 @@ export type TeamMaxAggregateInputType = {
   botAppId?: true
   botAppSecret?: true
   botChannelId?: true
+  botIsPrivate?: true
+  apiToken?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -94,6 +104,8 @@ export type TeamCountAggregateInputType = {
   botAppId?: true
   botAppSecret?: true
   botChannelId?: true
+  botIsPrivate?: true
+  apiToken?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -179,6 +191,8 @@ export type TeamGroupByOutputType = {
   botAppId: string | null
   botAppSecret: string | null
   botChannelId: string | null
+  botIsPrivate: boolean | null
+  apiToken: string | null
   createdAt: Date
   updatedAt: Date
   _count: TeamCountAggregateOutputType | null
@@ -212,6 +226,8 @@ export type TeamWhereInput = {
   botAppId?: Prisma.StringNullableFilter<"Team"> | string | null
   botAppSecret?: Prisma.StringNullableFilter<"Team"> | string | null
   botChannelId?: Prisma.StringNullableFilter<"Team"> | string | null
+  botIsPrivate?: Prisma.BoolNullableFilter<"Team"> | boolean | null
+  apiToken?: Prisma.StringNullableFilter<"Team"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Team"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Team"> | Date | string
   admin?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -219,6 +235,7 @@ export type TeamWhereInput = {
   tournaments?: Prisma.TournamentListRelationFilter
   users?: Prisma.UserListRelationFilter
   arenas?: Prisma.BotArenaListRelationFilter
+  scheduledPosts?: Prisma.ScheduledPostListRelationFilter
 }
 
 export type TeamOrderByWithRelationInput = {
@@ -229,6 +246,8 @@ export type TeamOrderByWithRelationInput = {
   botAppId?: Prisma.SortOrderInput | Prisma.SortOrder
   botAppSecret?: Prisma.SortOrderInput | Prisma.SortOrder
   botChannelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  botIsPrivate?: Prisma.SortOrderInput | Prisma.SortOrder
+  apiToken?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   admin?: Prisma.UserOrderByWithRelationInput
@@ -236,10 +255,12 @@ export type TeamOrderByWithRelationInput = {
   tournaments?: Prisma.TournamentOrderByRelationAggregateInput
   users?: Prisma.UserOrderByRelationAggregateInput
   arenas?: Prisma.BotArenaOrderByRelationAggregateInput
+  scheduledPosts?: Prisma.ScheduledPostOrderByRelationAggregateInput
 }
 
 export type TeamWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  apiToken?: string
   AND?: Prisma.TeamWhereInput | Prisma.TeamWhereInput[]
   OR?: Prisma.TeamWhereInput[]
   NOT?: Prisma.TeamWhereInput | Prisma.TeamWhereInput[]
@@ -249,6 +270,7 @@ export type TeamWhereUniqueInput = Prisma.AtLeast<{
   botAppId?: Prisma.StringNullableFilter<"Team"> | string | null
   botAppSecret?: Prisma.StringNullableFilter<"Team"> | string | null
   botChannelId?: Prisma.StringNullableFilter<"Team"> | string | null
+  botIsPrivate?: Prisma.BoolNullableFilter<"Team"> | boolean | null
   createdAt?: Prisma.DateTimeFilter<"Team"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Team"> | Date | string
   admin?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -256,7 +278,8 @@ export type TeamWhereUniqueInput = Prisma.AtLeast<{
   tournaments?: Prisma.TournamentListRelationFilter
   users?: Prisma.UserListRelationFilter
   arenas?: Prisma.BotArenaListRelationFilter
-}, "id">
+  scheduledPosts?: Prisma.ScheduledPostListRelationFilter
+}, "id" | "apiToken">
 
 export type TeamOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -266,6 +289,8 @@ export type TeamOrderByWithAggregationInput = {
   botAppId?: Prisma.SortOrderInput | Prisma.SortOrder
   botAppSecret?: Prisma.SortOrderInput | Prisma.SortOrder
   botChannelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  botIsPrivate?: Prisma.SortOrderInput | Prisma.SortOrder
+  apiToken?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.TeamCountOrderByAggregateInput
@@ -284,6 +309,8 @@ export type TeamScalarWhereWithAggregatesInput = {
   botAppId?: Prisma.StringNullableWithAggregatesFilter<"Team"> | string | null
   botAppSecret?: Prisma.StringNullableWithAggregatesFilter<"Team"> | string | null
   botChannelId?: Prisma.StringNullableWithAggregatesFilter<"Team"> | string | null
+  botIsPrivate?: Prisma.BoolNullableWithAggregatesFilter<"Team"> | boolean | null
+  apiToken?: Prisma.StringNullableWithAggregatesFilter<"Team"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Team"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Team"> | Date | string
 }
@@ -295,6 +322,8 @@ export type TeamCreateInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   admin: Prisma.UserCreateNestedOneWithoutAdminOfTeamsInput
@@ -302,6 +331,7 @@ export type TeamCreateInput = {
   tournaments?: Prisma.TournamentCreateNestedManyWithoutTeamInput
   users?: Prisma.UserCreateNestedManyWithoutTeamInput
   arenas?: Prisma.BotArenaCreateNestedManyWithoutTeamInput
+  scheduledPosts?: Prisma.ScheduledPostCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateInput = {
@@ -312,12 +342,15 @@ export type TeamUncheckedCreateInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTeamInput
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutTeamInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTeamInput
   arenas?: Prisma.BotArenaUncheckedCreateNestedManyWithoutTeamInput
+  scheduledPosts?: Prisma.ScheduledPostUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUpdateInput = {
@@ -327,6 +360,8 @@ export type TeamUpdateInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   admin?: Prisma.UserUpdateOneRequiredWithoutAdminOfTeamsNestedInput
@@ -334,6 +369,7 @@ export type TeamUpdateInput = {
   tournaments?: Prisma.TournamentUpdateManyWithoutTeamNestedInput
   users?: Prisma.UserUpdateManyWithoutTeamNestedInput
   arenas?: Prisma.BotArenaUpdateManyWithoutTeamNestedInput
+  scheduledPosts?: Prisma.ScheduledPostUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateInput = {
@@ -344,12 +380,15 @@ export type TeamUncheckedUpdateInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TeamMemberUncheckedUpdateManyWithoutTeamNestedInput
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutTeamNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutTeamNestedInput
   arenas?: Prisma.BotArenaUncheckedUpdateManyWithoutTeamNestedInput
+  scheduledPosts?: Prisma.ScheduledPostUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamCreateManyInput = {
@@ -360,6 +399,8 @@ export type TeamCreateManyInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -371,6 +412,8 @@ export type TeamUpdateManyMutationInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -383,6 +426,8 @@ export type TeamUncheckedUpdateManyInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -410,6 +455,8 @@ export type TeamCountOrderByAggregateInput = {
   botAppId?: Prisma.SortOrder
   botAppSecret?: Prisma.SortOrder
   botChannelId?: Prisma.SortOrder
+  botIsPrivate?: Prisma.SortOrder
+  apiToken?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -422,6 +469,8 @@ export type TeamMaxOrderByAggregateInput = {
   botAppId?: Prisma.SortOrder
   botAppSecret?: Prisma.SortOrder
   botChannelId?: Prisma.SortOrder
+  botIsPrivate?: Prisma.SortOrder
+  apiToken?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -434,6 +483,8 @@ export type TeamMinOrderByAggregateInput = {
   botAppId?: Prisma.SortOrder
   botAppSecret?: Prisma.SortOrder
   botChannelId?: Prisma.SortOrder
+  botIsPrivate?: Prisma.SortOrder
+  apiToken?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -501,6 +552,10 @@ export type TeamUncheckedUpdateManyWithoutAdminNestedInput = {
   deleteMany?: Prisma.TeamScalarWhereInput | Prisma.TeamScalarWhereInput[]
 }
 
+export type NullableBoolFieldUpdateOperationsInput = {
+  set?: boolean | null
+}
+
 export type TeamCreateNestedOneWithoutArenasInput = {
   create?: Prisma.XOR<Prisma.TeamCreateWithoutArenasInput, Prisma.TeamUncheckedCreateWithoutArenasInput>
   connectOrCreate?: Prisma.TeamCreateOrConnectWithoutArenasInput
@@ -543,6 +598,20 @@ export type TeamUpdateOneRequiredWithoutTournamentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TeamUpdateToOneWithWhereWithoutTournamentsInput, Prisma.TeamUpdateWithoutTournamentsInput>, Prisma.TeamUncheckedUpdateWithoutTournamentsInput>
 }
 
+export type TeamCreateNestedOneWithoutScheduledPostsInput = {
+  create?: Prisma.XOR<Prisma.TeamCreateWithoutScheduledPostsInput, Prisma.TeamUncheckedCreateWithoutScheduledPostsInput>
+  connectOrCreate?: Prisma.TeamCreateOrConnectWithoutScheduledPostsInput
+  connect?: Prisma.TeamWhereUniqueInput
+}
+
+export type TeamUpdateOneRequiredWithoutScheduledPostsNestedInput = {
+  create?: Prisma.XOR<Prisma.TeamCreateWithoutScheduledPostsInput, Prisma.TeamUncheckedCreateWithoutScheduledPostsInput>
+  connectOrCreate?: Prisma.TeamCreateOrConnectWithoutScheduledPostsInput
+  upsert?: Prisma.TeamUpsertWithoutScheduledPostsInput
+  connect?: Prisma.TeamWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TeamUpdateToOneWithWhereWithoutScheduledPostsInput, Prisma.TeamUpdateWithoutScheduledPostsInput>, Prisma.TeamUncheckedUpdateWithoutScheduledPostsInput>
+}
+
 export type TeamCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -550,12 +619,15 @@ export type TeamCreateWithoutUsersInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   admin: Prisma.UserCreateNestedOneWithoutAdminOfTeamsInput
   members?: Prisma.TeamMemberCreateNestedManyWithoutTeamInput
   tournaments?: Prisma.TournamentCreateNestedManyWithoutTeamInput
   arenas?: Prisma.BotArenaCreateNestedManyWithoutTeamInput
+  scheduledPosts?: Prisma.ScheduledPostCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutUsersInput = {
@@ -566,11 +638,14 @@ export type TeamUncheckedCreateWithoutUsersInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTeamInput
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutTeamInput
   arenas?: Prisma.BotArenaUncheckedCreateNestedManyWithoutTeamInput
+  scheduledPosts?: Prisma.ScheduledPostUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutUsersInput = {
@@ -585,12 +660,15 @@ export type TeamCreateWithoutAdminInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TeamMemberCreateNestedManyWithoutTeamInput
   tournaments?: Prisma.TournamentCreateNestedManyWithoutTeamInput
   users?: Prisma.UserCreateNestedManyWithoutTeamInput
   arenas?: Prisma.BotArenaCreateNestedManyWithoutTeamInput
+  scheduledPosts?: Prisma.ScheduledPostCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutAdminInput = {
@@ -600,12 +678,15 @@ export type TeamUncheckedCreateWithoutAdminInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTeamInput
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutTeamInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTeamInput
   arenas?: Prisma.BotArenaUncheckedCreateNestedManyWithoutTeamInput
+  scheduledPosts?: Prisma.ScheduledPostUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutAdminInput = {
@@ -635,12 +716,15 @@ export type TeamUpdateWithoutUsersInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   admin?: Prisma.UserUpdateOneRequiredWithoutAdminOfTeamsNestedInput
   members?: Prisma.TeamMemberUpdateManyWithoutTeamNestedInput
   tournaments?: Prisma.TournamentUpdateManyWithoutTeamNestedInput
   arenas?: Prisma.BotArenaUpdateManyWithoutTeamNestedInput
+  scheduledPosts?: Prisma.ScheduledPostUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutUsersInput = {
@@ -651,11 +735,14 @@ export type TeamUncheckedUpdateWithoutUsersInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TeamMemberUncheckedUpdateManyWithoutTeamNestedInput
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutTeamNestedInput
   arenas?: Prisma.BotArenaUncheckedUpdateManyWithoutTeamNestedInput
+  scheduledPosts?: Prisma.ScheduledPostUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUpsertWithWhereUniqueWithoutAdminInput = {
@@ -685,6 +772,8 @@ export type TeamScalarWhereInput = {
   botAppId?: Prisma.StringNullableFilter<"Team"> | string | null
   botAppSecret?: Prisma.StringNullableFilter<"Team"> | string | null
   botChannelId?: Prisma.StringNullableFilter<"Team"> | string | null
+  botIsPrivate?: Prisma.BoolNullableFilter<"Team"> | boolean | null
+  apiToken?: Prisma.StringNullableFilter<"Team"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Team"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Team"> | Date | string
 }
@@ -696,12 +785,15 @@ export type TeamCreateWithoutArenasInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   admin: Prisma.UserCreateNestedOneWithoutAdminOfTeamsInput
   members?: Prisma.TeamMemberCreateNestedManyWithoutTeamInput
   tournaments?: Prisma.TournamentCreateNestedManyWithoutTeamInput
   users?: Prisma.UserCreateNestedManyWithoutTeamInput
+  scheduledPosts?: Prisma.ScheduledPostCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutArenasInput = {
@@ -712,11 +804,14 @@ export type TeamUncheckedCreateWithoutArenasInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTeamInput
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutTeamInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTeamInput
+  scheduledPosts?: Prisma.ScheduledPostUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutArenasInput = {
@@ -742,12 +837,15 @@ export type TeamUpdateWithoutArenasInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   admin?: Prisma.UserUpdateOneRequiredWithoutAdminOfTeamsNestedInput
   members?: Prisma.TeamMemberUpdateManyWithoutTeamNestedInput
   tournaments?: Prisma.TournamentUpdateManyWithoutTeamNestedInput
   users?: Prisma.UserUpdateManyWithoutTeamNestedInput
+  scheduledPosts?: Prisma.ScheduledPostUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutArenasInput = {
@@ -758,11 +856,14 @@ export type TeamUncheckedUpdateWithoutArenasInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TeamMemberUncheckedUpdateManyWithoutTeamNestedInput
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutTeamNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutTeamNestedInput
+  scheduledPosts?: Prisma.ScheduledPostUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamCreateWithoutMembersInput = {
@@ -772,12 +873,15 @@ export type TeamCreateWithoutMembersInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   admin: Prisma.UserCreateNestedOneWithoutAdminOfTeamsInput
   tournaments?: Prisma.TournamentCreateNestedManyWithoutTeamInput
   users?: Prisma.UserCreateNestedManyWithoutTeamInput
   arenas?: Prisma.BotArenaCreateNestedManyWithoutTeamInput
+  scheduledPosts?: Prisma.ScheduledPostCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutMembersInput = {
@@ -788,11 +892,14 @@ export type TeamUncheckedCreateWithoutMembersInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutTeamInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTeamInput
   arenas?: Prisma.BotArenaUncheckedCreateNestedManyWithoutTeamInput
+  scheduledPosts?: Prisma.ScheduledPostUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutMembersInput = {
@@ -818,12 +925,15 @@ export type TeamUpdateWithoutMembersInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   admin?: Prisma.UserUpdateOneRequiredWithoutAdminOfTeamsNestedInput
   tournaments?: Prisma.TournamentUpdateManyWithoutTeamNestedInput
   users?: Prisma.UserUpdateManyWithoutTeamNestedInput
   arenas?: Prisma.BotArenaUpdateManyWithoutTeamNestedInput
+  scheduledPosts?: Prisma.ScheduledPostUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutMembersInput = {
@@ -834,11 +944,14 @@ export type TeamUncheckedUpdateWithoutMembersInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutTeamNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutTeamNestedInput
   arenas?: Prisma.BotArenaUncheckedUpdateManyWithoutTeamNestedInput
+  scheduledPosts?: Prisma.ScheduledPostUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamCreateWithoutTournamentsInput = {
@@ -848,12 +961,15 @@ export type TeamCreateWithoutTournamentsInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   admin: Prisma.UserCreateNestedOneWithoutAdminOfTeamsInput
   members?: Prisma.TeamMemberCreateNestedManyWithoutTeamInput
   users?: Prisma.UserCreateNestedManyWithoutTeamInput
   arenas?: Prisma.BotArenaCreateNestedManyWithoutTeamInput
+  scheduledPosts?: Prisma.ScheduledPostCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutTournamentsInput = {
@@ -864,11 +980,14 @@ export type TeamUncheckedCreateWithoutTournamentsInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTeamInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutTeamInput
   arenas?: Prisma.BotArenaUncheckedCreateNestedManyWithoutTeamInput
+  scheduledPosts?: Prisma.ScheduledPostUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutTournamentsInput = {
@@ -894,12 +1013,15 @@ export type TeamUpdateWithoutTournamentsInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   admin?: Prisma.UserUpdateOneRequiredWithoutAdminOfTeamsNestedInput
   members?: Prisma.TeamMemberUpdateManyWithoutTeamNestedInput
   users?: Prisma.UserUpdateManyWithoutTeamNestedInput
   arenas?: Prisma.BotArenaUpdateManyWithoutTeamNestedInput
+  scheduledPosts?: Prisma.ScheduledPostUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutTournamentsInput = {
@@ -910,9 +1032,100 @@ export type TeamUncheckedUpdateWithoutTournamentsInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TeamMemberUncheckedUpdateManyWithoutTeamNestedInput
+  users?: Prisma.UserUncheckedUpdateManyWithoutTeamNestedInput
+  arenas?: Prisma.BotArenaUncheckedUpdateManyWithoutTeamNestedInput
+  scheduledPosts?: Prisma.ScheduledPostUncheckedUpdateManyWithoutTeamNestedInput
+}
+
+export type TeamCreateWithoutScheduledPostsInput = {
+  id?: string
+  name: string
+  mode: string
+  botAppId?: string | null
+  botAppSecret?: string | null
+  botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  admin: Prisma.UserCreateNestedOneWithoutAdminOfTeamsInput
+  members?: Prisma.TeamMemberCreateNestedManyWithoutTeamInput
+  tournaments?: Prisma.TournamentCreateNestedManyWithoutTeamInput
+  users?: Prisma.UserCreateNestedManyWithoutTeamInput
+  arenas?: Prisma.BotArenaCreateNestedManyWithoutTeamInput
+}
+
+export type TeamUncheckedCreateWithoutScheduledPostsInput = {
+  id?: string
+  name: string
+  adminId: string
+  mode: string
+  botAppId?: string | null
+  botAppSecret?: string | null
+  botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTeamInput
+  tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutTeamInput
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutTeamInput
+  arenas?: Prisma.BotArenaUncheckedCreateNestedManyWithoutTeamInput
+}
+
+export type TeamCreateOrConnectWithoutScheduledPostsInput = {
+  where: Prisma.TeamWhereUniqueInput
+  create: Prisma.XOR<Prisma.TeamCreateWithoutScheduledPostsInput, Prisma.TeamUncheckedCreateWithoutScheduledPostsInput>
+}
+
+export type TeamUpsertWithoutScheduledPostsInput = {
+  update: Prisma.XOR<Prisma.TeamUpdateWithoutScheduledPostsInput, Prisma.TeamUncheckedUpdateWithoutScheduledPostsInput>
+  create: Prisma.XOR<Prisma.TeamCreateWithoutScheduledPostsInput, Prisma.TeamUncheckedCreateWithoutScheduledPostsInput>
+  where?: Prisma.TeamWhereInput
+}
+
+export type TeamUpdateToOneWithWhereWithoutScheduledPostsInput = {
+  where?: Prisma.TeamWhereInput
+  data: Prisma.XOR<Prisma.TeamUpdateWithoutScheduledPostsInput, Prisma.TeamUncheckedUpdateWithoutScheduledPostsInput>
+}
+
+export type TeamUpdateWithoutScheduledPostsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mode?: Prisma.StringFieldUpdateOperationsInput | string
+  botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  admin?: Prisma.UserUpdateOneRequiredWithoutAdminOfTeamsNestedInput
+  members?: Prisma.TeamMemberUpdateManyWithoutTeamNestedInput
+  tournaments?: Prisma.TournamentUpdateManyWithoutTeamNestedInput
+  users?: Prisma.UserUpdateManyWithoutTeamNestedInput
+  arenas?: Prisma.BotArenaUpdateManyWithoutTeamNestedInput
+}
+
+export type TeamUncheckedUpdateWithoutScheduledPostsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  adminId?: Prisma.StringFieldUpdateOperationsInput | string
+  mode?: Prisma.StringFieldUpdateOperationsInput | string
+  botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.TeamMemberUncheckedUpdateManyWithoutTeamNestedInput
+  tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutTeamNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutTeamNestedInput
   arenas?: Prisma.BotArenaUncheckedUpdateManyWithoutTeamNestedInput
 }
@@ -924,6 +1137,8 @@ export type TeamCreateManyAdminInput = {
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
+  apiToken?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -935,12 +1150,15 @@ export type TeamUpdateWithoutAdminInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TeamMemberUpdateManyWithoutTeamNestedInput
   tournaments?: Prisma.TournamentUpdateManyWithoutTeamNestedInput
   users?: Prisma.UserUpdateManyWithoutTeamNestedInput
   arenas?: Prisma.BotArenaUpdateManyWithoutTeamNestedInput
+  scheduledPosts?: Prisma.ScheduledPostUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutAdminInput = {
@@ -950,12 +1168,15 @@ export type TeamUncheckedUpdateWithoutAdminInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TeamMemberUncheckedUpdateManyWithoutTeamNestedInput
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutTeamNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutTeamNestedInput
   arenas?: Prisma.BotArenaUncheckedUpdateManyWithoutTeamNestedInput
+  scheduledPosts?: Prisma.ScheduledPostUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateManyWithoutAdminInput = {
@@ -965,6 +1186,8 @@ export type TeamUncheckedUpdateManyWithoutAdminInput = {
   botAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botAppSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  botIsPrivate?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  apiToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -979,6 +1202,7 @@ export type TeamCountOutputType = {
   tournaments: number
   users: number
   arenas: number
+  scheduledPosts: number
 }
 
 export type TeamCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -986,6 +1210,7 @@ export type TeamCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   tournaments?: boolean | TeamCountOutputTypeCountTournamentsArgs
   users?: boolean | TeamCountOutputTypeCountUsersArgs
   arenas?: boolean | TeamCountOutputTypeCountArenasArgs
+  scheduledPosts?: boolean | TeamCountOutputTypeCountScheduledPostsArgs
 }
 
 /**
@@ -1026,6 +1251,13 @@ export type TeamCountOutputTypeCountArenasArgs<ExtArgs extends runtime.Types.Ext
   where?: Prisma.BotArenaWhereInput
 }
 
+/**
+ * TeamCountOutputType without action
+ */
+export type TeamCountOutputTypeCountScheduledPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ScheduledPostWhereInput
+}
+
 
 export type TeamSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1035,6 +1267,8 @@ export type TeamSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   botAppId?: boolean
   botAppSecret?: boolean
   botChannelId?: boolean
+  botIsPrivate?: boolean
+  apiToken?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   admin?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1042,6 +1276,7 @@ export type TeamSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   tournaments?: boolean | Prisma.Team$tournamentsArgs<ExtArgs>
   users?: boolean | Prisma.Team$usersArgs<ExtArgs>
   arenas?: boolean | Prisma.Team$arenasArgs<ExtArgs>
+  scheduledPosts?: boolean | Prisma.Team$scheduledPostsArgs<ExtArgs>
   _count?: boolean | Prisma.TeamCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["team"]>
 
@@ -1053,6 +1288,8 @@ export type TeamSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   botAppId?: boolean
   botAppSecret?: boolean
   botChannelId?: boolean
+  botIsPrivate?: boolean
+  apiToken?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   admin?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1066,6 +1303,8 @@ export type TeamSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   botAppId?: boolean
   botAppSecret?: boolean
   botChannelId?: boolean
+  botIsPrivate?: boolean
+  apiToken?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   admin?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1079,17 +1318,20 @@ export type TeamSelectScalar = {
   botAppId?: boolean
   botAppSecret?: boolean
   botChannelId?: boolean
+  botIsPrivate?: boolean
+  apiToken?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TeamOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "adminId" | "mode" | "botAppId" | "botAppSecret" | "botChannelId" | "createdAt" | "updatedAt", ExtArgs["result"]["team"]>
+export type TeamOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "adminId" | "mode" | "botAppId" | "botAppSecret" | "botChannelId" | "botIsPrivate" | "apiToken" | "createdAt" | "updatedAt", ExtArgs["result"]["team"]>
 export type TeamInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   admin?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   members?: boolean | Prisma.Team$membersArgs<ExtArgs>
   tournaments?: boolean | Prisma.Team$tournamentsArgs<ExtArgs>
   users?: boolean | Prisma.Team$usersArgs<ExtArgs>
   arenas?: boolean | Prisma.Team$arenasArgs<ExtArgs>
+  scheduledPosts?: boolean | Prisma.Team$scheduledPostsArgs<ExtArgs>
   _count?: boolean | Prisma.TeamCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TeamIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1107,6 +1349,7 @@ export type $TeamPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     tournaments: Prisma.$TournamentPayload<ExtArgs>[]
     users: Prisma.$UserPayload<ExtArgs>[]
     arenas: Prisma.$BotArenaPayload<ExtArgs>[]
+    scheduledPosts: Prisma.$ScheduledPostPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1116,6 +1359,8 @@ export type $TeamPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     botAppId: string | null
     botAppSecret: string | null
     botChannelId: string | null
+    botIsPrivate: boolean | null
+    apiToken: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["team"]>
@@ -1517,6 +1762,7 @@ export interface Prisma__TeamClient<T, Null = never, ExtArgs extends runtime.Typ
   tournaments<T extends Prisma.Team$tournamentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Team$tournamentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TournamentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   users<T extends Prisma.Team$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Team$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   arenas<T extends Prisma.Team$arenasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Team$arenasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BotArenaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  scheduledPosts<T extends Prisma.Team$scheduledPostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Team$scheduledPostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ScheduledPostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1553,6 +1799,8 @@ export interface TeamFieldRefs {
   readonly botAppId: Prisma.FieldRef<"Team", 'String'>
   readonly botAppSecret: Prisma.FieldRef<"Team", 'String'>
   readonly botChannelId: Prisma.FieldRef<"Team", 'String'>
+  readonly botIsPrivate: Prisma.FieldRef<"Team", 'Boolean'>
+  readonly apiToken: Prisma.FieldRef<"Team", 'String'>
   readonly createdAt: Prisma.FieldRef<"Team", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Team", 'DateTime'>
 }
@@ -2047,6 +2295,30 @@ export type Team$arenasArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   distinct?: Prisma.BotArenaScalarFieldEnum | Prisma.BotArenaScalarFieldEnum[]
+}
+
+/**
+ * Team.scheduledPosts
+ */
+export type Team$scheduledPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ScheduledPost
+   */
+  select?: Prisma.ScheduledPostSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ScheduledPost
+   */
+  omit?: Prisma.ScheduledPostOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ScheduledPostInclude<ExtArgs> | null
+  where?: Prisma.ScheduledPostWhereInput
+  orderBy?: Prisma.ScheduledPostOrderByWithRelationInput | Prisma.ScheduledPostOrderByWithRelationInput[]
+  cursor?: Prisma.ScheduledPostWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ScheduledPostScalarFieldEnum | Prisma.ScheduledPostScalarFieldEnum[]
 }
 
 /**
