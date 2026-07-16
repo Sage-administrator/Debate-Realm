@@ -4,7 +4,7 @@
 // ════════════════════════════════════════════════════
 
 import type { PrismaClient } from './generated/client'
-import { getAllBotInstances, getBotInstance, createBotInstance } from './bot-ws'
+import { getAllBotInstances, getBotInstance, createBotInstance, resolveIntents } from './bot-ws'
 import type { BotInstance } from './bot-ws'
 
 // ---------- 类型定义 ----------
@@ -95,6 +95,7 @@ export async function startAllBotsWithSchedule(
       botAppId: true,
       botAppSecret: true,
       botChannelId: true,
+      botIsPrivate: true,
     },
   })
 
@@ -148,7 +149,8 @@ export async function startAllBotsWithSchedule(
         teamId: team.id,
         teamName: team.name,
         channelId: team.botChannelId ?? null,
-        intents: ['PUBLIC_GUILD_MESSAGES'],
+        isPrivate: team.botIsPrivate ?? false,
+        intents: resolveIntents(team.botIsPrivate ?? false),
       })
     }, delayMs)
 

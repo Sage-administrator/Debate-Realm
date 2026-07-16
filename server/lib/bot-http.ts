@@ -20,6 +20,9 @@ const tokenCache = new Map<string, { token: string; expiresAt: number }>()
 const TOKEN_URL = 'https://bots.qq.com/app/getAppAccessToken'
 const API_BASE_URL = 'https://api.sgroup.qq.com'
 
+// 与 bot-ws.ts 保持一致：所有 QQ API 请求统一超时，避免网络/凭证异常时永久挂起
+const QQ_API_TIMEOUT_MS = 15000
+
 /**
  * 获取 QQ Bot Access Token（按凭证隔离缓存）
  */
@@ -33,14 +36,23 @@ async function getAccessToken(credentials: BotCredentials): Promise<string> {
     return cached.token
   }
 
-  const response = await fetch(TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      appId: credentials.appId,
-      clientSecret: credentials.appSecret,
-    }),
-  })
+  let response: Response
+  try {
+    response = await fetch(TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        appId: credentials.appId,
+        clientSecret: credentials.appSecret,
+      }),
+      signal: AbortSignal.timeout(QQ_API_TIMEOUT_MS),
+    })
+  } catch (err) {
+    if (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
+      throw new Error(`获取 Access Token 超时（>${QQ_API_TIMEOUT_MS / 1000}s），请检查网络或 Bot 凭证`)
+    }
+    throw err
+  }
 
   if (!response.ok) {
     const text = await response.text()
@@ -67,14 +79,23 @@ async function callBotApi(
   const token = await getAccessToken(credentials)
   const url = `${API_BASE_URL}${path}`
 
-  const response = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `QQBot ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  })
+  let response: Response
+  try {
+    response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `QQBot ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(QQ_API_TIMEOUT_MS),
+    })
+  } catch (err) {
+    if (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
+      throw new Error(`调用 QQ 接口超时（>${QQ_API_TIMEOUT_MS / 1000}s），请检查网络或 Bot 凭证：${path}`)
+    }
+    throw err
+  }
 
   const responseText = await response.text()
 
@@ -83,6 +104,16 @@ async function callBotApi(
   }
 
   return responseText ? JSON.parse(responseText) : {}
+}
+
+// ponytail: 提取公共的发送消息逻辑，简化代码
+async function sendBotMessage(
+  credentials: BotCredentials,
+  path: string,
+  content: string,
+  extra?: Record<string, unknown>,
+): Promise<unknown> {
+  return callBotApi(credentials, path, 'POST', { content, msg_type: 0, ...extra })
 }
 
 /**
@@ -94,12 +125,8 @@ export async function sendChannelMessage(
   content: string,
   msgId?: string,
 ): Promise<unknown> {
-  const body: Record<string, unknown> = { content }
-  if (msgId) {
-    body.msg_id = msgId
-    body.message_reference = { message_id: msgId }
-  }
-  return callBotApi(credentials, `/channels/${channelId}/messages`, 'POST', body)
+  const extra = msgId ? { msg_id: msgId, message_reference: { message_id: msgId } } : undefined
+  return sendBotMessage(credentials, `/channels/${channelId}/messages`, content, extra)
 }
 
 /**
@@ -110,10 +137,7 @@ export async function sendGroupMessage(
   groupId: string,
   content: string,
 ): Promise<unknown> {
-  return callBotApi(credentials, `/v2/groups/${groupId}/messages`, 'POST', {
-    content,
-    msg_type: 0,
-  })
+  return sendBotMessage(credentials, `/v2/groups/${groupId}/messages`, content)
 }
 
 /**
@@ -124,10 +148,7 @@ export async function sendPrivateMessage(
   userId: string,
   content: string,
 ): Promise<unknown> {
-  return callBotApi(credentials, `/v2/users/${userId}/messages`, 'POST', {
-    content,
-    msg_type: 0,
-  })
+  return sendBotMessage(credentials, `/v2/users/${userId}/messages`, content)
 }
 
 /**

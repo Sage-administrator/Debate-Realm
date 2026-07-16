@@ -4,7 +4,7 @@
 // ════════════════════════════════════════════════════
 
 import type { PrismaClient } from './generated/client'
-import { callBotApi } from './bot-ws'
+import { callBotApi, renameChannel } from './bot-ws'
 import type { BotConfig } from './bot-ws'
 
 /**
@@ -21,6 +21,19 @@ export async function getNextArenaLetter(prisma: PrismaClient, teamId: string): 
   } while (n >= 0)
   return result
 }
+
+// ---------- 赛场可创建子频道类型限制 ----------
+// 经真实 QQ API 实调（用户服务器「辩论社」/ guild 124748394594966514）：
+//   - type=2     = 语音/赛场子频道（唯一可发言的非文字频道，如「测试赛场」736724967，挂在「语音房」分组下）
+//   - type=0     = 文字子频道（不可建赛场）
+//   - type=4     = 分组父级（容器，不可建赛场）
+//   - type=10007 = 帖子/论坛（不可建赛场）
+//   - type=10011 = 日程（不可建赛场）
+// 说明：QQ 官方文档将 type=2 标为「直播」，但本服务器实测 type=2 即语音/赛场频道；全频道无 type=1。
+const ARENA_ALLOWED_CHANNEL_TYPES = new Set<number>([2])
+
+// 赛场名长度上限（按「字/码点」计，不多于 8 个字）
+const ARENA_NAME_MAX_LEN = 8
 
 // ---------- 比赛形式定义 ----------
 
@@ -142,6 +155,15 @@ export async function getQQRoles(
 
 // ---------- 赛场管理 ----------
 
+// 并发创建锁：防止同一子频道被多个并发请求同时创建赛场（QQ 重复推送 / 快速连点等场景）
+// key = channelId, value = 正在执行的创建 Promise（后续请求复用同一 Promise）
+const pendingArenaCreates = new Map<string, Promise<{
+  success: boolean
+  message: string
+  arenaId?: string
+  roles?: Array<{ label: string; qqRoleId: string }>
+}>>()
+
 /**
  * 创建赛场（在 QQ 频道子频道中创建对应身份组）
  *
@@ -168,10 +190,81 @@ export async function createArena(
   arenaId?: string
   roles?: Array<{ label: string; qqRoleId: string }>
 }> {
+  // ── 并发保护：同一 channel 的创建请求合并为一次执行 ──
+  // 如果该频道已有正在执行的创建请求，直接复用其 Promise，避免重复创建
+  const existing = pendingArenaCreates.get(channelId)
+  if (existing) {
+    console.log(`[BotRoles] 子频道 ${channelId} 有正在进行的赛场创建，复用已有请求`)
+    return existing
+  }
+
+  // 创建新的 Promise 并注册到锁中（finally 中清理）
+  const creationPromise = createArenaInner(prisma, botConfig, teamId, matchFormat, guildId, arenaName, channelId)
+  pendingArenaCreates.set(channelId, creationPromise)
+
+  try {
+    return await creationPromise
+  } finally {
+    // 无论成功失败都清理锁（允许后续重试）
+    pendingArenaCreates.delete(channelId)
+  }
+}
+
+/** 创建赛场的实际实现（内部函数，被 createArena 的并发锁包裹） */
+async function createArenaInner(
+  prisma: PrismaClient,
+  botConfig: BotConfig,
+  teamId: string,
+  matchFormat: string,
+  guildId: string,
+  arenaName: string,
+  channelId: string,
+): Promise<{
+  success: boolean
+  message: string
+  arenaId?: string
+  roles?: Array<{ label: string; qqRoleId: string }>
+}> {
+  // 校验赛场名：必填，且不多于 ARENA_NAME_MAX_LEN 个字
+  const finalName = (arenaName || '').trim()
+  if (!finalName) {
+    return { success: false, message: `赛场名不能为空，请使用「/设置赛场 赛场名 ${matchFormat}」创建（赛场名不多于 ${ARENA_NAME_MAX_LEN} 个字）` }
+  }
+  if ([...finalName].length > ARENA_NAME_MAX_LEN) {
+    return { success: false, message: `赛场名不能超过 ${ARENA_NAME_MAX_LEN} 个字（当前：${[...finalName].length} 字「${finalName}」）` }
+  }
+
   // 校验比赛形式
   const formatRoles = FORMAT_ROLES[matchFormat]
   if (!formatRoles) {
     return { success: false, message: `不支持的比赛形式：${matchFormat}。支持：${Object.keys(FORMAT_ROLES).join('、')}` }
+  }
+
+  // ── 子频道类型校验：赛场只能建在语音子频道（type=2，经实调确认）──
+  let channelInfo: any
+  try {
+    channelInfo = await callBotApi(botConfig, `/channels/${channelId}`, 'GET')
+  } catch {
+    return { success: false, message: '无法获取子频道信息（QQ 接口调用失败），请稍后重试' }
+  }
+  const channelType = typeof channelInfo?.type === 'number' ? channelInfo.type : undefined
+  if (channelType === undefined) {
+    return { success: false, message: '无法确认子频道类型，请稍后重试' }
+  }
+  if (!ARENA_ALLOWED_CHANNEL_TYPES.has(channelType)) {
+    return {
+      success: false,
+      message: `赛场只能创建在语音子频道（当前子频道类型 ${channelType} 不是语音子频道）。请切换到语音子频道后，再使用 /设置赛场 创建赛场`,
+    }
+  }
+
+  // 记录原语音子频道名，并把频道改名为「赛场名 比赛形式辩论」（如「我的赛场 4v4辩论」）
+  const originalChannelName: string = typeof channelInfo?.name === 'string' ? channelInfo.name : ''
+  const arenaChannelName = `${finalName} ${matchFormat}辩论`
+  try {
+    await renameChannel(botConfig, channelId, arenaChannelName)
+  } catch (err) {
+    console.error('[BotRoles] 重命名语音子频道失败（赛场仍会创建）：', err)
   }
 
   // 检查该子频道（channelId）是否已有活跃赛场
@@ -188,13 +281,23 @@ export async function createArena(
     const arena = await prisma.botArena.create({
       data: {
         teamId,
-        name: arenaName,
+        name: finalName,
         matchFormat,
         guildId: guildId || null,
         channelId,
         status: 'active',
       },
     })
+
+    // 持久化原语音子频道名（用于赛场结束后还原频道名）。
+    // 用 raw SQL 写入，避免依赖 Prisma client 重新生成（originalChannelName 为运行时新增列）。
+    if (originalChannelName) {
+      try {
+        await prisma.$executeRawUnsafe('UPDATE "BotArena" SET "originalChannelName" = ? WHERE "id" = ?', originalChannelName, arena.id)
+      } catch (err) {
+        console.error('[BotRoles] 记录原频道名失败（不影响赛场创建）：', err)
+      }
+    }
 
     // 在 QQ 频道中创建身份组并回填（身份组名加赛场前缀）
     // 注意：QQ API 仍需要 guildId 来创建/管理身份组
@@ -209,8 +312,8 @@ export async function createArena(
 
     for (const roleDef of formatRoles) {
       const color = sideColors[roleDef.side] || 0
-      // QQ 身份组名称：赛场名 · 角色名（如"赛场A · 正方一辩"）
-      const qqRoleName = `${arenaName} · ${roleDef.label}`
+      // QQ 身份组名称：赛场名 · 角色名（如"我的赛场 · 正方一辩"）
+      const qqRoleName = `${finalName} · ${roleDef.label}`
       try {
         const qqRole = await createQQRole(botConfig, actualGuildId, qqRoleName, color, 1)
         await prisma.botArenaRole.create({
@@ -237,16 +340,17 @@ export async function createArena(
       }
     }
 
-    return { success: true, message: `赛场「${arenaName}」已创建（${matchFormat}），共 ${createdRoles.length} 个身份组`, arenaId: arena.id, roles: createdRoles }
+    return { success: true, message: `赛场「${finalName}」已创建（${matchFormat}），语音子频道已重命名为「${arenaChannelName}」，共 ${createdRoles.length} 个身份组`, arenaId: arena.id, roles: createdRoles }
   } catch (err) {
     const msg = err instanceof Error ? err.message : '未知错误'
     return { success: false, message: `创建赛场失败：${msg}` }
   }
-}
+} // end createArenaInner
 
 /**
- * 关闭赛场（删除 QQ 频道身份组，标记赛场为已关闭）
+ * 关闭赛场（删除 QQ 频道身份组，物理删除赛场及关联的身份组/认领记录）
  * 根据消息来源的 channelId（子频道）定位赛场
+ * 注：采用硬删除而非软标记，关闭后赛场即从管理列表消失（BotArena -> BotArenaRole -> BotArenaClaim 级联删除）
  */
 export async function closeArena(
   prisma: PrismaClient,
@@ -269,6 +373,15 @@ export async function closeArena(
     return { success: false, message: '当前子频道没有活跃的赛场需要关闭' }
   }
 
+  // 读取原语音子频道名，赛场结束后把频道名还原回去
+  let originalChannelName = ''
+  try {
+    const rows: any = await prisma.$queryRawUnsafe(
+      'SELECT "originalChannelName" FROM "BotArena" WHERE "id" = ?', arena.id,
+    )
+    originalChannelName = rows?.[0]?.originalChannelName || ''
+  } catch { /* 列可能不存在，忽略 */ }
+
   // 删除 QQ 频道中的身份组（需要 guildId，兼容用 arena 记录的 guildId）
   const actualGuildId = guildId || arena.guildId || channelId
   let deletedCount = 0
@@ -284,13 +397,22 @@ export async function closeArena(
     }
   }
 
-  // 更新赛场状态
-  await prisma.botArena.update({
+  // 还原语音子频道名为原名（比赛期间被改为「赛场名 比赛形式辩论」）
+  if (originalChannelName) {
+    try {
+      await renameChannel(botConfig, arena.channelId, originalChannelName)
+    } catch (err) {
+      console.error('[BotRoles] 还原语音子频道名失败（赛场仍会关闭）：', err)
+    }
+  }
+
+  // 物理删除赛场：BotArenaRole / BotArenaClaim 配置了 onDelete: Cascade，
+  // Prisma 会级联删除关联的身份组与认领记录，channelId(@unique) 随即释放可复用
+  await prisma.botArena.delete({
     where: { id: arena.id },
-    data: { status: 'closed' },
   })
 
-  return { success: true, message: `赛场「${arena.name}」已关闭，共删除 ${deletedCount} 个身份组` }
+  return { success: true, message: `赛场「${arena.name}」已删除，共清理 ${deletedCount} 个 QQ 身份组${originalChannelName ? '，语音子频道已恢复原名称' : ''}` }
 }
 
 /**

@@ -18,6 +18,8 @@ export interface BotConfig {
   channelId?: string | null
   intents?: string[]
   sandbox?: boolean
+  /** 公私域：true=私域机器人(频道主可用/可收全量消息)，false/null=公域机器人(仅@消息)。当前仅存储，意图切换暂未启用 */
+  isPrivate?: boolean
 }
 
 interface AccessTokenResponse {
@@ -83,7 +85,13 @@ const MAX_DEDUP_SIZE = 200
 const processedMessageIds = new Set<string>()
 const processedMessageQueue: string[] = []
 
-/** 检查并记录消息是否已处理（去重） */
+// 内容级去重：基于 (channelId + userId + content) 防止 QQ 对同一消息推送多种事件类型
+// （如同时收到 MESSAGE_CREATE 和 AT_MESSAGE_CREATE），容量上限 100 条
+const MAX_CONTENT_DEDUP_SIZE = 100
+const processedContentKeys = new Set<string>()
+const processedContentQueue: string[] = []
+
+/** 检查并记录消息是否已处理（去重）— 基于 msg.id */
 function checkAndMarkMessage(msgId: string): boolean {
   if (!msgId) return false // 无消息 ID 时不做去重
   if (processedMessageIds.has(msgId)) {
@@ -100,27 +108,94 @@ function checkAndMarkMessage(msgId: string): boolean {
   return false // 未处理过
 }
 
+/**
+ * 内容级去重：基于 channelId + userId + content 的短窗口去重
+ * 用于捕获 QQ 平台对同一条用户消息以不同事件类型（MESSAGE_CREATE / AT_MESSAGE_CREATE）
+ * 或 WS 重连回放等场景导致的重复处理。
+ * 窗口期 10 秒内相同 channel + user + content 视为重复。
+ */
+function checkAndMarkContent(channelId: string, userId: string, content: string): boolean {
+  const key = `${channelId}:${userId}:${content}`
+  if (processedContentKeys.has(key)) {
+    return true
+  }
+  processedContentKeys.add(key)
+  processedContentQueue.push(key)
+  if (processedContentQueue.length > MAX_CONTENT_DEDUP_SIZE) {
+    const oldest = processedContentQueue.shift()!
+    processedContentKeys.delete(oldest)
+  }
+  return false
+}
+
+// 回复级去重：最终安全网——同一频道短时间内不发送相同回复
+// 捕获所有上游去重遗漏的场景（多进程、多 WS 连接、事件回放等）
+const REPLY_DEDUP_WINDOW_MS = 5000 // 5 秒窗口
+const recentReplies = new Map<string, { reply: string; timestamp: number }>()
+
+// 启动标记：确认新版去重代码已加载（日志中出现此行 = 三层去重生效）
+console.log('[Bot] ✅ v3-dedup: 消息ID去重 + 内容级去重 + 回复级去重(5s) 已加载')
+
+/**
+ * 检查是否应在指定频道发送回复（回复级去重）。
+ * 如果该频道在窗口期内已发送过完全相同的回复，返回 true（应跳过）。
+ */
+function shouldSuppressReply(channelId: string, reply: string): boolean {
+  const now = Date.now()
+  const recent = recentReplies.get(channelId)
+  if (recent && recent.reply === reply && (now - recent.timestamp) < REPLY_DEDUP_WINDOW_MS) {
+    console.log(`[Bot] 🚫 回复级去重: channel=${channelId} 跳过重复回复 "${reply.slice(0, 50)}"`)
+    return true
+  }
+  // 记录本次回复
+  recentReplies.set(channelId, { reply, timestamp: now })
+  // 清理过期条目（懒清理：每次调用时检查）
+  for (const [k, v] of recentReplies) {
+    if (now - v.timestamp > REPLY_DEDUP_WINDOW_MS) {
+      recentReplies.delete(k)
+    }
+  }
+  return false
+}
+
 // Gateway URL 全局缓存（QQ 官方 Gateway URL 短时间内稳定不变）
 // 缓存 1 小时，避免频繁请求触发频率限制
 let cachedGatewayUrl: string | null = null
 let gatewayUrlExpiresAt = 0
 const GATEWAY_CACHE_TTL = 60 * 60 * 1000 // 1 小时
 
-// intents 降级列表：从最常见的权限组合开始，逐步尝试更小的子集
-// 当 op=9（Invalid Session）时，自动切换到下一个配置重试
-// 注意：QQ 官方测试 Bot 通常只需要 intents=1 (GUILDS)
-const FALLBACK_INTENTS: Array<{ name: string; value: number }> = [
-  { name: 'GUILDS (1<<0)', value: 1 << 0 },
+// ════════════════════════════════════════════════════════════════
+// 公私域 intents 列表：严格隔离，绝不跨域回退
+// 私域机器人只能使用私域意图（GUILD_MESSAGES 等，可收全量频道消息）
+// 公域机器人只能使用公域意图（PUBLIC_GUILD_MESSAGES，仅 @消息）
+// 当 op=9（Invalid Session）时，仅在「同域」内切换下一个配置重试；
+// 这样保证：私域机器人永远无法用公域意图登录，反之亦然——
+// 即满足「私域机器人无法登录公域模式，反之亦然」的硬约束。
+// ╠═══════════════════════════════════════════════════════════════
+
+// 公域意图列表（仅公域相关，绝不出现 GUILD_MESSAGES 等私域位）
+const PUBLIC_INTENTS: Array<{ name: string; value: number }> = [
   { name: 'GUILDS | PUBLIC_GUILD_MESSAGES', value: (1 << 0) | (1 << 30) },
   { name: 'PUBLIC_GUILD_MESSAGES', value: 1 << 30 },
-  { name: 'GUILDS | INTERACTION', value: (1 << 0) | (1 << 26) },
   { name: 'GUILDS | PUBLIC_GUILD_MESSAGES | INTERACTION', value: (1 << 0) | (1 << 30) | (1 << 26) },
-  { name: 'GUILDS | GUILD_MESSAGES', value: (1 << 0) | (1 << 9) },
-  { name: 'GUILDS | GUILD_MEMBERS | PUBLIC_GUILD_MESSAGES', value: (1 << 0) | (1 << 1) | (1 << 30) },
-  { name: 'GUILDS | PUBLIC_GUILD_MESSAGES | GROUP_AND_C2C', value: (1 << 0) | (1 << 30) | (1 << 25) },
-  { name: 'PUBLIC_GUILD_MESSAGES | GROUP_AND_C2C', value: (1 << 30) | (1 << 25) },
-  { name: 'INTERACTION (1<<26)', value: 1 << 26 },
 ]
+
+// 私域意图列表（仅私域相关，绝不出现 PUBLIC_GUILD_MESSAGES 等位）
+const PRIVATE_INTENTS: Array<{ name: string; value: number }> = [
+  { name: 'GUILDS | GUILD_MESSAGES', value: (1 << 0) | (1 << 9) },
+  { name: 'GUILD_MESSAGES', value: 1 << 9 },
+  { name: 'GUILDS | GUILD_MEMBERS | GUILD_MESSAGES', value: (1 << 0) | (1 << 1) | (1 << 9) },
+]
+
+// 根据配置的公私域返回允许的 intents 列表（仅限同域，禁止跨域）
+function getIntentList(config: BotConfig): Array<{ name: string; value: number }> {
+  return config.isPrivate ? PRIVATE_INTENTS : PUBLIC_INTENTS
+}
+
+// 仅用于日志展示的意图字符串（与 getIntentList 的首选项对齐）
+export function resolveIntents(isPrivate?: boolean): string[] {
+  return isPrivate ? ['GUILD_MESSAGES', 'GUILDS'] : ['PUBLIC_GUILD_MESSAGES', 'GUILDS']
+}
 
 // 每个 bot 实例的私有状态
 const stateMap = new Map<string, {
@@ -190,6 +265,10 @@ function getBackoffMs(retryCount: number, rateLimited = false): number {
   return Math.min(ms + jitter, rateLimited ? 180000 : 120000)
 }
 
+// 所有对 QQ 开放平台 API 的 HTTP 请求统一超时（毫秒）。
+// 不设置超时时，网络/凭证异常会让 fetch 永久挂起，表现为「设置赛场」等命令卡死无响应。
+const QQ_API_TIMEOUT_MS = 15000
+
 // ---------- Token 管理 ----------
 
 async function getAccessToken(config: BotConfig): Promise<string> {
@@ -200,14 +279,23 @@ async function getAccessToken(config: BotConfig): Promise<string> {
     return state.accessToken
   }
 
-  const response = await fetch(TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      appId: config.appId,
-      clientSecret: config.appSecret,
-    }),
-  })
+  let response: Response
+  try {
+    response = await fetch(TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        appId: config.appId,
+        clientSecret: config.appSecret,
+      }),
+      signal: AbortSignal.timeout(QQ_API_TIMEOUT_MS),
+    })
+  } catch (err) {
+    if (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
+      throw new Error(`获取 Access Token 超时（>${QQ_API_TIMEOUT_MS / 1000}s），请检查网络或 Bot 凭证`)
+    }
+    throw err
+  }
 
   if (!response.ok) {
     const text = await response.text()
@@ -246,6 +334,7 @@ async function getGatewayUrl(config: BotConfig): Promise<string> {
     headers: {
       Authorization: `QQBot ${token}`,
     },
+    signal: AbortSignal.timeout(QQ_API_TIMEOUT_MS),
   })
 
   if (!response.ok) {
@@ -288,14 +377,23 @@ export async function callBotApi(
   const baseUrl = isSandboxMode ? SANDBOX_API_BASE_URL : API_BASE_URL
   const url = `${baseUrl}${path}`
 
-  const response = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `QQBot ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  })
+  let response: Response
+  try {
+    response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `QQBot ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(QQ_API_TIMEOUT_MS),
+    })
+  } catch (err) {
+    if (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
+      throw new Error(`调用 QQ 接口超时（>${QQ_API_TIMEOUT_MS / 1000}s），请检查网络或 Bot 凭证：${path}`)
+    }
+    throw err
+  }
 
   const responseText = await response.text()
 
@@ -304,6 +402,77 @@ export async function callBotApi(
   }
 
   return responseText ? JSON.parse(responseText) : {}
+}
+
+/**
+ * 修改 QQ 子频道名称（用于把语音子频道改名为「赛场名 4v4辩论」）
+ * 接口：PATCH /channels/{channelId}
+ * 经真实 API 实调验证：传 { name } 即可改名，type 等其它字段不变
+ */
+export async function renameChannel(
+  config: BotConfig,
+  channelId: string,
+  name: string,
+): Promise<any> {
+  return callBotApi(config, `/channels/${channelId}`, 'PATCH', { name })
+}
+
+/**
+ * 在指定「论坛」子频道发表帖子（辩论题目 / 讨论话题）
+ * 接口：PUT /channels/{channelId}/threads
+ * Content-Type: application/json，body 为 {title, content, format}
+ *
+ * 官方文档：https://bot.q.qq.com/wiki/develop/api-v2/server-inter/channel/content/forum/put_thread.html
+ * format: 1=纯文本 2=HTML 3=Markdown(默认) 4=JSON(RichText)
+ * content 就是**纯文本字符串**（支持 \n 换行），不需要 paragraphs/elems 结构
+ *
+ * ⚠️ 论坛发帖仅私域机器人可用（公域会返回权限错误）
+ */
+export async function postForumThread(
+  config: BotConfig,
+  channelId: string,
+  title: string,
+  content: string,
+  format = 3, // 默认 Markdown（官方格式：1=纯文本 2=HTML 3=Markdown 4=JSON）
+): Promise<any> {
+  return callBotApi(config, `/channels/${channelId}/threads`, 'PUT', { title, content, format })
+}
+
+/**
+ * 团队级包装：通过 teamId 取 Bot 实例后发帖（UI「测试发帖」使用）
+ */
+export async function postForumThreadForTeam(
+  teamId: string,
+  channelId: string,
+  title: string,
+  content: string,
+): Promise<{ threadId?: string; taskId?: string; error?: string }> {
+  const instance = botInstances.get(teamId)
+  if (!instance) {
+    return { error: 'Bot 未配置或未启动' }
+  }
+  try {
+    const res = await postForumThread(instance.config, channelId, title, content)
+    return { threadId: res?.thread_id, taskId: res?.task_id }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : '发帖失败'
+    return { error: msg }
+  }
+}
+
+/**
+ * 向「消息」子频道发送纯文本通知
+ * 接口：POST /channels/{channelId}/messages
+ * 公域/私域机器人均可调用（区别于仅私域可用的 PUT /threads 论坛发帖）；
+ * 用于定时发布失败等运维告警的主动推送。
+ * @param content 纯文本（msg_type=0）
+ */
+export async function sendChannelMessage(
+  config: BotConfig,
+  channelId: string,
+  content: string,
+): Promise<any> {
+  return callBotApi(config, `/channels/${channelId}/messages`, 'POST', { content, msg_type: 0 })
 }
 
 // ---------- Intents 计算 ----------
@@ -387,7 +556,7 @@ function connectWebSocket(config: BotConfig, gatewayUrl: string): void {
     }
 
     // ⚠️ 关键：先判断是否已有重连任务排队，再设置状态
-    // - 有 backoffTimer → 状态是 reconnecting（保持重连中，避免 getBotRuntimeStatus 又创建新实例）
+    // - 有 backoffTimer → 状态是 reconnecting（保持重连中，避免 createBotInstance 又创建新实例）
     // - 无 backoffTimer → 真正 disconnected，需要调度新的重连
     if (state.backoffTimer) {
       // scheduleReconnect 已设置过 status = 'reconnecting'，保持不动
@@ -437,19 +606,23 @@ function handleWebSocketMessage(config: BotConfig, payload: WebSocketPayload, ws
       scheduleReconnect(config, '服务端要求重连（op=7）')
       break
 
-    case 9: // Invalid Session — 切换 intents 后重试，2 轮失败后停止
-      // 自修复：尝试下一个 intents 配置（权限不匹配是 op=9 的常见原因）
-      state.intentIndex = (state.intentIndex + 1) % FALLBACK_INTENTS.length
-      const nextIntent = FALLBACK_INTENTS[state.intentIndex]
+    case 9: // Invalid Session — 切换同域 intents 后重试，2 轮失败后停止
+      // 自修复：仅在「同域」内尝试下一个 intents 配置（权限不匹配是 op=9 的常见原因）
+      // 私域机器人绝不会回退到公域意图，公域机器人也绝不会回退到私域意图
+      const intentList = getIntentList(config)
+      state.intentIndex = (state.intentIndex + 1) % intentList.length
+      // ponytail: 刚取模完，索引一定在数组范围内
+      const nextIntent = intentList[state.intentIndex]!
 
-      // 熔断机制：当 intentIndex 回到 0 时表示完成 1 轮所有配置
+      // 熔断机制：当 intentIndex 回到 0 时表示完成 1 轮所有同域配置
       if (state.intentIndex === 0) {
         state.fullRoundsTried += 1
-        console.log(`[Bot][${config.teamName}] ⚠️ 已完成第 ${state.fullRoundsTried} 轮 intents 尝试`)
+        console.log(`[Bot][${config.teamName}] ⚠️ 已完成第 ${state.fullRoundsTried} 轮同域 intents 尝试`)
         if (state.fullRoundsTried >= 2) {
-          console.log(`[Bot][${config.teamName}] 🔴 熔断：所有 ${FALLBACK_INTENTS.length} 个 intents 已尝试 2 轮，全部失败。`)
-          console.log(`[Bot][${config.teamName}]    这通常意味着：1) Bot 在 QQ 开放平台未配置权限  2) Bot 处于沙盒环境  3) Bot 凭据无效`)
-          console.log(`[Bot][${config.teamName}]    停止自动重连。可通过前端页面重新启动。`)
+          const domainLabel = config.isPrivate ? '私域' : '公域'
+          console.log(`[Bot][${config.teamName}] 🔴 熔断：所有 ${intentList.length} 个${domainLabel} intents 已尝试 2 轮，全部失败。`)
+          console.log(`[Bot][${config.teamName}]    这通常意味着：1) Bot 在 QQ 开放平台配置的私域/公域 与实际选择不符（${domainLabel}机器人无法用${config.isPrivate ? '公域' : '私域'}意图登录）  2) Bot 处于沙盒环境  3) Bot 凭据无效`)
+          console.log(`[Bot][${config.teamName}]    停止自动重连。可通过前端页面重新配置公私域后重新启动。`)
           const inst2 = botInstances.get(config.teamId)
           if (inst2) inst2.status = 'disconnected'
           state.sessionId = null
@@ -459,12 +632,12 @@ function handleWebSocketMessage(config: BotConfig, payload: WebSocketPayload, ws
         }
       }
 
-      console.log(`[Bot][${config.teamName}] ❌ Session 无效，切换 intents 后重试 → 下一个: ${nextIntent.name} (value=${nextIntent.value})`)
+      console.log(`[Bot][${config.teamName}] ❌ Session 无效，切换同域 intents 后重试 → 下一个: ${nextIntent.name} (value=${nextIntent.value})`)
       if (d) {
         console.log(`[Bot][${config.teamName}] → 服务端 op=9 详情:`, JSON.stringify(d))
       }
       state.sessionId = null
-      scheduleReconnect(config, `Session 无效（op=9），切换 intents 重试 [第${state.fullRoundsTried + 1}轮]`)
+      scheduleReconnect(config, `Session 无效（op=9），切换同域 intents 重试 [第${state.fullRoundsTried + 1}轮]`)
       break
 
     default:
@@ -490,8 +663,10 @@ async function sendIdentify(config: BotConfig, ws: WebSocket): Promise<void> {
   const state = getState(config.teamId)
   try {
     const token = await getAccessToken(config)
-    // 从降级列表中选取当前 intents（由 intentIndex 决定）— 避免权限不匹配导致连接失败
-    const currentIntent = FALLBACK_INTENTS[state.intentIndex % FALLBACK_INTENTS.length]
+    // 从「同域」intents 列表中选取当前项（由 intentIndex 决定）
+    // 私域机器人只会尝试私域意图，公域机器人只会尝试公域意图，绝不跨域
+    const intentList = getIntentList(config)
+    const currentIntent = intentList[state.intentIndex % intentList.length]!
     const intentsValue = currentIntent.value
 
     const identifyPayload = {
@@ -531,7 +706,7 @@ function handleDispatchEvent(config: BotConfig, eventType: string | undefined, d
       readyState.retryCount = 0
       readyState.fullRoundsTried = 0
       readyState.circuitBreaker = false
-      const intentInfo = FALLBACK_INTENTS[readyState.intentIndex % FALLBACK_INTENTS.length]
+      const intentInfo = getIntentList(config)[readyState.intentIndex % getIntentList(config).length]!
       console.log(`[Bot][${config.teamName}] 🎉 READY（intents=${intentInfo.value} - ${intentInfo.name}）Session: ${data.session_id}`)
       // 记录 Bot 运行时信息
       const inst2 = botInstances.get(config.teamId)
@@ -547,9 +722,8 @@ function handleDispatchEvent(config: BotConfig, eventType: string | undefined, d
       console.log(`[Bot][${config.teamName}] 连接已恢复`)
       break
 
-    case 'PUBLIC_GUILD_MESSAGES':
-    case 'GUILD_MESSAGES':
-    case 'AT_MESSAGE_CREATE':
+    case 'MESSAGE_CREATE':      // 私域全量消息（intents GUILD_MESSAGES, 1<<9）
+    case 'AT_MESSAGE_CREATE':   // 公域 @消息（intents PUBLIC_GUILD_MESSAGES, 1<<30）
       handleChannelMessage(config, data)
       break
 
@@ -575,15 +749,28 @@ async function handleChannelMessage(config: BotConfig, data: any): Promise<void>
   const msg = data
   if (!msg || !msg.channel_id) return
 
+  // 先提取并清理内容（去重需要用到）
+  let content = (msg.content || '').replace(/<@!\d+>/g, '').trim()
+
   // 消息去重：防止 QQ 平台重复推送
   if (checkAndMarkMessage(msg.id)) {
-    console.log(`[Bot][${config.teamName}] 跳过重复消息: ${msg.id}`)
+    console.log(`[Bot][${config.teamName}] 跳过重复消息(id): ${msg.id}`)
     return
   }
 
-  // 去掉 @机器人 标记
-  let content = (msg.content || '').replace(/<@!\d+>/g, '').trim()
+  // 内容级去重：防止同一消息以不同事件类型（MESSAGE_CREATE / AT_MESSAGE_CREATE）或 WS 重连回放导致重复处理
+  if (content && checkAndMarkContent(msg.channel_id, msg.author?.id || '', content)) {
+    console.log(`[Bot][${config.teamName}] 跳过重复内容: channel=${msg.channel_id} user=${msg.author?.id} content="${content}"`)
+    return
+  }
+
   if (!content) return
+
+  // 私域全量消息会回灌机器人自身回复（及其他机器人消息）；忽略它们，避免自处理/回声
+  const selfId = botInstances.get(config.teamId)?.botId
+  if (msg.author?.bot === true || (selfId && msg.author?.id === selfId)) {
+    return
+  }
 
   console.log(`[Bot][${config.teamName}] 频道消息: ${msg.author?.username || '?'}: ${content}`)
 
@@ -599,6 +786,10 @@ async function handleChannelMessage(config: BotConfig, data: any): Promise<void>
   })
 
   if (result.handled && result.reply) {
+    // 回复级去重（最终安全网）：同一频道 5 秒内不发送相同回复
+    if (shouldSuppressReply(msg.channel_id, result.reply)) {
+      return
+    }
     const instance = botInstances.get(config.teamId)
     instance?.sendMessage(msg.channel_id, result.reply, msg.id).catch((err) => {
       console.error(`[Bot][${config.teamName}] 回复失败:`, err)
@@ -630,6 +821,7 @@ async function handlePrivateMessage(config: BotConfig, data: any): Promise<void>
   })
 
   if (result.handled && result.reply) {
+    if (shouldSuppressReply(msg.author?.id, result.reply)) return
     const instance = botInstances.get(config.teamId)
     instance?.sendPrivateMessage(msg.author?.id, result.reply).catch((err) => {
       console.error(`[Bot][${config.teamName}] 私聊回复失败:`, err)
@@ -661,6 +853,7 @@ async function handleGroupMessage(config: BotConfig, data: any): Promise<void> {
   })
 
   if (result.handled && result.reply) {
+    if (shouldSuppressReply(msg.group_openid, result.reply)) return
     const instance = botInstances.get(config.teamId)
     instance?.sendGroupMessage(msg.group_openid, result.reply).catch((err) => {
       console.error(`[Bot][${config.teamName}] 群回复失败:`, err)
@@ -684,7 +877,7 @@ function scheduleReconnect(config: BotConfig, reason: string): void {
     return
   }
 
-  // ⚠️ 关键：立即设为 reconnecting，防止 getBotRuntimeStatus 在退避期间重复创建实例
+  // ⚠️ 关键：立即设为 reconnecting，防止 createBotInstance（如前端点启动/多 WS 客户端并发）在退避期间重复创建实例
   if (instance) instance.status = 'reconnecting'
 
   // 取消已有重连定时器，避免多路排队
@@ -786,7 +979,7 @@ export function createBotInstance(config: BotConfig): BotInstance {
   }
 
   // 2) 全新实例
-  // 立即设为 connecting，防止 getBotRuntimeStatus 在异步间隙重复创建实例
+  // 立即设为 connecting，防止 createBotInstance 在异步间隙（如并发请求）重复创建实例
   const instance: BotInstance = {
     config,
     status: 'connecting',
@@ -815,7 +1008,7 @@ export function createBotInstance(config: BotConfig): BotInstance {
       .catch((err) => console.error(`[Bot][${config.teamName}] 启动失败:`, err))
   }
 
-  console.log(`[Bot][${config.teamName}] Bot 实例已创建 (appId=${config.appId}, intents=[${config.intents?.join(',') || 'DEFAULT'}])`)
+  console.log(`[Bot][${config.teamName}] Bot 实例已创建 (appId=${config.appId}, domain=${config.isPrivate ? '私域' : '公域'}, intents=[${resolveIntents(config.isPrivate).join(',')}])`)
   return instance
 }
 
@@ -869,7 +1062,7 @@ export function disconnectBot(teamId: string): void {
 /**
  * 重新连接已配置的 Bot
  */
-export function connectBot(teamId: string, botAppId: string, botAppSecret: string, teamName: string, channelId?: string | null): void {
+export function connectBot(teamId: string, botAppId: string, botAppSecret: string, teamName: string, channelId?: string | null, isPrivate?: boolean): void {
   // 先断开旧连接
   disconnectBot(teamId)
 
@@ -879,7 +1072,8 @@ export function connectBot(teamId: string, botAppId: string, botAppSecret: strin
     teamId,
     teamName,
     channelId,
-    intents: ['PUBLIC_GUILD_MESSAGES'],
+    isPrivate,
+    intents: resolveIntents(isPrivate),
   }
 
   // 确保实例存在
@@ -944,6 +1138,47 @@ export async function fetchBotGuilds(teamId: string): Promise<{
 }
 
 /**
+ * 获取指定服务器（频道）下的子频道列表
+ * 调用 QQ API: GET /guilds/{guild_id}/channels
+ */
+export async function fetchBotChannels(
+  teamId: string,
+  guildId: string,
+): Promise<{
+  channels: Array<{
+    id: string
+    name: string
+    type?: number
+    subType?: number
+    parentId?: string
+  }>
+  error?: string
+}> {
+  const instance = botInstances.get(teamId)
+  if (!instance) {
+    return { channels: [], error: 'Bot 未配置或未启动' }
+  }
+
+  try {
+    const data = await callBotApi(instance.config, `/guilds/${guildId}/channels`, 'GET')
+    // QQ Bot API 返回的可能是数组，也可能包裹在 { channels: [...] } 中
+    const channels = Array.isArray(data) ? data : (data?.channels || [])
+    return {
+      channels: channels.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        type: c.type,
+        subType: c.sub_type,
+        parentId: c.parent_id,
+      })),
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : '获取子频道列表失败'
+    return { channels: [], error: msg }
+  }
+}
+
+/**
  * 停止并删除指定团队的 Bot（全清除）
  */
 export function stopBotInstance(teamId: string): void {
@@ -983,6 +1218,8 @@ export interface BotRuntimeStatus {
   appId: string | null
   /** 频道 ID */
   channelId: string | null
+  /** 公私域：true=私域，false/null=公域 */
+  isPrivate?: boolean
   /** WebSocket 连接状态 */
   connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error' | 'not_configured'
   /** Bot 用户名 */
@@ -998,41 +1235,23 @@ export interface BotRuntimeStatus {
 }
 
 /**
- * 获取指定团队的 Bot 运行时状态
- * 【按需启动】如果已配置 Bot 但实例未运行，则自动创建并启动实例
+ * 读取指定团队的 Bot 运行时状态（纯查询，零副作用）
+ * ⚠️ 不再做「按需启动」：读状态不会偷偷拉起 Bot。
+ * Bot 的启动只发生在：① 服务端启动时 loadBotsFromDatabase、② 前端主动点「启动」(connectBot)、
+ * ③ 运行中掉线由内部 scheduleReconnect 自动重连。
+ * 这样读状态就是一个幂等只读操作，不会因「看了眼仪表盘」而改变 Bot 的运行状态，
+ * 也不会在 serverless 冷启后依赖某次状态读取来复活 Bot。
  */
-export function getBotRuntimeStatus(teamId: string, teamInfo: {
+export function readBotRuntimeStatus(teamId: string, teamInfo: {
   name: string
   mode: string
   botAppId?: string | null
   botAppSecret?: string | null
   botChannelId?: string | null
+  botIsPrivate?: boolean | null
 }): BotRuntimeStatus {
   const instance = botInstances.get(teamId)
-  const hasConfig = !!(teamInfo.botAppId && teamInfo.botAppSecret)
-
-  // ── 按需启动：已配置但未运行（disconnected/error）→ 自动启动 Bot ──
-  // 注意：connecting/reconnecting/connected 状态下不重复创建，由内部重连逻辑处理
-  // 关键限制：如果团队已被 stopBotInstance 关闭（解绑），则不自动启动
-  if (
-    hasConfig &&
-    !shutDownTeams.has(teamId) &&
-    (!instance || instance.status === 'disconnected' || instance.status === 'error')
-  ) {
-    console.log(`[Bot] 按需启动团队「${teamInfo.name}」的 Bot 实例...`)
-    createBotInstance({
-      appId: teamInfo.botAppId!,
-      appSecret: teamInfo.botAppSecret!,
-      teamId,
-      teamName: teamInfo.name,
-      channelId: teamInfo.botChannelId,
-      intents: ['PUBLIC_GUILD_MESSAGES'],
-    })
-  }
-
-  // 重新获取实例（可能刚创建）
-  const activeInstance = botInstances.get(teamId)
-  const isConfigured = !!(teamInfo.botAppId && activeInstance)
+  const isConfigured = !!(teamInfo.botAppId && instance)
 
   const status: BotRuntimeStatus = {
     configured: isConfigured,
@@ -1044,19 +1263,20 @@ export function getBotRuntimeStatus(teamId: string, teamInfo: {
         : teamInfo.botAppId
       : null,
     channelId: teamInfo.botChannelId || null,
+    isPrivate: teamInfo.botIsPrivate ?? false,
     connectionStatus: 'not_configured',
     connectedDuration: -1,
   }
 
-  if (activeInstance) {
-    status.connectionStatus = activeInstance.status
-    status.botUsername = activeInstance.botUsername
-    status.botId = activeInstance.botId
-    status.sessionId = activeInstance.sessionId
-    status.heartbeatInterval = activeInstance.heartbeatInterval
-    if (activeInstance.connectedAt && activeInstance.status === 'connected') {
+  if (instance) {
+    status.connectionStatus = instance.status
+    status.botUsername = instance.botUsername
+    status.botId = instance.botId
+    status.sessionId = instance.sessionId
+    status.heartbeatInterval = instance.heartbeatInterval
+    if (instance.connectedAt && instance.status === 'connected') {
       status.connectedDuration = Math.floor(
-        (Date.now() - activeInstance.connectedAt) / 1000,
+        (Date.now() - instance.connectedAt) / 1000,
       )
     }
   }
@@ -1065,58 +1285,115 @@ export function getBotRuntimeStatus(teamId: string, teamInfo: {
 }
 
 /**
- * 从数据库加载所有 QQ 频道团队并启动 Bot
+ * 从数据库加载所有已配置的 QQ 频道团队并错峰启动 Bot
+ * - 跳过已解绑/硬停止（shutDownTeams）的团队，避免自动复活
+ * - 启动交给 createBotInstance（幂等：已 running 的不会重复连接）
+ * - 返回实际调度启动的 Bot 数量
+ * - DB 查询失败时上抛错误，交由调用方决定是否重试（如服务启动阶段数据库尚未就绪）
  */
-export async function loadBotsFromDatabase(prisma: PrismaClient): Promise<void> {
-  try {
-    const teams = await prisma.team.findMany({
-      where: {
-        mode: 'qq_bot',
-        botAppId: { not: null },
-        botAppSecret: { not: null },
-      },
-      select: {
-        id: true,
-        name: true,
-        botAppId: true,
-        botAppSecret: true,
-        botChannelId: true,
-      },
-    })
+export async function loadBotsFromDatabase(prisma: PrismaClient): Promise<number> {
+  const teams = await prisma.team.findMany({
+    where: {
+      mode: 'qq_bot',
+      botAppId: { not: null },
+      botAppSecret: { not: null },
+    },
+    select: {
+      id: true,
+      name: true,
+      botAppId: true,
+      botAppSecret: true,
+      botChannelId: true,
+      botIsPrivate: true,
+    },
+  })
 
-    if (teams.length === 0) {
-      console.log('[Bot] 暂无已配置 Bot 的 QQ 频道团队')
-      return
-    }
-
-    // 多个 Bot 错峰启动（每个 Bot 延迟 0-2 秒，避免同时请求 Gateway URL 触发频率限制）
-    // 且第一个 Bot 会先获取并缓存 Gateway URL，后续 Bot 可直接使用缓存
-    for (let i = 0; i < teams.length; i++) {
-      const team = teams[i]
-      if (!team) continue
-      const botAppId = team.botAppId
-      const botAppSecret = team.botAppSecret
-      if (!botAppId || !botAppSecret) continue
-
-      // 每个 Bot 延迟 i * 2000 + 0-2000ms 随机抖动后启动
-      const delayMs = i * 2000 + Math.floor(Math.random() * 2000)
-      const teamName = team.name
-
-      setTimeout(() => {
-        console.log(`[Bot] 正在为团队「${teamName}」启动 Bot...`)
-        createBotInstance({
-          appId: botAppId,
-          appSecret: botAppSecret,
-          teamId: team.id,
-          teamName: team.name,
-          channelId: team.botChannelId ?? null,
-          intents: ['PUBLIC_GUILD_MESSAGES'],
-        })
-      }, delayMs)
-    }
-
-    console.log(`[Bot] 已调度 ${teams.length} 个 Bot 错峰启动（间隔约 2 秒）`)
-  } catch (err) {
-    console.error('[Bot] 从数据库加载 Bot 配置失败:', err)
+  if (teams.length === 0) {
+    console.log('[Bot] 暂无已配置 Bot 的 QQ 频道团队')
+    return 0
   }
+
+  let scheduled = 0
+  // 多个 Bot 错峰启动（每个 Bot 延迟 0-2 秒 + 抖动），避免同时请求 Gateway URL 触发频率限制
+  // 且第一个 Bot 会先获取并缓存 Gateway URL，后续 Bot 可直接使用缓存
+  for (let i = 0; i < teams.length; i++) {
+    const team = teams[i]
+    if (!team) continue
+    const botAppId = team.botAppId
+    const botAppSecret = team.botAppSecret
+    if (!botAppId || !botAppSecret) continue
+    // 已解绑/硬停止的团队不自动拉起（需人工重新配置/启动）
+    if (shutDownTeams.has(team.id)) {
+      console.log(`[Bot] 团队「${team.name}」已解绑，跳过自动启动`)
+      continue
+    }
+
+    const delayMs = i * 2000 + Math.floor(Math.random() * 2000)
+    const teamName = team.name
+    const isPrivate = team.botIsPrivate ?? false
+    setTimeout(() => {
+      console.log(`[Bot] 正在为团队「${teamName}」启动 Bot...`)
+      createBotInstance({
+        appId: botAppId,
+        appSecret: botAppSecret,
+        teamId: team.id,
+        teamName: team.name,
+        channelId: team.botChannelId ?? null,
+        isPrivate,
+        intents: resolveIntents(isPrivate),
+      })
+    }, delayMs)
+    scheduled++
+  }
+
+  console.log(`[Bot] 已调度 ${scheduled} 个 Bot 错峰启动（间隔约 2 秒）`)
+  return scheduled
+}
+
+/**
+ * 保活检查：拉起「已配置但本进程内无实例」的 Bot
+ * 与 loadBotsFromDatabase 的区别：
+ *  - 只处理「当前进程没有实例」的团队（即错过启动 / 实例被意外清除的情况）
+ *  - 已有实例（含手动断开 disconnect、熔断 error、内部重连中）一律不动，
+ *    交由各自的状态机 / 内部重连逻辑处理，避免覆盖管理员的手动操作
+ *  - 跳过已解绑/硬停止（shutDownTeams）的团队
+ * 用于定时保活（如每 5 分钟一次），覆盖进程重启、意外清除、serverless 冷启后重新激活。
+ */
+export async function resyncConfiguredBots(prisma: PrismaClient): Promise<number> {
+  const teams = await prisma.team.findMany({
+    where: {
+      mode: 'qq_bot',
+      botAppId: { not: null },
+      botAppSecret: { not: null },
+    },
+    select: {
+      id: true,
+      name: true,
+      botAppId: true,
+      botAppSecret: true,
+      botChannelId: true,
+      botIsPrivate: true,
+    },
+  })
+
+  let started = 0
+  for (const team of teams) {
+    if (!team.botAppId || !team.botAppSecret) continue
+    if (shutDownTeams.has(team.id)) continue
+    // 已有实例：交给内部重连/状态机，不覆盖
+    if (botInstances.has(team.id)) continue
+    createBotInstance({
+      appId: team.botAppId,
+      appSecret: team.botAppSecret,
+      teamId: team.id,
+      teamName: team.name,
+      channelId: team.botChannelId ?? null,
+      isPrivate: team.botIsPrivate ?? false,
+      intents: resolveIntents(team.botIsPrivate ?? false),
+    })
+    started++
+  }
+
+  if (started > 0) console.log(`[Bot] 保活检查：拉起 ${started} 个缺失的 Bot 实例`)
+  return started
 }

@@ -4,11 +4,15 @@
 // 使用方式：在 bot 管理页面调用 useBotWs()，获得响应式状态和操作方法
 // ════════════════════════════════════════════════════
 
+/**
+ * Bot 状态信息（由服务端 status 消息推送）
+ */
 interface BotStatus {
   configured: boolean
   teamName: string
   appId: string | null
   channelId: string | null
+  isPrivate?: boolean
   connectionStatus: string
   botUsername?: string
   botId?: string
@@ -17,6 +21,9 @@ interface BotStatus {
   connectedDuration: number
 }
 
+/**
+ * WebSocket 连接的内部响应式状态
+ */
 interface BotWsState {
   ws: WebSocket | null
   connected: boolean
@@ -33,7 +40,8 @@ interface BotWsState {
 
 export function useBotWs() {
   const store = useAuthStore()
-  const state = reactive<BotWsState>({
+  // ponytail: shallowReactive — pendingRequests(Map) 不需要深度响应追踪
+  const state = shallowReactive<BotWsState>({
     ws: null,
     connected: false,
     authenticated: false,
@@ -134,6 +142,17 @@ export function useBotWs() {
 
       case 'status':
         state.status = data.data
+        // 关键修复：若本帧是某次 fetchStatus() 请求的回应（带 requestId），
+        // 必须 resolve 对应的 pending 请求；否则（服务端主动推送）只更新状态即可。
+        // 修复前这里直接 break，导致 sendAndWait('status') 永远等不到 resolve，
+        // 30 秒超时后 reject('请求超时')，使保存/连接/解绑等操作"假失败"。
+        if (data.requestId) {
+          const pending = state.pendingRequests.get(data.requestId)
+          if (pending) {
+            state.pendingRequests.delete(data.requestId)
+            pending.resolve(data)
+          }
+        }
         break
 
       // 带 requestId 的响应

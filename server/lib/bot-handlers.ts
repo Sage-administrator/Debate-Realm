@@ -4,7 +4,7 @@
 
 import type { PrismaClient } from './generated/client'
 import type { BotConfig } from './bot-ws'
-import { createArena, closeArena, claimRole, unclaimRole, getArenaStatus, getSupportedFormats, getNextArenaLetter } from './bot-roles'
+import { createArena, closeArena, claimRole, unclaimRole, getArenaStatus, getSupportedFormats } from './bot-roles'
 import { getTopicPool, getSchedule, getNextMatch, formatTopicsText, formatScheduleText } from './bot-data-sync'
 import { getRankings, formatRankingsText } from './bot-scoring'
 
@@ -46,34 +46,32 @@ export async function handleMessage(ctx: MessageContext): Promise<HandleResult> 
 
   // ping — 测试连接
   if (trimmed === 'ping') {
-    return { handled: true, reply: 'pong! 辩论计时器 Bot 运行正常' }
+    return { handled: true, reply: 'pong! DebateRealm V3 Bot 运行正常' }
   }
 
   // help — 帮助信息
   if (trimmed === '帮助' || trimmed === 'help') {
     return {
       handled: true,
-      reply: `**辩论计时器 Bot 命令列表**
-
-` +
-        '`ping` - 测试 Bot 是否在线\n' +
-        '`help` - 显示此帮助信息\n' +
-        '`状态` - 查看当前状态\n' +
-        '`赛场状态` - 查看当前赛场身份分配\n' +
-        '`设置赛场 [赛场名] [4v4|3v3|2v2]` - 创建辩论赛场（管理员）\n' +
-        '`结束比赛` - 关闭当前赛场（管理员）\n' +
-        '`认领 [身份]` - 认领身份，如 `认领 正方一辩`\n' +
-        '`取消认领` - 取消当前身份认领\n' +
-        '`辩题` - 查看辩题库\n' +
-        '`赛程` - 查看赛程安排\n' +
-        '`下一场` - 查看下一场待比赛信息\n' +
-        '`排名` - 查看赛事排名',
+      reply: `DebateRealm V3 Bot 命令列表\n` +
+        'ping - 测试 Bot 是否在线\n' +
+        'help - 显示此帮助信息\n' +
+        '状态 - 查看当前状态\n' +
+        '赛场状态 - 查看当前赛场身份分配\n' +
+        '设置赛场 [赛场名] [4v4|3v3|2v2] - 创建辩论赛场（管理员）\n' +
+        '结束比赛 - 关闭当前赛场（管理员）\n' +
+        '认领 [身份] - 认领身份，如 认领 正方一辩\n' +
+        '取消认领 - 取消当前身份认领\n' +
+        '辩题 - 查看辩题库\n' +
+        '赛程 - 查看赛程安排\n' +
+        '下一场 - 查看下一场待比赛信息\n' +
+        '排名 - 查看赛事排名',
     }
   }
 
   // status — 状态
   if (trimmed === '状态') {
-    return { handled: true, reply: 'Bot 运行中 | 辩论计时器 V3\n当前暂无进行中的赛事' }
+    return { handled: true, reply: 'Bot 运行中 | DebateRealm V3\n当前暂无进行中的赛事' }
   }
 
   // ── 以下为异步命令，需要 prisma 和 botConfig ──
@@ -144,12 +142,11 @@ async function handleSetArena(ctx: MessageContext, arenaName: string, format: st
     return { handled: true, reply: '命令执行失败：缺少必要参数，请确认 Bot 已正确配置' }
   }
 
-  // 如果没有指定名字（空字符串），自动按字母序号命名：赛场A、赛场B、赛场C...
-  let finalName = arenaName
-  if (!finalName || !finalName.trim()) {
-    const letter = await getNextArenaLetter(ctx.prisma, ctx.teamId)
-    finalName = `赛场${letter}`
+  // 赛场名必填（自定义），不再自动生成「赛场A」
+  if (!arenaName || !arenaName.trim()) {
+    return { handled: true, reply: '请指定赛场名：/设置赛场 赛场名 4v4（赛场名不多于 8 个字）' }
   }
+  const finalName = arenaName.trim()
 
   const result = await createArena(ctx.prisma, ctx.botConfig, ctx.teamId, format, ctx.guildId, finalName, ctx.channelId)
   return { handled: true, reply: result.message }
