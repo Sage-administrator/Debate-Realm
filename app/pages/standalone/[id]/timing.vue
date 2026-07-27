@@ -205,7 +205,13 @@ async function loadConfig() {
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '加载失败', color: 'error' })
   } finally {
+    initialLoadDone = true
     loading.value = false
+    // 清除加载过程中可能被 watch 误调度的自动保存
+    if (saveTimeout) {
+      clearTimeout(saveTimeout)
+      saveTimeout = null
+    }
   }
 }
 
@@ -221,6 +227,7 @@ function getDefaultStages(): Stage[] {
 
 // ═══════════ 数据保存 ═══════════
 async function saveConfig() {
+  if (!initialLoadDone) return // 初始加载完成前拒绝保存
   if (saving.value) return // 防重复
   saving.value = true
   const expandedIdx = expandedId.value
@@ -389,11 +396,15 @@ function onStageFormUpdate(stage: Stage, formData: {
 // ═══════════ 生命周期 ═══════════
 onMounted(() => loadConfig())
 
+// 初始加载完成标记 —— 防止加载过程误触发自动保存 PUT
+let initialLoadDone = false
+
 // 配置变化时自动保存（防抖）
 let saveTimeout: ReturnType<typeof setTimeout> | null = null
 watch(
   () => fullConfig.value.stages,
   () => {
+    if (!initialLoadDone) return // 初始加载完成前不允许自动保存
     if (saveTimeout) clearTimeout(saveTimeout)
     saveTimeout = setTimeout(() => {
       if (!loading.value) saveConfig()

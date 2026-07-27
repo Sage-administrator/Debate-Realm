@@ -213,7 +213,13 @@ async function loadConfig() {
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '加载失败', color: 'error' })
   } finally {
+    initialLoadDone = true
     loading.value = false
+    // 清除加载过程中可能被 watch 误调度的自动保存
+    if (saveTimeout) {
+      clearTimeout(saveTimeout)
+      saveTimeout = null
+    }
   }
 }
 
@@ -229,6 +235,7 @@ function getDefaultStages(): Stage[] {
 
 // ═══════════ 数据保存 ═══════════
 async function saveConfig() {
+  if (!initialLoadDone) return // 初始加载完成前拒绝保存
   if (saving.value) return // 防重复
   saving.value = true
   // 保存前记录展开的环节在数组中的索引（保存后用索引恢复，因为 tmp_ id 会被 DB uuid 替换）
@@ -407,14 +414,14 @@ function onStageFormUpdate(stage: Stage, formData: {
 // ═══════════ 生命周期 ═══════════
 onMounted(() => loadConfig())
 
+// 初始加载完成标记 —— 防止加载过程误触发自动保存 PUT
+let initialLoadDone = false
+
 // 计算 stages 的签名（JSON 序列化长度 + 数组长度 + 首末项 id），
 // 用于避免 deep watch 的深度遍历开销，仅在签名变化时触发保存
 const stagesSignature = computed(() => {
   const stages = fullConfig.value.stages
   if (!stages.length) return 'empty'
-  // 使用长度 + 首尾 id 快速判断是否有结构变化（增删、排序）
-  // 对于字段修改，由于每次 onStageFormUpdate 都会重建 stage 对象引用，
-  // 结合下面的 changeCounter 可覆盖所有修改场景
   return `${stages.length}_${stages[0]?.id}_${stages[stages.length - 1]?.id}`
 })
 
@@ -429,12 +436,17 @@ watch(
   // 监听签名 + 计数器，任一变化表示数据已修改
   () => [stagesSignature.value, stageChangeCounter.value],
   () => {
+    if (!initialLoadDone) return // 初始加载完成前不允许自动保存
     if (saveTimeout) clearTimeout(saveTimeout)
     saveTimeout = setTimeout(() => {
       if (!loading.value) saveConfig()
     }, 1500)
-  }
-  // 移除 deep: true，大幅减少响应式追踪开销
+  },
+  { flush: 'sync' }
+  // flush:sync 确保 watch 回调在 stages 被赋值时同步触发，
+  // 此时 initialLoadDone 仍为 false，守卫能正确拦截初始加载的误触发。
+  // 默认 flush:'pre' 会等到当前同步代码（loadConfig）执行完才触发，
+  // 那时 initialLoadDone 已被设为 true，守卫形同虚设。
 )
 </script>
 
