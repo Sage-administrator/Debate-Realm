@@ -242,6 +242,9 @@ const negativeLabel = ref('反方')
 // 队徽配置（从 timer-config 同步，供 TimerDisplay 渲染队徽）
 const teamLogoConfig = ref({ positiveLogoUrl: '', negativeLogoUrl: '', showTeamLogo: true })
 
+// 共享计时器配置缓存（避免跨页数据不一致 + 重复网络请求）
+const { config: sharedConfig, loadConfig: loadSharedConfig } = useTimerConfig()
+
 // ═══════════ UI 缩放与UI配置参数解析 ═══════════
 const uiScale = ref(1)
 onMounted(() => {
@@ -696,12 +699,10 @@ async function loadTournamentData() {
       matchName = m.name || '辩论赛'
     }
 
-    // 加载计时器配置（包含标题、队伍名称、辩题等自定义设置）
-    const configRes = await $fetch<any>(`/api/standalone-matches/${matchId.value}/timer-config`, {
-      headers: { Authorization: `Bearer ${useAuthStore().token}` },
-    })
-    if (configRes?.data) {
-      const cfg = configRes.data
+    // 加载计时器配置（共享缓存，避免跨页数据不一致 + 重复网络请求）
+    await loadSharedConfig(matchId.value, 'standalone')
+    if (sharedConfig.value.name || sharedConfig.value.title) {
+      const cfg = sharedConfig.value
       // 优先使用配置中的 title 或 name，其次使用赛事名称
       contestTitle.value = cfg.title || cfg.name || matchName
       // 同步其他配置（队伍名称、辩题等）

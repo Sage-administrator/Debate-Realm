@@ -20,7 +20,7 @@ const authStore = useAuthStore()
 
 // ═══════════ 数据模型 ═══════════
 const tournament = inject<Ref<any>>('tournament')!
-const loading = ref(false)
+const { config, loadConfig: apiLoad, saveConfig: apiSave, loading } = useTimerConfig()
 const saving = ref(false)
 const uploading = ref(false)
 const tournamentId = computed(() => route.params.id as string)
@@ -28,131 +28,9 @@ const tournamentId = computed(() => route.params.id as string)
 // 预览当前环节索引
 const previewStageIndex = ref(0)
 
-// 完整的计时器配置
-const fullConfig = ref<{
-  name: string
-  title: string
-  positiveTopic: string
-  negativeTopic: string
-  teamPositiveName: string
-  teamNegativeName: string
-  uiConfig: Record<string, any>
-  skinConfig: Record<string, any>
-  audioConfig: {
-    enabled?: boolean
-    scheme?: 'default' | 'formal'
-    startSound?: string
-    endSound?: string
-    warningSound?: string
-  }
-  teamLogoConfig: Record<string, any>
-  stages: any[]
-}>({
-  name: '',
-  title: '',
-  positiveTopic: '',
-  negativeTopic: '',
-  teamPositiveName: '',
-  teamNegativeName: '',
-  uiConfig: {},
-  skinConfig: {},
-  audioConfig: {
-    enabled: true,
-    scheme: 'default',
-    startSound: '',
-    endSound: '',
-    warningSound: '',
-  },
-  teamLogoConfig: {},
-  stages: [],
-})
-
-// ═══════════ 数据加载 ═══════════
-async function loadConfig() {
-  loading.value = true
-  try {
-    // 从 inject 的 tournament 中获取赛事基本信息
-    if (tournament.value) {
-      fullConfig.value.name = tournament.value.name
-      fullConfig.value.title = tournament.value.name
-    }
-
-    // 加载计时器配置
-    const configRes = await $fetch<any>(`/api/tournaments/${tournamentId.value}/timer-config`, {
-      headers: { Authorization: `Bearer ${authStore.token}` },
-    })
-
-    if (configRes?.data) {
-      const cfg = configRes.data
-      fullConfig.value.name = cfg.name || fullConfig.value.name
-      fullConfig.value.title = cfg.title || fullConfig.value.title
-      fullConfig.value.positiveTopic = cfg.positiveTopic || ''
-      fullConfig.value.negativeTopic = cfg.negativeTopic || ''
-      fullConfig.value.teamPositiveName = cfg.teamPositiveName || ''
-      fullConfig.value.teamNegativeName = cfg.teamNegativeName || ''
-      fullConfig.value.uiConfig = cfg.uiConfig || {}
-      fullConfig.value.skinConfig = cfg.skinConfig || {}
-      fullConfig.value.audioConfig = {
-        enabled: true,
-        startSound: '',
-        endSound: '',
-        warningSound: '',
-        ...(cfg.audioConfig || {}),
-      }
-      fullConfig.value.teamLogoConfig = cfg.teamLogoConfig || {}
-      fullConfig.value.stages = cfg.stages || []
-
-      // 如果 stages 为空，使用默认环节
-      if (fullConfig.value.stages.length === 0) {
-        fullConfig.value.stages = getDefaultStages()
-      }
-    } else {
-      // 新配置，使用默认环节
-      fullConfig.value.stages = getDefaultStages()
-    }
-  } catch (e: any) {
-    toast.add({ title: e?.data?.statusMessage || '加载失败', color: 'error' })
-  } finally {
-    loading.value = false
-  }
-}
-
-// 获取默认环节
-function getDefaultStages() {
-  return [
-    { id: 1, name: '开篇立论', duration: 180, type: 'single_speech', order: 1 },
-    { id: 2, name: '攻辩', duration: 120, type: 'single_speech', order: 2 },
-    { id: 3, name: '自由辩论', duration: 240, type: 'free_debate', order: 3, positiveDuration: 120, negativeDuration: 120 },
-    { id: 4, name: '总结陈词', duration: 180, type: 'single_speech', order: 4 },
-  ]
-}
-
 // ═══════════ 数据保存 ═══════════
-async function saveConfig() {
-  saving.value = true
-  try {
-    await $fetch<any>(`/api/tournaments/${tournamentId.value}/timer-config`, {
-      method: 'PUT',
-      headers: { Authorization: `Bearer ${authStore.token}` },
-      body: {
-        name: fullConfig.value.name,
-        title: fullConfig.value.title,
-        positiveTopic: fullConfig.value.positiveTopic,
-        negativeTopic: fullConfig.value.negativeTopic,
-        teamPositiveName: fullConfig.value.teamPositiveName,
-        teamNegativeName: fullConfig.value.teamNegativeName,
-        uiConfig: fullConfig.value.uiConfig,
-        skinConfig: fullConfig.value.skinConfig,
-        audioConfig: fullConfig.value.audioConfig,
-        teamLogoConfig: fullConfig.value.teamLogoConfig,
-        stages: fullConfig.value.stages,
-      },
-    })
-  } catch (e: any) {
-    toast.add({ title: e?.data?.statusMessage || '保存失败', color: 'error' })
-  } finally {
-    saving.value = false
-  }
+async function savePageConfig() {
+  await apiSave(tournamentId.value, 'tournament')
 }
 
 // ═══════════ 音频文件上传处理 ═══════════
@@ -180,7 +58,7 @@ async function onAudioSelect(event: Event, field: 'startSound' | 'endSound' | 'w
 
     if (uploadRes?.success && uploadRes?.data?.path) {
       // 保存上传文件的相对路径到配置中
-      fullConfig.value.audioConfig[field] = uploadRes.data.path
+      config.value.audioConfig[field] = uploadRes.data.path
       toast.add({
         title: `已上传: ${uploadRes.data.originalName}`,
         color: 'success'
@@ -199,16 +77,18 @@ async function onAudioSelect(event: Event, field: 'startSound' | 'endSound' | 'w
 }
 
 // ═══════════ 生命周期 ═══════════
-onMounted(() => loadConfig())
+onMounted(async () => {
+  await apiLoad(tournamentId.value, 'tournament')
+})
 
 // 配置变化时自动保存（防抖）
 let saveTimeout: ReturnType<typeof setTimeout> | null = null
 watch(
-  () => fullConfig.value.audioConfig,
+  () => config.value.audioConfig,
   () => {
     if (saveTimeout) clearTimeout(saveTimeout)
     saveTimeout = setTimeout(() => {
-      if (!loading.value) saveConfig()
+      if (!loading.value) savePageConfig()
     }, 1500)
   },
   { deep: true }
@@ -223,7 +103,7 @@ watch(
     <!-- 左侧：实时预览（左4列，约1/3宽度） -->
     <div class="col-span-4">
       <TimerPreviewCard
-        :full-config="fullConfig"
+        :full-config="config"
         :tournament-id="tournamentId"
         v-model:stage-index="previewStageIndex"
       />
@@ -246,7 +126,7 @@ watch(
             <p class="text-xs text-[var(--color-text-muted)]">控制是否在计时器中播放提示音</p>
           </div>
           <label class="toggle-switch">
-            <input type="checkbox" v-model="fullConfig.audioConfig.enabled">
+            <input type="checkbox" v-model="config.audioConfig.enabled">
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -260,14 +140,14 @@ watch(
           <div class="flex gap-2">
             <button type="button"
               class="px-3 py-2 rounded text-sm border transition-colors"
-              :class="fullConfig.audioConfig.scheme === 'formal' ? 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-tertiary)]' : 'border-[var(--color-accent-primary)] bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)] font-medium'"
-              @click="fullConfig.audioConfig.scheme = 'default'">
+              :class="config.audioConfig.scheme === 'formal' ? 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-tertiary)]' : 'border-[var(--color-accent-primary)] bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)] font-medium'"
+              @click="config.audioConfig.scheme = 'default'">
               默认提示音（30 / 5 / 0 秒）
             </button>
             <button type="button"
               class="px-3 py-2 rounded text-sm border transition-colors"
-              :class="fullConfig.audioConfig.scheme === 'formal' ? 'border-[var(--color-accent-primary)] bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)] font-medium' : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-tertiary)]'"
-              @click="fullConfig.audioConfig.scheme = 'formal'">
+              :class="config.audioConfig.scheme === 'formal' ? 'border-[var(--color-accent-primary)] bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)] font-medium' : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-tertiary)]'"
+              @click="config.audioConfig.scheme = 'formal'">
               正式比赛提示音（钉钉响铃）
             </button>
           </div>
@@ -289,18 +169,18 @@ watch(
                   @change="(e: Event) => onAudioSelect(e, 'warningSound')"
                 >
               </label>
-              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ fullConfig.audioConfig.warningSound || '未选择文件' }}</span>
+              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ config.audioConfig.warningSound || '未选择文件' }}</span>
             </div>
-            <div v-if="fullConfig.audioConfig.warningSound" class="flex items-center gap-2">
-              <audio :src="fullConfig.audioConfig.warningSound" controls class="h-8 w-full max-w-xs"></audio>
+            <div v-if="config.audioConfig.warningSound" class="flex items-center gap-2">
+              <audio :src="config.audioConfig.warningSound" controls class="h-8 w-full max-w-xs"></audio>
             </div>
           </div>
 
           <!-- 5秒提示音 -->
-          <div class="space-y-2 flex-1" :class="fullConfig.audioConfig.scheme === 'formal' ? 'opacity-50' : ''">
+          <div class="space-y-2 flex-1" :class="config.audioConfig.scheme === 'formal' ? 'opacity-50' : ''">
             <label class="block text-sm text-[var(--color-text-primary)] font-medium">
               5秒提示音
-              <span v-if="fullConfig.audioConfig.scheme === 'formal'" class="text-xs text-[var(--color-warning)]">（正式方案下不播放）</span>
+              <span v-if="config.audioConfig.scheme === 'formal'" class="text-xs text-[var(--color-warning)]">（正式方案下不播放）</span>
             </label>
             <div class="flex items-center gap-2">
               <label class="px-3 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2 whitespace-nowrap">
@@ -313,10 +193,10 @@ watch(
                   @change="(e: Event) => onAudioSelect(e, 'endSound')"
                 >
               </label>
-              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ fullConfig.audioConfig.endSound || '未选择文件' }}</span>
+              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ config.audioConfig.endSound || '未选择文件' }}</span>
             </div>
-            <div v-if="fullConfig.audioConfig.endSound" class="flex items-center gap-2">
-              <audio :src="fullConfig.audioConfig.endSound" controls class="h-8 w-full max-w-xs"></audio>
+            <div v-if="config.audioConfig.endSound" class="flex items-center gap-2">
+              <audio :src="config.audioConfig.endSound" controls class="h-8 w-full max-w-xs"></audio>
             </div>
           </div>
 
@@ -334,17 +214,17 @@ watch(
                   @change="(e: Event) => onAudioSelect(e, 'startSound')"
                 >
               </label>
-              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ fullConfig.audioConfig.startSound || '未选择文件' }}</span>
+              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ config.audioConfig.startSound || '未选择文件' }}</span>
             </div>
-            <div v-if="fullConfig.audioConfig.startSound" class="flex items-center gap-2">
-              <audio :src="fullConfig.audioConfig.startSound" controls class="h-8 w-full max-w-xs"></audio>
+            <div v-if="config.audioConfig.startSound" class="flex items-center gap-2">
+              <audio :src="config.audioConfig.startSound" controls class="h-8 w-full max-w-xs"></audio>
             </div>
           </div>
         </div>
 
         <!-- 说明文字 -->
         <div class="pt-4 border-t border-[var(--color-border)]">
-          <p v-if="fullConfig.audioConfig.scheme === 'formal'" class="text-xs text-[var(--color-warning)] mb-1">
+          <p v-if="config.audioConfig.scheme === 'formal'" class="text-xs text-[var(--color-warning)] mb-1">
             注：当前为「正式比赛提示音」方案，5 秒提示音不会播放（仅 30 秒与结束时响铃）。
           </p>
           <p class="text-xs text-[var(--color-text-muted)]">

@@ -50,7 +50,6 @@ interface Stage {
 // ═══════════ 基础工具 ═══════════
 const route = useRoute()
 const toast = useToast()
-const authStore = useAuthStore()
 
 // ═══════════ 数据模型 ═══════════
 const standaloneMatch = inject<Ref<any>>('standaloneMatch')!
@@ -72,7 +71,7 @@ const showTemplateModal = ref(false)
 function applyTemplate(tplId: string) {
   const tpl = debateTemplates.find(t => t.id === tplId)
   if (!tpl) return
-  fullConfig.value.stages = tpl.stages.map(s => ({
+  config.value.stages = tpl.stages.map(s => ({
     id: genTmpId(),
     ...s,
     // 模板用 1-based 的 order，真实 Stage 用 orderIndex 排序，这里做一次映射
@@ -87,32 +86,8 @@ const dragSourceId = ref<string | number | null>(null)
 // 当前拖拽悬浮的目标卡片 id
 const dragOverId = ref<string | number | null>(null)
 
-// 完整的计时器配置
-const fullConfig = ref<{
-  name: string
-  title: string
-  positiveTopic: string
-  negativeTopic: string
-  teamPositiveName: string
-  teamNegativeName: string
-  uiConfig: Record<string, any>
-  skinConfig: Record<string, any>
-  audioConfig: Record<string, any>
-  teamLogoConfig: Record<string, any>
-  stages: Stage[]
-}>({
-  name: '',
-  title: '',
-  positiveTopic: '',
-  negativeTopic: '',
-  teamPositiveName: '',
-  teamNegativeName: '',
-  uiConfig: {},
-  skinConfig: {},
-  audioConfig: {},
-  teamLogoConfig: {},
-  stages: [],
-})
+// 完整的计时器配置（共享状态）
+const { config, loadConfig, saveConfig } = useTimerConfig()
 
 // 生成临时 ID（前端新建环节用，保存后由 DB 生成真实 uuid 替换）
 function genTmpId(): string {
@@ -166,41 +141,21 @@ function getStageSpeaker(stage: any): string {
 }
 
 // ═══════════ 数据加载 ═══════════
-async function loadConfig() {
+async function loadPageConfig() {
   loading.value = true
   try {
-    // 从 inject 的 tournament 中获取赛事基本信息
+    // 从 inject 的 standaloneMatch 中获取赛事基本信息
     if (standaloneMatch.value) {
-      fullConfig.value.name = standaloneMatch.value.name
-      fullConfig.value.title = standaloneMatch.value.name
+      config.value.name = standaloneMatch.value.name
+      config.value.title = standaloneMatch.value.name
     }
 
-    // 加载计时器配置
-    const configRes = await $fetch<any>(`/api/standalone-matches/${matchId.value}/timer-config`, {
-      headers: { Authorization: `Bearer ${authStore.token}` },
-    })
+    // 加载计时器配置（走共享 composable，带缓存）
+    await loadConfig(matchId.value, 'standalone')
 
-    if (configRes?.data) {
-      const cfg = configRes.data
-      fullConfig.value.name = cfg.name || fullConfig.value.name
-      fullConfig.value.title = cfg.title || fullConfig.value.title
-      fullConfig.value.positiveTopic = cfg.positiveTopic || ''
-      fullConfig.value.negativeTopic = cfg.negativeTopic || ''
-      fullConfig.value.teamPositiveName = cfg.teamPositiveName || ''
-      fullConfig.value.teamNegativeName = cfg.teamNegativeName || ''
-      fullConfig.value.uiConfig = cfg.uiConfig || {}
-      fullConfig.value.skinConfig = cfg.skinConfig || {}
-      fullConfig.value.audioConfig = cfg.audioConfig || {}
-      fullConfig.value.teamLogoConfig = cfg.teamLogoConfig || {}
-      fullConfig.value.stages = (cfg.stages || []).map((s: any) => ({ ...s, type: normalizeStageType(s.type) })) as Stage[]
-
-      // 如果 stages 为空，使用默认环节
-      if (fullConfig.value.stages.length === 0) {
-        fullConfig.value.stages = getDefaultStages()
-      }
-    } else {
-      // 新配置，使用默认环节
-      fullConfig.value.stages = getDefaultStages()
+    // 如果 stages 为空，使用默认环节
+    if (config.value.stages.length === 0) {
+      config.value.stages = getDefaultStages()
     }
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '加载失败', color: 'error' })
@@ -226,36 +181,15 @@ function getDefaultStages(): Stage[] {
 }
 
 // ═══════════ 数据保存 ═══════════
-async function saveConfig() {
+async function savePageConfig() {
   if (!initialLoadDone) return // 初始加载完成前拒绝保存
   if (saving.value) return // 防重复
   saving.value = true
   const expandedIdx = expandedId.value
-    ? fullConfig.value.stages.findIndex(s => s.id === expandedId.value)
+    ? config.value.stages.findIndex(s => s.id === expandedId.value)
     : -1
   try {
-    const res = await $fetch<any>(`/api/standalone-matches/${matchId.value}/timer-config`, {
-      method: 'PUT',
-      headers: { Authorization: `Bearer ${authStore.token}` },
-      body: {
-        title: fullConfig.value.title,
-        positiveTopic: fullConfig.value.positiveTopic,
-        negativeTopic: fullConfig.value.negativeTopic,
-        teamPositiveName: fullConfig.value.teamPositiveName,
-        teamNegativeName: fullConfig.value.teamNegativeName,
-        uiConfig: fullConfig.value.uiConfig,
-        skinConfig: fullConfig.value.skinConfig,
-        audioConfig: fullConfig.value.audioConfig,
-        teamLogoConfig: fullConfig.value.teamLogoConfig,
-        stages: fullConfig.value.stages,
-      },
-    })
-    if (res?.data?.stages && Array.isArray(res.data.stages)) {
-      fullConfig.value.stages = res.data.stages
-      if (expandedIdx >= 0 && expandedIdx < res.data.stages.length) {
-        expandedId.value = res.data.stages[expandedIdx].id
-      }
-    }
+    await saveConfig(matchId.value, 'standalone')
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '保存失败', color: 'error' })
   } finally {
@@ -270,37 +204,37 @@ function addStageByType(type: string, name: string) {
     name,
     duration: type === 'special' ? 0 : 180,
     type: type as Stage['type'],
-    orderIndex: fullConfig.value.stages.length + 1,
+    orderIndex: config.value.stages.length + 1,
     description: '',
   }
   if (type === 'dual-timer') {
     newStage.positiveDuration = 120
     newStage.negativeDuration = 120
   }
-  fullConfig.value.stages.push(newStage)
+  config.value.stages.push(newStage)
   expandedId.value = newStage.id
 }
 
 function removeStage(idx: number) {
-  if (fullConfig.value.stages.length <= 1) {
+  if (config.value.stages.length <= 1) {
     toast.add({ title: '至少保留一个环节', color: 'info' })
     return
   }
-  const removed = fullConfig.value.stages[idx]
-  fullConfig.value.stages.splice(idx, 1)
+  const removed = config.value.stages[idx]
+  config.value.stages.splice(idx, 1)
   if (expandedId.value === removed?.id) expandedId.value = null
 }
 
 function duplicateStage(idx: number) {
-  const original = fullConfig.value.stages[idx]
+  const original = config.value.stages[idx]
   if (!original) return
   const copy: Stage = {
     ...JSON.parse(JSON.stringify(original)),
     id: genTmpId(),
     name: original.name + ' (副本)',
-    orderIndex: fullConfig.value.stages.length + 1,
+    orderIndex: config.value.stages.length + 1,
   }
-  fullConfig.value.stages.splice(idx + 1, 0, copy)
+  config.value.stages.splice(idx + 1, 0, copy)
   expandedId.value = copy.id
 }
 
@@ -328,11 +262,11 @@ function onDragLeave(id: string | number) {
 // 放置时重排序
 function onDrop(targetId: string | number) {
   if (dragSourceId.value === null || dragSourceId.value === targetId) return
-  const sourceIdx = fullConfig.value.stages.findIndex(s => s.id === dragSourceId.value)
-  const targetIdx = fullConfig.value.stages.findIndex(s => s.id === targetId)
+  const sourceIdx = config.value.stages.findIndex(s => s.id === dragSourceId.value)
+  const targetIdx = config.value.stages.findIndex(s => s.id === targetId)
   if (sourceIdx < 0 || targetIdx < 0) return
-  const [item] = fullConfig.value.stages.splice(sourceIdx, 1)
-  if (item) fullConfig.value.stages.splice(targetIdx, 0, item)
+  const [item] = config.value.stages.splice(sourceIdx, 1)
+  if (item) config.value.stages.splice(targetIdx, 0, item)
   dragOverId.value = null
 }
 
@@ -394,7 +328,7 @@ function onStageFormUpdate(stage: Stage, formData: {
 }
 
 // ═══════════ 生命周期 ═══════════
-onMounted(() => loadConfig())
+onMounted(() => loadPageConfig())
 
 // 初始加载完成标记 —— 防止加载过程误触发自动保存 PUT
 let initialLoadDone = false
@@ -402,12 +336,12 @@ let initialLoadDone = false
 // 配置变化时自动保存（防抖）
 let saveTimeout: ReturnType<typeof setTimeout> | null = null
 watch(
-  () => fullConfig.value.stages,
+  () => config.value.stages,
   () => {
     if (!initialLoadDone) return // 初始加载完成前不允许自动保存
     if (saveTimeout) clearTimeout(saveTimeout)
     saveTimeout = setTimeout(() => {
-      if (!loading.value) saveConfig()
+      if (!loading.value) savePageConfig()
     }, 1500)
   },
   { deep: true }
@@ -417,7 +351,7 @@ watch(
 onBeforeUnmount(() => {
   if (saveTimeout) {
     clearTimeout(saveTimeout)
-    saveConfig()
+    savePageConfig()
   }
 })
 </script>
@@ -430,7 +364,7 @@ onBeforeUnmount(() => {
     <!-- ═══ 左侧：实时预览（左4列，约1/3宽度） ═══ -->
     <div class="col-span-4">
       <TimerPreviewCard
-        :full-config="fullConfig"
+        :full-config="config"
         :tournament-id="matchId"
         type="standalone"
         v-model:stage-index="previewStageIndex"
@@ -512,7 +446,7 @@ onBeforeUnmount(() => {
           <!-- 右侧环节列表 -->
           <div class="flex-1 stages-right-container">
             <!-- 空状态 -->
-            <div v-if="fullConfig.stages.length === 0" class="empty-state">
+            <div v-if="config.stages.length === 0" class="empty-state">
               <UIcon name="i-lucide-clock" class="w-10 h-10 mx-auto mb-2 text-white/30" />
               <p>从左侧分类栏添加计时环节</p>
             </div>
@@ -526,7 +460,7 @@ onBeforeUnmount(() => {
                 <span>使用模板</span>
               </button>
               <div
-                v-for="(stage, idx) in fullConfig.stages"
+                v-for="(stage, idx) in config.stages"
                 :key="stage.id"
                 class="stage-card"
                 :class="{

@@ -20,7 +20,7 @@ const authStore = useAuthStore()
 
 // ═══════════ 数据模型 ═══════════
 const tournament = inject<Ref<any>>('tournament')!
-const loading = ref(false)
+const { config, loadConfig: apiLoad, saveConfig: apiSave, loading } = useTimerConfig()
 const saving = ref(false)
 const uploading = ref(false)
 const tournamentId = computed(() => route.params.id as string)
@@ -28,130 +28,11 @@ const tournamentId = computed(() => route.params.id as string)
 // 预览当前环节索引
 const previewStageIndex = ref(0)
 
-// 完整的计时器配置
-const fullConfig = ref<{
-  name: string
-  title: string
-  positiveTopic: string
-  negativeTopic: string
-  teamPositiveName: string
-  teamNegativeName: string
-  uiConfig: Record<string, any>
-  skinConfig: Record<string, any>
-  audioConfig: Record<string, any>
-  teamLogoConfig: {
-    positiveLogoUrl?: string
-    negativeLogoUrl?: string
-    showTeamLogo?: boolean
-    logoSize?: number
-    logoOffsetX?: number
-    logoOffsetY?: number
-  }
-  stages: any[]
-}>({
-  name: '',
-  title: '',
-  positiveTopic: '',
-  negativeTopic: '',
-  teamPositiveName: '',
-  teamNegativeName: '',
-  uiConfig: {},
-  skinConfig: {},
-  audioConfig: {},
-  teamLogoConfig: {
-    positiveLogoUrl: '',
-    negativeLogoUrl: '',
-    showTeamLogo: true,
-    logoSize: 57.6,
-    logoOffsetX: 0,
-    logoOffsetY: 0,
-  },
-  stages: [],
-})
-
-// ═══════════ 数据加载 ═══════════
-async function loadConfig() {
-  loading.value = true
-  try {
-    // 从 inject 的 tournament 中获取赛事基本信息
-    if (tournament.value) {
-      fullConfig.value.name = tournament.value.name
-      fullConfig.value.title = tournament.value.name
-    }
-
-    // 加载计时器配置
-    const configRes = await $fetch<any>(`/api/tournaments/${tournamentId.value}/timer-config`, {
-      headers: { Authorization: `Bearer ${authStore.token}` },
-    })
-
-    if (configRes?.data) {
-      const cfg = configRes.data
-      fullConfig.value.name = cfg.name || fullConfig.value.name
-      fullConfig.value.title = cfg.title || fullConfig.value.title
-      fullConfig.value.positiveTopic = cfg.positiveTopic || ''
-      fullConfig.value.negativeTopic = cfg.negativeTopic || ''
-      fullConfig.value.teamPositiveName = cfg.teamPositiveName || ''
-      fullConfig.value.teamNegativeName = cfg.teamNegativeName || ''
-      fullConfig.value.uiConfig = cfg.uiConfig || {}
-      fullConfig.value.skinConfig = cfg.skinConfig || {}
-      fullConfig.value.audioConfig = cfg.audioConfig || {}
-      fullConfig.value.teamLogoConfig = {
-        positiveLogoUrl: '',
-        negativeLogoUrl: '',
-        showTeamLogo: true,
-        logoSize: 57.6,
-        logoOffsetX: 0,
-        logoOffsetY: 0,
-        ...(cfg.teamLogoConfig || {}),
-      }
-      fullConfig.value.stages = cfg.stages || []
-
-      // 如果 stages 为空，使用默认环节
-      if (fullConfig.value.stages.length === 0) {
-        fullConfig.value.stages = getDefaultStages()
-      }
-    } else {
-      // 新配置，使用默认环节
-      fullConfig.value.stages = getDefaultStages()
-    }
-  } catch (e: any) {
-    toast.add({ title: e?.data?.statusMessage || '加载失败', color: 'error' })
-  } finally {
-    loading.value = false
-  }
-}
-
-// 获取默认环节
-function getDefaultStages() {
-  return [
-    { id: 1, name: '开篇立论', duration: 180, type: 'single_speech', order: 1 },
-    { id: 2, name: '攻辩', duration: 120, type: 'single_speech', order: 2 },
-    { id: 3, name: '自由辩论', duration: 240, type: 'free_debate', order: 3, positiveDuration: 120, negativeDuration: 120 },
-    { id: 4, name: '总结陈词', duration: 180, type: 'single_speech', order: 4 },
-  ]
-}
-
 // ═══════════ 数据保存 ═══════════
-async function saveConfig() {
+async function savePageConfig() {
   saving.value = true
   try {
-    await $fetch<any>(`/api/tournaments/${tournamentId.value}/timer-config`, {
-      method: 'PUT',
-      headers: { Authorization: `Bearer ${authStore.token}` },
-      body: {
-        name: fullConfig.value.name,
-        title: fullConfig.value.title,
-        positiveTopic: fullConfig.value.positiveTopic,
-        negativeTopic: fullConfig.value.negativeTopic,
-        teamPositiveName: fullConfig.value.teamPositiveName,
-        teamNegativeName: fullConfig.value.teamNegativeName,
-        uiConfig: fullConfig.value.uiConfig,
-        skinConfig: fullConfig.value.skinConfig,
-        audioConfig: fullConfig.value.audioConfig,
-        teamLogoConfig: fullConfig.value.teamLogoConfig,
-        stages: fullConfig.value.stages,
-      },
-    })
+    await apiSave(tournamentId.value, 'tournament')
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '保存失败', color: 'error' })
   } finally {
@@ -181,7 +62,7 @@ async function onLogoSelect(event: Event, field: 'positiveLogoUrl' | 'negativeLo
 
     if (uploadRes?.success && uploadRes?.data?.path) {
       // 保存上传文件的相对路径到配置中
-      fullConfig.value.teamLogoConfig[field] = uploadRes.data.path
+      config.value.teamLogoConfig[field] = uploadRes.data.path
       toast.add({
         title: `已上传: ${uploadRes.data.originalName}`,
         color: 'success'
@@ -201,20 +82,27 @@ async function onLogoSelect(event: Event, field: 'positiveLogoUrl' | 'negativeLo
 
 // ═══════════ 移除队徽 ═══════════
 function removeLogo(field: 'positiveLogoUrl' | 'negativeLogoUrl') {
-  fullConfig.value.teamLogoConfig[field] = ''
+  config.value.teamLogoConfig[field] = ''
 }
 
 // ═══════════ 生命周期 ═══════════
-onMounted(() => loadConfig())
+onMounted(async () => {
+  await apiLoad(tournamentId.value, 'tournament')
+  // 从 injected tournament 补充名称
+  if (tournament.value) {
+    config.value.name = tournament.value.name
+    config.value.title = tournament.value.name
+  }
+})
 
 // 配置变化时自动保存（防抖）
 let saveTimeout: ReturnType<typeof setTimeout> | null = null
 watch(
-  () => fullConfig.value.teamLogoConfig,
+  () => config.value.teamLogoConfig,
   () => {
     if (saveTimeout) clearTimeout(saveTimeout)
     saveTimeout = setTimeout(() => {
-      if (!loading.value) saveConfig()
+      if (!loading.value) savePageConfig()
     }, 1500)
   },
   { deep: true }
@@ -229,7 +117,7 @@ watch(
     <!-- 左侧：实时预览（左4列，约1/3宽度） -->
     <div class="col-span-4">
       <TimerPreviewCard
-        :full-config="fullConfig"
+        :full-config="config"
         :tournament-id="tournamentId"
         v-model:stage-index="previewStageIndex"
       />
@@ -252,7 +140,7 @@ watch(
             <p class="text-xs text-[var(--color-text-muted)]">控制队伍名称旁是否显示队徽</p>
           </div>
           <label class="toggle-switch">
-            <input type="checkbox" v-model="fullConfig.teamLogoConfig.showTeamLogo">
+            <input type="checkbox" v-model="config.teamLogoConfig.showTeamLogo">
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -263,7 +151,7 @@ watch(
             <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">队徽大小 (px)</label>
             <input
               type="number" min="10" max="400" step="1"
-              v-model.number="fullConfig.teamLogoConfig.logoSize"
+              v-model.number="config.teamLogoConfig.logoSize"
               class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
             />
             <p class="text-xs text-[var(--color-text-muted)] mt-1">默认 57.6</p>
@@ -272,7 +160,7 @@ watch(
             <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">水平位置 (左右, px)</label>
             <input
               type="number" step="1"
-              v-model.number="fullConfig.teamLogoConfig.logoOffsetX"
+              v-model.number="config.teamLogoConfig.logoOffsetX"
               class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
             />
             <p class="text-xs text-[var(--color-text-muted)] mt-1">正数向右，负数向左</p>
@@ -281,7 +169,7 @@ watch(
             <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">垂直位置 (上下, px)</label>
             <input
               type="number" step="1"
-              v-model.number="fullConfig.teamLogoConfig.logoOffsetY"
+              v-model.number="config.teamLogoConfig.logoOffsetY"
               class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
             />
             <p class="text-xs text-[var(--color-text-muted)] mt-1">正数向下，负数向上</p>
@@ -300,7 +188,7 @@ watch(
             <div class="flex flex-col items-center gap-3">
               <!-- 预览框 -->
               <div class="w-24 h-24 border-2 border-dashed border-[var(--color-border)] rounded-lg overflow-hidden flex items-center justify-center bg-[var(--color-bg-secondary)]">
-                <img v-if="fullConfig.teamLogoConfig.positiveLogoUrl" :src="fullConfig.teamLogoConfig.positiveLogoUrl" class="w-full h-full object-cover" alt="正方队徽" />
+                <img v-if="config.teamLogoConfig.positiveLogoUrl" :src="config.teamLogoConfig.positiveLogoUrl" class="w-full h-full object-cover" alt="正方队徽" />
                 <div v-else class="flex flex-col items-center justify-center text-[var(--color-text-muted)]">
                   <UIcon name="i-lucide-image" class="w-8 h-8 mb-1" />
                   <span class="text-xs">暂无图片</span>
@@ -314,7 +202,7 @@ watch(
                   <input type="file" accept="image/*" class="hidden" @change="(e: Event) => onLogoSelect(e, 'positiveLogoUrl')" />
                 </label>
                 <button
-                  v-if="fullConfig.teamLogoConfig.positiveLogoUrl"
+                  v-if="config.teamLogoConfig.positiveLogoUrl"
                   @click="removeLogo('positiveLogoUrl')"
                   class="px-4 py-2 text-sm text-red-500 dark:text-red-400 border border-red-500/30 rounded hover:bg-red-500/10 transition-colors flex items-center gap-2"
                 >
@@ -335,7 +223,7 @@ watch(
             <div class="flex flex-col items-center gap-3">
               <!-- 预览框 -->
               <div class="w-24 h-24 border-2 border-dashed border-[var(--color-border)] rounded-lg overflow-hidden flex items-center justify-center bg-[var(--color-bg-secondary)]">
-                <img v-if="fullConfig.teamLogoConfig.negativeLogoUrl" :src="fullConfig.teamLogoConfig.negativeLogoUrl" class="w-full h-full object-cover" alt="反方队徽" />
+                <img v-if="config.teamLogoConfig.negativeLogoUrl" :src="config.teamLogoConfig.negativeLogoUrl" class="w-full h-full object-cover" alt="反方队徽" />
                 <div v-else class="flex flex-col items-center justify-center text-[var(--color-text-muted)]">
                   <UIcon name="i-lucide-image" class="w-8 h-8 mb-1" />
                   <span class="text-xs">暂无图片</span>
@@ -349,7 +237,7 @@ watch(
                   <input type="file" accept="image/*" class="hidden" @change="(e: Event) => onLogoSelect(e, 'negativeLogoUrl')" />
                 </label>
                 <button
-                  v-if="fullConfig.teamLogoConfig.negativeLogoUrl"
+                  v-if="config.teamLogoConfig.negativeLogoUrl"
                   @click="removeLogo('negativeLogoUrl')"
                   class="px-4 py-2 text-sm text-red-500 dark:text-red-400 border border-red-500/30 rounded hover:bg-red-500/10 transition-colors flex items-center gap-2"
                 >

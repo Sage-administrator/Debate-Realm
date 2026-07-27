@@ -14,22 +14,7 @@ import TimerPreviewCard from '~/components/TimerPreviewCard.vue'
 
 const route = useRoute()
 const toast = useToast()
-const authStore = useAuthStore()
-
-// 皮肤/背景配置默认值：必须包含 solidColor / gradientStart / gradientEnd 等字段，
-// 否则纯色/渐变模式因缺少颜色值而被 rootStyle 跳过（表现为“无法使用”）
-const DEFAULT_SKIN_CONFIG = {
-  backgroundType: 'default',
-  solidColor: '#1F2937',
-  gradientStart: '#1F2937',
-  gradientEnd: '#374151',
-  imageUrl: '',
-  imageOpacity: 1,
-}
-
 const tournament = inject<Ref<any>>('standaloneMatch')!
-const loading = ref(false)
-const saving = ref(false)
 const matchId = computed(() => route.params.id as string)
 
 const previewStageIndex = ref(0)
@@ -37,107 +22,28 @@ const previewStageIndex = ref(0)
 // 背景图片 URL 输入（不再使用上传）
 const backgroundImageUrl = ref('')
 
-const fullConfig = ref<{
-  name: string
-  title: string
-  positiveTopic: string
-  negativeTopic: string
-  teamPositiveName: string
-  teamNegativeName: string
-  uiConfig: Record<string, any>
-  skinConfig: Record<string, any>
-  audioConfig: Record<string, any>
-  teamLogoConfig: Record<string, any>
-  stages: any[]
-}>({
-  name: '',
-  title: '',
-  positiveTopic: '',
-  negativeTopic: '',
-  teamPositiveName: '',
-  teamNegativeName: '',
-  uiConfig: {},
-  skinConfig: { ...DEFAULT_SKIN_CONFIG },
-  audioConfig: {},
-  teamLogoConfig: {},
-  stages: [],
-})
-
+// 使用共享配置（跨皮肤/计时器/环节等页面共享，避免重复 fetch + 跨页不一致）
+const { config, loadConfig: loadShared, saveConfig: saveShared, loading } = useTimerConfig()
 const skinConfig = computed({
-  get: () => fullConfig.value.skinConfig || {},
-  set: (val) => { fullConfig.value.skinConfig = val },
+  get: () => config.value.skinConfig || {},
+  set: (val) => { config.value.skinConfig = val },
 })
 
-async function loadConfig() {
-  loading.value = true
-  try {
-    if (tournament.value) {
-      fullConfig.value.name = tournament.value.name
-      fullConfig.value.title = tournament.value.name
-    }
+async function loadSkinConfig() {
+  await loadShared(matchId.value, 'standalone')
 
-    const configRes = await $fetch<any>(`/api/standalone-matches/${matchId.value}/timer-config`, {
-      headers: { Authorization: `Bearer ${authStore.token}` },
-    })
-
-    if (configRes?.data) {
-      const cfg = configRes.data
-      fullConfig.value.name = cfg.name || fullConfig.value.name
-      fullConfig.value.title = cfg.title || fullConfig.value.title
-      fullConfig.value.positiveTopic = cfg.positiveTopic || ''
-      fullConfig.value.negativeTopic = cfg.negativeTopic || ''
-      fullConfig.value.teamPositiveName = cfg.teamPositiveName || ''
-      fullConfig.value.teamNegativeName = cfg.teamNegativeName || ''
-      fullConfig.value.uiConfig = cfg.uiConfig || {}
-      // 合并默认值：保证 solidColor / gradientStart / gradientEnd 等字段始终存在，
-      // 纯色/渐变模式才不会因缺色而失效
-      fullConfig.value.skinConfig = { ...DEFAULT_SKIN_CONFIG, ...(cfg.skinConfig || {}) }
-      fullConfig.value.audioConfig = cfg.audioConfig || {}
-      fullConfig.value.teamLogoConfig = cfg.teamLogoConfig || {}
-      fullConfig.value.stages = cfg.stages || []
-
-      if (fullConfig.value.skinConfig.imageUrl) {
-        backgroundImageUrl.value = fullConfig.value.skinConfig.imageUrl
-      }
-    } else {
-      fullConfig.value.skinConfig = { ...DEFAULT_SKIN_CONFIG }
-    }
-  } catch (e: any) {
-    toast.add({ title: e?.data?.statusMessage || '加载失败', color: 'error' })
-  } finally {
-    loading.value = false
+  // 加载完成后同步背景图片 URL 到输入框
+  if (config.value.skinConfig?.imageUrl) {
+    backgroundImageUrl.value = config.value.skinConfig.imageUrl
   }
 }
 
-async function saveConfig() {
-  saving.value = true
-  try {
-    await $fetch<any>(`/api/standalone-matches/${matchId.value}/timer-config`, {
-      method: 'PUT',
-      headers: { Authorization: `Bearer ${authStore.token}` },
-      body: {
-        name: fullConfig.value.name,
-        title: fullConfig.value.title,
-        positiveTopic: fullConfig.value.positiveTopic,
-        negativeTopic: fullConfig.value.negativeTopic,
-        teamPositiveName: fullConfig.value.teamPositiveName,
-        teamNegativeName: fullConfig.value.teamNegativeName,
-        uiConfig: fullConfig.value.uiConfig,
-        skinConfig: fullConfig.value.skinConfig,
-        audioConfig: fullConfig.value.audioConfig,
-        teamLogoConfig: fullConfig.value.teamLogoConfig,
-        stages: fullConfig.value.stages,
-      },
-    })
-  } catch (e: any) {
-    toast.add({ title: e?.data?.statusMessage || '保存失败', color: 'error' })
-  } finally {
-    saving.value = false
-  }
+async function saveSkinConfig() {
+  await saveShared(matchId.value, 'standalone')
 }
 
 function setBackgroundType(type: string) {
-  fullConfig.value.skinConfig.backgroundType = type
+  config.value.skinConfig.backgroundType = type
 }
 
 // 应用背景图片 URL
@@ -147,26 +53,26 @@ function applyBackgroundImageUrl() {
     removeBackgroundImage()
     return
   }
-  fullConfig.value.skinConfig.imageUrl = url
-  fullConfig.value.skinConfig.backgroundType = 'image'
+  config.value.skinConfig.imageUrl = url
+  config.value.skinConfig.backgroundType = 'image'
   toast.add({ title: '背景图片已更新', color: 'success' })
 }
 
 function removeBackgroundImage() {
   backgroundImageUrl.value = ''
-  fullConfig.value.skinConfig.imageUrl = ''
-  fullConfig.value.skinConfig.backgroundType = 'default'
+  config.value.skinConfig.imageUrl = ''
+  config.value.skinConfig.backgroundType = 'default'
 }
 
-onMounted(() => loadConfig())
+onMounted(() => loadSkinConfig())
 
 let saveTimeout: ReturnType<typeof setTimeout> | null = null
 watch(
-  () => fullConfig.value.skinConfig,
+  () => config.value.skinConfig,
   () => {
     if (saveTimeout) clearTimeout(saveTimeout)
     saveTimeout = setTimeout(() => {
-      if (!loading.value) saveConfig()
+      if (!loading.value) saveSkinConfig()
     }, 1500)
   },
   { deep: true }
@@ -179,7 +85,7 @@ watch(
 
     <div class="col-span-4">
       <TimerPreviewCard
-        :full-config="fullConfig"
+        :full-config="config"
         :tournament-id="matchId"
         type="standalone"
         v-model:stage-index="previewStageIndex"
