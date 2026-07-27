@@ -227,7 +227,7 @@ const permLogError = ref('')
 
 // ── 赛场管理 ──
 const arenaList = ref<Array<{
-  id: string; matchFormat: string; status: string
+  id: string; name: string; matchFormat: string; status: string
   channelId?: string; guildId?: string
   originalChannelName?: string | null // 语音子频道原名（赛场期间被改名，结束后还原）
   roleCount: number; totalClaims: number; createdAt: string
@@ -491,7 +491,7 @@ async function loadArenaList() {
   try {
     const data = await $fetch<{
       success: boolean; total: number; arenas: Array<{
-        id: string; matchFormat: string; status: string
+        id: string; name: string; matchFormat: string; status: string
         channelId?: string; guildId?: string
         originalChannelName?: string | null
         roleCount: number; totalClaims: number; createdAt: string
@@ -960,7 +960,7 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
                       <span class="text-xs text-[var(--color-text-muted)]">
                         {{ role.claims.length }}/{{ role.maxClaims }}
                       </span>
-                      <span v-if="role.isFull" class="text-xs text-red-400">已满</span>
+                      <span v-if="role.isFull" class="text-xs text-red-500 dark:text-red-400">已满</span>
                       <span v-else-if="arenaDetail.status === 'active'" class="text-xs text-green-500">可认领</span>
                     </div>
                     <!-- 手动认领按钮（管理员） -->
@@ -1007,7 +1007,7 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-1">
               <div><code class="bg-[var(--color-bg-tertiary)] px-1 rounded text-xs">/ping</code> <span class="text-xs text-[var(--color-text-muted)]">测试连接</span></div>
               <div><code class="bg-[var(--color-bg-tertiary)] px-1 rounded text-xs">/help</code> <span class="text-xs text-[var(--color-text-muted)]">帮助信息</span></div>
-              <div><code class="bg-[var(--color-bg-tertiary)] px-1 rounded text-xs">/设置赛场 4v4</code> <span class="text-xs text-[var(--color-text-muted)]">创建赛场</span></div>
+              <div><code class="bg-[var(--color-bg-tertiary)] px-1 rounded text-xs">/设置赛场 赛场名 4v4</code> <span class="text-xs text-[var(--color-text-muted)]">创建赛场（赛场名必填，≤8字）</span></div>
               <div><code class="bg-[var(--color-bg-tertiary)] px-1 rounded text-xs">/结束比赛</code> <span class="text-xs text-[var(--color-text-muted)]">关闭赛场</span></div>
               <div><code class="bg-[var(--color-bg-tertiary)] px-1 rounded text-xs">/认领 正方一辩</code> <span class="text-xs text-[var(--color-text-muted)]">认领身份</span></div>
               <div><code class="bg-[var(--color-bg-tertiary)] px-1 rounded text-xs">/取消认领</code> <span class="text-xs text-[var(--color-text-muted)]">取消身份</span></div>
@@ -1016,7 +1016,7 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
               <div><code class="bg-[var(--color-bg-tertiary)] px-1 rounded text-xs">/赛程</code> <span class="text-xs text-[var(--color-text-muted)]">查看赛程</span></div>
               <div><code class="bg-[var(--color-bg-tertiary)] px-1 rounded text-xs">/下一场</code> <span class="text-xs text-[var(--color-text-muted)]">下一场比赛</span></div>
               <div><code class="bg-[var(--color-bg-tertiary)] px-1 rounded text-xs">/排名</code> <span class="text-xs text-[var(--color-text-muted)]">查看排名</span></div>
-              <div><code class="bg-[var(--color-bg-tertiary)] px-1 rounded text-xs">/status</code> <span class="text-xs text-[var(--color-text-muted)]">Bot 状态</span></div>
+              <div><code class="bg-[var(--color-bg-tertiary)] px-1 rounded text-xs">状态</code> <span class="text-xs text-[var(--color-text-muted)]">查看 Bot 状态</span></div>
             </div>
           </div>
         </UCard>

@@ -107,7 +107,7 @@ onMounted(() => {
 
     <!-- 加载状态 -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <UIcon name="i-lucide-loader-2" class="w-6 h-6 animate-spin text-indigo-400" />
+      <UIcon name="i-lucide-loader-2" class="w-6 h-6 animate-spin text-indigo-600 dark:text-indigo-400" />
     </div>
 
     <!-- 空状态 -->
@@ -135,10 +135,10 @@ onMounted(() => {
             <!-- 辩题信息 -->
             <div v-if="p.positiveTopic || p.negativeTopic" class="mt-2 text-sm space-y-1">
               <div v-if="p.positiveTopic" class="text-[var(--color-text-secondary)]">
-                <span class="text-green-400 font-medium">正方：</span>{{ p.positiveTopic }}
+                <span class="text-green-600 dark:text-green-400 font-medium">正方：</span>{{ p.positiveTopic }}
               </div>
               <div v-if="p.negativeTopic" class="text-[var(--color-text-secondary)]">
-                <span class="text-blue-400 font-medium">反方：</span>{{ p.negativeTopic }}
+                <span class="text-blue-600 dark:text-blue-400 font-medium">反方：</span>{{ p.negativeTopic }}
               </div>
             </div>
 

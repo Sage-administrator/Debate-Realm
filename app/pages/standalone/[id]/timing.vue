@@ -14,23 +14,37 @@ definePageMeta({ layout: 'standalone' })
 import { computed, ref, onMounted, watch, watchEffect } from 'vue'
 import TimerPreviewCard from '~/components/TimerPreviewCard.vue'
 import StageForm from '~/components/StageForm.vue'
+import { debateTemplates } from '~/data/debate-templates'
 
 // ═══════════ 类型定义 ═══════════
 interface Stage {
   id: number | string
   name: string
   duration: number
-  type: 'speech' | 'question' | 'summary' | 'special' | 'dual-timer' | 'single_speech' | 'single_question' | 'bilateral_debate' | 'free_debate' | 'no_timer' | 'single_timer' | 'double_timer' | 'ppt_replace' | string
+  type: string
   description?: string
   order?: number
+  orderIndex?: number
   positiveDuration?: number
   negativeDuration?: number
-  // 新增：角色相关
-  speaker?: string        // 单方发言的发言方（如 "正方·一辩"）
-  questioner?: string     // 发问人
-  responder?: string      // 接受人
-  firstSpeaker?: string   // 率先发言方
-  protectionTime?: number // 保护时间
+  // 角色相关
+  speaker?: string
+  questioner?: string
+  responder?: string
+  firstSpeaker?: string
+  protectionTime?: number
+  // 对辩双方参与辩手（多选）
+  positiveSpeakers?: string[]
+  negativeSpeakers?: string[]
+  // 单方发问拆分时长
+  questionDuration?: number
+  answerDuration?: number
+  // 无计时器环节的可发言角色（multi-select，角色 label 列表）
+  speakers?: string[]
+  // 启用开关
+  enabled?: boolean
+  // PPT/图片展示环节的图片路径
+  pptImage?: string
 }
 
 // ═══════════ 基础工具 ═══════════
@@ -53,80 +67,16 @@ const expandedId = ref<number | string | null>(null)
 // 模板选择弹窗
 const showTemplateModal = ref(false)
 
-// 辩论计时器模板列表
-const debateTemplates = [
-  {
-    id: 'international',
-    name: '国际华语辩论邀请赛',
-    description: '标准赛制：立论、质询、小结、自由辩论、总结陈词',
-    stages: [
-      { name: '正方一辩立论', duration: 180, type: 'speech', order: 1 },
-      { name: '反方四辩质询正方一辩', duration: 120, type: 'question', order: 2 },
-      { name: '反方一辩立论', duration: 180, type: 'speech', order: 3 },
-      { name: '正方四辩质询反方一辩', duration: 120, type: 'question', order: 4 },
-      { name: '正方二辩申论', duration: 180, type: 'speech', order: 5 },
-      { name: '反方三辩质询正方二辩', duration: 120, type: 'question', order: 6 },
-      { name: '反方二辩申论', duration: 180, type: 'speech', order: 7 },
-      { name: '正方三辩质询反方二辩', duration: 120, type: 'question', order: 8 },
-      { name: '正方三辩小结', duration: 120, type: 'summary', order: 9 },
-      { name: '反方三辩小结', duration: 120, type: 'summary', order: 10 },
-      { name: '自由辩论', duration: 240, type: 'dual-timer', order: 11, positiveDuration: 120, negativeDuration: 120 },
-      { name: '反方四辩总结陈词', duration: 240, type: 'summary', order: 12 },
-      { name: '正方四辩总结陈词', duration: 240, type: 'summary', order: 13 },
-    ]
-  },
-  {
-    id: 'worldcup2024',
-    name: '华语辩论世界杯[2024]',
-    description: '简化赛制：立论、质询、自由辩论、总结陈词',
-    stages: [
-      { name: '正方一辩立论', duration: 210, type: 'speech', order: 1 },
-      { name: '反方四辩质询正方一辩', duration: 150, type: 'question', order: 2 },
-      { name: '反方一辩立论', duration: 210, type: 'speech', order: 3 },
-      { name: '正方四辩质询反方一辩', duration: 150, type: 'question', order: 4 },
-      { name: '正方二辩申论', duration: 180, type: 'speech', order: 5 },
-      { name: '反方二辩申论', duration: 180, type: 'speech', order: 6 },
-      { name: '自由辩论', duration: 240, type: 'dual-timer', order: 7, positiveDuration: 120, negativeDuration: 120 },
-      { name: '反方三辩总结陈词', duration: 210, type: 'summary', order: 8 },
-      { name: '正方三辩总结陈词', duration: 210, type: 'summary', order: 9 },
-    ]
-  },
-  {
-    id: 'simple',
-    name: '简单标准赛制',
-    description: '四环节：立论、攻辩、自由辩论、总结陈词',
-    stages: [
-      { name: '开篇立论', duration: 180, type: 'speech', order: 1 },
-      { name: '攻辩', duration: 120, type: 'speech', order: 2 },
-      { name: '自由辩论', duration: 240, type: 'dual-timer', order: 3, positiveDuration: 120, negativeDuration: 120 },
-      { name: '总结陈词', duration: 180, type: 'summary', order: 4 },
-    ]
-  },
-  {
-    id: 'englishbp',
-    name: '英国议会制辩论赛',
-    description: 'BP赛制：四位首相/反对党发言',
-    stages: [
-      { name: '首相', duration: 420, type: 'speech', order: 1 },
-      { name: '反对党领袖', duration: 420, type: 'speech', order: 2 },
-      { name: '副首相', duration: 420, type: 'speech', order: 3 },
-      { name: '反对党副领袖', duration: 420, type: 'speech', order: 4 },
-      { name: '政府成员', duration: 420, type: 'speech', order: 5 },
-      { name: '反对党成员', duration: 420, type: 'speech', order: 6 },
-      { name: '政府党鞭', duration: 420, type: 'speech', order: 7 },
-      { name: '反对党党鞭', duration: 420, type: 'speech', order: 8 },
-    ]
-  },
-]
 
 // 应用选定的模板
 function applyTemplate(tplId: string) {
   const tpl = debateTemplates.find(t => t.id === tplId)
   if (!tpl) return
-  let nextId = 100
   fullConfig.value.stages = tpl.stages.map(s => ({
-    id: ++nextId,
+    id: genTmpId(),
     ...s,
+    // 模板用 1-based 的 order，真实 Stage 用 orderIndex 排序，这里做一次映射
+    orderIndex: s.order,
   }))
   showTemplateModal.value = false
 }
@@ -164,14 +114,16 @@ const fullConfig = ref<{
   stages: [],
 })
 
-// 新环节 ID 计数器
-let nextStageId = 100
+// 生成临时 ID（前端新建环节用，保存后由 DB 生成真实 uuid 替换）
+function genTmpId(): string {
+  return 'tmp_' + (crypto?.randomUUID?.() || Date.now() + '_' + Math.random().toString(36).slice(2))
+}
 
 // ═══════════ 分类栏数据 ═══════════
 const timerCountTypes = [
-  { type: 'speech', name: '单计时器环节', label: '单计时器' },
-  { type: 'dual-timer', name: '双计时器环节', label: '双计时器' },
-  { type: 'special', name: '无计时器环节', label: '无计时器' },
+  { type: 'single_speech', name: '单计时器环节', label: '单计时器' },
+  { type: 'bilateral_debate', name: '双计时器环节', label: '双计时器' },
+  { type: 'no_timer', name: '无计时器环节', label: '无计时器' },
 ]
 const speechTypes = [
   { name: '立论' },
@@ -188,38 +140,7 @@ const dualTypes = [
   { name: '自由辩论' },
 ]
 
-// ═══════════ 环节类型标签（支持新类型）═══════════
-function typeLabel(type: string): string {
-  const map: Record<string, string> = {
-    // 新类型（级联选择器）
-    single_speech: '单方发言',
-    single_question: '单方发问',
-    bilateral_debate: '双边对辩',
-    free_debate: '自由辩论',
-    single_timer: '单计时器',
-    double_timer: '双计时器',
-    no_timer: '无计时器',
-    ppt_replace: 'PPT图片',
-    // 兼容旧类型
-    special: '无计时器',
-    speech: '单计时器',
-    question: '单计时器',
-    summary: '单计时器',
-    'dual-timer': '双计时器',
-  }
-  return map[type] || type
-}
-
-// 判断是否有计时功能（需要显示时长）
-function hasTimer(type: string): boolean {
-  const nonTimerTypes = ['special', 'no_timer', 'ppt_replace']
-  return !nonTimerTypes.includes(type)
-}
-
-// 判断是否双计时器
-function isDualTimer(type: string): boolean {
-  return type === 'dual-timer' || type === 'double_timer' || type === 'bilateral_debate' || type === 'free_debate'
-}
+// typeLabel / hasTimer / isDualTimer 统一使用 app/utils/stageType.ts 的实现（Nuxt 4 自动导入）
 
 // 获取环节对应的角色信息（用于卡片头标题显示）
 function getStageSpeaker(stage: any): string {
@@ -271,7 +192,7 @@ async function loadConfig() {
       fullConfig.value.skinConfig = cfg.skinConfig || {}
       fullConfig.value.audioConfig = cfg.audioConfig || {}
       fullConfig.value.teamLogoConfig = cfg.teamLogoConfig || {}
-      fullConfig.value.stages = (cfg.stages || []) as Stage[]
+      fullConfig.value.stages = (cfg.stages || []).map((s: any) => ({ ...s, type: normalizeStageType(s.type) })) as Stage[]
 
       // 如果 stages 为空，使用默认环节
       if (fullConfig.value.stages.length === 0) {
@@ -291,22 +212,25 @@ async function loadConfig() {
 // 获取默认环节
 function getDefaultStages(): Stage[] {
   return [
-    { id: 1, name: '开篇立论', duration: 180, type: 'speech', order: 1 },
-    { id: 2, name: '攻辩', duration: 120, type: 'speech', order: 2 },
-    { id: 3, name: '自由辩论', duration: 240, type: 'dual-timer', order: 3, positiveDuration: 120, negativeDuration: 120 },
-    { id: 4, name: '总结陈词', duration: 180, type: 'speech', order: 4 },
+    { id: 1, name: '开篇立论', duration: 180, type: 'single_speech', order: 1 },
+    { id: 2, name: '攻辩', duration: 120, type: 'single_speech', order: 2 },
+    { id: 3, name: '自由辩论', duration: 240, type: 'free_debate', order: 3, positiveDuration: 120, negativeDuration: 120 },
+    { id: 4, name: '总结陈词', duration: 180, type: 'single_speech', order: 4 },
   ]
 }
 
 // ═══════════ 数据保存 ═══════════
 async function saveConfig() {
+  if (saving.value) return // 防重复
   saving.value = true
+  const expandedIdx = expandedId.value
+    ? fullConfig.value.stages.findIndex(s => s.id === expandedId.value)
+    : -1
   try {
-    await $fetch<any>(`/api/standalone-matches/${matchId.value}/timer-config`, {
+    const res = await $fetch<any>(`/api/standalone-matches/${matchId.value}/timer-config`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${authStore.token}` },
       body: {
-        name: fullConfig.value.name,
         title: fullConfig.value.title,
         positiveTopic: fullConfig.value.positiveTopic,
         negativeTopic: fullConfig.value.negativeTopic,
@@ -319,6 +243,12 @@ async function saveConfig() {
         stages: fullConfig.value.stages,
       },
     })
+    if (res?.data?.stages && Array.isArray(res.data.stages)) {
+      fullConfig.value.stages = res.data.stages
+      if (expandedIdx >= 0 && expandedIdx < res.data.stages.length) {
+        expandedId.value = res.data.stages[expandedIdx].id
+      }
+    }
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '保存失败', color: 'error' })
   } finally {
@@ -329,11 +259,11 @@ async function saveConfig() {
 // ═══════════ 环节操作 ═══════════
 function addStageByType(type: string, name: string) {
   const newStage: Stage = {
-    id: ++nextStageId,
+    id: genTmpId(),
     name,
     duration: type === 'special' ? 0 : 180,
     type: type as Stage['type'],
-    order: fullConfig.value.stages.length + 1,
+    orderIndex: fullConfig.value.stages.length + 1,
     description: '',
   }
   if (type === 'dual-timer') {
@@ -359,9 +289,9 @@ function duplicateStage(idx: number) {
   if (!original) return
   const copy: Stage = {
     ...JSON.parse(JSON.stringify(original)),
-    id: ++nextStageId,
+    id: genTmpId(),
     name: original.name + ' (副本)',
-    order: fullConfig.value.stages.length + 1,
+    orderIndex: fullConfig.value.stages.length + 1,
   }
   fullConfig.value.stages.splice(idx + 1, 0, copy)
   expandedId.value = copy.id
@@ -420,6 +350,12 @@ function onStageFormUpdate(stage: Stage, formData: {
   questioner?: string
   responder?: string
   firstSpeaker?: string
+  positiveSpeakers?: string[]
+  negativeSpeakers?: string[]
+  speakers?: string[]
+  questionDuration?: number
+  answerDuration?: number
+  pptImage?: string
 }) {
   stage.type = formData.type
   stage.name = formData.name
@@ -428,15 +364,23 @@ function onStageFormUpdate(stage: Stage, formData: {
   stage.questioner = formData.questioner
   stage.responder = formData.responder
   stage.firstSpeaker = formData.firstSpeaker
+  stage.positiveSpeakers = formData.positiveSpeakers
+  stage.negativeSpeakers = formData.negativeSpeakers
+  stage.speakers = formData.speakers
+  stage.questionDuration = formData.questionDuration
+  stage.answerDuration = formData.answerDuration
+  stage.pptImage = formData.pptImage || ''
 
   // 根据类型设置 duration
   const t = formData.type
-  if (t === 'dual-timer' || t === 'bilateral_debate' || t === 'free_debate') {
-    // 双计时器/双边对辩：将 duration 同时赋给正/反方
+  if (isDualTimer(t)) {
     stage.positiveDuration = formData.duration
     stage.negativeDuration = formData.duration
-  } else if (t === 'no_timer' || t === 'ppt_replace') {
+  } else if (isNoTimer(t) || isPpt(t)) {
     stage.duration = 0
+  } else if (isQuestion(t)) {
+    // 单方发问：环节总时长 = 提问时长（已去除回答时长）
+    stage.duration = formData.questionDuration || 0
   } else {
     stage.duration = formData.duration
   }
@@ -457,12 +401,20 @@ watch(
   },
   { deep: true }
 )
+
+// 卸载时 flush 未保存的修改，避免切页丢失
+onBeforeUnmount(() => {
+  if (saveTimeout) {
+    clearTimeout(saveTimeout)
+    saveConfig()
+  }
+})
 </script>
 
 <template>
   <template v-if="standaloneMatch">
   <!-- ═══ 主内容：左侧实时预览 + 右侧环节配置（左右并排，左1/3 + 右2/3） ═══ -->
-  <main class="py-6 grid grid-cols-12 gap-6">
+  <div class="py-6 grid grid-cols-12 gap-6">
 
     <!-- ═══ 左侧：实时预览（左4列，约1/3宽度） ═══ -->
     <div class="col-span-4">
@@ -506,7 +458,7 @@ watch(
                 v-for="item in speechTypes"
                 :key="item.name"
                 class="category-btn"
-                @click="addStageByType('speech', item.name)"
+                @click="addStageByType('single_speech', item.name)"
               >
                 <span>{{ item.name }}</span>
                 <span class="text-lg">+</span>
@@ -522,7 +474,7 @@ watch(
                 v-for="item in questionTypes"
                 :key="item.name"
                 class="category-btn"
-                @click="addStageByType('question', item.name)"
+                @click="addStageByType('single_question', item.name)"
               >
                 <span>{{ item.name }}</span>
                 <span class="text-lg">+</span>
@@ -538,7 +490,7 @@ watch(
                 v-for="item in dualTypes"
                 :key="item.name"
                 class="category-btn"
-                @click="addStageByType('dual-timer', item.name)"
+                @click="addStageByType('bilateral_debate', item.name)"
               >
                 <span>{{ item.name }}</span>
                 <span class="text-lg">+</span>
@@ -587,7 +539,7 @@ watch(
                   <!-- 左侧标签组：类/类型/时/时间 -->
                   <div class="stage-header-tags">
                     <span class="status-tag status-tag--green">类</span>
-                    <span class="status-tag status-tag--white">{{ typeLabel(stage.type) }}</span>
+                    <span class="status-tag status-tag--white status-tag--type">{{ typeLabel(stage.type) }}</span>
                     <span class="status-tag status-tag--green">时</span>
                     <span v-if="hasTimer(stage.type)" class="status-tag status-tag--white status-tag--time">
                       {{ isDualTimer(stage.type)
@@ -607,7 +559,8 @@ watch(
                         {{ (stage.questioner || '反方·二辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}·{{ (stage.responder || '正方·一辩').replace(/[·\/\s\-]/g, '') }}
                       </template>
                       <template v-else-if="isDualTimer(stage.type)">
-                        {{ (stage.firstSpeaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}
+                        <template v-if="normalizeStageType(stage.type) === 'free_debate'">{{ stage.name }}</template>
+                        <template v-else>{{ (stage.firstSpeaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}</template>
                       </template>
                       <template v-else>
                         {{ stage.name }}
@@ -625,12 +578,18 @@ watch(
                     :model-value="{
                       type: stage.type,
                       name: stage.name,
-                      duration: stage.type === 'dual-timer' ? (stage.positiveDuration ?? 120) : (stage.duration ?? 180),
+                      duration: isDualTimer(stage.type) ? (stage.positiveDuration ?? 120) : (stage.duration ?? 180),
                       protectionTime: stage.protectionTime ?? 0,
-                      speaker: stage.speaker || '正方·一辩',
-                      questioner: stage.questioner || '反方·二辩',
-                      responder: stage.responder || '正方·一辩',
-                      firstSpeaker: stage.firstSpeaker || '正方·一辩',
+                      speaker: stage.speaker || '正方 · 一辩',
+                      questioner: stage.questioner || '反方 · 二辩',
+                      responder: stage.responder || '正方 · 一辩',
+                      firstSpeaker: stage.firstSpeaker || '正方 · 一辩',
+                      positiveSpeakers: stage.positiveSpeakers || [],
+                      negativeSpeakers: stage.negativeSpeakers || [],
+                      speakers: stage.speakers || [],
+                      questionDuration: stage.questionDuration ?? 0,
+                      answerDuration: stage.answerDuration ?? 0,
+                      pptImage: stage.pptImage || '',
                     }"
                     @update:model-value="(val) => onStageFormUpdate(stage, val)"
                   />
@@ -650,7 +609,7 @@ watch(
               </div>
 
               <!-- 底部：添加一个环节（随列表滚动） -->
-              <button class="add-stage-btn" @click="addStageByType('speech', '新环节')">
+              <button class="add-stage-btn" @click="addStageByType('single_speech', '新环节')">
                 <span class="add-stage-plus">＋</span>
                 <span>添加一个环节</span>
               </button>
@@ -686,7 +645,7 @@ watch(
         </div>
       </div>
     </div>
-  </main>
+  </div>
   </template>
 </template>
 
@@ -834,6 +793,11 @@ watch(
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   font-weight: 500;
+}
+
+.status-tag--type {
+  font-size: 0.875rem;
+  padding: 0.1875rem 0.625rem;
 }
 
 .status-tag--time {

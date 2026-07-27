@@ -9,7 +9,7 @@
     <!-- ══════════ 个人信息卡片 ══════════ -->
     <div class="glass-card p-6 mb-6">
       <h2 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
-        <UIcon name="i-lucide-user-cog" class="w-5 h-5 text-indigo-400" />
+        <UIcon name="i-lucide-user-cog" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
         个人信息
       </h2>
 
@@ -36,7 +36,7 @@
       <div class="space-y-5">
         <!-- 用户名 -->
         <div>
-          <label class="dark-label">用户名 <span class="text-red-400">*</span></label>
+          <label class="dark-label">用户名 <span class="text-red-500 dark:text-red-400">*</span></label>
           <input
             v-model="form.username"
             type="text"
@@ -84,7 +84,7 @@
         </div>
 
         <!-- 行内错误提示 -->
-        <p v-if="profileError" class="text-sm text-red-400">{{ profileError }}</p>
+        <p v-if="profileError" class="text-sm text-red-500 dark:text-red-400">{{ profileError }}</p>
 
         <!-- 保存按钮 -->
         <div class="flex items-center gap-3 pt-2">
@@ -111,13 +111,13 @@
     <!-- ══════════ 修改密码卡片 ══════════ -->
     <div class="glass-card p-6 mb-6">
       <h2 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
-        <UIcon name="i-lucide-key" class="w-5 h-5 text-indigo-400" />
+        <UIcon name="i-lucide-key" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
         修改密码
       </h2>
 
       <div class="space-y-5">
         <div>
-          <label class="dark-label">旧密码 <span class="text-red-400">*</span></label>
+          <label class="dark-label">旧密码 <span class="text-red-500 dark:text-red-400">*</span></label>
           <input
             v-model="passwordForm.oldPassword"
             type="password"
@@ -126,7 +126,7 @@
           />
         </div>
         <div>
-          <label class="dark-label">新密码 <span class="text-red-400">*</span></label>
+          <label class="dark-label">新密码 <span class="text-red-500 dark:text-red-400">*</span></label>
           <input
             v-model="passwordForm.newPassword"
             type="password"
@@ -135,7 +135,7 @@
           />
         </div>
         <div>
-          <label class="dark-label">确认新密码 <span class="text-red-400">*</span></label>
+          <label class="dark-label">确认新密码 <span class="text-red-500 dark:text-red-400">*</span></label>
           <input
             v-model="passwordForm.confirmPassword"
             type="password"
@@ -145,7 +145,7 @@
         </div>
 
         <!-- 行内错误提示 -->
-        <p v-if="passwordError" class="text-sm text-red-400">{{ passwordError }}</p>
+        <p v-if="passwordError" class="text-sm text-red-500 dark:text-red-400">{{ passwordError }}</p>
 
         <div class="pt-2">
           <button

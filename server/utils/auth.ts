@@ -1,5 +1,5 @@
-﻿import type { H3Event, EventHandlerRequest } from 'h3'
-import { getHeader, createError } from 'h3'
+import type { H3Event, EventHandlerRequest } from 'h3'
+import { getHeader, createError, getCookie } from 'h3'
 import { verifyToken, type JWTPayload } from '../lib/jwt'
 import type { PrismaClient } from '../lib/generated/client'
 import { prisma } from '../lib/prisma'
@@ -10,17 +10,42 @@ export type { JWTPayload }
 // 被踢下线的标准错误信息
 export const KICKED_MESSAGE = '您的账号已在其他设备登录，请重新登录'
 
+// Cookie 名称（与登录接口和前端保持一致）
+const TOKEN_COOKIE = 'auth_token'
+
+/**
+ * 从请求事件中提取 token
+ * 优先级：Authorization header > Cookie
+ * 支持两种场景：
+ * 1. 客户端 API 调用：通过 Authorization: Bearer <token> 发送
+ * 2. SSR / 浏览器直接访问：通过 Cookie 自动发送
+ */
+function extractTokenFromEvent(event: H3Event<EventHandlerRequest>): string | null {
+  // 1. 优先从 Authorization header 读取（客户端 API 调用方式）
+  const authHeader = getHeader(event, 'authorization')
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7)
+  }
+
+  // 2. 兜底从 Cookie 读取（SSR 阶段、浏览器直接访问等场景）
+  const cookieToken = getCookie(event, TOKEN_COOKIE)
+  if (cookieToken) {
+    return cookieToken
+  }
+
+  return null
+}
+
 /**
  * 从请求事件中获取用户信息（不校验 session）
  */
 export function getUserFromEvent(event: H3Event<EventHandlerRequest>): JWTPayload {
-  const authHeader = getHeader(event, 'authorization')
+  const token = extractTokenFromEvent(event)
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!token) {
     throw createError({ statusCode: 401, message: '未提供认证令牌' })
   }
 
-  const token = authHeader.substring(7)
   const payload = verifyToken(token)
 
   if (!payload) {

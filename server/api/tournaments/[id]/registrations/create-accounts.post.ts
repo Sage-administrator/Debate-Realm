@@ -29,8 +29,8 @@ export default defineEventHandler(async (event) => {
     const registrationIds = body?.registrationIds
 
     // 3. 查询已通过审核、尚未创建账号、且已转为参赛队伍的报名记录（含成员），可按 registrationIds 过滤
-    //    注：子账号需绑定到参赛队伍(tournamentTeamId)才能进入对应的队伍聊天房，
-    //    因此仅处理已转换(convertedTeamId 非空)的报名；未转换的报名建号无意义。
+    //    注：子账号需归属赛事所在全局团队(teamId)并转为参赛队伍(convertedTeamId 非空)，
+    //    因此仅处理已转换的报名；未转换的报名建号无意义。
     const registrations = await prisma.registration.findMany({
       where: {
         tournamentId: id,
@@ -111,8 +111,7 @@ export default defineEventHandler(async (event) => {
 
       await prisma.$transaction(async (tx) => {
         for (const p of pendingForReg) {
-          // d. 创建 User：子账号角色(subaccount)，绑定到其所属参赛队伍(tournamentTeamId)
-          //    同时归属赛事所在全局团队(teamId)，以便能进入赛事页与聊天室
+          // d. 创建 User：子账号角色(subaccount)，归属赛事所在全局团队(teamId)
           const newUser = await tx.user.create({
             data: {
               username: p.username,
@@ -121,7 +120,6 @@ export default defineEventHandler(async (event) => {
               role: 'subaccount',
               mode: 'debater',
               teamId: tournament.teamId,
-              tournamentTeamId: p.registration.convertedTeamId,
             },
           })
 
@@ -133,27 +131,7 @@ export default defineEventHandler(async (event) => {
             },
           })
 
-          // e2. 确保该队伍的聊天房存在（幂等 upsert）
-          if (p.convertedTeamId) {
-            await tx.chatRoom.upsert({
-              where: {
-                tournamentId_type_tournamentTeamId: {
-                  tournamentId: id,
-                  type: 'team',
-                  tournamentTeamId: p.convertedTeamId,
-                },
-              },
-              create: {
-                tournamentId: id,
-                type: 'team',
-                tournamentTeamId: p.convertedTeamId,
-                name: p.teamName ?? '队伍聊天室',
-              },
-              update: {},
-            })
-          }
-
-          // f. 回填 RegistrationMember.userId，建立报名成员与系统用户的关联
+          // e2. 回填 RegistrationMember.userId，建立报名成员与系统用户的关联
           await tx.registrationMember.update({
             where: { id: p.memberId },
             data: { userId: newUser.id },

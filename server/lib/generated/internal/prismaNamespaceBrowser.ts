@@ -64,6 +64,7 @@ export const ModelName = {
   TournamentJudge: 'TournamentJudge',
   TopicVote: 'TopicVote',
   TopicVoteRecord: 'TopicVoteRecord',
+  DebateTopic: 'DebateTopic',
   Questionnaire: 'Questionnaire',
   QuestionnaireQuestion: 'QuestionnaireQuestion',
   QuestionnaireSubmission: 'QuestionnaireSubmission',
@@ -78,9 +79,6 @@ export const ModelName = {
   Registration: 'Registration',
   RegistrationMember: 'RegistrationMember',
   RegistrationField: 'RegistrationField',
-  ChatRoom: 'ChatRoom',
-  ChatMessage: 'ChatMessage',
-  ChatReadReceipt: 'ChatReadReceipt',
   ScheduledPost: 'ScheduledPost',
   ScheduledPostRun: 'ScheduledPostRun'
 } as const
@@ -106,7 +104,6 @@ export const UserScalarFieldEnum = {
   email: 'email',
   avatar: 'avatar',
   teamId: 'teamId',
-  tournamentTeamId: 'tournamentTeamId',
   role: 'role',
   mode: 'mode',
   tokenVersion: 'tokenVersion',
@@ -139,6 +136,7 @@ export const BotArenaScalarFieldEnum = {
   teamId: 'teamId',
   name: 'name',
   matchFormat: 'matchFormat',
+  originalChannelName: 'originalChannelName',
   status: 'status',
   guildId: 'guildId',
   channelId: 'channelId',
@@ -311,6 +309,20 @@ export const TopicVoteRecordScalarFieldEnum = {
 } as const
 
 export type TopicVoteRecordScalarFieldEnum = (typeof TopicVoteRecordScalarFieldEnum)[keyof typeof TopicVoteRecordScalarFieldEnum]
+
+
+export const DebateTopicScalarFieldEnum = {
+  id: 'id',
+  tournamentId: 'tournamentId',
+  affirmative: 'affirmative',
+  negative: 'negative',
+  category: 'category',
+  note: 'note',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DebateTopicScalarFieldEnum = (typeof DebateTopicScalarFieldEnum)[keyof typeof DebateTopicScalarFieldEnum]
 
 
 export const QuestionnaireScalarFieldEnum = {
@@ -503,6 +515,18 @@ export const DebateTimerStageScalarFieldEnum = {
   positiveDuration: 'positiveDuration',
   negativeDuration: 'negativeDuration',
   allowedRoles: 'allowedRoles',
+  speaker: 'speaker',
+  questioner: 'questioner',
+  responder: 'responder',
+  firstSpeaker: 'firstSpeaker',
+  protectionTime: 'protectionTime',
+  positiveSpeakers: 'positiveSpeakers',
+  negativeSpeakers: 'negativeSpeakers',
+  questionDuration: 'questionDuration',
+  answerDuration: 'answerDuration',
+  enabled: 'enabled',
+  speakers: 'speakers',
+  pptImage: 'pptImage',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -564,47 +588,6 @@ export const RegistrationFieldScalarFieldEnum = {
 } as const
 
 export type RegistrationFieldScalarFieldEnum = (typeof RegistrationFieldScalarFieldEnum)[keyof typeof RegistrationFieldScalarFieldEnum]
-
-
-export const ChatRoomScalarFieldEnum = {
-  id: 'id',
-  tournamentId: 'tournamentId',
-  type: 'type',
-  tournamentTeamId: 'tournamentTeamId',
-  name: 'name',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type ChatRoomScalarFieldEnum = (typeof ChatRoomScalarFieldEnum)[keyof typeof ChatRoomScalarFieldEnum]
-
-
-export const ChatMessageScalarFieldEnum = {
-  id: 'id',
-  roomId: 'roomId',
-  tournamentId: 'tournamentId',
-  senderId: 'senderId',
-  senderName: 'senderName',
-  senderSide: 'senderSide',
-  content: 'content',
-  imageUrl: 'imageUrl',
-  type: 'type',
-  createdAt: 'createdAt'
-} as const
-
-export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[keyof typeof ChatMessageScalarFieldEnum]
-
-
-export const ChatReadReceiptScalarFieldEnum = {
-  id: 'id',
-  roomId: 'roomId',
-  userId: 'userId',
-  lastReadMessageId: 'lastReadMessageId',
-  lastReadAt: 'lastReadAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type ChatReadReceiptScalarFieldEnum = (typeof ChatReadReceiptScalarFieldEnum)[keyof typeof ChatReadReceiptScalarFieldEnum]
 
 
 export const ScheduledPostScalarFieldEnum = {

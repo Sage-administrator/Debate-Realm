@@ -60,7 +60,8 @@ const navItems = computed<NavItem[]>(() => {
     case 'subaccount':
       return [
         { label: '仪表盘', icon: 'i-lucide-layout-dashboard', to: '/home' },
-        { label: '赛事管理', icon: 'i-lucide-swords', to: '/tournaments/create' },
+        { label: '赛事管理', icon: 'i-lucide-swords', to: '/tournaments/manage' },
+        { label: '创建赛事', icon: 'i-lucide-plus-circle', to: '/tournaments/create' },
         ...(mode === 'qq_bot'
           ? [{ label: '机器人管理', icon: 'i-lucide-bot', to: '/bot' }]
           : []),
@@ -369,6 +370,20 @@ function roleColor(role: string): 'primary' | 'secondary' | 'success' | 'info' |
   return map[role] || 'neutral'
 }
 
+// 赛制显示：与 tournaments/index.vue、manage.vue 等保持一致；
+// 新建赛事可在「赛程生成」页才选赛制，故 format 为空时显示「未设置」而非误显示为循环赛。
+const formatLabelMap: Record<string, string> = {
+  single_elimination: '单败淘汰赛',
+  double_elimination: '双败淘汰赛',
+  round_robin: '循环赛',
+  page_playoff: '佩寄制',
+  swiss: '瑞士制',
+  group_knockout: '小组+淘汰赛',
+}
+function formatLabel(format?: string | null): string {
+  return (format && formatLabelMap[format]) || '未设置'
+}
+
 function loadDashboard() {
   if (isSystemAdmin.value) {
     loadAdminData()
@@ -525,33 +540,33 @@ onMounted(() => {
       </div>
 
       <div v-if="loading" class="text-center py-12">
-        <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-indigo-400" />
+        <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-indigo-600 dark:text-indigo-400" />
         <p class="text-[var(--color-text-muted)] mt-2">加载中...</p>
       </div>
 
       <template v-else>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <div class="glass-card-strong p-6 text-center cursor-pointer hover:bg-[var(--color-bg-tertiary)] transition-all" @click="() => { showCreateTeamModal = true }">
-            <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+            <div class="stat-icon bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 mx-auto mb-3">
               <UIcon name="i-lucide-plus-circle" class="w-6 h-6" />
             </div>
             <div class="text-sm font-medium text-[var(--color-text-primary)]">创建团队</div>
           </div>
           <div class="glass-card-strong p-6 text-center cursor-pointer hover:bg-[var(--color-bg-tertiary)] transition-all" @click="() => { showCreateUserModal = true }">
-            <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+            <div class="stat-icon bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 mx-auto mb-3">
               <UIcon name="i-lucide-user-plus" class="w-6 h-6" />
             </div>
             <div class="text-sm font-medium text-[var(--color-text-primary)]">创建用户</div>
           </div>
           <div class="glass-card-strong p-6 text-center">
-            <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+            <div class="stat-icon bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 mx-auto mb-3">
               <UIcon name="i-lucide-users" class="w-6 h-6" />
             </div>
             <div class="text-3xl font-bold text-[var(--color-text-primary)]">{{ teams.length }}</div>
             <div class="text-sm text-[var(--color-text-muted)]">团队总数</div>
           </div>
           <div class="glass-card-strong p-6 text-center">
-            <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+            <div class="stat-icon bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 mx-auto mb-3">
               <UIcon name="i-lucide-user" class="w-6 h-6" />
             </div>
             <div class="text-3xl font-bold text-[var(--color-text-primary)]">{{ users.length }}</div>
@@ -730,20 +745,20 @@ onMounted(() => {
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div class="glass-card-strong p-6 text-center cursor-pointer hover:bg-[var(--color-bg-tertiary)] transition-all" @click="navigateTo('/tournaments/create')">
-          <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+          <div class="stat-icon bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 mx-auto mb-3">
             <UIcon name="i-lucide-trophy" class="w-6 h-6" />
           </div>
           <div class="text-sm font-medium text-[var(--color-text-primary)]">创建赛事</div>
         </div>
         <div class="glass-card-strong p-6 text-center cursor-pointer hover:bg-[var(--color-bg-tertiary)] transition-all" @click="navigateTo('/home')">
-          <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+          <div class="stat-icon bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 mx-auto mb-3">
             <UIcon name="i-lucide-clipboard-check" class="w-6 h-6" />
           </div>
           <div class="text-sm font-medium text-[var(--color-text-primary)]">登记赛果</div>
           <div class="text-xs text-[var(--color-text-muted)] mt-1">在赛事详情中登记</div>
         </div>
         <div class="glass-card-strong p-6 text-center cursor-pointer hover:bg-[var(--color-bg-tertiary)] transition-all" @click="navigateTo(`/teams/${store.user?.team?.id}`)">
-          <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+          <div class="stat-icon bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 mx-auto mb-3">
             <UIcon name="i-lucide-users" class="w-6 h-6" />
           </div>
           <div class="text-sm font-medium text-[var(--color-text-primary)]">团队管理</div>
@@ -753,7 +768,7 @@ onMounted(() => {
       <div v-if="isQQBotMode" class="glass-card p-4 mb-6">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <UIcon name="i-lucide-bot" class="w-6 h-6" :class="homeConnectionStatus === 'connected' ? 'text-green-400' : homeConnectionStatus === 'connecting' ? 'text-blue-400' : 'text-[var(--color-text-muted)]'" />
+            <UIcon name="i-lucide-bot" class="w-6 h-6" :class="homeConnectionStatus === 'connected' ? 'text-green-600 dark:text-green-400' : homeConnectionStatus === 'connecting' ? 'text-blue-600 dark:text-blue-400' : 'text-[var(--color-text-muted)]'" />
             <div>
               <div class="font-medium text-[var(--color-text-primary)]">QQ机器人</div>
               <div class="text-sm text-[var(--color-text-secondary)]">
@@ -781,7 +796,7 @@ onMounted(() => {
       <h2 class="text-xl font-bold text-[var(--color-text-primary)] mb-4">赛事列表</h2>
       <div class="glass-card p-6">
         <div v-if="loadingTournaments" class="text-center py-8">
-          <UIcon name="i-lucide-loader" class="w-6 h-6 animate-spin mx-auto text-indigo-400" />
+          <UIcon name="i-lucide-loader" class="w-6 h-6 animate-spin mx-auto text-indigo-600 dark:text-indigo-400" />
         </div>
         <div v-else-if="tournaments.length === 0" class="text-center py-8 text-[var(--color-text-muted)]">
           暂无赛事，点击"创建赛事"开始
@@ -801,10 +816,10 @@ onMounted(() => {
                 v-for="t in tournaments"
                 :key="t.id"
                 class="cursor-pointer"
-                @click="navigateTo(`/tournaments/${t.id}`)"
+                @click="navigateTo(`/tournaments/${t.id}/info`)"
               >
                 <td class="font-medium text-[var(--color-text-primary)]">{{ t.name }}</td>
-                <td>{{ t.format === 'knockout' ? '淘汰赛' : '循环赛' }}</td>
+                <td>{{ formatLabel(t.format) }}</td>
                 <td>
                   <UBadge :label="({ pending: '待开始', running: '进行中', finished: '已完成' } as Record<string,string>)[t.status] || t.status"
                     :color="(({ pending: 'neutral', running: 'primary', finished: 'success' } as Record<string,string>)[t.status] || 'neutral') as any"
@@ -829,7 +844,7 @@ onMounted(() => {
 
       <div class="glass-card p-4 mb-6 border-l-4 border-l-amber-400/60">
         <div class="flex items-center gap-2">
-          <UIcon name="i-lucide-info" class="w-4 h-4 text-amber-400" />
+          <UIcon name="i-lucide-info" class="w-4 h-4 text-amber-600 dark:text-amber-400" />
           <span class="text-sm text-[var(--color-text-primary)]">您是子账号，部分功能不可用</span>
         </div>
       </div>
@@ -859,7 +874,7 @@ onMounted(() => {
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         <div class="glass-card-strong p-6 text-center cursor-pointer hover:bg-[var(--color-bg-tertiary)] transition-all" @click="navigateTo('/standalone/create')">
-          <div class="stat-icon bg-indigo-500/20 text-indigo-400 mx-auto mb-3">
+          <div class="stat-icon bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 mx-auto mb-3">
             <UIcon name="i-lucide-plus-circle" class="w-6 h-6" />
           </div>
           <div class="text-sm font-medium text-[var(--color-text-primary)]">创建独立赛事</div>
@@ -869,7 +884,7 @@ onMounted(() => {
       <h2 class="text-xl font-bold text-[var(--color-text-primary)] mb-4">我的赛事</h2>
       <div class="glass-card p-6">
         <div v-if="loadingStandalone" class="text-center py-8">
-          <UIcon name="i-lucide-loader" class="w-6 h-6 animate-spin mx-auto text-indigo-400" />
+          <UIcon name="i-lucide-loader" class="w-6 h-6 animate-spin mx-auto text-indigo-600 dark:text-indigo-400" />
         </div>
         <div v-else-if="standaloneMatches.length === 0" class="text-center py-8 text-[var(--color-text-muted)]">
           暂无独立赛事，点击上方按钮创建

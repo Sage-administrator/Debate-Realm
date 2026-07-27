@@ -29,7 +29,8 @@ function tzOffsetMs(date: Date, tz: string): number {
   })
   const m: Record<string, string> = {}
   for (const p of dtf.formatToParts(date)) if (p.type !== 'literal') m[p.type] = p.value
-  const asUTC = Date.UTC(+m.year, +m.month - 1, +m.day, +m.hour, +m.minute, +m.second)
+  // 添加非空断言：DateTimeFormat 配置了这些字段，formatToParts 一定会返回
+  const asUTC = Date.UTC(+m.year!, +m.month! - 1, +m.day!, +m.hour!, +m.minute!, +m.second!)
   return asUTC - date.getTime()
 }
 
@@ -43,7 +44,8 @@ function wallParts(date: Date, tz: string): { year: number; month: number; day: 
   const m: Record<string, string> = {}
   for (const p of dtf.formatToParts(date)) if (p.type !== 'literal') m[p.type] = p.value
   const wkMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
-  return { year: +m.year, month: +m.month, day: +m.day, weekday: wkMap[m.weekday] ?? 0 }
+  // 添加非空断言：DateTimeFormat 配置了这些字段，formatToParts 一定会返回
+  return { year: +m.year!, month: +m.month!, day: +m.day!, weekday: wkMap[m.weekday!] ?? 0 }
 }
 
 // 将「某时区的墙钟 Y-M-D H:M」还原为真实 UTC 瞬间（refDate 用于取该时刻附近的偏移，DST 近似）
@@ -56,11 +58,12 @@ function wallToUtc(year: number, month: number, day: number, hh: number, mm: num
 // 将本地「YYYY-MM-DDTHH:mm」字符串（无时区）按指定时区转 UTC 瞬间
 export function localToUtc(localStr: string, tz: string): Date {
   const [datePart, timePart] = localStr.split('T')
-  const [y, mo, d] = datePart.split('-').map(Number)
-  const [hh, mm] = timePart.split(':').map(Number)
-  const ref = new Date(Date.UTC(y, mo - 1, d, hh, mm, 0))
+  // 添加非空断言和默认值：输入格式应为 YYYY-MM-DDTHH:mm
+  const [y, mo, d] = (datePart || '').split('-').map(Number)
+  const [hh, mm] = (timePart || '').split(':').map(Number)
+  const ref = new Date(Date.UTC(y ?? 0, (mo ?? 1) - 1, d ?? 1, hh ?? 0, mm ?? 0, 0))
   const offset = tzOffsetMs(ref, tz)
-  return new Date(Date.UTC(y, mo - 1, d, hh, mm, 0) - offset)
+  return new Date(Date.UTC(y ?? 0, (mo ?? 1) - 1, d ?? 1, hh ?? 0, mm ?? 0, 0) - offset)
 }
 
 // 计算任务的下一次触发时间（UTC）。返回 null 表示无下次（如一次性已过期）
@@ -69,7 +72,8 @@ export function computeNextRun(task: ScheduleTask, from: Date = new Date()): Dat
     return task.runAt ? new Date(task.runAt) : null
   }
   const tz = task.timezone || 'Asia/Shanghai'
-  const [hh, mm] = (task.timeHHMM || '09:00').split(':').map(Number)
+  // 默认值兜底：解构失败时 hh=9, mm=0
+  const [hh = 9, mm = 0] = (task.timeHHMM || '09:00').split(':').map(Number)
   const wantWeekday = task.scheduleType === 'weekly' ? (task.weekday ?? -1) : undefined
   let cur = new Date(from)
   // ponytail: 最多向前看 14 天（覆盖 weekly 任意星期 + 跨月），足够；量大时无需更久

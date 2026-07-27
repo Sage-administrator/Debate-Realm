@@ -10,14 +10,16 @@
 /* ponytail: 统一在此定义字体，避免在多个组件中重复定义 */
 @font-face { font-family: 'Digiface'; src: url('/fonts/Digiface.woff2') format('woff2'); font-display: swap; }
 @font-face { font-family: 'SourceHanSerifCN-Heavy'; src: url('/fonts/SourceHanSerifCN-Heavy.woff2') format('woff2'); font-display: swap; }
+/* 阿里普惠字体（证书「黑体」选项用），woff2 已在 public/fonts 提供 */
+@font-face { font-family: 'AlibabaPuHuiTi'; src: url('/fonts/AlibabaPuHuiTi-3-WOFF2/AlibabaPuHuiTi-3-55-Regular.woff2') format('woff2'); font-display: swap; }
 
 /* ═══════════ 设计令牌（Design Tokens）- 浅色模式默认值 ═══════════ */
 /* 所有颜色通过 CSS 变量定义，支持深浅色模式切换 */
 :root {
   /* ── 背景色 ── */
-  --color-bg-primary: #ffffff;          /* 主背景色 */
-  --color-bg-secondary: #f8fafc;        /* 次要背景（卡片、面板） */
-  --color-bg-tertiary: #f1f5f9;         /* 三级背景（hover、active） */
+  --color-bg-primary: #f4f6fa;          /* 主背景色（浅冷灰，让白色卡片浮起） */
+  --color-bg-secondary: #ffffff;        /* 次要背景（卡片、面板，纯白浮于灰底） */
+  --color-bg-tertiary: #eef1f6;         /* 三级背景（hover、active） */
   --color-surface-elevated: #ffffff;     /* 抬高表面（模态框、下拉） */
   
   /* ── 文本色 ── */
@@ -29,7 +31,7 @@
   /* ── 边框色 ── */
   --color-border: #e2e8f0;              /* 默认边框 */
   --color-border-muted: #f1f5f9;        /* 弱化边框 */
-  --color-border-accented: #cbd5e1;     /* 强调边框 */
+  --color-border-accented: #c2cad6;     /* 强调边框（浅色下加深，让卡片边缘读出） */
   
   /* ── 强调色 ── */
   --color-accent-primary: #6366f1;      /* 主强调色（靛蓝） */
@@ -41,12 +43,16 @@
   --color-success: #22c55e;             /* 成功状态 */
   --color-warning: #f59e0b;             /* 警告状态 */
   --color-error: #ef4444;               /* 错误状态 */
+
+  /* ── 设备信息块文字（明暗自适应：浅色用深色阶保证对比度） ── */
+  --device-blue: #1d4ed8;              /* blue-700 */
+  --device-amber: #b45309;             /* amber-700 */
   
   /* ── 阴影 ── */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.06);
+  --shadow-xl: 0 20px 25px -5px rgb(15 23 42 / 0.10), 0 8px 10px -6px rgb(15 23 42 / 0.06);
   
   /* ── Nuxt UI 变量 ── */
   --ui-bg: rgba(255, 255, 255, 0.95);
@@ -69,6 +75,12 @@
   --overlay-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
   --overlay-hover: rgba(99, 102, 241, 0.08);
   --overlay-overlay: rgba(0, 0, 0, 0.4);
+
+  /* ── Hero 渐变 / 功能图标底色：浅色用更饱和色阶，保证白底对比度 ── */
+  --hero-grad-from: #4f46e5;           /* indigo-600 */
+  --hero-grad-via:  #7c3aed;           /* violet-600 */
+  --hero-grad-to:   #db2777;           /* pink-600 */
+  --tile-op: 45%;                       /* 图标底色不透明度（浅色更实） */
 }
 
 /* ═══════════ 设计令牌（Design Tokens）- 深色模式 ═══════════ */
@@ -101,6 +113,10 @@
   --color-success: #4ade80;             /* 成功状态 */
   --color-warning: #fbbf24;             /* 警告状态 */
   --color-error: #f87171;               /* 错误状态 */
+
+  /* ── 设备信息块文字（深色用中明度，与浅色区分） ── */
+  --device-blue: #93c5fd;              /* blue-300 */
+  --device-amber: #fcd34d;             /* amber-300 */
   
   /* ── 阴影（深色模式：减少阴影，改用边框区分层级） ── */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
@@ -129,11 +145,19 @@
   --overlay-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   --overlay-hover: rgba(129, 140, 248, 0.15);
   --overlay-overlay: rgba(15, 23, 42, 0.7);
+
+  /* ── Hero 渐变 / 功能图标底色：深色用中明度，让色彩「发光」 ── */
+  --hero-grad-from: #818cf8;           /* indigo-400 */
+  --hero-grad-via:  #c084fc;           /* purple-400 */
+  --hero-grad-to:   #f472b6;           /* pink-400 */
+  --tile-op: 30%;                       /* 图标底色不透明度（深色更透） */
 }
 
 /* ── 主题切换过渡动画 ── */
-/* 所有使用 CSS 变量的属性都会平滑过渡 */
-* {
+/* 仅当 <html> 挂上 .theme-transition（useTheme 在切换主题时临时添加、约 350ms 后移除）时才启用全局过渡，
+   避免常驻 transition 在 hover/状态变更/滚动时对每个元素持续产生合成开销（与大量 backdrop-filter 叠加会掉帧） */
+.theme-transition,
+.theme-transition * {
   transition: color 300ms ease, background-color 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
 }
 
@@ -154,6 +178,11 @@ body::before {
   pointer-events: none;
   z-index: 9999;
   mix-blend-mode: overlay;
+}
+/* ── 浅色下增强噪点颗粒感（overlay 在白底上无效，改用 multiply 微压） ── */
+:root:not(.dark) body::before {
+  opacity: 0.04;
+  mix-blend-mode: multiply;
 }
 
 /* ── 滚动条 ── */
@@ -198,6 +227,29 @@ body::before {
   box-shadow: var(--shadow-xl);
   border-color: var(--color-accent-primary);
 }
+
+/* ═══════════ 首页 Hero 渐变 / 功能图标底色（明暗双模式适配） ═══════════ */
+/* 浅色用更饱和的色阶保证白底对比度；深色用中明度让色彩「发光」 */
+.hero-gradient {
+  background-image: linear-gradient(to right, var(--hero-grad-from), var(--hero-grad-via), var(--hero-grad-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.feature-tile {
+  background-image: linear-gradient(
+    to bottom right,
+    color-mix(in srgb, var(--tile-from) var(--tile-op), transparent),
+    color-mix(in srgb, var(--tile-to) var(--tile-op), transparent)
+  );
+}
+.tile-indigo { --tile-from: #6366f1; --tile-to: #a855f7; } /* indigo-500 / purple-500 */
+.tile-blue   { --tile-from: #3b82f6; --tile-to: #06b6d4; } /* blue-500 / cyan-500 */
+.tile-green  { --tile-from: #22c55e; --tile-to: #10b981; } /* green-500 / emerald-500 */
+.tile-amber  { --tile-from: #f59e0b; --tile-to: #f97316; } /* amber-500 / orange-500 */
+.tile-pink   { --tile-from: #ec4899; --tile-to: #f43f5e; } /* pink-500 / rose-500 */
+.tile-violet { --tile-from: #a855f7; --tile-to: #8b5cf6; } /* purple-500 / violet-500 */
 
 /* ═══════════ Agency级 Double-Bezel 嵌套架构 ═══════════ */
 .double-bezel-shell {
@@ -465,21 +517,19 @@ body::before {
 }
 .fade-in { animation: fadeIn 0.5s ease-out; }
 
-/* ═══════════ Agency级 Scroll Entry Animations ═══════════ */
+/* ═══════════ Agency级 Scroll Entry Animations ═══════════
+ * 改为纯 CSS 入场动画：首屏加载即播放，不再依赖 JS 水合后由
+ * IntersectionObserver 添加 .visible 才显形。
+ * 之前 .section-content 初始 opacity:0，水合慢时功能卡片会空白数秒。
+ */
 .section-content {
-  opacity: 0;
-  transform: translateY(4rem);
-  filter: blur(8px);
-  transition: opacity 1000ms cubic-bezier(0.16, 1, 0.3, 1),
-             transform 1000ms cubic-bezier(0.32, 0.72, 0, 1),
-             filter 1000ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: sectionReveal 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
   will-change: opacity, transform, filter;
 }
 
-.section-content.visible {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
+@keyframes sectionReveal {
+  from { opacity: 0; transform: translateY(4rem); filter: blur(8px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
 }
 
 /* ── 统计卡片图标背景 ── */

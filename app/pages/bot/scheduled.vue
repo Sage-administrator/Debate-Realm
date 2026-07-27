@@ -283,9 +283,9 @@ async function openHistory(task: any) {
                 <div v-for="(opt, i) in form.pollOptions" :key="i" class="flex items-center gap-2">
                   <UInput v-model="form.pollOptions[i]" placeholder="选项内容" class="flex-1" />
                   <UButton color="error" variant="ghost" size="xs" icon="i-lucide-x"
-                    @click="form.pollOptions.splice(i, 1)" />
+                    @click="void form.pollOptions.splice(i, 1)" />
                 </div>
-                <UButton variant="soft" size="xs" icon="i-lucide-plus" @click="form.pollOptions.push('')">
+                <UButton variant="soft" size="xs" icon="i-lucide-plus" @click="void form.pollOptions.push('')">
                   添加选项
                 </UButton>
               </div>
@@ -297,12 +297,12 @@ async function openHistory(task: any) {
             </UFormField>
 
             <UFormField v-if="form.scheduleType === 'once'" label="触发时间" required>
-              <UInput v-model="form.runAt" type="datetime-local" />
+              <BaseDateTimePicker v-model="form.runAt" mode="datetime" placeholder="选择触发时间" />
             </UFormField>
 
             <div v-if="form.scheduleType !== 'once'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <UFormField label="触发时间" required>
-                <UInput v-model="form.timeHHMM" type="time" />
+                <BaseDateTimePicker v-model="form.timeHHMM" mode="time" placeholder="选择时间" />
               </UFormField>
               <UFormField v-if="form.scheduleType === 'weekly'" label="星期">
                 <USelect v-model="form.weekday" :items="weekdayItems" />
@@ -378,7 +378,7 @@ async function openHistory(task: any) {
           <template #header>
           <div class="flex items-center justify-between">
             <h3 class="font-bold">发布历史 — {{ historyTitle }}</h3>
-            <UButton color="neutral" variant="ghost" icon="i-lucide-x" @click="showHistory = false" />
+            <UButton color="neutral" variant="ghost" icon="i-lucide-x" @click="void (showHistory = false)" />
           </div>
         </template>
         <div v-if="historyLoading" class="text-center py-6">

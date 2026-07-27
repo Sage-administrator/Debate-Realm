@@ -73,7 +73,7 @@ async function loadData() {
 
 // ── 获取排名奖牌颜色 ──
 function rankMedalColor(rank: number) {
-  if (rank === 1) return 'text-amber-400'
+  if (rank === 1) return 'text-amber-600 dark:text-amber-400'
   if (rank === 2) return 'text-gray-300'
   if (rank === 3) return 'text-amber-700'
   return 'text-[var(--color-text-muted)]'
@@ -102,7 +102,7 @@ onMounted(() => {
           <span class="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">返回</span>
         </div>
         <div class="flex items-center gap-2">
-          <UIcon name="i-lucide-bar-chart-3" class="w-5 h-5 text-blue-400" />
+          <UIcon name="i-lucide-bar-chart-3" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
           <span class="text-[var(--color-text-primary)] font-medium">赛事统计</span>
         </div>
       </div>
@@ -123,7 +123,7 @@ onMounted(() => {
             <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
               <div>
                 <div class="flex items-center gap-3 mb-2">
-                  <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
+                  <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-600 dark:text-blue-400">
                     {{ statusLabels[data.tournament.status] || data.tournament.status }}
                   </span>
                   <span class="px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]">
@@ -142,15 +142,15 @@ onMounted(() => {
                 <div class="text-xs text-[var(--color-text-muted)] mt-1">总场次</div>
               </div>
               <div class="bg-[var(--color-bg-secondary)] rounded-xl p-4 text-center">
-                <div class="text-2xl font-bold text-emerald-400">{{ data.matchStats.finished }}</div>
+                <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ data.matchStats.finished }}</div>
                 <div class="text-xs text-[var(--color-text-muted)] mt-1">已完成</div>
               </div>
               <div class="bg-[var(--color-bg-secondary)] rounded-xl p-4 text-center">
-                <div class="text-2xl font-bold text-blue-400">{{ data.matchStats.ongoing }}</div>
+                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ data.matchStats.ongoing }}</div>
                 <div class="text-xs text-[var(--color-text-muted)] mt-1">进行中</div>
               </div>
               <div class="bg-[var(--color-bg-secondary)] rounded-xl p-4 text-center">
-                <div class="text-2xl font-bold text-amber-400">{{ data.matchStats.progress }}%</div>
+                <div class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ data.matchStats.progress }}%</div>
                 <div class="text-xs text-[var(--color-text-muted)] mt-1">完成进度</div>
               </div>
             </div>
@@ -179,7 +179,7 @@ onMounted(() => {
             :class="[
               'px-5 py-3 text-sm font-medium border-b-2 -mb-px transition-all whitespace-nowrap',
               activeTab === tab.key
-                ? 'text-blue-400 border-blue-400'
+                ? 'text-blue-600 dark:text-blue-400 border-blue-400'
                 : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text-primary)]',
             ]"
             @click="() => { activeTab = tab.key as any }"
@@ -232,15 +232,15 @@ onMounted(() => {
                     </div>
                   </td>
                   <td class="px-6 py-4 text-center text-[var(--color-text-secondary)]">{{ team.played }}</td>
-                  <td class="px-6 py-4 text-center text-emerald-400">{{ team.wins }}</td>
+                  <td class="px-6 py-4 text-center text-emerald-600 dark:text-emerald-400">{{ team.wins }}</td>
                   <td class="px-6 py-4 text-center text-[var(--color-text-muted)]">{{ team.draws }}</td>
-                  <td class="px-6 py-4 text-center text-red-400">{{ team.losses }}</td>
+                  <td class="px-6 py-4 text-center text-red-500 dark:text-red-400">{{ team.losses }}</td>
                   <td class="px-6 py-4 text-center text-[var(--color-text-secondary)]">{{ team.scoreFor }}</td>
                   <td class="px-6 py-4 text-center text-[var(--color-text-secondary)]">{{ team.scoreAgainst }}</td>
-                  <td class="px-6 py-4 text-center" :class="team.scoreDiff > 0 ? 'text-emerald-400' : team.scoreDiff < 0 ? 'text-red-400' : 'text-[var(--color-text-muted)]'">
+                  <td class="px-6 py-4 text-center" :class="team.scoreDiff > 0 ? 'text-emerald-600 dark:text-emerald-400' : team.scoreDiff < 0 ? 'text-red-500 dark:text-red-400' : 'text-[var(--color-text-muted)]'">
                     {{ team.scoreDiff > 0 ? '+' : '' }}{{ team.scoreDiff }}
                   </td>
-                  <td class="px-6 py-4 text-center text-blue-400 font-bold text-lg">{{ team.points }}</td>
+                  <td class="px-6 py-4 text-center text-blue-600 dark:text-blue-400 font-bold text-lg">{{ team.points }}</td>
                 </tr>
                 <tr v-if="data.standings.length === 0">
                   <td colspan="10" class="px-6 py-12 text-center text-[var(--color-text-muted)]">
@@ -294,9 +294,9 @@ onMounted(() => {
                         <span :class="['font-bold', rankMedalColor(idx + 1)]">{{ idx + 1 }}</span>
                       </td>
                       <td class="px-4 py-3 text-[var(--color-text-primary)] text-sm">{{ team.name }}</td>
-                      <td class="px-4 py-3 text-center text-emerald-400 text-sm">{{ team.wins }}</td>
-                      <td class="px-4 py-3 text-center text-red-400 text-sm">{{ team.losses }}</td>
-                      <td class="px-4 py-3 text-center text-blue-400 font-bold">{{ team.points }}</td>
+                      <td class="px-4 py-3 text-center text-emerald-600 dark:text-emerald-400 text-sm">{{ team.wins }}</td>
+                      <td class="px-4 py-3 text-center text-red-500 dark:text-red-400 text-sm">{{ team.losses }}</td>
+                      <td class="px-4 py-3 text-center text-blue-600 dark:text-blue-400 font-bold">{{ team.points }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -310,7 +310,7 @@ onMounted(() => {
           <!-- 最佳辩手 -->
           <div class="bg-[var(--color-bg-secondary)] backdrop-blur rounded-2xl border border-[var(--color-border)] overflow-hidden">
             <div class="px-6 py-4 border-b border-[var(--color-border)] flex items-center gap-3">
-              <UIcon name="i-lucide-star" class="w-5 h-5 text-amber-400" />
+              <UIcon name="i-lucide-star" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
               <h3 class="text-lg font-semibold text-[var(--color-text-primary)]">最佳辩手榜</h3>
             </div>
             <div class="p-6">
@@ -330,7 +330,7 @@ onMounted(() => {
                   <div class="flex-1">
                     <div class="text-[var(--color-text-primary)] font-medium">{{ d.name }}</div>
                   </div>
-                  <div class="text-amber-400 font-bold">{{ d.count }}</div>
+                  <div class="text-amber-600 dark:text-amber-400 font-bold">{{ d.count }}</div>
                   <div class="text-[var(--color-text-muted)] text-sm">次</div>
                 </div>
               </div>
@@ -340,7 +340,7 @@ onMounted(() => {
           <!-- 评委评分榜 -->
           <div class="bg-[var(--color-bg-secondary)] backdrop-blur rounded-2xl border border-[var(--color-border)] overflow-hidden">
             <div class="px-6 py-4 border-b border-[var(--color-border)] flex items-center gap-3">
-              <UIcon name="i-lucide-gavel" class="w-5 h-5 text-blue-400" />
+              <UIcon name="i-lucide-gavel" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
               <h3 class="text-lg font-semibold text-[var(--color-text-primary)]">评委评分统计</h3>
             </div>
             <div class="p-6">
@@ -360,7 +360,7 @@ onMounted(() => {
                   <div class="flex-1">
                     <div class="text-[var(--color-text-primary)] font-medium">{{ j.name }}</div>
                   </div>
-                  <div class="text-blue-400 font-bold">{{ j.count }}</div>
+                  <div class="text-blue-600 dark:text-blue-400 font-bold">{{ j.count }}</div>
                   <div class="text-[var(--color-text-muted)] text-sm">场</div>
                 </div>
               </div>

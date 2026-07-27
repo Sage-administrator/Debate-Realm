@@ -42,7 +42,6 @@ export type UserMinAggregateOutputType = {
   email: string | null
   avatar: string | null
   teamId: string | null
-  tournamentTeamId: string | null
   role: string | null
   mode: string | null
   tokenVersion: number | null
@@ -58,7 +57,6 @@ export type UserMaxAggregateOutputType = {
   email: string | null
   avatar: string | null
   teamId: string | null
-  tournamentTeamId: string | null
   role: string | null
   mode: string | null
   tokenVersion: number | null
@@ -74,7 +72,6 @@ export type UserCountAggregateOutputType = {
   email: number
   avatar: number
   teamId: number
-  tournamentTeamId: number
   role: number
   mode: number
   tokenVersion: number
@@ -100,7 +97,6 @@ export type UserMinAggregateInputType = {
   email?: true
   avatar?: true
   teamId?: true
-  tournamentTeamId?: true
   role?: true
   mode?: true
   tokenVersion?: true
@@ -116,7 +112,6 @@ export type UserMaxAggregateInputType = {
   email?: true
   avatar?: true
   teamId?: true
-  tournamentTeamId?: true
   role?: true
   mode?: true
   tokenVersion?: true
@@ -132,7 +127,6 @@ export type UserCountAggregateInputType = {
   email?: true
   avatar?: true
   teamId?: true
-  tournamentTeamId?: true
   role?: true
   mode?: true
   tokenVersion?: true
@@ -235,7 +229,6 @@ export type UserGroupByOutputType = {
   email: string | null
   avatar: string | null
   teamId: string | null
-  tournamentTeamId: string | null
   role: string
   mode: string
   tokenVersion: number
@@ -274,7 +267,6 @@ export type UserWhereInput = {
   email?: Prisma.StringNullableFilter<"User"> | string | null
   avatar?: Prisma.StringNullableFilter<"User"> | string | null
   teamId?: Prisma.StringNullableFilter<"User"> | string | null
-  tournamentTeamId?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.StringFilter<"User"> | string
   mode?: Prisma.StringFilter<"User"> | string
   tokenVersion?: Prisma.IntFilter<"User"> | number
@@ -297,7 +289,6 @@ export type UserOrderByWithRelationInput = {
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   avatar?: Prisma.SortOrderInput | Prisma.SortOrder
   teamId?: Prisma.SortOrderInput | Prisma.SortOrder
-  tournamentTeamId?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
@@ -323,7 +314,6 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   email?: Prisma.StringNullableFilter<"User"> | string | null
   avatar?: Prisma.StringNullableFilter<"User"> | string | null
   teamId?: Prisma.StringNullableFilter<"User"> | string | null
-  tournamentTeamId?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.StringFilter<"User"> | string
   mode?: Prisma.StringFilter<"User"> | string
   tokenVersion?: Prisma.IntFilter<"User"> | number
@@ -346,7 +336,6 @@ export type UserOrderByWithAggregationInput = {
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   avatar?: Prisma.SortOrderInput | Prisma.SortOrder
   teamId?: Prisma.SortOrderInput | Prisma.SortOrder
-  tournamentTeamId?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
@@ -370,7 +359,6 @@ export type UserScalarWhereWithAggregatesInput = {
   email?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   avatar?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   teamId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
-  tournamentTeamId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   role?: Prisma.StringWithAggregatesFilter<"User"> | string
   mode?: Prisma.StringWithAggregatesFilter<"User"> | string
   tokenVersion?: Prisma.IntWithAggregatesFilter<"User"> | number
@@ -385,7 +373,6 @@ export type UserCreateInput = {
   nickname?: string | null
   email?: string | null
   avatar?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -408,7 +395,6 @@ export type UserUncheckedCreateInput = {
   email?: string | null
   avatar?: string | null
   teamId?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -429,7 +415,6 @@ export type UserUpdateInput = {
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -452,7 +437,6 @@ export type UserUncheckedUpdateInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -474,7 +458,6 @@ export type UserCreateManyInput = {
   email?: string | null
   avatar?: string | null
   teamId?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -489,7 +472,6 @@ export type UserUpdateManyMutationInput = {
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -505,7 +487,6 @@ export type UserUncheckedUpdateManyInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -521,7 +502,6 @@ export type UserCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   avatar?: Prisma.SortOrder
   teamId?: Prisma.SortOrder
-  tournamentTeamId?: Prisma.SortOrder
   role?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
@@ -541,7 +521,6 @@ export type UserMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   avatar?: Prisma.SortOrder
   teamId?: Prisma.SortOrder
-  tournamentTeamId?: Prisma.SortOrder
   role?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
@@ -557,7 +536,6 @@ export type UserMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   avatar?: Prisma.SortOrder
   teamId?: Prisma.SortOrder
-  tournamentTeamId?: Prisma.SortOrder
   role?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
@@ -746,7 +724,6 @@ export type UserCreateWithoutAdminOfTeamsInput = {
   nickname?: string | null
   email?: string | null
   avatar?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -768,7 +745,6 @@ export type UserUncheckedCreateWithoutAdminOfTeamsInput = {
   email?: string | null
   avatar?: string | null
   teamId?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -793,7 +769,6 @@ export type UserCreateWithoutTeamInput = {
   nickname?: string | null
   email?: string | null
   avatar?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -814,7 +789,6 @@ export type UserUncheckedCreateWithoutTeamInput = {
   nickname?: string | null
   email?: string | null
   avatar?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -855,7 +829,6 @@ export type UserUpdateWithoutAdminOfTeamsInput = {
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -877,7 +850,6 @@ export type UserUncheckedUpdateWithoutAdminOfTeamsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -917,7 +889,6 @@ export type UserScalarWhereInput = {
   email?: Prisma.StringNullableFilter<"User"> | string | null
   avatar?: Prisma.StringNullableFilter<"User"> | string | null
   teamId?: Prisma.StringNullableFilter<"User"> | string | null
-  tournamentTeamId?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.StringFilter<"User"> | string
   mode?: Prisma.StringFilter<"User"> | string
   tokenVersion?: Prisma.IntFilter<"User"> | number
@@ -932,7 +903,6 @@ export type UserCreateWithoutTeamMembershipsInput = {
   nickname?: string | null
   email?: string | null
   avatar?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -954,7 +924,6 @@ export type UserUncheckedCreateWithoutTeamMembershipsInput = {
   email?: string | null
   avatar?: string | null
   teamId?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -990,7 +959,6 @@ export type UserUpdateWithoutTeamMembershipsInput = {
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1012,7 +980,6 @@ export type UserUncheckedUpdateWithoutTeamMembershipsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1032,7 +999,6 @@ export type UserCreateWithoutStandaloneMatchesInput = {
   nickname?: string | null
   email?: string | null
   avatar?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -1054,7 +1020,6 @@ export type UserUncheckedCreateWithoutStandaloneMatchesInput = {
   email?: string | null
   avatar?: string | null
   teamId?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -1090,7 +1055,6 @@ export type UserUpdateWithoutStandaloneMatchesInput = {
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1112,7 +1076,6 @@ export type UserUncheckedUpdateWithoutStandaloneMatchesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1132,7 +1095,6 @@ export type UserCreateWithoutLoginSessionsInput = {
   nickname?: string | null
   email?: string | null
   avatar?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -1154,7 +1116,6 @@ export type UserUncheckedCreateWithoutLoginSessionsInput = {
   email?: string | null
   avatar?: string | null
   teamId?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -1190,7 +1151,6 @@ export type UserUpdateWithoutLoginSessionsInput = {
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1212,7 +1172,6 @@ export type UserUncheckedUpdateWithoutLoginSessionsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1232,7 +1191,6 @@ export type UserCreateWithoutTimerProjectsInput = {
   nickname?: string | null
   email?: string | null
   avatar?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -1254,7 +1212,6 @@ export type UserUncheckedCreateWithoutTimerProjectsInput = {
   email?: string | null
   avatar?: string | null
   teamId?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -1290,7 +1247,6 @@ export type UserUpdateWithoutTimerProjectsInput = {
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1312,7 +1268,6 @@ export type UserUncheckedUpdateWithoutTimerProjectsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1332,7 +1287,6 @@ export type UserCreateWithoutRegistrationsInput = {
   nickname?: string | null
   email?: string | null
   avatar?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -1354,7 +1308,6 @@ export type UserUncheckedCreateWithoutRegistrationsInput = {
   email?: string | null
   avatar?: string | null
   teamId?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -1390,7 +1343,6 @@ export type UserUpdateWithoutRegistrationsInput = {
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1412,7 +1364,6 @@ export type UserUncheckedUpdateWithoutRegistrationsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1432,7 +1383,6 @@ export type UserCreateManyTeamInput = {
   nickname?: string | null
   email?: string | null
   avatar?: string | null
-  tournamentTeamId?: string | null
   role?: string
   mode?: string
   tokenVersion?: number
@@ -1447,7 +1397,6 @@ export type UserUpdateWithoutTeamInput = {
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1468,7 +1417,6 @@ export type UserUncheckedUpdateWithoutTeamInput = {
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1489,7 +1437,6 @@ export type UserUncheckedUpdateManyWithoutTeamInput = {
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tournamentTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.StringFieldUpdateOperationsInput | string
   mode?: Prisma.StringFieldUpdateOperationsInput | string
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1581,7 +1528,6 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   email?: boolean
   avatar?: boolean
   teamId?: boolean
-  tournamentTeamId?: boolean
   role?: boolean
   mode?: boolean
   tokenVersion?: boolean
@@ -1605,7 +1551,6 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   avatar?: boolean
   teamId?: boolean
-  tournamentTeamId?: boolean
   role?: boolean
   mode?: boolean
   tokenVersion?: boolean
@@ -1622,7 +1567,6 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   avatar?: boolean
   teamId?: boolean
-  tournamentTeamId?: boolean
   role?: boolean
   mode?: boolean
   tokenVersion?: boolean
@@ -1639,7 +1583,6 @@ export type UserSelectScalar = {
   email?: boolean
   avatar?: boolean
   teamId?: boolean
-  tournamentTeamId?: boolean
   role?: boolean
   mode?: boolean
   tokenVersion?: boolean
@@ -1647,7 +1590,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "password" | "nickname" | "email" | "avatar" | "teamId" | "tournamentTeamId" | "role" | "mode" | "tokenVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "password" | "nickname" | "email" | "avatar" | "teamId" | "role" | "mode" | "tokenVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   team?: boolean | Prisma.User$teamArgs<ExtArgs>
   adminOfTeams?: boolean | Prisma.User$adminOfTeamsArgs<ExtArgs>
@@ -1684,7 +1627,6 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     email: string | null
     avatar: string | null
     teamId: string | null
-    tournamentTeamId: string | null
     role: string
     mode: string
     tokenVersion: number
@@ -2127,7 +2069,6 @@ export interface UserFieldRefs {
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly avatar: Prisma.FieldRef<"User", 'String'>
   readonly teamId: Prisma.FieldRef<"User", 'String'>
-  readonly tournamentTeamId: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'String'>
   readonly mode: Prisma.FieldRef<"User", 'String'>
   readonly tokenVersion: Prisma.FieldRef<"User", 'Int'>

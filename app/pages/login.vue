@@ -138,7 +138,7 @@ function formatTime(iso: string): string {
           
           <!-- Agency级Eyebrow Tag：microscopic badge -->
           <div class="eyebrow-tag mx-auto">
-            debaterealm
+            DebateRealm
           </div>
           
           <h1 class="text-heading-2 text-[var(--color-text-primary)]">辩境</h1>
@@ -154,7 +154,7 @@ function formatTime(iso: string): string {
           <!-- 被踢下线警告：黄色半透明背景 -->
           <div
             v-if="kickedMessage"
-            class="p-3 rounded-lg bg-amber-500/15 border border-amber-400/20 text-sm text-amber-300 flex items-start gap-2"
+            class="p-3 rounded-lg bg-amber-500/15 border border-amber-400/20 text-sm text-amber-700 dark:text-amber-300 flex items-start gap-2"
           >
             <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -216,7 +216,7 @@ function formatTime(iso: string): string {
           <!-- 错误提示：红色半透明背景 -->
           <div
             v-if="error"
-            class="p-3 rounded-lg bg-red-500/15 border border-red-400/20 text-sm text-red-300"
+            class="p-3 rounded-lg bg-red-500/15 border border-red-400/20 text-sm text-red-700 dark:text-red-300"
           >
             {{ error }}
           </div>
@@ -286,7 +286,7 @@ function formatTime(iso: string): string {
               <!-- 弹窗头部 -->
               <div class="px-6 py-4 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
                 <div class="flex items-center gap-2">
-                  <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
@@ -305,14 +305,14 @@ function formatTime(iso: string): string {
                 <!-- 当前设备信息（新设备）：蓝色半透明背景 -->
                 <div
                   v-if="newDevice"
-                  class="p-3 rounded-lg bg-blue-500/15 border border-blue-400/20"
+                  class="mt-3 p-3 rounded-lg bg-blue-500/15 border border-blue-400/20"
                 >
                   <div class="flex items-center gap-2 mb-2">
-                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-[var(--device-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    <span class="text-sm font-medium text-blue-300">当前设备（此浏览器）</span>
+                    <span class="text-sm font-medium text-[var(--device-blue)]">当前设备（此浏览器）</span>
                   </div>
                   <div class="text-sm text-[var(--color-text-secondary)] pl-6 space-y-0.5">
                     <p><span class="text-[var(--color-text-muted)]">设备：</span>{{ newDevice.deviceInfo }}</p>
@@ -324,14 +324,14 @@ function formatTime(iso: string): string {
                 <div
                   v-for="(session, idx) in existingSessions"
                   :key="session.id"
-                  class="p-3 rounded-lg bg-amber-500/15 border border-amber-400/20"
+                  class="mt-3 p-3 rounded-lg bg-amber-500/15 border border-amber-400/20"
                 >
                   <div class="flex items-center gap-2 mb-2">
-                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-[var(--device-amber)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    <span class="text-sm font-medium text-amber-300">
+                    <span class="text-sm font-medium text-[var(--device-amber)]">
                       已登录设备 {{ existingSessions.length > 1 ? `#${idx + 1}` : '' }}
                     </span>
                   </div>

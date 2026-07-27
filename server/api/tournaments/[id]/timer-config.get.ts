@@ -1,9 +1,13 @@
 // 获取赛事的完整计时器配置（包括项目信息、环节、UI/皮肤/音频/队徽配置）
 import { prisma } from '../../../lib/prisma'
+import { requireReadTournament } from '../../../utils/tournament-auth'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: '缺少赛事ID' })
+
+  // 权限：系统管理员 或 该赛事所属团队的管理员 / 子账号
+  await requireReadTournament(event, prisma, id)
 
   // 1. 查找关联的计时器项目（通过 tournamentId）
   let project = await prisma.debateTimerProject.findUnique({
@@ -67,6 +71,18 @@ export default defineEventHandler(async (event) => {
         positiveDuration: s.positiveDuration,
         negativeDuration: s.negativeDuration,
         allowedRoles: s.allowedRoles ? JSON.parse(s.allowedRoles) : null,
+        speaker: s.speaker,
+        questioner: s.questioner,
+        responder: s.responder,
+        firstSpeaker: s.firstSpeaker,
+        protectionTime: s.protectionTime,
+        positiveSpeakers: s.positiveSpeakers ? JSON.parse(s.positiveSpeakers) : null,
+        negativeSpeakers: s.negativeSpeakers ? JSON.parse(s.negativeSpeakers) : null,
+        speakers: s.speakers ? JSON.parse(s.speakers) : null,
+        questionDuration: s.questionDuration,
+        answerDuration: s.answerDuration,
+        enabled: s.enabled,
+        pptImage: s.pptImage || null,
       })),
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,

@@ -41,26 +41,46 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // ════════ 1. 积分榜（按积分排序） ════════
-    const teams = await prisma.tournamentTeam.findMany({
-      where: { tournamentId },
-      orderBy: [
-        { points: 'desc' },
-        { wins: 'desc' },
-        { scoreFor: 'desc' },
-      ],
-      select: {
-        id: true,
-        name: true,
-        groupLabel: true,
-        points: true,
-        wins: true,
-        draws: true,
-        losses: true,
-        scoreFor: true,
-        scoreAgainst: true,
-      },
-    })
+    // ════════ 并行执行所有数据库查询（Promise.all 减少总等待时间） ════════
+    const [teams, allMatches, scores] = await Promise.all([
+      // 1. 积分榜（按积分排序）
+      prisma.tournamentTeam.findMany({
+        where: { tournamentId },
+        orderBy: [
+          { points: 'desc' },
+          { wins: 'desc' },
+          { scoreFor: 'desc' },
+        ],
+        select: {
+          id: true,
+          name: true,
+          groupLabel: true,
+          points: true,
+          wins: true,
+          draws: true,
+          losses: true,
+          scoreFor: true,
+          scoreAgainst: true,
+        },
+      }),
+      // 2. 比赛统计（仅选择需要的字段，减少数据传输）
+      prisma.match.findMany({
+        where: { tournamentId, deletedAt: null },
+        select: {
+          id: true,
+          status: true,
+        },
+      }),
+      // 3. 评分数据（最佳辩手 + 评委统计共用）
+      prisma.matchScore.findMany({
+        where: { tournamentId },
+        select: {
+          bestDebaterA: true,
+          bestDebaterB: true,
+          judgeName: true,
+        },
+      }),
+    ])
 
     // 计算净胜分和参赛场次
     const standings = teams.map((t) => ({
@@ -69,39 +89,26 @@ export default defineEventHandler(async (event) => {
       played: t.wins + t.draws + t.losses,
     }))
 
-    // ════════ 2. 比赛统计 ════════
-    const allMatches = await prisma.match.findMany({
-      where: { tournamentId, deletedAt: null },
-      select: {
-        id: true,
-        status: true,
-        round: true,
-        teamA: true,
-        teamB: true,
-        scoreA: true,
-        scoreB: true,
-        winner: true,
-      },
-    })
-
+    // 单次遍历统计所有比赛状态（避免多次 filter）
+    let finishedMatches = 0
+    let ongoingMatches = 0
+    let pendingMatches = 0
     const totalMatches = allMatches.length
-    const finishedMatches = allMatches.filter(m => m.status === 'finished').length
-    const ongoingMatches = allMatches.filter(m => m.status === 'ongoing').length
-    const pendingMatches = allMatches.filter(m => m.status === 'pending').length
+    for (const m of allMatches) {
+      if (m.status === 'finished') finishedMatches++
+      else if (m.status === 'ongoing') ongoingMatches++
+      else if (m.status === 'pending') pendingMatches++
+    }
 
-    // ════════ 3. 最佳辩手榜（从评分中统计） ════════
-    const scores = await prisma.matchScore.findMany({
-      where: { tournamentId },
-      select: {
-        bestDebaterA: true,
-        bestDebaterB: true,
-        judgeName: true,
-      },
-    })
-
-    // 统计最佳辩手次数
+    // 单次遍历同时统计最佳辩手和评委评分（减少一次循环）
     const bestDebaterCount: Record<string, number> = {}
+    const judgeScores: Record<string, number> = {}
     for (const s of scores) {
+      // 统计评委评分
+      if (s.judgeName) {
+        judgeScores[s.judgeName] = (judgeScores[s.judgeName] || 0) + 1
+      }
+      // 统计最佳辩手
       if (s.bestDebaterA) {
         bestDebaterCount[s.bestDebaterA] = (bestDebaterCount[s.bestDebaterA] || 0) + 1
       }
@@ -115,11 +122,6 @@ export default defineEventHandler(async (event) => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10) // 前10名
 
-    // ════════ 4. 评委评分统计 ════════
-    const judgeScores: Record<string, number> = {}
-    for (const s of scores) {
-      judgeScores[s.judgeName] = (judgeScores[s.judgeName] || 0) + 1
-    }
     const judgeRankings = Object.entries(judgeScores)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)

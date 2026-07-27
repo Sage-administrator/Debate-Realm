@@ -101,6 +101,13 @@ export default defineNuxtRouteMiddleware((to) => {
     return
   }
 
+  // 公开赛事列表页与赛事详情：允许免登录访问（宣传/报名入口）
+  // 与公开首页（/）同为对外展示页，未登录用户可直接浏览
+  // 详情页路由为 /tournaments/[id]/public（/tournaments/[id] 本身无页面）
+  if (to.path === '/tournaments' || /^\/tournaments\/[^/]+(\/public)?$/.test(to.path)) {
+    return
+  }
+
   // 其他页面需要认证
   if (!store.isAuthenticated) {
     if (import.meta.client) {

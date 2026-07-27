@@ -1,20 +1,37 @@
 <script setup lang="ts">
+import { useAuthStore } from '~/stores/auth'
 definePageMeta({ layout: 'tournament' })
 
 // 比赛信息页面
 const route = useRoute()
 const toast = useToast()
+const authStore = useAuthStore()
 const { getTournament, updateTournament, createMatch, deleteTournament, deleteMatch, submitResult } = useTournament()
 
 const tournament = inject<Ref<any>>('tournament')!
 const tournamentId = computed(() => route.params.id as string)
+
+// 该赛事是否已设计 match_score 评分问卷（决定「登记赛果」跳转目标）
+// 有问卷 → 跳评分问卷填写处（评分决定胜负）；无问卷 → 兜底弹原弹窗登记比分
+const hasScoreQuestionnaire = ref(false)
+onMounted(async () => {
+  try {
+    const res = await fetch(`/api/tournaments/${tournamentId.value}/questionnaires?sourceType=match_score`, {
+      headers: { Authorization: `Bearer ${authStore.token}` },
+    })
+    const list = await res.json()
+    hasScoreQuestionnaire.value = Array.isArray(list) && list.length > 0
+  } catch {
+    hasScoreQuestionnaire.value = false
+  }
+})
 
 // ── 编辑状态 ──
 const editingInfo = ref(false)
 const infoForm = reactive({
   name: '',
   description: '',
-  format: 'knockout',
+  format: '',
   status: 'pending',
   venue: '',
 })
@@ -35,7 +52,7 @@ watchEffect(() => {
   if (tournament.value) {
     infoForm.name = tournament.value.name || ''
     infoForm.description = tournament.value.description || ''
-    infoForm.format = tournament.value.format || 'knockout'
+    infoForm.format = tournament.value.format || ''
     infoForm.status = tournament.value.status || 'pending'
     infoForm.venue = tournament.value.venue || ''
   }
@@ -52,7 +69,7 @@ async function handleUpdateInfo() {
     await updateTournament(tournamentId.value, {
       name: infoForm.name.trim(),
       description: infoForm.description.trim(),
-      format: infoForm.format,
+      format: infoForm.format || undefined,
       status: infoForm.status,
       venue: infoForm.venue.trim() || undefined,
     })
@@ -106,6 +123,16 @@ function openResult(matchId: string) {
   showResult.value = true
 }
 
+// 登记赛果入口：有评分问卷则跳转到评分问卷填写处（评分决定胜负），
+// 未设计问卷时回退到原弹窗登记比分（兜底，避免无法登记赛果）
+function handleRegisterResult(match: any) {
+  if (hasScoreQuestionnaire.value) {
+    navigateTo(`/tournaments/${tournamentId.value}/score-survey/${match.id}`)
+  } else {
+    openResult(match.id)
+  }
+}
+
 async function handleSubmitResult() {
   try {
     await submitResult(resultMatchId.value, resultForm.winner, Number(resultForm.scoreA), Number(resultForm.scoreB))
@@ -122,82 +149,27 @@ async function handleSubmitResult() {
 // ── 工具函数 ──
 const statusLabel = (s: string) => ({ pending: '待开始', running: '进行中', finished: '已完成' }[s] || s)
 const statusColor = (s: string): any => ({ pending: 'neutral', running: 'primary', finished: 'success' }[s] || 'neutral')
-const formatLabel = (f: string) => f === 'knockout' ? '淘汰赛' : '循环赛'
-const formatDateMonth = (dateStr: string) => {
-  const d = new Date(dateStr)
-  return `${d.getFullYear()}/${d.getMonth() + 1}`
+// 与 prisma/schema.prisma 中 Tournament.format 枚举保持一致
+const formatOptions = [
+  { label: '未设置', value: '' },
+  { label: '单败淘汰赛', value: 'single_elimination' },
+  { label: '双败淘汰赛', value: 'double_elimination' },
+  { label: '循环赛', value: 'round_robin' },
+  { label: '佩寄制', value: 'page_playoff' },
+  { label: '瑞士制', value: 'swiss' },
+  { label: '小组+淘汰赛', value: 'group_knockout' },
+  { label: '手动编排', value: 'manual' },
+]
+const formatLabel = (f?: string | null) => {
+  if (!f) return '未设置'
+  return formatOptions.find(o => o.value === f)?.label || f
 }
-
-// ── 解析 description 中的扩展信息 ──
-const extendedInfo = computed(() => {
-  const desc = tournament.value?.description || ''
-  if (!desc.includes('；')) return []
-  return desc.split('；').filter(Boolean)
-})
 </script>
 
 <template>
   <template v-if="tournament">
   <!-- ═══ 比赛信息内容 ═══ -->
-  <main class="py-6 space-y-6">
-    <!-- 赛事概览 -->
-    <UCard class="mb-6">
-      <template #header>
-        <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-          <UIcon name="i-lucide-info" class="w-4 h-4 text-[var(--color-text-muted)]" />
-          赛事概览
-        </h2>
-      </template>
-      <!-- 状态徽章 -->
-      <div class="flex items-center gap-2 mb-3 pb-3 border-b border-[var(--color-border)]">
-        <span class="text-xs text-[var(--color-text-muted)]">当前状态：</span>
-        <UBadge :label="statusLabel(tournament.status)" :color="statusColor(tournament.status)" size="xs" variant="soft" />
-        <span class="text-xs text-[var(--color-text-muted)]">·</span>
-        <span class="text-xs text-[var(--color-text-muted)]">{{ formatLabel(tournament.format) }}</span>
-        <span v-if="tournament.scheduledAt" class="text-xs text-[var(--color-text-muted)]">
-          · {{ formatDateMonth(tournament.scheduledAt) }}
-        </span>
-      </div>
-      <!-- 信息网格 -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-        <div class="bg-[var(--color-bg-secondary)] rounded p-2.5">
-          <p class="text-[11px] text-[var(--color-text-muted)] mb-0.5">赛事名称</p>
-          <p class="text-xs font-medium text-[var(--color-text-primary)] truncate">{{ tournament.name }}</p>
-        </div>
-        <div class="bg-[var(--color-bg-secondary)] rounded p-2.5">
-          <p class="text-[11px] text-[var(--color-text-muted)] mb-0.5">赛制</p>
-          <p class="text-xs font-medium text-[var(--color-text-primary)]">{{ formatLabel(tournament.format) }}</p>
-        </div>
-        <div class="bg-[var(--color-bg-secondary)] rounded p-2.5">
-          <p class="text-[11px] text-[var(--color-text-muted)] mb-0.5">举办地点</p>
-          <p class="text-xs font-medium text-[var(--color-text-primary)] truncate">{{ tournament.venue || '未设置' }}</p>
-        </div>
-        <div class="bg-[var(--color-bg-secondary)] rounded p-2.5">
-          <p class="text-[11px] text-[var(--color-text-muted)] mb-0.5">参赛队伍数</p>
-          <p class="text-xs font-medium text-[var(--color-text-primary)]">{{ tournament.teams?.length || 0 }} 支</p>
-        </div>
-        <div class="bg-[var(--color-bg-secondary)] rounded p-2.5">
-          <p class="text-[11px] text-[var(--color-text-muted)] mb-0.5">评委人数</p>
-          <p class="text-xs font-medium text-[var(--color-text-primary)]">{{ tournament.judges?.length || 0 }} 人</p>
-        </div>
-        <div class="bg-[var(--color-bg-secondary)] rounded p-2.5">
-          <p class="text-[11px] text-[var(--color-text-muted)] mb-0.5">场次数</p>
-          <p class="text-xs font-medium text-[var(--color-text-primary)]">{{ tournament.matches?.length || 0 }} 场</p>
-        </div>
-      </div>
-      <!-- 扩展信息 -->
-      <div v-if="extendedInfo.length" class="mt-3 pt-3 border-t border-[var(--color-border)]">
-        <p class="text-[11px] text-[var(--color-text-muted)] mb-1.5">详细信息</p>
-        <div class="flex flex-wrap gap-1.5">
-          <span
-            v-for="info in extendedInfo"
-            :key="info"
-            class="px-2 py-0.5 text-[11px] text-[var(--color-text-primary)] bg-[var(--color-bg-tertiary)] rounded-full"
-          >{{ info }}</span>
-        </div>
-      </div>
-    </UCard>
-
+  <div class="py-6 space-y-6">
     <!-- 赛事信息编辑 -->
     <UCard class="mb-6">
       <template #header>
@@ -264,15 +236,7 @@ const extendedInfo = computed(() => {
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm text-[var(--color-text-primary)] mb-1.5">赛制</label>
-            <USelect
-              v-model="infoForm.format"
-              :items="[
-                { label: '淘汰赛', value: 'knockout' },
-                { label: '循环赛', value: 'round_robin' },
-              ]"
-              class="w-full"
-              :ui="{ base: 'input-glass' }"
-            />
+            <p class="text-sm text-[var(--color-text-primary)] py-2">{{ formatLabel(tournament.format) }}</p>
           </div>
           <div>
             <label class="block text-sm text-[var(--color-text-primary)] mb-1.5">状态</label>
@@ -324,7 +288,7 @@ const extendedInfo = computed(() => {
           </h3>
         <NuxtLink
           :to="`/tournaments/${tournamentId}/schedule`"
-          class="text-xs font-medium text-purple-400 hover:text-purple-300 flex items-center gap-1"
+          class="text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1"
         >
           前往设置
           <UIcon name="i-lucide-arrow-right" class="w-3 h-3" />
@@ -355,7 +319,7 @@ const extendedInfo = computed(() => {
           </h3>
         <NuxtLink
           :to="`/tournaments/${tournamentId}/schedule`"
-          class="text-xs font-medium text-purple-400 hover:text-purple-300 flex items-center gap-1"
+          class="text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1"
         >
           前往设置
           <UIcon name="i-lucide-arrow-right" class="w-3 h-3" />
@@ -384,7 +348,7 @@ const extendedInfo = computed(() => {
             <span class="text-xs font-normal text-[var(--color-text-muted)]">({{ tournament.matches?.length || 0 }} 场)</span>
           </h3>
         <button
-          class="flex items-center gap-1 px-3 py-1.5 text-sm border border-green-500/30 rounded text-green-400 hover:bg-green-500/10 transition-colors"
+          class="flex items-center gap-1 px-3 py-1.5 text-sm border border-green-500/30 rounded text-green-600 dark:text-green-400 hover:bg-green-500/10 transition-colors"
           @click="() => { showCreateMatch = true }"
         >
           <UIcon name="i-lucide-plus" class="w-3.5 h-3.5" />添加场次
@@ -413,11 +377,11 @@ const extendedInfo = computed(() => {
           <div class="flex items-center gap-2">
             <button
               v-if="m.status !== 'finished'"
-              class="text-xs text-green-400 hover:text-green-300"
-              @click="openResult(m.id)"
+              class="text-xs text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+              @click="handleRegisterResult(m)"
             >登记赛果</button>
             <button
-              class="text-xs text-red-400 hover:text-red-300"
+              class="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
               @click="async () => { await deleteMatch(m.id); const updated = await getTournament(tournamentId); tournament.value = updated }"
             >删除</button>
           </div>
@@ -428,7 +392,7 @@ const extendedInfo = computed(() => {
     <!-- 危险操作区 -->
     <UCard class="mb-6 border border-red-500/30">
       <template #header>
-        <h3 class="text-sm font-semibold text-red-400 flex items-center gap-2">
+        <h3 class="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-2">
           <UIcon name="i-lucide-alert-triangle" class="w-4 h-4" />危险操作
         </h3>
       </template>
@@ -437,7 +401,7 @@ const extendedInfo = computed(() => {
         {{ deleting ? '删除中...' : '删除此赛事' }}
       </UButton>
     </UCard>
-  </main>
+  </div>
 
   <!-- 创建场次弹窗 -->
   <UModal v-model:open="showCreateMatch" title="添加场次">

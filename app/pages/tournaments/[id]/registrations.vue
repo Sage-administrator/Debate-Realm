@@ -304,6 +304,26 @@ onMounted(() => loadData())
 <template>
   <template v-if="tournament">
   <div class="space-y-6">
+    <!-- 子 Tab 切换栏：报名列表 / 报名问卷设置 / 报名问卷设计 -->
+    <div class="inline-flex gap-1 p-1 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
+      <button
+        v-for="tab in [
+          { key: 'list', label: '报名列表', icon: 'i-lucide-list' },
+          { key: 'settings', label: '报名问卷设置', icon: 'i-lucide-settings' },
+          { key: 'fields', label: '报名问卷设计', icon: 'i-lucide-form-input' },
+        ]"
+        :key="tab.key"
+        type="button"
+        class="px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5"
+        :class="activeTab === tab.key
+          ? 'bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)]'
+          : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]'"
+        @click="() => { activeTab = tab.key as any }"
+      >
+        <UIcon :name="tab.icon" class="w-4 h-4" /> {{ tab.label }}
+      </button>
+    </div>
+
     <template v-if="activeTab === 'list'">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="glass-card p-4">
@@ -312,7 +332,7 @@ onMounted(() => loadData())
               <p class="text-xs text-[var(--color-text-muted)]">报名总数</p>
               <p class="text-2xl font-bold text-[var(--color-text-primary)] mt-1">{{ stats.total }}</p>
             </div>
-            <UIcon name="i-lucide-clipboard-list" class="w-8 h-8 text-blue-400/60" />
+            <UIcon name="i-lucide-clipboard-list" class="w-8 h-8 text-blue-600/60 dark:text-blue-400/60" />
           </div>
           <p class="text-xs text-[var(--color-text-muted)] mt-2">个人 {{ stats.individual }} · 队伍 {{ stats.team }}</p>
         </div>
@@ -320,9 +340,9 @@ onMounted(() => loadData())
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs text-[var(--color-text-muted)]">待审核</p>
-              <p class="text-2xl font-bold text-amber-400 mt-1">{{ stats.pending }}</p>
+              <p class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{{ stats.pending }}</p>
             </div>
-            <UIcon name="i-lucide-clock" class="w-8 h-8 text-amber-400/60" />
+            <UIcon name="i-lucide-clock" class="w-8 h-8 text-amber-600 dark:text-amber-400/60" />
           </div>
           <p class="text-xs text-[var(--color-text-muted)] mt-2">需处理</p>
         </div>
@@ -330,9 +350,9 @@ onMounted(() => loadData())
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs text-[var(--color-text-muted)]">已通过</p>
-              <p class="text-2xl font-bold text-green-400 mt-1">{{ stats.approved }}</p>
+              <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{{ stats.approved }}</p>
             </div>
-            <UIcon name="i-lucide-check-circle" class="w-8 h-8 text-green-400/60" />
+            <UIcon name="i-lucide-check-circle" class="w-8 h-8 text-green-600 dark:text-green-400/60" />
           </div>
           <p class="text-xs text-[var(--color-text-muted)] mt-2">已审核通过</p>
         </div>
@@ -340,9 +360,9 @@ onMounted(() => loadData())
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs text-[var(--color-text-muted)]">已拒绝</p>
-              <p class="text-2xl font-bold text-red-400 mt-1">{{ stats.rejected }}</p>
+              <p class="text-2xl font-bold text-red-500 dark:text-red-400 mt-1">{{ stats.rejected }}</p>
             </div>
-            <UIcon name="i-lucide-x-circle" class="w-8 h-8 text-red-400/60" />
+            <UIcon name="i-lucide-x-circle" class="w-8 h-8 text-red-500 dark:text-red-400/60" />
           </div>
           <p class="text-xs text-[var(--color-text-muted)] mt-2">未通过</p>
         </div>
@@ -599,7 +619,7 @@ onMounted(() => loadData())
                 :class="settingsForm.registrationType === 'individual' ? 'border-indigo-500 bg-indigo-500/10' : 'border-[var(--color-border)] hover:border-[var(--color-border)]'"
                 @click="() => { settingsForm.registrationType = 'individual' }"
               >
-                <UIcon name="i-lucide-user" class="w-5 h-5 mb-1" :class="settingsForm.registrationType === 'individual' ? 'text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
+                <UIcon name="i-lucide-user" class="w-5 h-5 mb-1" :class="settingsForm.registrationType === 'individual' ? 'text-indigo-600 dark:text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
                 <div class="text-sm font-medium text-[var(--color-text-primary)]">仅个人</div>
                 <div class="text-xs text-[var(--color-text-muted)]">只允许个人报名</div>
               </button>
@@ -609,7 +629,7 @@ onMounted(() => loadData())
                 :class="settingsForm.registrationType === 'team' ? 'border-indigo-500 bg-indigo-500/10' : 'border-[var(--color-border)] hover:border-[var(--color-border)]'"
                 @click="() => { settingsForm.registrationType = 'team' }"
               >
-                <UIcon name="i-lucide-users" class="w-5 h-5 mb-1" :class="settingsForm.registrationType === 'team' ? 'text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
+                <UIcon name="i-lucide-users" class="w-5 h-5 mb-1" :class="settingsForm.registrationType === 'team' ? 'text-indigo-600 dark:text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
                 <div class="text-sm font-medium text-[var(--color-text-primary)]">仅队伍</div>
                 <div class="text-xs text-[var(--color-text-muted)]">只允许队伍报名</div>
               </button>
@@ -619,7 +639,7 @@ onMounted(() => loadData())
                 :class="settingsForm.registrationType === 'both' ? 'border-indigo-500 bg-indigo-500/10' : 'border-[var(--color-border)] hover:border-[var(--color-border)]'"
                 @click="() => { settingsForm.registrationType = 'both' }"
               >
-                <UIcon name="i-lucide-user-plus" class="w-5 h-5 mb-1" :class="settingsForm.registrationType === 'both' ? 'text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
+                <UIcon name="i-lucide-user-plus" class="w-5 h-5 mb-1" :class="settingsForm.registrationType === 'both' ? 'text-indigo-600 dark:text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
                 <div class="text-sm font-medium text-[var(--color-text-primary)]">个人 + 队伍</div>
                 <div class="text-xs text-[var(--color-text-muted)]">两种方式均可</div>
               </button>
@@ -628,11 +648,10 @@ onMounted(() => loadData())
 
           <div>
             <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">报名截止时间</label>
-            <!-- 原生 datetime-local 输入：SSR/客户端渲染一致，无需 ClientOnly，与 ISO 字符串格式天然兼容 -->
-            <input
+            <BaseDateTimePicker
               v-model="settingsForm.registrationDeadline"
-              type="datetime-local"
-              class="input-glass w-full"
+              mode="datetime"
+              placeholder="选择报名截止时间"
             />
             <p class="text-xs text-[var(--color-text-muted)] mt-1">留空表示不设截止时间</p>
           </div>
@@ -643,7 +662,7 @@ onMounted(() => loadData())
               v-model.number="settingsForm.teamSize"
               type="number"
               min="1"
-              class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
+              class="input-glass w-full"
             />
             <p class="text-xs text-[var(--color-text-muted)] mt-1">用于自动组队时每队的人数上限</p>
           </div>
@@ -654,7 +673,7 @@ onMounted(() => loadData())
               v-model="settingsForm.registrationInfo"
               rows="4"
               placeholder="例如：请如实填写个人信息，报名截止后将无法修改..."
-              class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] resize-y"
+              class="input-glass w-full resize-y"
             />
           </div>
         </div>
@@ -678,7 +697,7 @@ onMounted(() => loadData())
       <!-- 用 ClientOnly 包裹：FormDesigner 顶层 import vue-draggable-plus，该库强依赖 window/document，SSR 阶段直接渲染会抛错 -->
       <ClientOnly>
         <div class="h-[760px]">
-          <FormDesigner v-model="formFields" />
+          <LazyFormDesigner v-model="formFields" />
         </div>
         <template #fallback>
           <div class="h-[760px] flex items-center justify-center text-[var(--color-text-muted)] text-sm">
@@ -695,7 +714,7 @@ onMounted(() => loadData())
         <UIcon
           :name="reviewAction === 'approve' ? 'i-lucide-check-circle' : 'i-lucide-x-circle'"
           class="w-5 h-5"
-          :class="reviewAction === 'approve' ? 'text-green-400' : 'text-red-400'"
+          :class="reviewAction === 'approve' ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'"
         />
         {{ reviewAction === 'approve' ? '通过报名' : '拒绝报名' }}
       </h3>
@@ -736,7 +755,7 @@ onMounted(() => loadData())
   <div v-if="showAutoMatch" class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50" @click.self="showAutoMatch = false">
     <div class="glass-modal rounded-xl shadow-lg w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
       <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-1 flex items-center gap-2">
-        <UIcon name="i-lucide-shuffle" class="w-5 h-5 text-amber-400" />
+        <UIcon name="i-lucide-shuffle" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
         自动组队结果
       </h3>
       <p class="text-sm text-[var(--color-text-muted)] mb-4">系统已根据个人报名自动匹配成队，确认后将创建为正式队伍</p>
@@ -767,7 +786,7 @@ onMounted(() => loadData())
         </div>
 
         <div v-if="matchResult.unmatched.length > 0">
-          <p class="text-sm font-semibold text-amber-400 mb-2">
+          <p class="text-sm font-semibold text-amber-600 dark:text-amber-400 mb-2">
             未匹配（{{ matchResult.unmatched.length }} 人，不足一队）
           </p>
           <div class="flex flex-wrap gap-1.5">
@@ -798,7 +817,7 @@ onMounted(() => loadData())
   <div v-if="showAccounts" class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50" @click.self="showAccounts = false">
     <div class="glass-modal rounded-xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
       <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-1 flex items-center gap-2">
-        <UIcon name="i-lucide-user-plus" class="w-5 h-5 text-green-400" />
+        <UIcon name="i-lucide-user-plus" class="w-5 h-5 text-green-600 dark:text-green-400" />
         辩手账号创建结果
       </h3>
       <p class="text-sm text-[var(--color-text-muted)] mb-4" v-if="accountResult">

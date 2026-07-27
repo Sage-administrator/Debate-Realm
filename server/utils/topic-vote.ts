@@ -2,6 +2,61 @@ import type { JWTPayload } from './auth'
 import type { TopicVote, TopicVoteRecord } from '../lib/generated/client'
 import { safeJsonParse } from './common'
 
+/** 结构化候选辩题（topics 数组的元素形状） */
+export interface TopicItem {
+  text: string
+  affirmative?: string | null
+  negative?: string | null
+  sourceTopicId?: string | null
+  category?: string | null
+}
+
+/**
+ * 将任意输入归一化为结构化 TopicItem。
+ * - 字符串 → { text }
+ * - 对象 → 取 text / affirmative / negative / sourceTopicId / category
+ * - 有效条件：有 text，或同时具备 affirmative 与 negative
+ * 非法/空项返回 null（由调用方过滤）
+ */
+export function normalizeTopicItem(t: any): TopicItem | null {
+  if (typeof t === 'string') {
+    const text = t.trim()
+    return text ? { text } : null
+  }
+  if (t && typeof t === 'object') {
+    const text = (t.text ?? '').toString().trim()
+    const affirmative = (t.affirmative ?? '').toString().trim()
+    const negative = (t.negative ?? '').toString().trim()
+    const sourceTopicId = t.sourceTopicId ?? null
+    const category = t.category ?? null
+    if (text || (affirmative && negative)) {
+      return {
+        text,
+        affirmative: affirmative || null,
+        negative: negative || null,
+        sourceTopicId: sourceTopicId || null,
+        category: category || null,
+      }
+    }
+  }
+  return null
+}
+
+/**
+ * 计算辩题的"展示文本"。
+ * 优先用 正方/反方 组合（分正方双方），否则回退到 text。
+ */
+export function topicDisplayText(item: TopicItem | string | null | undefined): string {
+  const t = typeof item === 'string' ? { text: item } : (item ?? null)
+  if (!t) return ''
+  const aff = (t.affirmative ?? '').toString().trim()
+  const neg = (t.negative ?? '').toString().trim()
+  if (aff && neg) return `正方：${aff} ｜ 反方：${neg}`
+  if (aff) return `正方：${aff}`
+  if (neg) return `反方：${neg}`
+  return (t.text ?? '').toString().trim()
+}
+
 // ═════════════════════════════════════════════════════════
 // 辩题投票系统 — 工具函数
 // 投票者类型：debater（辩手）/ judge（评委）/ admin（管理员）/ public（公开）
@@ -51,7 +106,7 @@ export function determineLoginVoterType(
  * @returns { topic, count, percent, voterBreakdown }
  */
 export function computeVoteStats(
-  topics: string[],
+  topics: TopicItem[],
   records: TopicVoteRecord[],
 ): {
   total: number
@@ -67,7 +122,7 @@ export function computeVoteStats(
   // 初始化每个辩题的统计
   const results = topics.map((topic, index) => ({
     index,
-    topic,
+    topic: topicDisplayText(topic),
     count: 0,
     percent: 0,
     byType: {} as Record<string, number>,
@@ -106,10 +161,13 @@ export function buildVoterFingerprint(ip: string | null, userAgent: string | und
 }
 
 /**
- * 解析候选辩题 JSON 字符串为数组
+ * 解析候选辩题 JSON 字符串为结构化数组。
+ * 兼容历史纯字符串数组，自动归一化为 TopicItem[]。
  */
-export function parseTopics(topicsJson: string): string[] {
-  const arr = safeJsonParse<string[] | null>(topicsJson, null)
-  if (Array.isArray(arr)) return arr.map((t) => String(t))
-  return []
+export function parseTopics(topicsJson: string): TopicItem[] {
+  const arr = safeJsonParse<any[] | null>(topicsJson, null)
+  if (!Array.isArray(arr)) return []
+  return arr
+    .map(normalizeTopicItem)
+    .filter((t): t is TopicItem => t !== null)
 }

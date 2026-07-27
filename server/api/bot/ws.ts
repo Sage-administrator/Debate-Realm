@@ -39,6 +39,7 @@ interface PeerState {
     botAppId: string | null
     botAppSecret: string | null
     botChannelId: string | null
+    botIsPrivate: boolean | null
   }
   authenticated: boolean
 }

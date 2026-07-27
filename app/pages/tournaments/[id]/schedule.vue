@@ -969,7 +969,7 @@ onMounted(() => loadMatches())
           >
             <div class="flex items-center gap-4">
               <div class="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center shrink-0">
-                <UIcon name="i-lucide-vote" class="w-5 h-5 text-indigo-400" />
+                <UIcon name="i-lucide-vote" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div class="flex-1 min-w-0">
                 <h3 class="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
@@ -982,7 +982,7 @@ onMounted(() => loadMatches())
               </div>
               <UIcon
                 name="i-lucide-arrow-right"
-                class="w-5 h-5 text-[var(--color-text-muted)] group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0"
+                class="w-5 h-5 text-[var(--color-text-muted)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0"
               />
             </div>
           </NuxtLink>
@@ -999,7 +999,7 @@ onMounted(() => loadMatches())
               <button
                 v-if="!editingTeams"
                 @click="() => { editingTeams = true }"
-                class="px-3 py-1 text-xs font-medium text-purple-400 bg-purple-500/15 rounded hover:bg-purple-500/25 transition-colors flex items-center gap-1"
+                class="px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-500/15 rounded hover:bg-purple-500/25 transition-colors flex items-center gap-1"
               >
                 <UIcon name="i-lucide-pencil" class="w-3 h-3" /> 编辑
               </button>
@@ -1089,7 +1089,7 @@ onMounted(() => loadMatches())
               <button
                 v-if="!editingJudges"
                 @click="() => { editingJudges = true }"
-                class="px-3 py-1 text-xs font-medium text-purple-400 bg-purple-500/15 rounded hover:bg-purple-500/25 transition-colors flex items-center gap-1"
+                class="px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-500/15 rounded hover:bg-purple-500/25 transition-colors flex items-center gap-1"
               >
                 <UIcon name="i-lucide-pencil" class="w-3 h-3" /> 编辑
               </button>
@@ -1269,7 +1269,7 @@ onMounted(() => loadMatches())
                         <div class="flex-1">
                           <!-- ⭐ 新增：辩题 + 正反方显示 -->
                           <div v-if="match.topic" class="mb-2">
-                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-amber-300 bg-amber-500/15 rounded">
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-500/15 rounded">
                               <UIcon name="i-lucide-file-text" class="w-3 h-3" />
                               {{ match.topic }}
                             </div>
@@ -1329,7 +1329,7 @@ onMounted(() => loadMatches())
                           <div class="flex items-center gap-3 mt-2 ml-0 pl-0">
                             <span
                               class="text-xs px-2 py-0.5 rounded-full"
-                              :class="match.status === 'finished' ? 'bg-green-500/15 text-green-400' : match.status === 'running' ? 'bg-indigo-500/15 text-indigo-400' : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]'"
+                              :class="match.status === 'finished' ? 'bg-green-500/15 text-green-600 dark:text-green-400' : match.status === 'running' ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]'"
                             >
                               {{ match.status === 'finished' ? '已完赛' : match.status === 'running' ? '进行中' : '待开始' }}
                             </span>
@@ -1565,13 +1565,13 @@ onMounted(() => loadMatches())
           <div>
             <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">获胜方</label>
             <div class="grid grid-cols-3 gap-2">
-              <button @click="() => { resultForm.winner = 'A' }" class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all" :class="resultForm.winner === 'A' ? 'border-green-500 bg-green-500/15 text-green-400' : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'">
+              <button @click="() => { resultForm.winner = 'A' }" class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all" :class="resultForm.winner === 'A' ? 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400' : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'">
                 {{ resultMatch?.teamA || '队伍A' }} 胜
               </button>
-              <button @click="() => { resultForm.winner = 'draw' }" class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all" :class="resultForm.winner === 'draw' ? 'border-yellow-500 bg-yellow-500/15 text-yellow-400' : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'">
+              <button @click="() => { resultForm.winner = 'draw' }" class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all" :class="resultForm.winner === 'draw' ? 'border-yellow-500 bg-yellow-500/15 text-yellow-600 dark:text-yellow-400' : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'">
                 平局
               </button>
-              <button @click="() => { resultForm.winner = 'B' }" class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all" :class="resultForm.winner === 'B' ? 'border-green-500 bg-green-500/15 text-green-400' : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'">
+              <button @click="() => { resultForm.winner = 'B' }" class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all" :class="resultForm.winner === 'B' ? 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400' : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'">
                 {{ resultMatch?.teamB || '队伍B' }} 胜
               </button>
             </div>
@@ -1852,7 +1852,7 @@ onMounted(() => loadMatches())
                 @click="() => { generateForm.format = fmt.value }"
                 class="p-4 text-sm rounded-lg border-2 transition-all text-left"
                 :class="generateForm.format === fmt.value
-                  ? 'border-purple-500 bg-purple-500/15 text-purple-300 shadow-sm'
+                  ? 'border-purple-500 bg-purple-500/15 text-purple-700 dark:text-purple-300 shadow-sm'
                   : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] hover:border-[var(--color-border)]'"
               >
                 <div class="flex items-center gap-2 mb-2">
@@ -1938,7 +1938,7 @@ onMounted(() => loadMatches())
                   @click="() => { generateForm.roundRobinMode = 'single' }"
                   class="px-4 py-2 text-sm rounded-lg border transition-all"
                   :class="generateForm.roundRobinMode === 'single'
-                    ? 'border-purple-500 bg-purple-500/15 text-purple-400 font-semibold'
+                    ? 'border-purple-500 bg-purple-500/15 text-purple-600 dark:text-purple-400 font-semibold'
                     : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'"
                 >单循环（推荐）</button>
                 <button
@@ -2037,7 +2037,7 @@ onMounted(() => loadMatches())
           <!-- 4-5. 佩寄制 / 单败淘汰赛：专用提示 -->
           <div v-if="generateForm.format === 'page_playoff'">
             <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3">④ 佩寄制说明</label>
-            <div class="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg text-xs text-purple-300 leading-relaxed">
+            <div class="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg text-xs text-purple-700 dark:text-purple-300 leading-relaxed">
               <p class="font-semibold mb-1">经典 4 队 5 场流程：</p>
               <p>• R1：第 1 名 vs 第 4 名，第 2 名 vs 第 3 名</p>
               <p>• R2：R1 两位胜者对决（胜者直接进入 R4 决赛）</p>
@@ -2049,7 +2049,7 @@ onMounted(() => loadMatches())
 
           <div v-if="generateForm.format === 'single_elimination'">
             <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3">④ 单败淘汰赛提示</label>
-            <div class="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg text-xs text-purple-300 leading-relaxed">
+            <div class="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg text-xs text-purple-700 dark:text-purple-300 leading-relaxed">
               <p>• 当前 {{ teamList.length }} 支队伍，预计生成 {{ estimateMatches('single_elimination', teamList.length) }}</p>
               <p>• 若队伍数不是 2 的幂，首轮将自动生成轮空位（BYE），让种子高的队伍直接晋级</p>
               <p>• 录入比赛结果后，胜者将自动填入下一轮对阵位置</p>

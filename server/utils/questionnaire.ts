@@ -7,7 +7,7 @@
  * - 后续签到、反馈等功能可以直接接入这套统一问卷底座
  */
 
-import { parseTopics, parseAllowedVoters } from './topic-vote'
+import { parseTopics, parseAllowedVoters, topicDisplayText } from './topic-vote'
 import { safeJsonStringify, safeJsonParse } from './common'
 
 // Prisma 事务客户端和普通客户端都支持这里用到的方法，因此使用结构宽松的 any 类型。
@@ -169,7 +169,7 @@ export async function syncTopicVoteQuestionnaire(
       fieldKey: 'topicIndices',
       title: '请选择你支持的辩题',
       questionType: vote.multipleChoice ? 'checkbox' : 'radio',
-      options: toJson(topics),
+      options: toJson(topics.map((t) => topicDisplayText(t))),
       required: true,
       sortOrder: 0,
       visibilityRule: toJson({ allowedVoters }),
@@ -257,7 +257,7 @@ export async function recordTopicVoteQuestionnaireSubmission(
   if (!questionnaire) return null
 
   const topics = parseTopics(vote.topics)
-  const selectedTopics = selectedIndices.map((index) => topics[index]).filter(Boolean)
+  const selectedTopics = selectedIndices.map((index) => topicDisplayText(topics[index])).filter(Boolean)
 
   return await client.questionnaireSubmission.create({
     data: {

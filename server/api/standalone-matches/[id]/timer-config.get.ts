@@ -1,9 +1,18 @@
 // 获取独立赛事的完整计时器配置（包括项目信息、环节、UI/皮肤/音频/队徽配置）
 import { prisma } from '../../../lib/prisma'
+import { getUserFromEventWithSession } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: '缺少赛事ID' })
+
+  // 权限校验：登录用户 + 是本人创建或系统管理员
+  const user = await getUserFromEventWithSession(event, prisma)
+  const match = await prisma.standaloneMatch.findUnique({ where: { id } })
+  if (!match) throw createError({ statusCode: 404, message: '独立赛事不存在' })
+  if (match.userId !== user.userId && user.role !== 'system_admin') {
+    throw createError({ statusCode: 403, message: '权限不足' })
+  }
 
   // 1. 查找关联的计时器项目（通过 standaloneMatchId）
   let project = await prisma.debateTimerProject.findUnique({
@@ -66,6 +75,18 @@ export default defineEventHandler(async (event) => {
         positiveDuration: s.positiveDuration,
         negativeDuration: s.negativeDuration,
         allowedRoles: s.allowedRoles ? JSON.parse(s.allowedRoles) : null,
+        speaker: s.speaker,
+        questioner: s.questioner,
+        responder: s.responder,
+        firstSpeaker: s.firstSpeaker,
+        protectionTime: s.protectionTime,
+        positiveSpeakers: s.positiveSpeakers ? JSON.parse(s.positiveSpeakers) : null,
+        negativeSpeakers: s.negativeSpeakers ? JSON.parse(s.negativeSpeakers) : null,
+        speakers: s.speakers ? JSON.parse(s.speakers) : null,
+        questionDuration: s.questionDuration,
+        answerDuration: s.answerDuration,
+        enabled: s.enabled,
+        pptImage: s.pptImage || null,
       })),
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,

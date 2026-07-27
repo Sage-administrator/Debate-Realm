@@ -15,7 +15,6 @@ model User {
   email        String?  // 邮箱，可选
   avatar       String?  // 头像 URL，可选
   teamId       String?
-  tournamentTeamId String? // 参赛队伍聊天室：绑定该用户所属的赛事内参赛队伍(TournamentTeam)，用于判定可进入的队伍聊天房
   role         String   @default("individual") // system_admin / admin / subaccount / debater / individual
   mode         String   @default("individual")
   tokenVersion Int      @default(0)
@@ -30,7 +29,7 @@ model User {
   timerProjects     DebateTimerProject[]
   registrations     Registration[]    // 用户提交的报名记录
 
-  @@index([tournamentTeamId])
+  @@index([role, mode]) // 管理员列表按 role+mode 过滤（如个人用户列表）避免全表扫描
 }
 
 model Team {
@@ -222,8 +221,8 @@ model Tournament {
   registrations     Registration[]      // 报名记录
   regFields         RegistrationField[] // 自定义报名字段
   topicVotes        TopicVote[]         // 辩题投票
+  debateTopics      DebateTopic[]       // 辩题库（赛事级，供辩题投票拉取候选辩题）
   questionnaires    Questionnaire[]     // 通用问卷：报名、投票、签到、反馈等统一入口
-  chats            ChatRoom[]          // 赛事聊天室（正方/反方/总）
 }
 
 model TournamentTeam {
@@ -308,6 +307,25 @@ model TopicVoteRecord {
 }
 
 // ════════════════════════════════════════════════════
+// 辩题库 — 赛事级辩题库，供辩题投票问卷拉取候选辩题
+// 每个辩题包含正方立场与反方立场，投票时按"分正方双方"呈现
+// ════════════════════════════════════════════════════
+model DebateTopic {
+  id            String   @id @default(uuid())
+  tournamentId  String
+  affirmative  String   // 正方立场（如"人工智能利大于弊"）
+  negative     String   // 反方立场（如"人工智能弊大于利"）
+  category     String?  // 分类/标签（如"政策辩""价值辩"），可选
+  note         String?  // 备注说明，可选
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@index([tournamentId])
+}
+
+// ════════════════════════════════════════════════════
 // 通用问卷系统 — 报名、投票、签到、反馈等场景共用
 // 说明：
 // - 现有 Registration / TopicVote 继续保留业务字段，保证兼容当前流程
@@ -319,7 +337,7 @@ model TopicVoteRecord {
 model Questionnaire {
   id           String   @id @default(uuid())
   tournamentId String
-  sourceType   String   // registration | topic_vote | checkin | feedback
+  sourceType   String   // registration | topic_vote | checkin | feedback | match_score
   sourceId     String   // registration 使用 tournamentId；topic_vote 使用 TopicVote.id
   title        String
   description  String?
@@ -345,7 +363,7 @@ model QuestionnaireQuestion {
   questionnaireId String
   fieldKey        String
   title           String
-  questionType    String   // text | textarea | radio | checkbox | select | number | date | phone | email | members | heading | divider
+  questionType    String   // text | textarea | radio | checkbox | select | number | date | phone | email | members | heading | divider | scale
   options         String?  // JSON：选择题选项
   required        Boolean  @default(false)
   sortOrder       Int      @default(0)
@@ -363,7 +381,7 @@ model QuestionnaireQuestion {
 model QuestionnaireSubmission {
   id              String   @id @default(uuid())
   questionnaireId String
-  sourceType      String   // registration | topic_vote | checkin | feedback
+  sourceType      String   // registration | topic_vote | checkin | feedback | match_score
   sourceId        String   // 对应业务提交记录 ID：Registration.id / TopicVoteRecord.id
   respondentUserId String?
   respondentName   String?
@@ -548,13 +566,34 @@ model DebateTimerStage {
   id               String   @id @default(uuid())
   projectId        String
   name             String   // 环节名称
-  duration         Int      // 主时长（秒）
-  type             String   // 'speech' | 'question' | 'summary' | 'special' | 'dual-timer'
-  description      String?
+  duration         Int      // 主时长（秒）；单方发问 = questionDuration + answerDuration
+  type             String   // 环节类型，统一用新枚举值（normalizeStageType 映射后）：single_speech | single_question | summary | bilateral_debate | free_debate | single_timer | double_timer | no_timer | ppt_replace
+  description      String?  // 管理员笔记，不显示给辩手
   orderIndex       Int      // 排序顺序
   positiveDuration Int?     // 双计时器：正方时长
   negativeDuration Int?     // 双计时器：反方时长
   allowedRoles     String?  // JSON 字符串：允许的角色/选手
+  // ====== 角色字段（单方发言/发问/对辩）======
+  speaker          String?  // 单方发言的发言方，如 "正方 · 一辩"
+  questioner       String?  // 单方发问的发问人
+  responder        String?  // 单方发问的接受人
+  firstSpeaker     String?  // 双边对辩/自由辩论的率先发言方
+  protectionTime   Int?     // 保护时间（秒），0/null 表示不启用。单方发问：接受人开头 N 秒不可被打断
+  // ====== 对辩双方参与辩手（多选，JSON 数组）======
+  positiveSpeakers String?  // JSON: ["正方 · 一辩","正方 · 二辩",...]
+  negativeSpeakers String?  // JSON: ["反方 · 一辩","反方 · 二辩",...]
+  // ====== 单方发问拆分时长 ======
+  questionDuration Int?     // 提问时长（秒）
+  answerDuration   Int?     // 回答时长（秒）
+  // ====== 环节启用开关 ======
+  enabled          Boolean  @default(true) // false 时该环节在计时流程中被跳过
+  // ====== 无计时器环节的发言方（用于发言权限联动）======
+  // JSON 数组字符串，存可发言角色 label 列表，如 ["正方一辩","反方二辩"]
+  // 单方发言/发问/对辩环节由 speaker/questioner/firstSpeaker 推导，无需本字段
+  speakers         String?  // 无计时器环节的可发言角色（multi-select，角色 label）
+  // ====== PPT/图片展示环节的图片（用于「PPT平替」展示，纯播报不计时）======
+  // 存储上传到 /uploads/images/ 的相对路径，如 "/uploads/images/abc.png"
+  pptImage         String?  // PPT/图片环节展示的图片路径；空表示不展示图片
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -641,66 +680,7 @@ model RegistrationField {
 }
 
 // ════════════════════════════════════════════════════
-// 赛事聊天室 — 队伍聊天室 + 总聊天室 实时消息
-// 房间粒度 = 赛事(Tournament) + 类型：
-//   - type='general'           总聊天室（对所有赛事用户开放）
-//   - type='team' + tournamentTeamId  某支参赛队伍(TournamentTeam)的专属房间
-// 每支参赛队伍一间房；该队伍每位队员各持一个子账号(User.role=subaccount,
-// tournamentTeamId=该队)，合在一起共用这间房。
-// ════════════════════════════════════════════════════
-model ChatRoom {
-  id               String   @id @default(uuid())
-  tournamentId     String
-  type             String   // 'general' | 'team'
-  tournamentTeamId String?  // type='team' 时指向 TournamentTeam.id；type='general' 时为 null
-  name             String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
 
-  tournament    Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  messages      ChatMessage[]
-  readReceipts  ChatReadReceipt[]
-
-  // 总房：每赛事唯一(type='general', tournamentTeamId=null)
-  // 队伍房：每队唯一(type='team', tournamentTeamId=队id)；SQLite 中 null 视为互异，不冲突
-  @@unique([tournamentId, type, tournamentTeamId])
-  @@index([tournamentId])
-  @@index([tournamentTeamId])
-}
-
-model ChatMessage {
-  id           String   @id @default(uuid())
-  roomId       String
-  tournamentId String   // 冗余字段，便于按赛事查询与权限判断
-  senderId     String
-  senderName   String
-  senderSide   String   // 'member' | 'staff' | 'neutral' —— 发送者在该房间的身份
-  content      String?  // 文本消息（图片消息可为空或作为图注）
-  imageUrl     String?  // 图片消息 URL（/uploads/chat/...）
-  type         String   @default("text") // 'text' | 'image'
-  createdAt    DateTime @default(now())
-
-  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
-  @@index([roomId, createdAt])
-  @@index([tournamentId, createdAt])
-}
-
-model ChatReadReceipt {
-  id                String   @id @default(uuid())
-  roomId            String
-  userId            String
-  lastReadMessageId String   // 该用户在本房间已读到的最新消息 ID
-  lastReadAt        DateTime // 该消息的发送时间（用于统计已读人数）
-  updatedAt         DateTime @updatedAt
-
-  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
-  @@unique([roomId, userId])
-  @@index([roomId])
-}
-
-// ════════════════════════════════════════════════════
 // 定时发布任务 — 定时向 QQ 频道「论坛」子频道发布辩论题目/讨论帖
 // 说明：
 // - 论坛发帖仅私域机器人可用（与 bot-ws 域隔离约束一致）
@@ -734,6 +714,7 @@ model ScheduledPost {
 
   @@index([teamId])
   @@index([teamId, status, nextRunAt])
+  @@index([status, nextRunAt]) // 调度扫描 scanDueTasks 按 status+nextRunAt 命中，避免全表扫描 ScheduledPost
 }
 
 // 定时发布执行历史（每次触发记一条）

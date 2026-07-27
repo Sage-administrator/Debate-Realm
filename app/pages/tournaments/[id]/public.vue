@@ -38,10 +38,10 @@ const statusLabels: Record<string, string> = {
 }
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-green-500/20 text-green-400',
-  ongoing: 'bg-blue-500/20 text-blue-400',
+  pending: 'bg-green-500/20 text-green-600 dark:text-green-400',
+  ongoing: 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-300',
   finished: 'bg-gray-500/20 text-gray-400',
-  cancelled: 'bg-red-500/20 text-red-400',
+  cancelled: 'bg-red-500/20 text-red-600 dark:text-red-400',
 }
 
 // ── 报名类型中文名 ──
@@ -112,30 +112,28 @@ onMounted(() => {
 
 <template>
   <div class="min-h-screen bg-[var(--color-bg-primary)]">
-    <!-- ═══════════ 顶部导航 ═══════════ -->
-    <header class="sticky top-0 z-50 backdrop-blur-xl bg-[var(--color-bg-secondary)]/80 border-b border-[var(--color-border)]">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div class="flex items-center gap-3 cursor-pointer" @click="navigateTo('/tournaments')">
-          <UIcon name="i-lucide-arrow-left" class="w-5 h-5 text-[var(--color-text-secondary)]" />
-          <span class="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">返回赛事列表</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <UButton variant="ghost" color="neutral" size="sm" @click="() => { navigateTo('/login') }">
-            登录
-          </UButton>
-        </div>
-      </div>
-    </header>
+    <!-- ═══════════ 顶部导航（与公开赛事列表页共用 PublicHeader）═══════════ -->
+    <PublicHeader>
+      <template #actions>
+        <NuxtLink
+          to="/tournaments"
+          class="text-sm px-5 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] flex items-center gap-2 transition-all"
+        >
+          <UIcon name="i-lucide-arrow-left" class="w-4 h-4" />
+          <span>返回赛事列表</span>
+        </NuxtLink>
+      </template>
+    </PublicHeader>
 
     <!-- ═══════════ 加载中 ═══════════ -->
     <div v-if="loading" class="text-center py-20">
-      <div class="inline-block animate-spin w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+      <div class="inline-block animate-spin w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
       <p class="text-[var(--color-text-muted)] mt-4">加载中...</p>
     </div>
 
     <!-- ═══════════ 加载失败 ═══════════ -->
     <div v-else-if="loadError" class="text-center py-20">
-      <UIcon name="i-lucide-alert-circle" class="w-16 h-16 text-red-400/50 mx-auto mb-4" />
+      <UIcon name="i-lucide-alert-circle" class="w-16 h-16 text-red-500/40 dark:text-red-400/50 mx-auto mb-4" />
       <p class="text-[var(--color-text-secondary)] mb-4">赛事不存在或未公开</p>
       <UButton color="neutral" variant="ghost" @click="() => { navigateTo('/tournaments') }">
         返回赛事列表
@@ -143,11 +141,11 @@ onMounted(() => {
     </div>
 
     <!-- ═══════════ 赛事详情 ═══════════ -->
-    <main v-else-if="tournament" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <main v-else-if="tournament" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-10">
       <!-- ── 赛事头部 ── -->
       <div class="bg-[var(--color-bg-secondary)] backdrop-blur rounded-2xl border border-[var(--color-border)] overflow-hidden mb-8">
         <!-- 顶部渐变条 -->
-        <div class="h-3 bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400"></div>
+        <div class="h-3 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
 
         <div class="p-8">
           <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
@@ -158,9 +156,9 @@ onMounted(() => {
                   {{ statusLabels[tournament.status] || tournament.status }}
                 </span>
                 <span class="px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]">
-                  {{ formatLabels[tournament.format] || tournament.format }}
+                  {{ formatLabels[tournament.format] || tournament.format || '赛制待定' }}
                 </span>
-                <span class="px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]">
+                <span v-if="tournament.registrationType" class="px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]">
                   {{ regTypeLabels[tournament.registrationType] || tournament.registrationType }}
                 </span>
               </div>
@@ -178,7 +176,7 @@ onMounted(() => {
               <!-- 报名按钮 -->
               <button
                 v-if="tournament.registrationOpen && !isRegistrationClosed"
-                class="px-8 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-[var(--color-text-primary)] rounded-xl font-medium hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg shadow-blue-500/25"
+                class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
                 @click="goRegister"
               >
                 立即报名
@@ -239,7 +237,7 @@ onMounted(() => {
           :class="[
             'px-5 py-3 text-sm font-medium border-b-2 -mb-px transition-all',
             activeTab === tab.key
-              ? 'text-blue-400 border-blue-400'
+              ? 'text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
               : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text-primary)]',
           ]"
           @click="() => { activeTab = tab.key as any }"
@@ -258,28 +256,28 @@ onMounted(() => {
           <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4">赛事信息</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <div class="flex items-start gap-3">
-              <UIcon name="i-lucide-calendar" class="w-5 h-5 text-blue-400 mt-0.5" />
+              <UIcon name="i-lucide-calendar" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5" />
               <div>
                 <div class="text-xs text-[var(--color-text-muted)]">比赛时间</div>
                 <div class="text-[var(--color-text-primary)]">{{ formatDateShort(tournament.scheduledAt) }}</div>
               </div>
             </div>
             <div class="flex items-start gap-3">
-              <UIcon name="i-lucide-map-pin" class="w-5 h-5 text-blue-400 mt-0.5" />
+              <UIcon name="i-lucide-map-pin" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5" />
               <div>
                 <div class="text-xs text-[var(--color-text-muted)]">比赛地点</div>
                 <div class="text-[var(--color-text-primary)]">{{ tournament.venue || '待定' }}</div>
               </div>
             </div>
             <div class="flex items-start gap-3">
-              <UIcon name="i-lucide-swords" class="w-5 h-5 text-blue-400 mt-0.5" />
+              <UIcon name="i-lucide-swords" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5" />
               <div>
                 <div class="text-xs text-[var(--color-text-muted)]">比赛赛制</div>
-                <div class="text-[var(--color-text-primary)]">{{ formatLabels[tournament.format] || tournament.format }}</div>
+                <div class="text-[var(--color-text-primary)]">{{ formatLabels[tournament.format] || tournament.format || '待定' }}</div>
               </div>
             </div>
             <div class="flex items-start gap-3">
-              <UIcon name="i-lucide-users" class="w-5 h-5 text-blue-400 mt-0.5" />
+              <UIcon name="i-lucide-users" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5" />
               <div>
                 <div class="text-xs text-[var(--color-text-muted)]">队伍人数要求</div>
                 <div class="text-[var(--color-text-primary)]">
@@ -302,7 +300,7 @@ onMounted(() => {
           <div v-if="tournament.registrationInfo" class="mt-6 pt-6 border-t border-[var(--color-border)]">
             <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-3">
               <span class="flex items-center gap-2">
-                <UIcon name="i-lucide-info" class="w-5 h-5 text-amber-400" />
+                <UIcon name="i-lucide-info" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 报名须知
               </span>
             </h3>
@@ -319,7 +317,7 @@ onMounted(() => {
             <span class="text-sm font-normal text-[var(--color-text-muted)] ml-2">共 {{ tournament.teams.length }} 支</span>
           </h3>
           <div v-if="tournament.teams.length === 0" class="text-center py-12">
-            <UIcon name="i-lucide-users" class="w-12 h-12 text-[var(--color-border-muted)] mx-auto mb-3" />
+            <UIcon name="i-lucide-users" class="w-12 h-12 text-indigo-600 dark:text-indigo-400 mx-auto mb-3" />
             <p class="text-[var(--color-text-muted)]">暂无参赛队伍</p>
           </div>
           <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -328,7 +326,7 @@ onMounted(() => {
               :key="idx"
               class="flex items-center gap-3 bg-[var(--color-bg-secondary)] rounded-xl p-4"
             >
-              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-[var(--color-text-primary)] font-bold text-sm">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
                 {{ Number(idx) + 1 }}
               </div>
               <div class="flex-1 min-w-0">
@@ -346,7 +344,7 @@ onMounted(() => {
             <span class="text-sm font-normal text-[var(--color-text-muted)] ml-2">共 {{ tournament.judges.length }} 位</span>
           </h3>
           <div v-if="tournament.judges.length === 0" class="text-center py-12">
-            <UIcon name="i-lucide-gavel" class="w-12 h-12 text-[var(--color-border-muted)] mx-auto mb-3" />
+            <UIcon name="i-lucide-gavel" class="w-12 h-12 text-indigo-600 dark:text-indigo-400 mx-auto mb-3" />
             <p class="text-[var(--color-text-muted)]">暂无评委信息</p>
           </div>
           <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -370,7 +368,7 @@ onMounted(() => {
         <div v-if="activeTab === 'schedule'">
           <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4">赛程安排</h3>
           <div class="text-center py-12">
-            <UIcon name="i-lucide-calendar-clock" class="w-12 h-12 text-[var(--color-border-muted)] mx-auto mb-3" />
+            <UIcon name="i-lucide-calendar-clock" class="w-12 h-12 text-indigo-600 dark:text-indigo-400 mx-auto mb-3" />
             <p class="text-[var(--color-text-muted)] mb-2">赛程即将公布</p>
             <p class="text-[var(--color-text-muted)] text-sm">请关注赛事主办方后续通知</p>
           </div>
@@ -378,11 +376,11 @@ onMounted(() => {
       </div>
 
       <!-- ── 底部报名 CTA ── -->
-      <div v-if="tournament.registrationOpen && !isRegistrationClosed" class="mt-8 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl border border-blue-500/30 p-8 text-center">
+      <div v-if="tournament.registrationOpen && !isRegistrationClosed" class="mt-8 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl border border-indigo-500/30 p-8 text-center">
         <h3 class="text-xl font-bold text-[var(--color-text-primary)] mb-2">心动不如行动</h3>
         <p class="text-[var(--color-text-secondary)] mb-6">立即报名，展现你的辩论风采！</p>
         <button
-          class="px-10 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-[var(--color-text-primary)] rounded-xl font-medium hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg shadow-blue-500/25"
+          class="px-10 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
           @click="goRegister"
         >
           立即报名参赛
@@ -390,13 +388,7 @@ onMounted(() => {
       </div>
     </main>
 
-    <!-- ═══════════ 底部 Footer ═══════════ -->
-    <footer class="border-t border-[var(--color-border)] py-8 mt-12">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p class="text-[var(--color-text-muted)] text-sm">
-          © 2024 辩论计时系统 · 专业辩论赛管理平台
-        </p>
-      </div>
-    </footer>
+    <!-- ═══════════ 底部 Footer（与公开赛事列表页共用 PublicFooter）═══════════ -->
+    <PublicFooter />
   </div>
 </template>

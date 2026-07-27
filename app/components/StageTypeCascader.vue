@@ -32,6 +32,7 @@ const categories: CascaderCategory[] = [
     items: [
       { label: '单方发言', value: 'single_speech', desc: '一方单独发言，正方或反方轮流' },
       { label: '单方发问', value: 'single_question', desc: '一方向另一方提问' },
+      { label: '小结/总结', value: 'summary', desc: '小结或总结陈词环节' },
       { label: '双边对辩', value: 'bilateral_debate', desc: '双方交替辩论' },
       { label: '自由辩论', value: 'free_debate', desc: '自由辩论环节' },
     ],
@@ -189,9 +190,9 @@ function onTriggerClick() {
   padding: 0 12px;
   font-size: 14px;
   text-align: left;
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid var(--cc-trigger-border);
   border-radius: 4px;
-  background: rgba(255,255,255,0.08);
+  background: var(--cc-trigger-bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -209,17 +210,17 @@ function onTriggerClick() {
 }
 
 .cascader-value {
-  color: rgba(255,255,255,0.9);
+  color: var(--cc-value);
 }
 
 .cascader-placeholder {
-  color: rgba(255,255,255,0.4);
+  color: var(--cc-placeholder);
 }
 
 .chevron-icon {
   width: 16px;
   height: 16px;
-  color: rgba(255,255,255,0.4);
+  color: var(--cc-chevron);
   transition: transform 0.2s;
   flex-shrink: 0;
 }
@@ -231,14 +232,48 @@ function onTriggerClick() {
 
 <!-- 下拉菜单样式使用非 scoped，因为 Teleport 到 body 下 -->
 <style>
+/* 主题令牌：浅色用页面令牌，深色保留原玻璃质感；:root 必须在 .dark 之前 */
+:root {
+  --cc-trigger-bg: var(--color-bg-secondary);
+  --cc-trigger-border: var(--color-border);
+  --cc-value: var(--color-text-primary);
+  --cc-placeholder: var(--color-text-muted);
+  --cc-chevron: var(--color-text-muted);
+  --cc-dropdown-bg: var(--color-bg-secondary);
+  --cc-dropdown-border: var(--color-border);
+  --cc-dropdown-shadow: 0 4px 20px rgba(15, 23, 42, 0.12);
+  --cc-divider: var(--color-border);
+  --cc-item: var(--color-text-secondary);
+  --cc-item-desc: var(--color-text-muted);
+  --cc-hover-bg: var(--color-bg-tertiary);
+  --cc-active-text: #07C160;
+  --cc-active-bg: rgba(7, 193, 96, 0.12);
+}
+.dark {
+  --cc-trigger-bg: rgba(255, 255, 255, 0.08);
+  --cc-trigger-border: rgba(255, 255, 255, 0.15);
+  --cc-value: rgba(255, 255, 255, 0.9);
+  --cc-placeholder: rgba(255, 255, 255, 0.4);
+  --cc-chevron: rgba(255, 255, 255, 0.4);
+  --cc-dropdown-bg: rgba(30, 30, 60, 0.95);
+  --cc-dropdown-border: rgba(255, 255, 255, 0.15);
+  --cc-dropdown-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --cc-divider: rgba(255, 255, 255, 0.1);
+  --cc-item: rgba(255, 255, 255, 0.7);
+  --cc-item-desc: rgba(255, 255, 255, 0.4);
+  --cc-hover-bg: rgba(255, 255, 255, 0.05);
+  --cc-active-text: #07C160;
+  --cc-active-bg: rgba(7, 193, 96, 0.15);
+}
+
 /* ===== 下拉浮层（双栏）：fixed 定位 + 高 z-index，脱离父容器 overflow 限制 ===== */
 .cascader-dropdown {
   position: fixed;
   z-index: 1000;
-  background: rgba(30, 30, 60, 0.95);
-  border: 1px solid rgba(255,255,255,0.15);
+  background: var(--cc-dropdown-bg);
+  border: 1px solid var(--cc-dropdown-border);
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--cc-dropdown-shadow);
   backdrop-filter: blur(20px);
   display: flex;
   overflow: hidden;
@@ -257,7 +292,7 @@ function onTriggerClick() {
 /* 左栏：一级分类 */
 .cascader-left {
   width: 120px;
-  border-right: 1px solid rgba(255,255,255,0.1);
+  border-right: 1px solid var(--cc-divider);
   padding: 4px 0;
   flex-shrink: 0;
 }
@@ -271,18 +306,18 @@ function onTriggerClick() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: rgba(255,255,255,0.7);
+  color: var(--cc-item);
   border-radius: 6px;
 }
 
 .cascader-cat:hover {
-  background-color: rgba(255,255,255,0.05);
+  background-color: var(--cc-hover-bg);
 }
 
 /* 选中项高亮（淡绿色背景 + 绿色文字）*/
 .cascader-cat--active {
-  color: #07C160;
-  background-color: rgba(7, 193, 96, 0.15);
+  color: var(--cc-active-text);
+  background-color: var(--cc-active-bg);
   font-weight: 500;
 }
 
@@ -303,7 +338,7 @@ function onTriggerClick() {
 .cascader-placeholder {
   padding: 10px 12px;
   font-size: 14px;
-  color: #9CA3AF;
+  color: var(--cc-item-desc);
 }
 
 .cascader-item {
@@ -311,17 +346,17 @@ function onTriggerClick() {
   margin: 2px 4px;
   cursor: pointer;
   transition: all 0.15s;
-  color: rgba(255,255,255,0.7);
+  color: var(--cc-item);
   border-radius: 6px;
 }
 
 .cascader-item:hover {
-  background-color: rgba(255,255,255,0.05);
+  background-color: var(--cc-hover-bg);
 }
 
 .cascader-item--active {
-  color: #07C160;
-  background-color: rgba(7, 193, 96, 0.15);
+  color: var(--cc-active-text);
+  background-color: var(--cc-active-bg);
   font-weight: 500;
 }
 
@@ -332,7 +367,7 @@ function onTriggerClick() {
 
 .cascader-item-desc {
   font-size: 12px;
-  color: rgba(255,255,255,0.4);
+  color: var(--cc-item-desc);
   display: block;
   margin-top: 2px;
   line-height: 1.4;

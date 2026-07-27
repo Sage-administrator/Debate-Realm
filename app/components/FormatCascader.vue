@@ -222,6 +222,52 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
+<style>
+/* 主题令牌：浅色跟随页面令牌，深色保留原玻璃质感（与 RolePicker/StageTypeCascader 同构） */
+:root {
+  --fc-trigger-bg: var(--color-bg-secondary);
+  --fc-trigger-border: var(--color-border);
+  --fc-trigger-border-hover: var(--color-border);
+  --fc-icon: var(--color-text-muted);
+  --fc-panel-bg: var(--color-bg-secondary);
+  --fc-panel-border: var(--color-border);
+  --fc-panel-shadow: 0 8px 24px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.08);
+  --fc-breadcrumb-bg: var(--color-bg-tertiary);
+  --fc-breadcrumb-border: var(--color-border);
+  --fc-text-muted: var(--color-text-muted);
+  --fc-text-faint: var(--color-text-muted);
+  --fc-option: var(--color-text-secondary);
+  --fc-option-back: var(--color-text-muted);
+  --fc-hover-bg: rgba(16, 185, 129, 0.1);
+  --fc-selected-bg: rgba(16, 185, 129, 0.14);
+  --fc-crumb-hover-bg: var(--color-bg-tertiary);
+  --fc-scrollbar: var(--color-border);
+  --fc-scrollbar-hover: var(--color-text-muted);
+  --fc-arrow: var(--color-text-muted);
+}
+.dark {
+  --fc-trigger-bg: rgba(255, 255, 255, 0.08);
+  --fc-trigger-border: rgba(255, 255, 255, 0.15);
+  --fc-trigger-border-hover: rgba(255, 255, 255, 0.25);
+  --fc-icon: rgba(255, 255, 255, 0.4);
+  --fc-panel-bg: rgba(30, 30, 62, 0.95);
+  --fc-panel-border: rgba(255, 255, 255, 0.15);
+  --fc-panel-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
+  --fc-breadcrumb-bg: rgba(255, 255, 255, 0.05);
+  --fc-breadcrumb-border: rgba(255, 255, 255, 0.1);
+  --fc-text-muted: rgba(255, 255, 255, 0.5);
+  --fc-text-faint: rgba(255, 255, 255, 0.4);
+  --fc-option: rgba(255, 255, 255, 0.7);
+  --fc-option-back: rgba(255, 255, 255, 0.5);
+  --fc-hover-bg: rgba(16, 185, 129, 0.08);
+  --fc-selected-bg: rgba(16, 185, 129, 0.1);
+  --fc-crumb-hover-bg: rgba(255, 255, 255, 0.1);
+  --fc-scrollbar: rgba(255, 255, 255, 0.15);
+  --fc-scrollbar-hover: rgba(255, 255, 255, 0.25);
+  --fc-arrow: rgba(255, 255, 255, 0.4);
+}
+</style>
+
 <style scoped>
 /* ── 触发按钮 ── */
 .format-cascader {
@@ -235,9 +281,9 @@ onBeforeUnmount(() => {
   align-items: center;
   height: 40px;
   padding: 0 12px;
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid var(--fc-trigger-border);
   border-radius: 6px;
-  background: rgba(255,255,255,0.08);
+  background: var(--fc-trigger-bg);
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   width: 100%;
@@ -245,7 +291,7 @@ onBeforeUnmount(() => {
 }
 
 .cascader-trigger:hover {
-  border-color: rgba(255,255,255,0.25);
+  border-color: var(--fc-trigger-border-hover);
 }
 
 .cascader-trigger.is-active {
@@ -271,7 +317,7 @@ onBeforeUnmount(() => {
 .cascader-icon {
   width: 16px;
   height: 16px;
-  color: rgba(255,255,255,0.4);
+  color: var(--fc-icon);
   transition: transform 0.2s ease;
   flex-shrink: 0;
 }
@@ -284,12 +330,12 @@ onBeforeUnmount(() => {
 /* ── 下拉面板 ── */
 .cascader-panel {
   max-height: 320px;
-  background: rgba(30, 30, 62, 0.95);
+  background: var(--fc-panel-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid var(--fc-panel-border);
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--fc-panel-shadow);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -306,10 +352,10 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--fc-breadcrumb-border);
+  background: var(--fc-breadcrumb-bg);
   font-size: 13px;
-  color: rgba(255,255,255,0.5);
+  color: var(--fc-text-muted);
   flex-wrap: wrap;
 }
 
@@ -318,12 +364,12 @@ onBeforeUnmount(() => {
   padding: 2px 4px;
   border-radius: 4px;
   transition: background 0.15s ease, color 0.15s ease;
-  color: rgba(255,255,255,0.5);
+  color: var(--fc-text-muted);
 }
 
 .crumb:hover {
-  background: rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.7);
+  background: var(--fc-crumb-hover-bg);
+  color: var(--fc-option);
 }
 
 .crumb.is-active {
@@ -332,13 +378,13 @@ onBeforeUnmount(() => {
 }
 
 .crumb.is-placeholder {
-  color: rgba(255,255,255,0.4);
+  color: var(--fc-text-faint);
   font-weight: normal;
 }
 
 .crumb-sep {
   margin: 0 4px;
-  color: rgba(255,255,255,0.15);
+  color: var(--fc-panel-border);
 }
 
 /* ── 选项列表 ── */
@@ -360,11 +406,11 @@ onBeforeUnmount(() => {
   background: transparent;
 }
 .cascader-list-inner::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
+  background: var(--fc-scrollbar);
   border-radius: 3px;
 }
 .cascader-list-inner::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.25);
+  background: var(--fc-scrollbar-hover);
 }
 
 .cascader-option {
@@ -373,19 +419,19 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   padding: 8px 12px;
   font-size: 14px;
-  color: rgba(255,255,255,0.7);
+  color: var(--fc-option);
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.12s ease, color 0.12s ease;
 }
 
 .cascader-option:hover {
-  background: rgba(16, 185, 129, 0.08);
+  background: var(--fc-hover-bg);
   color: #059669;
 }
 
 .cascader-option.is-selected {
-  background: rgba(16, 185, 129, 0.1);
+  background: var(--fc-selected-bg);
   color: #059669;
   font-weight: 500;
 }
@@ -393,7 +439,7 @@ onBeforeUnmount(() => {
 .cascader-arrow {
   width: 14px;
   height: 14px;
-  color: rgba(255,255,255,0.4);
+  color: var(--fc-arrow);
   margin-left: 8px;
   flex-shrink: 0;
 }
@@ -406,15 +452,15 @@ onBeforeUnmount(() => {
 .cascader-option-back {
   justify-content: flex-start;
   gap: 4px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid var(--fc-breadcrumb-border);
   padding: 6px 12px;
   font-size: 13px;
-  color: rgba(255,255,255,0.5);
+  color: var(--fc-option-back);
 }
 
 .cascader-option-back:hover {
   color: #059669;
-  background: rgba(16, 185, 129, 0.08);
+  background: var(--fc-hover-bg);
 }
 
 .cascader-option-back .cascader-arrow {
@@ -427,6 +473,6 @@ onBeforeUnmount(() => {
   padding: 16px;
   text-align: center;
   font-size: 13px;
-  color: rgba(255,255,255,0.4);
+  color: var(--fc-text-faint);
 }
 </style>

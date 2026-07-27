@@ -1,5 +1,6 @@
 import { prisma } from '../../../lib/prisma'
 import { getUserFromEventWithSession } from '../../../utils/auth'
+import { syncStages } from '../../../utils/syncStages'
 
 // PUT /api/timer/projects/[id] — 更新项目（基本信息+环节）
 export default defineEventHandler(async (event) => {
@@ -22,13 +23,12 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody(event)
 
-  // 开始事务：更新项目 + 替换所有环节
+  // 事务：更新项目 + syncStages（diff + update + create + delete）
   const result = await prisma.$transaction(async (tx) => {
-    // 1. 更新项目基本信息
     const project = await tx.debateTimerProject.update({
       where: { id },
       data: {
-        name: String(body.name || '新项目').trim(),
+        name: String(body.title || body.name || '辩论赛').trim(),
         title: String(body.title || '辩论赛').trim(),
         positiveTopic: body.positiveTopic || null,
         negativeTopic: body.negativeTopic || null,
@@ -38,32 +38,10 @@ export default defineEventHandler(async (event) => {
       },
     })
 
-    // 2. 删除现有环节
-    await tx.debateTimerStage.deleteMany({
-      where: { projectId: id },
-    })
+    const incomingStages = Array.isArray(body.stages) ? body.stages : []
+    const returnedStages = await syncStages(tx, id, incomingStages)
 
-    // 3. 创建新的环节列表
-    const stagesData = Array.isArray(body.stages) ? body.stages : []
-    const newStages = await Promise.all(
-      stagesData.map((s: any, idx: number) =>
-        tx.debateTimerStage.create({
-          data: {
-            projectId: id,
-            name: String(s.name || `环节${idx + 1}`).trim(),
-            duration: Number(s.duration) || 0,
-            type: String(s.type || 'speech').trim(),
-            description: s.description || null,
-            orderIndex: Number(s.order ?? idx),
-            positiveDuration: s.positiveDuration ? Number(s.positiveDuration) : null,
-            negativeDuration: s.negativeDuration ? Number(s.negativeDuration) : null,
-            allowedRoles: s.allowedRoles ? JSON.stringify(s.allowedRoles) : null,
-          },
-        }),
-      ),
-    )
-
-    return { project, stages: newStages }
+    return { project, stages: returnedStages }
   })
 
   return {

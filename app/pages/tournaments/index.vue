@@ -10,6 +10,12 @@ definePageMeta({ layout: false })
 
 const toast = useToast()
 const router = useRouter()
+const store = useAuthStore()
+
+// 「创建赛事」按钮：已登录跳转创建页，未登录先去登录
+const createTo = computed(() =>
+  store.isAuthenticated ? '/tournaments/create' : '/login',
+)
 
 // ── 数据状态 ──
 const tournaments = ref<any[]>([])
@@ -44,10 +50,10 @@ const statusLabels: Record<string, string> = {
 }
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-green-500/20 text-green-400',
-  ongoing: 'bg-blue-500/20 text-blue-400',
+  pending: 'bg-green-500/20 text-green-600 dark:text-green-400',
+  ongoing: 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-300',
   finished: 'bg-gray-500/20 text-gray-400',
-  cancelled: 'bg-red-500/20 text-red-400',
+  cancelled: 'bg-red-500/20 text-red-600 dark:text-red-400',
 }
 
 // ── 加载赛事列表 ──
@@ -126,47 +132,29 @@ onMounted(() => {
 <template>
   <div class="min-h-screen bg-[var(--color-bg-primary)]">
     <!-- ═══════════ 顶部导航 ═══════════ -->
-    <header class="sticky top-0 z-50 backdrop-blur-xl bg-[var(--color-bg-secondary)]/80 border-b border-[var(--color-border)]">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <!-- Logo -->
-        <div class="flex items-center gap-3 cursor-pointer" @click="navigateTo('/home')">
-          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
-            <UIcon name="i-lucide-timer" class="w-5 h-5 text-white" />
-          </div>
-          <span class="text-lg font-bold text-[var(--color-text-primary)]">辩论计时</span>
-        </div>
-        <!-- 操作按钮 -->
-        <div class="flex items-center gap-3">
-            <UButton
-              variant="ghost"
-              color="neutral"
-              size="sm"
-              @click="() => { navigateTo('/login') }"
-            >
-              登录
-            </UButton>
-            <UButton
-              size="sm"
-              class="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white border-0"
-              @click="() => { navigateTo('/login') }"
-            >
-              创建赛事
-            </UButton>
-          </div>
-      </div>
-    </header>
+    <PublicHeader>
+      <template #actions>
+        <NuxtLink
+          :to="createTo"
+          class="text-sm px-5 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] flex items-center gap-2 transition-all"
+        >
+          <UIcon name="i-lucide-plus-circle" class="w-4 h-4" />
+          <span>创建赛事</span>
+        </NuxtLink>
+      </template>
+    </PublicHeader>
 
     <!-- ═══════════ Hero 区域 ═══════════ -->
     <section class="py-16 sm:py-24 text-center">
       <div class="max-w-4xl mx-auto px-4">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
-          <UIcon name="i-lucide-sparkles" class="w-4 h-4 text-blue-400" />
-          <span class="text-sm text-blue-300">专业辩论赛管理平台</span>
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6">
+          <UIcon name="i-lucide-sparkles" class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+          <span class="text-sm font-medium text-indigo-600">专业辩论赛管理平台</span>
         </div>
         <h1 class="text-4xl sm:text-6xl font-bold text-[var(--color-text-primary)] mb-6 leading-tight">
           发现精彩赛事
           <br />
-          <span class="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
+          <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
             一键报名参与
           </span>
         </h1>
@@ -188,7 +176,7 @@ onMounted(() => {
               />
             </div>
             <button
-              class="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-[var(--color-text-primary)] rounded-xl font-medium hover:from-blue-600 hover:to-cyan-500 transition-all"
+              class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-purple-700 transition-all"
               @click="handleSearch"
             >
               搜索
@@ -216,7 +204,7 @@ onMounted(() => {
               :class="[
                 'px-4 py-1.5 rounded-lg text-sm transition-all',
                 statusFilter === s.value
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-indigo-500 text-white'
                   : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]',
               ]"
               @click="handleStatusChange(s.value)"
@@ -232,7 +220,7 @@ onMounted(() => {
 
       <!-- 赛事卡片列表 -->
       <div v-if="loading" class="text-center py-20">
-        <div class="inline-block animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+        <div class="inline-block animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
         <p class="text-[var(--color-text-muted)] mt-4">加载中...</p>
       </div>
 
@@ -246,11 +234,11 @@ onMounted(() => {
         <div
           v-for="t in tournaments"
           :key="t.id"
-          class="group bg-[var(--color-bg-secondary)] backdrop-blur rounded-2xl border border-[var(--color-border)] overflow-hidden hover:border-blue-500/50 hover:bg-[var(--color-bg-tertiary)] transition-all cursor-pointer"
+          class="group bg-[var(--color-bg-secondary)] backdrop-blur rounded-2xl border border-[var(--color-border)] overflow-hidden hover:border-[var(--color-accent-primary)]/50 hover:bg-[var(--color-bg-tertiary)] transition-all cursor-pointer"
           @click="goDetail(t.id)"
         >
           <!-- 卡片顶部装饰条 -->
-          <div class="h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
+          <div class="h-2 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
 
           <div class="p-6">
             <!-- 状态标签 -->
@@ -262,7 +250,7 @@ onMounted(() => {
             </div>
 
             <!-- 赛事名称 -->
-            <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-2 group-hover:text-blue-300 transition-colors line-clamp-2">
+            <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-2 group-hover:text-[var(--color-accent-primary)] transition-colors line-clamp-2">
               {{ t.name }}
             </h3>
 
@@ -299,7 +287,7 @@ onMounted(() => {
                   {{ t.judgeCount }} 评委
                 </span>
               </div>
-              <UIcon name="i-lucide-arrow-right" class="w-4 h-4 text-[var(--color-text-muted)] group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+              <UIcon name="i-lucide-arrow-right" class="w-4 h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-accent-primary)] group-hover:translate-x-1 transition-all" />
             </div>
           </div>
         </div>
@@ -321,7 +309,7 @@ onMounted(() => {
             :class="[
               'w-10 h-10 rounded-lg transition-all',
               page === p
-                ? 'bg-blue-500 text-white'
+                ? 'bg-indigo-500 text-white'
                 : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]',
             ]"
             @click="goPage(p)"
@@ -339,13 +327,7 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- ═══════════ 底部 Footer ═══════════ -->
-    <footer class="border-t border-[var(--color-border)] py-8">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p class="text-[var(--color-text-muted)] text-sm">
-          © 2024 辩论计时系统 · 专业辩论赛管理平台
-        </p>
-      </div>
-    </footer>
+    <!-- ═══════════ 底部 Footer（与公开首页共用 PublicFooter）═══════════ -->
+    <PublicFooter />
   </div>
 </template>

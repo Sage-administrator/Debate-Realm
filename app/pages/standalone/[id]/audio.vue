@@ -40,6 +40,7 @@ const fullConfig = ref<{
   skinConfig: Record<string, any>
   audioConfig: {
     enabled?: boolean
+    scheme?: 'default' | 'formal'
     startSound?: string
     endSound?: string
     warningSound?: string
@@ -57,6 +58,7 @@ const fullConfig = ref<{
   skinConfig: {},
   audioConfig: {
     enabled: true,
+    scheme: 'default',
     startSound: '',
     endSound: '',
     warningSound: '',
@@ -118,10 +120,10 @@ async function loadConfig() {
 // 获取默认环节
 function getDefaultStages() {
   return [
-    { id: 1, name: '开篇立论', duration: 180, type: 'speech', order: 1 },
-    { id: 2, name: '攻辩', duration: 120, type: 'speech', order: 2 },
-    { id: 3, name: '自由辩论', duration: 240, type: 'dual-timer', order: 3, positiveDuration: 120, negativeDuration: 120 },
-    { id: 4, name: '总结陈词', duration: 180, type: 'speech', order: 4 },
+    { id: 1, name: '开篇立论', duration: 180, type: 'single_speech', order: 1 },
+    { id: 2, name: '攻辩', duration: 120, type: 'single_speech', order: 2 },
+    { id: 3, name: '自由辩论', duration: 240, type: 'free_debate', order: 3, positiveDuration: 120, negativeDuration: 120 },
+    { id: 4, name: '总结陈词', duration: 180, type: 'single_speech', order: 4 },
   ]
 }
 
@@ -170,8 +172,8 @@ async function onAudioSelect(event: Event, field: 'startSound' | 'endSound' | 'w
     const uploadRes = await $fetch<any>('/api/upload', {
       method: 'POST',
       headers: {
-        // 注意：multipart/form-data 不应该显式设置 Content-Type，
-        // 让浏览器自动设置边界
+        // multipart/form-data 由浏览器自动设置边界；带上鉴权 token（服务端校验 tokenVersion）
+        ...(authStore.token ? { Authorization: `Bearer ${authStore.token}` } : {}),
       },
       body: formData,
     })
@@ -216,7 +218,7 @@ watch(
 <template>
   <template v-if="tournament">
   <!-- ═══ 主内容：左侧预览 + 右侧配置（左1/3 + 右2/3） ═══ -->
-  <main class="py-6 grid grid-cols-12 gap-6">
+  <div class="py-6 grid grid-cols-12 gap-6">
 
     <!-- 左侧：实时预览（左4列，约1/3宽度） -->
     <div class="col-span-4">
@@ -250,6 +252,28 @@ watch(
           </label>
         </div>
 
+        <!-- 声音方案选择 -->
+        <div class="py-3 px-3 bg-[var(--color-bg-secondary)] rounded mb-4 border border-[var(--color-border)]">
+          <label class="text-sm text-[var(--color-text-primary)] font-medium">声音方案</label>
+          <p class="text-xs text-[var(--color-text-muted)] mt-0.5 mb-2">
+            正式比赛提示音使用钉钉响铃：剩余 30 秒与结束时各响一次，剩余 5 秒不响。
+          </p>
+          <div class="flex gap-2">
+            <button type="button"
+              class="px-3 py-2 rounded text-sm border transition-colors"
+              :class="fullConfig.audioConfig.scheme === 'formal' ? 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-tertiary)]' : 'border-[var(--color-accent-primary)] bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)] font-medium'"
+              @click="fullConfig.audioConfig.scheme = 'default'">
+              默认提示音（30 / 5 / 0 秒）
+            </button>
+            <button type="button"
+              class="px-3 py-2 rounded text-sm border transition-colors"
+              :class="fullConfig.audioConfig.scheme === 'formal' ? 'border-[var(--color-accent-primary)] bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)] font-medium' : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-tertiary)]'"
+              @click="fullConfig.audioConfig.scheme = 'formal'">
+              正式比赛提示音（钉钉响铃）
+            </button>
+          </div>
+        </div>
+
         <!-- 提示音上传区 - 水平并行 -->
         <div class="flex gap-4 mb-4">
           <!-- 30秒提示音 -->
@@ -274,8 +298,11 @@ watch(
           </div>
 
           <!-- 5秒提示音 -->
-          <div class="space-y-2 flex-1">
-            <label class="block text-sm text-[var(--color-text-primary)] font-medium">5秒提示音</label>
+          <div class="space-y-2 flex-1" :class="fullConfig.audioConfig.scheme === 'formal' ? 'opacity-50' : ''">
+            <label class="block text-sm text-[var(--color-text-primary)] font-medium">
+              5秒提示音
+              <span v-if="fullConfig.audioConfig.scheme === 'formal'" class="text-xs text-[var(--color-warning)]">（正式方案下不播放）</span>
+            </label>
             <div class="flex items-center gap-2">
               <label class="px-3 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2 whitespace-nowrap">
                 <UIcon name="i-lucide-upload" class="w-4 h-4" />
@@ -318,13 +345,16 @@ watch(
 
         <!-- 说明文字 -->
         <div class="pt-4 border-t border-[var(--color-border)]">
+          <p v-if="fullConfig.audioConfig.scheme === 'formal'" class="text-xs text-[var(--color-warning)] mb-1">
+            注：当前为「正式比赛提示音」方案，5 秒提示音不会播放（仅 30 秒与结束时响铃）。
+          </p>
           <p class="text-xs text-[var(--color-text-muted)]">
             提示：修改后会自动保存。支持格式 MP3、WAV、OGG，单个文件最大 10MB。
           </p>
         </div>
       </UCard>
     </div>
-  </main>
+  </div>
   </template>
 </template>
 

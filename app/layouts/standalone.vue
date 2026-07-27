@@ -55,7 +55,7 @@ const navItems = computed<NavItem[]>(() => {
     case 'subaccount':
       return [
         { label: '仪表盘', icon: 'i-lucide-layout-dashboard', to: '/' },
-        { label: '赛事管理', icon: 'i-lucide-swords', to: '/tournaments/create' },
+        { label: '赛事管理', icon: 'i-lucide-swords', to: '/tournaments/manage' },
       ]
     case 'individual':
     default:
@@ -166,7 +166,8 @@ provide('standaloneMatch', standaloneMatch)
       </div>
 
       <!-- ── 导航区域 ── -->
-      <nav class="sidebar-nav flex-1 mt-2 px-3 overflow-y-auto min-h-0 pointer-events-auto">
+      <!-- 层级根：aside 已设 z-50 + isolation-isolate + pointer-events-auto，nav 及子元素继承即可，无需重复声明 -->
+      <nav class="sidebar-nav flex-1 mt-2 px-3 overflow-y-auto min-h-0">
         <template v-if="store.user">
           <ul class="space-y-1">
             <li v-for="item in navItems" :key="item.to">
@@ -176,7 +177,7 @@ provide('standaloneMatch', standaloneMatch)
                   'sidebar-nav-item',
                   'flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200',
                   'touch-manipulation',
-                  'pointer-events-auto',
+                  'relative', // 建立定位上下文，确保 hover/active 背景色层级正确
                   isActive(item.to)
                     ? 'sidebar-nav-item--active bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)]'
                     : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]',

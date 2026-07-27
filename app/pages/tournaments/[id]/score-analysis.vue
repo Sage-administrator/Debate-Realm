@@ -6,6 +6,7 @@ definePageMeta({ layout: 'tournament' })
 
 const route = useRoute()
 const tournamentId = computed(() => route.params.id as string)
+const authStore = useAuthStore()
 
 // ═══════════════════════════════════════════
 // 数据状态
@@ -46,8 +47,12 @@ async function loadScoreStats() {
 
     // 并行请求基础数据
     const [statsRes, rankingsRes] = await Promise.all([
-      fetch(`/api/tournaments/${tournamentId.value}/scores?type=stats`),
-      fetch(`/api/tournaments/${tournamentId.value}/scores?type=rankings`),
+      fetch(`/api/tournaments/${tournamentId.value}/scores?type=stats`, {
+        headers: { Authorization: `Bearer ${authStore.token}` },
+      }),
+      fetch(`/api/tournaments/${tournamentId.value}/scores?type=rankings`, {
+        headers: { Authorization: `Bearer ${authStore.token}` },
+      }),
     ])
 
     const statsData = await statsRes.json()
@@ -61,11 +66,16 @@ async function loadScoreStats() {
     }
 
     // 获取比赛列表
-    const matchesRes = await fetch(`/api/tournaments/${tournamentId.value}/matches`)
+    const matchesRes = await fetch(`/api/tournaments/${tournamentId.value}/matches`, {
+      headers: { Authorization: `Bearer ${authStore.token}` },
+    })
     const matches = await matchesRes.json()
 
+    // 防御：鉴权失败时接口返回错误对象而非数组，直接 filter 会抛 TypeError
+    const matchList = Array.isArray(matches) ? matches : []
+
     // 只获取已完成且可能有评分的比赛（优化：减少请求量）
-    const scoredMatches = matches.filter((m: any) => m.status === 'finished' || m.status === 'completed')
+    const scoredMatches = matchList.filter((m: any) => m.status === 'finished' || m.status === 'completed')
 
     // 限制初始加载数量，避免过多请求
     const matchesToLoad = scoredMatches.slice(0, 12)
@@ -178,6 +188,27 @@ const winRatio = computed(() => {
   return Math.round((completed / total) * 100)
 })
 
+// ── 队伍排名榜（已请求 rankings 数据但此前未展示） ──
+const rankingsList = computed<Array<any>>(() => {
+  return (rankings.value as any)?.rankings ?? []
+})
+
+// 排名奖牌颜色（与 standings 页保持一致）
+function rankMedalColor(rank: number) {
+  if (rank === 1) return 'text-amber-600 dark:text-amber-400'
+  if (rank === 2) return 'text-gray-300'
+  if (rank === 3) return 'text-amber-700'
+  return 'text-[var(--color-text-muted)]'
+}
+
+// 排名行背景（与 standings 页保持一致）
+function rankBgColor(rank: number) {
+  if (rank === 1) return 'bg-amber-500/20 border-amber-500/30'
+  if (rank === 2) return 'bg-gray-400/10 border-gray-400/30'
+  if (rank === 3) return 'bg-amber-700/20 border-amber-700/30'
+  return 'bg-[var(--color-bg-secondary)] border-[var(--color-border)]'
+}
+
 // ═══════════════════════════════════════════
 // CSV 导出功能
 // ═══════════════════════════════════════════
@@ -249,18 +280,50 @@ function exportDimensionCSV() {
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 }
+
+// 导出排名榜 CSV
+function exportRankingsCSV() {
+  const list = rankingsList.value
+  if (!list.length) {
+    alert('暂无数据可导出')
+    return
+  }
+
+  const headers = ['排名', '队伍', '场次', '胜', '平', '负', '得分', '失分', '净胜分', '积分']
+  const rows = list.map((t: any, i: number) => [
+    i + 1,
+    t.name,
+    t.matches,
+    t.wins,
+    t.draws,
+    t.losses,
+    t.scoreFor,
+    t.scoreAgainst,
+    t.scoreDiff,
+    t.points,
+  ])
+
+  const csvContent = [
+    headers.join(','),
+    ...rows.map((row) => row.join(',')),
+  ].join('\n')
+
+  const BOM = '\uFEFF'
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+
+  link.href = url
+  link.download = `评分分析_队伍排名榜.csv`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
 </script>
 
 <template>
   <div>
-    <!-- ═══ 页面标题 ═══ -->
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-xl font-bold text-[var(--color-text-primary)]">评分分析</h1>
-        <p class="text-sm text-[var(--color-text-muted)] mt-1">深度分析赛事评分数据，洞察比赛表现</p>
-      </div>
-    </div>
-
     <!-- ═══ 加载状态 ═══ -->
     <div v-if="loading" class="text-center py-12">
       <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-[var(--color-text-muted)] mx-auto" />
@@ -336,6 +399,81 @@ function exportDimensionCSV() {
                 :style="{ width: `${winRatio || 0}%` }"
               />
             </div>
+          </div>
+        </UCard>
+
+        <!-- ═══ 队伍排名榜 ═══ -->
+        <UCard class="mb-6" v-if="rankingsList.length">
+          <template #header>
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2 min-w-0">
+                <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                  <UIcon name="i-lucide-trophy" class="w-4 h-4 text-[var(--color-text-muted)]" />
+                  队伍排名榜
+                </h2>
+                <span v-if="rankings?.tournamentName" class="text-xs text-[var(--color-text-muted)] truncate">
+                  {{ rankings.tournamentName }}
+                </span>
+              </div>
+              <UButton
+                color="primary"
+                variant="outline"
+                size="xs"
+                @click="exportRankingsCSV"
+              >
+                <UIcon name="i-lucide-download" class="w-3 h-3 mr-1" />
+                导出
+              </UButton>
+            </div>
+          </template>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-[var(--color-border)] text-[var(--color-text-muted)] text-sm">
+                  <th class="px-4 py-3 text-left w-14">排名</th>
+                  <th class="px-4 py-3 text-left">队伍</th>
+                  <th class="px-4 py-3 text-center">场次</th>
+                  <th class="px-4 py-3 text-center">胜</th>
+                  <th class="px-4 py-3 text-center">平</th>
+                  <th class="px-4 py-3 text-center">负</th>
+                  <th class="px-4 py-3 text-center">得分</th>
+                  <th class="px-4 py-3 text-center">失分</th>
+                  <th class="px-4 py-3 text-center">净胜分</th>
+                  <th class="px-4 py-3 text-center font-bold">积分</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(team, idx) in rankingsList"
+                  :key="team.name"
+                  :class="['border-b border-[var(--color-border-muted)] hover:bg-[var(--color-bg-secondary)] transition-colors', rankBgColor(idx + 1)]"
+                >
+                  <td class="px-4 py-3">
+                    <span :class="['font-bold text-lg', rankMedalColor(idx + 1)]">
+                      {{ idx + 1 }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                        {{ team.name.charAt(0) }}
+                      </div>
+                      <span class="font-medium text-[var(--color-text-primary)]">{{ team.name }}</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-center text-[var(--color-text-secondary)]">{{ team.matches }}</td>
+                  <td class="px-4 py-3 text-center text-emerald-600 dark:text-emerald-400">{{ team.wins }}</td>
+                  <td class="px-4 py-3 text-center text-[var(--color-text-muted)]">{{ team.draws }}</td>
+                  <td class="px-4 py-3 text-center text-red-500 dark:text-red-400">{{ team.losses }}</td>
+                  <td class="px-4 py-3 text-center text-[var(--color-text-secondary)]">{{ team.scoreFor }}</td>
+                  <td class="px-4 py-3 text-center text-[var(--color-text-secondary)]">{{ team.scoreAgainst }}</td>
+                  <td class="px-4 py-3 text-center" :class="team.scoreDiff > 0 ? 'text-emerald-600 dark:text-emerald-400' : team.scoreDiff < 0 ? 'text-red-500 dark:text-red-400' : 'text-[var(--color-text-muted)]'">
+                    {{ team.scoreDiff > 0 ? '+' : '' }}{{ team.scoreDiff }}
+                  </td>
+                  <td class="px-4 py-3 text-center text-blue-600 dark:text-blue-400 font-bold text-lg">{{ team.points }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </UCard>
 

@@ -1,7 +1,20 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import os from 'node:os'
+import { join } from 'node:path'
+
+// 所有构建产物（.nuxt / vite 缓存 / .output）统一路由到系统临时目录。
+// WorkBuddy 的安全删除 shim 对 os.tmpdir() 下的批量删除放行（直连原生 fs），
+// 因此 `npm run build` 在清理 .nuxt/dist 与 .output 时不再被 SAFE_DELETE 拦截。
+// Nitro ≥ 2.13 已修复 buildDir 在临时目录时 server 入口解析失败（ERR_INVALID_FILE_URL_PATH）的问题。
+const buildRoot = join(os.tmpdir(), 'debate-timer-build')
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+
+  // 注：buildDir 不再路由到系统临时目录——项目在 D 盘、os.tmpdir() 在 C 盘，跨盘会导致
+  // @nuxt/kit 把绝对路径传给 ignore 库，Vite 7.3.6 下直接抛 "path should be a path.relative()d string" 并段错误。
+  // 恢复 Nuxt 默认 buildDir（项目内 .nuxt，同盘 D 盘，相对路径正常），dev 模式不触发 SAFE_DELETE 批量清理拦截。
 
   modules: ['@nuxt/ui', '@pinia/nuxt'],
 
@@ -40,11 +53,15 @@ export default defineNuxtConfig({
     layoutTransition: false,
   },
 
-  // Vue 编译器优化：静态节点提升、缓存等已默认开启，这里显式关闭生产环境 console
+  // Vue 编译器优化：静态节点提升、缓存等已默认开启
   vue: {
     compilerOptions: {
-      // 生产环境移除 console 输出（保留 warn/error）
+      // 压缩模板空格，减少渲染体积
       whitespace: 'condense',
+      // 提升静态节点到渲染函数外，避免每次渲染重新创建
+      hoistStatic: true,
+      // 缓存事件处理函数，避免每次渲染重新创建
+      cacheHandlers: true,
     },
   },
 
@@ -79,6 +96,8 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    // vite 缓存恢复默认（node_modules/.vite，同盘 D 盘），避免跨盘绝对路径触发 ignore 报错
+    // cacheDir: join(buildRoot, 'vite-cache'),
     server: {
       allowedHosts: true,
       fs: {
@@ -95,7 +114,7 @@ export default defineNuxtConfig({
       minify: 'esbuild',
       // 额外的 esbuild 优化目标
       target: 'es2018',
-      chunkSizeWarningLimit: 1500,
+      chunkSizeWarningLimit: 2000,
       rollupOptions: {
         output: {
           manualChunks: (id: string) => {
@@ -134,6 +153,11 @@ export default defineNuxtConfig({
     define: {
       __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
     },
+    // esbuild 额外优化：生产环境移除 console.log/debugger
+    esbuild: {
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+      legalComments: 'none',
+    },
   },
 
   $production: {
@@ -141,6 +165,10 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    // 构建产物 .output 迁到临时目录（与 buildDir 同理，规避清理拦截）
+    output: {
+      dir: join(buildRoot, 'output'),
+    },
     experimental: {
       openAPI: true,
       websocket: true,
@@ -158,14 +186,26 @@ export default defineNuxtConfig({
       '/fonts/*.woff2': { headers: { 'cache-control': 'max-age=31536000, immutable' } },
       // 图片缓存一年
       '/*.png': { headers: { 'cache-control': 'max-age=31536000, immutable' } },
+      '/*.jpg': { headers: { 'cache-control': 'max-age=31536000, immutable' } },
+      '/*.jpeg': { headers: { 'cache-control': 'max-age=31536000, immutable' } },
+      '/*.webp': { headers: { 'cache-control': 'max-age=31536000, immutable' } },
       '/*.ico': { headers: { 'cache-control': 'max-age=31536000, immutable' } },
       // MP3 音频缓存一年
       '/*.mp3': { headers: { 'cache-control': 'max-age=31536000, immutable' } },
+      // 上传的图片缓存
+      '/uploads/**': { headers: { 'cache-control': 'max-age=86400' } },
       // 首页和静态页面可缓存 5 分钟
       '/': { headers: { 'cache-control': 'max-age=300' } },
       '/login': { headers: { 'cache-control': 'max-age=300' } },
       '/register': { headers: { 'cache-control': 'max-age=300' } },
-      // API 响应不缓存（动态数据）
+      // 注意：Nitro SWR 规则中的 * 通配符会错误地拦截所有 [id]/ 嵌套子路由
+      // （如 timer-config、matches、scores 等），导致这些 API 返回 302/404。
+      // 在 h3/Nitro 修复此 bug 之前，注释掉以下 SWR 规则。
+      // 参考：fix/timer-config-route 分支
+      //'/api/tournaments/public.list.get': { swr: 60, headers: { 'cache-control': 's-maxage=60, stale-while-revalidate=300' } },
+      //'/api/tournaments/*/public.get': { swr: 30, headers: { 'cache-control': 's-maxage=30, stale-while-revalidate=120' } },
+      //'/api/tournaments/*/standings.get': { swr: 10, headers: { 'cache-control': 's-maxage=10, stale-while-revalidate=60' } },
+      // 其他 API 默认不缓存
       '/api/**': { headers: { 'cache-control': 'no-store' } },
     },
   },

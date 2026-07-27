@@ -2,6 +2,7 @@
 import { getRouterParam, readBody, createError } from 'h3'
 import { prisma } from '../../../lib/prisma'
 import { requireWriteTournament } from '../../../utils/tournament-auth'
+import { syncStages, serializeStage } from '../../../utils/syncStages'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
@@ -15,27 +16,25 @@ export default defineEventHandler(async (event) => {
   const userId = user.userId
 
   const {
-    name,
     title,
     positiveTopic,
     negativeTopic,
     teamPositiveName,
     teamNegativeName,
-    uiConfig,        // 对象
-    skinConfig,      // 对象
-    audioConfig,     // 对象
-    teamLogoConfig,  // 对象
-    stages,          // 环节数组
+    uiConfig,
+    skinConfig,
+    audioConfig,
+    teamLogoConfig,
+    stages,
   } = body
 
-  // 1. 查找现有的计时器项目
-  let project = await prisma.debateTimerProject.findUnique({
+  // 查找现有的计时器项目
+  const existing = await prisma.debateTimerProject.findUnique({
     where: { tournamentId: id },
   })
 
-  // 构造配置数据对象（不包含 userId 和 tournamentId，这些在创建或更新时单独处理）
   const projectData = {
-    name: name || '未命名配置',
+    name: title || '辩论赛计时', // name 保留但不再由前端控制，与 title 同步
     title: title || '辩论赛计时',
     positiveTopic: positiveTopic || null,
     negativeTopic: negativeTopic || null,
@@ -47,75 +46,37 @@ export default defineEventHandler(async (event) => {
     teamLogoConfig: teamLogoConfig ? JSON.stringify(teamLogoConfig) : null,
   }
 
-  if (!project) {
-    // 2. 创建新的计时器项目
-    // 使用从 token 中获取的真实 userId，确保外键约束满足
-    project = await prisma.debateTimerProject.create({
-      data: {
-        ...projectData,
-        userId: userId,  // 使用真实用户 ID
-        tournamentId: id,
-      },
-    })
+  // 事务：upsert project + syncStages（diff + update + create + delete）
+  const result = await prisma.$transaction(async (tx) => {
+    let projectId: string
 
-    // 3. 如果有环节数据，创建环节
-    if (stages && Array.isArray(stages) && stages.length > 0) {
-      await Promise.all(
-        stages.map((stage: any, index: number) =>
-          prisma.debateTimerStage.create({
-            data: {
-              projectId: project!.id,
-              name: stage.name || '未命名环节',
-              duration: stage.duration || 0,
-              type: stage.type || 'speech',
-              description: stage.description || null,
-              orderIndex: typeof stage.orderIndex === 'number' ? stage.orderIndex : index,
-              positiveDuration: stage.positiveDuration || null,
-              negativeDuration: stage.negativeDuration || null,
-              allowedRoles: stage.allowedRoles ? JSON.stringify(stage.allowedRoles) : null,
-            },
-          })
-        )
-      )
-    }
-  } else {
-    // 4. 更新现有项目（不需要 userId 和 tournamentId，它们已经是正确的）
-    project = await prisma.debateTimerProject.update({
-      where: { id: project.id },
-      data: projectData,
-    })
-
-    // 5. 删除旧环节，重新创建
-    if (stages && Array.isArray(stages)) {
-      await prisma.debateTimerStage.deleteMany({
-        where: { projectId: project.id },
+    if (!existing) {
+      const created = await tx.debateTimerProject.create({
+        data: {
+          ...projectData,
+          userId,
+          tournamentId: id,
+        },
       })
-      if (stages.length > 0) {
-        await Promise.all(
-          stages.map((stage: any, index: number) =>
-            prisma.debateTimerStage.create({
-              data: {
-                projectId: project!.id,
-                name: stage.name || '未命名环节',
-                duration: stage.duration || 0,
-                type: stage.type || 'speech',
-                description: stage.description || null,
-                orderIndex: typeof stage.orderIndex === 'number' ? stage.orderIndex : index,
-                positiveDuration: stage.positiveDuration || null,
-                negativeDuration: stage.negativeDuration || null,
-                allowedRoles: stage.allowedRoles ? JSON.stringify(stage.allowedRoles) : null,
-              },
-            })
-          )
-        )
-      }
+      projectId = created.id
+    } else {
+      await tx.debateTimerProject.update({
+        where: { id: existing.id },
+        data: projectData,
+      })
+      projectId = existing.id
     }
-  }
 
-  // 6. 返回更新后的完整配置
+    // syncStages：识别 tmp_ 前缀走 create，其余走 update，删除被移除的
+    const incomingStages = Array.isArray(stages) ? stages : []
+    const returnedStages = await syncStages(tx, projectId, incomingStages)
+
+    return { projectId, returnedStages }
+  })
+
+  // 返回更新后的完整配置（含 DB 生成的真实 id）
   const updatedProject = await prisma.debateTimerProject.findUnique({
-    where: { id: project.id },
-    include: { stages: { orderBy: { orderIndex: 'asc' } } },
+    where: { id: result.projectId },
   })
 
   if (!updatedProject) {
@@ -136,17 +97,7 @@ export default defineEventHandler(async (event) => {
       skinConfig: updatedProject.skinConfig ? JSON.parse(updatedProject.skinConfig) : null,
       audioConfig: updatedProject.audioConfig ? JSON.parse(updatedProject.audioConfig) : null,
       teamLogoConfig: updatedProject.teamLogoConfig ? JSON.parse(updatedProject.teamLogoConfig) : null,
-      stages: updatedProject.stages.map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        duration: s.duration,
-        type: s.type,
-        description: s.description,
-        orderIndex: s.orderIndex,
-        positiveDuration: s.positiveDuration,
-        negativeDuration: s.negativeDuration,
-        allowedRoles: s.allowedRoles ? JSON.parse(s.allowedRoles) : null,
-      })),
+      stages: result.returnedStages.map(serializeStage),
       createdAt: updatedProject.createdAt,
       updatedAt: updatedProject.updatedAt,
     },

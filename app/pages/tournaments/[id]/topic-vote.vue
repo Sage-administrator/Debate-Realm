@@ -12,13 +12,25 @@ const voteId = computed(() => (route.query.vote as string) || '')
 // 初始为 true：SSR 阶段 vote 为 null，若 loading=false 会立即渲染"投票信息加载失败"
 // 客户端 onMounted 加载完成后才会显示真实内容，避免首屏闪烁与 SEO 误导
 const loading = ref(true)
-// ponytail: 显式声明 topics 为 string[]，让 v-for 索引 idx 推断为 number
+// ponytail: 显式声明 topics 为对象数组，让 v-for 索引 idx 推断为 number
 // 其余字段用 [key: string]: any 兼容服务端返回的动态结构
 interface VoteData {
-  topics: string[]
+  topics: any[]
   [key: string]: any
 }
 const vote = ref<VoteData | null>(null)
+
+// 客户端展示文本：优先"正方 / 反方"组合，否则回退到 text
+function disp(t: any): string {
+  if (typeof t === 'string') return t
+  if (!t) return ''
+  const aff = (t.affirmative || '').toString().trim()
+  const neg = (t.negative || '').toString().trim()
+  if (aff && neg) return `正方：${aff} ｜ 反方：${neg}`
+  if (aff) return `正方：${aff}`
+  if (neg) return `反方：${neg}`
+  return (t.text || '').toString().trim()
+}
 const myRecord = ref<any>(null)
 const submitting = ref(false)
 const submitted = ref(false)
@@ -162,19 +174,19 @@ onMounted(() => loadData())
       <!-- ═══ 已投票（登录用户） ═══ -->
       <div v-else-if="myRecord" class="glass-card-strong p-10 mt-10 text-center">
         <div class="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-          <UIcon name="i-lucide-check" class="w-9 h-9 text-green-400" />
+          <UIcon name="i-lucide-check" class="w-9 h-9 text-green-600 dark:text-green-400" />
         </div>
         <h2 class="text-xl font-bold text-[var(--color-text-primary)] mb-2">您已参与过此投票</h2>
         <p class="text-sm text-[var(--color-text-secondary)] mb-6">您的选择：</p>
         <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 mb-6 text-left max-w-sm mx-auto space-y-2">
-          <div
-            v-for="idx in myRecord.topicIndices"
-            :key="idx"
-            class="flex items-center gap-2 text-sm text-[var(--color-text-primary)]"
-          >
-            <UIcon name="i-lucide-check-circle-2" class="w-4 h-4 text-green-400" />
-            {{ vote.topics[idx] }}
-          </div>
+            <div
+              v-for="idx in myRecord.topicIndices"
+              :key="idx"
+              class="flex items-center gap-2 text-sm text-[var(--color-text-primary)]"
+            >
+              <UIcon name="i-lucide-check-circle-2" class="w-4 h-4 text-green-600 dark:text-green-400" />
+              {{ disp(vote.topics[idx]) }}
+            </div>
         </div>
         <UButton color="primary" variant="outline" @click="() => { navigateTo('/') }">
           返回首页
@@ -184,7 +196,7 @@ onMounted(() => loadData())
       <!-- ═══ 提交成功 ═══ -->
       <div v-else-if="submitted" class="glass-card-strong p-10 mt-10 text-center">
         <div class="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-          <UIcon name="i-lucide-check" class="w-9 h-9 text-green-400" />
+          <UIcon name="i-lucide-check" class="w-9 h-9 text-green-600 dark:text-green-400" />
         </div>
         <h2 class="text-xl font-bold text-[var(--color-text-primary)] mb-2">投票成功</h2>
         <p class="text-sm text-[var(--color-text-secondary)] mb-6">感谢您的参与！</p>
@@ -200,7 +212,7 @@ onMounted(() => loadData())
           <p class="dark-page-breadcrumb text-xs mb-1">
             辩题投票 / {{ vote.matchId ? '场次级' : '赛事级' }}
           </p>
-          <h1 class="text-white text-[1.75rem] font-bold leading-tight">
+          <h1 class="text-[var(--color-text-primary)] text-[1.75rem] font-bold leading-tight">
             {{ vote.title }}
           </h1>
           <!-- 元信息 -->
@@ -237,13 +249,13 @@ onMounted(() => loadData())
         </header>
 
         <!-- 投票主体 -->
-        <main class="space-y-6 pb-12">
+        <div class="space-y-6 pb-12">
           <!-- 登录状态提示 -->
           <div v-if="!isLoggedIn" class="glass-card p-3 flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
-            <UIcon name="i-lucide-info" class="w-4 h-4 text-indigo-400 shrink-0" />
+            <UIcon name="i-lucide-info" class="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
             <span>
               当前为公开投票，请填写昵称后提交。
-              <NuxtLink to="/login" class="text-indigo-400 hover:underline">登录</NuxtLink>
+              <NuxtLink to="/login" class="text-indigo-600 dark:text-indigo-400 hover:underline">登录</NuxtLink>
               后可自动识别辩手/管理员身份。
             </span>
           </div>
@@ -275,7 +287,7 @@ onMounted(() => loadData())
                   class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5"
                   :class="selectedIndices.includes(idx)
                     ? 'border-indigo-500 bg-indigo-500'
-                    : 'border-white/30'"
+                    : 'border-[var(--color-border-accented)]'"
                 >
                   <UIcon
                     v-if="selectedIndices.includes(idx)"
@@ -283,9 +295,20 @@ onMounted(() => loadData())
                     class="w-3 h-3 text-white"
                   />
                 </div>
-                <!-- 辩题文本 -->
-                <div class="flex-1">
-                  <p class="text-sm text-[var(--color-text-primary)] leading-relaxed">{{ topic }}</p>
+                <!-- 辩题文本（分正方/反方展示） -->
+                <div class="flex-1 min-w-0">
+                  <p v-if="topic?.text && (topic.affirmative || topic.negative)" class="text-xs text-[var(--color-text-muted)] mb-1">{{ topic.text }}</p>
+                  <div v-if="topic && (topic.affirmative || topic.negative)" class="space-y-1">
+                    <div v-if="topic.affirmative" class="flex items-start gap-2 text-sm">
+                      <span class="side-badge side-badge-pro shrink-0">正方</span>
+                      <span class="text-[var(--color-text-primary)] leading-relaxed">{{ topic.affirmative }}</span>
+                    </div>
+                    <div v-if="topic.negative" class="flex items-start gap-2 text-sm">
+                      <span class="side-badge side-badge-con shrink-0">反方</span>
+                      <span class="text-[var(--color-text-primary)] leading-relaxed">{{ topic.negative }}</span>
+                    </div>
+                  </div>
+                  <p v-else class="text-sm text-[var(--color-text-primary)] leading-relaxed">{{ topic?.text || '' }}</p>
                 </div>
                 <!-- 序号 -->
                 <span class="text-xs text-[var(--color-text-muted)] shrink-0">#{{ idx + 1 }}</span>
@@ -349,7 +372,7 @@ onMounted(() => loadData())
               >
                 <div class="flex items-center justify-between mb-1">
                   <span class="text-sm text-[var(--color-text-primary)] flex-1 truncate">{{ r.topic }}</span>
-                  <span class="text-sm text-indigo-400 ml-2">{{ r.count }} 票 ({{ r.percent }}%)</span>
+                  <span class="text-sm text-indigo-600 dark:text-indigo-400 ml-2">{{ r.count }} 票 ({{ r.percent }}%)</span>
                 </div>
                 <div class="h-1.5 bg-[var(--color-bg-secondary)] rounded-full overflow-hidden">
                   <div
@@ -377,7 +400,7 @@ onMounted(() => loadData())
               {{ submitting ? '提交中...' : '提交投票' }}
             </UButton>
           </div>
-        </main>
+        </div>
       </template>
     </div>
   </div>
@@ -385,4 +408,29 @@ onMounted(() => loadData())
 
 <style scoped>
 /* 深色玻璃拟态样式由全局 main.css 提供 */
+.side-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 0.3rem;
+  line-height: 1.4;
+}
+.side-badge-pro {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+:global(.dark) .side-badge-pro {
+  color: #f87171;
+}
+.side-badge-con {
+  background: rgba(59, 130, 246, 0.15);
+  color: #2563eb;
+}
+:global(.dark) .side-badge-con {
+  color: #60a5fa;
+}
 </style>

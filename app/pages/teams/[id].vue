@@ -219,7 +219,7 @@ onMounted(() => loadTeam())
     <!-- 内容容器：居中布局 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 fade-in">
     <div v-if="loading" class="text-center py-12">
-      <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-indigo-400" />
+      <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-indigo-600 dark:text-indigo-400" />
     </div>
 
     <template v-else-if="team">
@@ -296,7 +296,7 @@ onMounted(() => loadTeam())
                     class="w-full h-full object-cover"
                     @error="($event.target as HTMLImageElement).style.display = 'none'"
                   />
-                  <span v-else class="text-xs font-bold text-indigo-300">
+                  <span v-else class="text-xs font-bold text-indigo-700 dark:text-indigo-300">
                     {{ memberDisplayName(m).charAt(0).toUpperCase() }}
                   </span>
                 </div>
@@ -393,7 +393,7 @@ onMounted(() => loadTeam())
                   class="w-full h-full object-cover"
                   @error="($event.target as HTMLImageElement).style.display = 'none'"
                 />
-                <span v-else class="text-lg font-bold text-indigo-300">
+                <span v-else class="text-lg font-bold text-indigo-700 dark:text-indigo-300">
                   {{ (editMemberForm.nickname || editMemberForm.username).charAt(0).toUpperCase() }}
                 </span>
               </div>

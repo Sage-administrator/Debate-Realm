@@ -63,7 +63,7 @@ onMounted(() => load())
   <div class="min-h-screen">
     <!-- 内容容器：居中布局 -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div v-if="loading" class="text-center py-12"><UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-indigo-400" /></div>
+    <div v-if="loading" class="text-center py-12"><UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-indigo-600 dark:text-indigo-400" /></div>
 
     <template v-else-if="match">
       <div class="flex items-start justify-between mb-6">
@@ -76,7 +76,7 @@ onMounted(() => load())
 
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-bold">场次列表</h2>
-        <UButton color="primary" size="sm" @click="showCreateMatch = true">添加场次</UButton>
+        <UButton color="primary" size="sm" @click="void (showCreateMatch = true)">添加场次</UButton>
       </div>
 
       <div class="glass-card p-6">
@@ -120,7 +120,7 @@ onMounted(() => load())
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="outline" @click="showCreateMatch = false">取消</UButton>
+          <UButton color="neutral" variant="outline" @click="void (showCreateMatch = false)">取消</UButton>
           <UButton color="primary" @click="handleCreateMatch">添加</UButton>
         </div>
       </template>
@@ -141,7 +141,7 @@ onMounted(() => load())
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="outline" @click="showResult = false">取消</UButton>
+          <UButton color="neutral" variant="outline" @click="void (showResult = false)">取消</UButton>
           <UButton color="primary" @click="handleSubmitResult">提交赛果</UButton>
         </div>
       </template>

@@ -154,7 +154,7 @@ async function handleCreate() {
     })
 
     toast.add({ title: '赛事创建成功', color: 'success' })
-    await navigateTo(`/tournaments/${(result as any).id}`)
+    await navigateTo(`/tournaments/${(result as any).id}/info`)
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || e?.statusMessage || '创建失败', color: 'error' })
   } finally {
@@ -181,7 +181,7 @@ async function handleCreate() {
         <!-- 1. 赛事名称 -->
         <div>
           <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
-            赛事名称 <span class="text-red-400">*</span>
+            赛事名称 <span class="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             v-model="form.name"
@@ -192,7 +192,7 @@ async function handleCreate() {
             @input="validateName"
             @blur="validateName"
           />
-          <p v-if="errors.name" class="text-red-400 text-xs mt-1.5">{{ errors.name }}</p>
+          <p v-if="errors.name" class="text-red-500 dark:text-red-400 text-xs mt-1.5">{{ errors.name }}</p>
           <p v-else class="text-[var(--color-text-muted)] text-xs mt-1.5">请不要在这里填写辩题，辩题将在赛事详情中设置</p>
         </div>
 
@@ -201,7 +201,7 @@ async function handleCreate() {
           <!-- 左：举办周期 - MonthRangePicker（自定义组件保持原样） -->
           <div>
             <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
-              举办周期 <span class="text-red-400">*</span>
+              举办周期 <span class="text-red-500 dark:text-red-400">*</span>
             </label>
             <div
               class="period-wrapper"
@@ -214,13 +214,13 @@ async function handleCreate() {
                 @update:end-date="form.endDate = $event; clearError('period')"
               />
             </div>
-            <p v-if="errors.period" class="text-red-400 text-xs mt-1.5">{{ errors.period }}</p>
+            <p v-if="errors.period" class="text-red-500 dark:text-red-400 text-xs mt-1.5">{{ errors.period }}</p>
           </div>
 
           <!-- 右：赛事地区 - 省市二级级联（自定义组件保持原样） -->
           <div>
             <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
-              赛事地区 <span class="text-red-400">*</span>
+              赛事地区 <span class="text-red-500 dark:text-red-400">*</span>
             </label>
             <RegionCascader
               :province="form.regionProvince"
@@ -228,7 +228,7 @@ async function handleCreate() {
               @update:province="form.regionProvince = $event; clearError('region')"
               @update:city="form.regionCity = $event; clearError('region')"
             />
-            <p v-if="errors.region" class="text-red-400 text-xs mt-1.5">{{ errors.region }}</p>
+            <p v-if="errors.region" class="text-red-500 dark:text-red-400 text-xs mt-1.5">{{ errors.region }}</p>
           </div>
         </div>
 
@@ -237,7 +237,7 @@ async function handleCreate() {
           <!-- 4. 主办方类别 - Segmented Control（深色风格） -->
           <div class="col-category">
             <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
-              主办方类别 <span class="text-red-400">*</span>
+              主办方类别 <span class="text-red-500 dark:text-red-400">*</span>
             </label>
             <div
               class="flex bg-[var(--color-bg-tertiary)] rounded-lg p-0.5 gap-0.5 h-10"
@@ -256,13 +256,13 @@ async function handleCreate() {
                 {{ cat.label }}
               </button>
             </div>
-            <p v-if="errors.organizerCategory" class="text-red-400 text-xs mt-1.5">{{ errors.organizerCategory }}</p>
+            <p v-if="errors.organizerCategory" class="text-red-500 dark:text-red-400 text-xs mt-1.5">{{ errors.organizerCategory }}</p>
           </div>
 
           <!-- 5. 赛事主办方（加宽列宽） -->
           <div class="col-organizer">
             <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
-              赛事主办方 <span class="text-red-400">*</span>
+              赛事主办方 <span class="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               v-model="form.organizer"
@@ -273,7 +273,7 @@ async function handleCreate() {
               @input="validateOrganizer"
               @blur="validateOrganizer"
             />
-            <p v-if="errors.organizer" class="text-red-400 text-xs mt-1.5">{{ errors.organizer }}</p>
+            <p v-if="errors.organizer" class="text-red-500 dark:text-red-400 text-xs mt-1.5">{{ errors.organizer }}</p>
           </div>
         </div>
 
@@ -304,12 +304,12 @@ async function handleCreate() {
             />
             <span class="text-[var(--color-text-muted)] text-xs leading-relaxed">
               创建赛事即代表您已同意
-              <span class="text-indigo-400 cursor-pointer hover:underline">服务协议</span>
+              <span class="text-indigo-600 dark:text-indigo-400 cursor-pointer hover:underline">服务协议</span>
               和
-              <span class="text-indigo-400 cursor-pointer hover:underline">隐私政策</span>
+              <span class="text-indigo-600 dark:text-indigo-400 cursor-pointer hover:underline">隐私政策</span>
             </span>
           </label>
-          <p v-if="errors.agreedToTerms" class="text-red-400 text-xs">{{ errors.agreedToTerms }}</p>
+          <p v-if="errors.agreedToTerms" class="text-red-500 dark:text-red-400 text-xs">{{ errors.agreedToTerms }}</p>
 
           <!-- 提交按钮：渐变紫色主按钮 -->
           <button

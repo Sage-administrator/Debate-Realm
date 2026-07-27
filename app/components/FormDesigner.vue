@@ -13,15 +13,54 @@
  * 使用 vue-draggable-plus 实现拖拽排序
  */
 import { VueDraggable } from 'vue-draggable-plus'
+import QuestionnairePreview from './QuestionnairePreview.vue'
+import RichTextEditor from './RichTextEditor.vue'
+import { sanitizeHtml } from '~/utils/richtext'
 
 // ── Props & Emits ──
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: any[]  // 字段列表
-}>()
+  formSettings?: any // 整卷设置（标题/说明/提交文案/对齐等）
+}>(), {
+  formSettings: () => ({
+    title: '问卷标题',
+    description: '感谢您参与本次调查，您的意见对我们非常重要。',
+    allowSubmit: true,
+    showProgress: true,
+    shuffleQuestions: false,
+    submitText: '提交',
+    thankYouText: '感谢您的参与！',
+    align: 'center',
+    showNumber: true,
+  }),
+})
 
 const emit = defineEmits<{
   'update:modelValue': [fields: any[]]
+  'update:formSettings': [settings: any]
 }>()
+
+// 整卷设置（本地状态，与 prop 同步；确保新增字段有默认值）
+const formSettings = reactive({ ...(props.formSettings || {}) })
+Object.assign(formSettings, {
+  submitText: props.formSettings?.submitText ?? '提交',
+  thankYouText: props.formSettings?.thankYouText ?? '感谢您的参与！',
+  align: props.formSettings?.align ?? 'center',
+  showNumber: props.formSettings?.showNumber ?? true,
+})
+
+// 本地变化同步到外部（克隆，避免与父级 v-model:form-settings 形成引用环）
+watch(formSettings, () => {
+  emit('update:formSettings', { ...formSettings })
+}, { deep: true })
+
+// 父级重新载入（如打开设计器载入模板）时同步外部变更
+watch(() => props.formSettings, (v) => {
+  if (!v) return
+  for (const k of Object.keys(v)) {
+    if ((formSettings as any)[k] !== (v as any)[k]) (formSettings as any)[k] = (v as any)[k]
+  }
+}, { deep: true })
 
 // ── 字段类型定义 ──
 interface FieldTypeDef {
@@ -48,6 +87,7 @@ const fieldTypeLibrary: FieldTypeDef[] = [
   { type: 'date', label: '日期/时间', icon: 'i-lucide-calendar', category: 'advanced', defaultName: '日期/时间' },
   { type: 'phone', label: '手机号', icon: 'i-lucide-smartphone', category: 'advanced', defaultName: '手机号' },
   { type: 'email', label: '邮箱', icon: 'i-lucide-mail', category: 'advanced', defaultName: '邮箱' },
+  { type: 'scale', label: '量表', icon: 'i-lucide-star', category: 'advanced', defaultName: '量表题' },
   // ── 特殊业务 ──
   { type: 'members', label: '成员信息', icon: 'i-lucide-users', category: 'special', defaultName: '成员信息' },
   // ── 描述分页 ──
@@ -80,19 +120,28 @@ function syncToParent() {
 
 // ── 当前选中字段的索引 ──
 const selectedIndex = ref<number | null>(null)
+
+// ── 试答预览弹窗 ──
+const showTrial = ref(false)
 const selectedField = computed(() => selectedIndex.value !== null ? fields.value[selectedIndex.value] || null : null)
+
+// ── 量表 meta（确保为对象，便于 v-model 绑定）──
+const scaleMeta = computed<any>({
+  get() {
+    if (!selectedField.value) return { min: 1, max: 5, step: 1, leftLabel: '差', rightLabel: '好' }
+    const m = selectedField.value.meta
+    if (!m || typeof m !== 'object') {
+      selectedField.value.meta = { min: 1, max: 5, step: 1, leftLabel: '差', rightLabel: '好' }
+    }
+    return selectedField.value.meta
+  },
+  set(v) {
+    if (selectedField.value) selectedField.value.meta = v
+  },
+})
 
 // ── 右侧面板 Tab：整卷设置 / 题目设置 ──
 const settingsTab = ref<'form' | 'field'>('field')
-
-// ── 整卷设置 ──
-const formSettings = reactive({
-  title: '问卷标题',
-  description: '感谢您参与本次调查，您的意见对我们非常重要。',
-  allowSubmit: true,
-  showProgress: true,
-  shuffleQuestions: false,
-})
 
 // 选中字段时自动切换到题目 Tab
 watch(selectedIndex, (val) => {
@@ -127,7 +176,8 @@ function genUniqueFieldKey(prefix: string): string {
 function addField(typeDef: FieldTypeDef) {
   const fieldKey = genUniqueFieldKey(`field_${typeDef.type}`)
   const isChoiceType = ['select', 'radio', 'checkbox'].includes(typeDef.type)
-  const newField = {
+  const isScaleType = typeDef.type === 'scale'
+  const newField: any = {
     id: '',
     fieldName: typeDef.defaultName,
     fieldKey,
@@ -140,6 +190,12 @@ function addField(typeDef: FieldTypeDef) {
     description: '',
     width: 'full',
     systemField: false,
+    meta: null,
+  }
+  // 量表题：初始化默认配置（1-5，端点标签 差/好）
+  if (isScaleType) {
+    newField.fieldName = '请为本次比赛打分'
+    newField.meta = { min: 1, max: 5, step: 1, leftLabel: '差', rightLabel: '好' }
   }
   fields.value.push(newField)
   selectedIndex.value = fields.value.length - 1
@@ -217,7 +273,7 @@ const typeLabelMap: Record<string, string> = {
   text: '单行文本', textarea: '多行文本', select: '下拉选择',
   radio: '单选', checkbox: '多选', number: '数字', date: '日期',
   phone: '电话', email: '邮箱', members: '成员信息',
-  heading: '分组标题', divider: '分割线',
+  heading: '分组标题', divider: '分割线', scale: '量表',
 }
 
 const typeIconMap: Record<string, string> = {
@@ -225,6 +281,19 @@ const typeIconMap: Record<string, string> = {
   radio: 'i-lucide-circle-dot', checkbox: 'i-lucide-check-square', number: 'i-lucide-hash',
   date: 'i-lucide-calendar', phone: 'i-lucide-phone', email: 'i-lucide-mail',
   members: 'i-lucide-users', heading: 'i-lucide-heading', divider: 'i-lucide-minus',
+  scale: 'i-lucide-star',
+}
+
+// 解析量表 meta（兜底默认值）
+function parseScaleMeta(field: any) {
+  const m = field?.meta && typeof field.meta === 'object' ? field.meta : {}
+  return {
+    min: typeof m.min === 'number' ? m.min : 1,
+    max: typeof m.max === 'number' ? m.max : 5,
+    step: typeof m.step === 'number' ? m.step : 1,
+    leftLabel: m.leftLabel || '差',
+    rightLabel: m.rightLabel || '好',
+  }
 }
 
 // ── 选项编辑（文本域形式）──
@@ -242,6 +311,12 @@ function onFieldUpdate() {
   syncToParent()
 }
 
+// 画布列表里题目说明的净化预览（避免直接显示 HTML 标签）
+function fieldDescHtml(field: any): string {
+  const d = field?.description || ''
+  return d ? sanitizeHtml(d) : ''
+}
+
 // ── 当前选中题型在左侧面板的高亮 ──
 const activeFieldType = computed(() => selectedField.value?.fieldType || '')
 </script>
@@ -254,13 +329,13 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
     <header class="fd-header flex items-center justify-between h-12 px-4 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
       <!-- 左：Logo + 步骤条 -->
       <div class="flex items-center gap-4">
-        <div class="flex items-center gap-1.5 text-indigo-400">
+        <div class="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
           <UIcon name="i-lucide-file-edit" class="w-4 h-4" />
           <span class="text-xs font-medium text-[var(--color-text-primary)]">问卷编辑器</span>
         </div>
         <!-- 步骤条 -->
         <nav class="flex items-center gap-3 text-xs">
-          <span class="flex items-center gap-1 text-indigo-400">
+          <span class="flex items-center gap-1 text-indigo-600 dark:text-indigo-400">
             <span class="w-1 h-1 rounded-full bg-indigo-400"></span>
             编辑
           </span>
@@ -282,7 +357,11 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
           </span>
         </label>
         <!-- 试答按钮（幽灵） -->
-        <button class="px-3 py-1 text-xs text-[var(--color-text-secondary)] border border-[var(--color-border)] rounded hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-text-primary)] transition-colors">
+        <button
+          type="button"
+          class="px-3 py-1 text-xs text-[var(--color-text-secondary)] border border-[var(--color-border)] rounded hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+          @click="showTrial = true"
+        >
           试答
         </button>
         <!-- 发布按钮（主要） -->
@@ -328,7 +407,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
       </aside>
 
       <!-- ═══ 中央：画布区 ═══ -->
-      <main class="fd-canvas flex-1 min-w-0 overflow-y-auto p-6 md:p-8 bg-[var(--color-bg-primary)] relative">
+      <div class="fd-canvas flex-1 min-w-0 overflow-y-auto p-6 md:p-8 bg-[var(--color-bg-primary)] relative">
         <!-- 装饰性几何图形（左下角淡色圆） -->
         <div class="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-indigo-500/5 blur-2xl pointer-events-none"></div>
 
@@ -342,13 +421,14 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
             class="w-full text-center text-2xl font-bold text-[var(--color-text-primary)] bg-transparent border-none outline-none focus:bg-[var(--color-bg-tertiary)] rounded py-1 transition-colors"
             placeholder="问卷标题"
           />
-          <!-- 引导语 -->
-          <textarea
-            v-model="formSettings.description"
-            rows="2"
-            class="w-full mt-3 mb-8 text-sm text-[var(--color-text-secondary)] bg-transparent border-none outline-none focus:bg-[var(--color-bg-tertiary)] rounded py-1 resize-none text-center leading-relaxed transition-colors"
-            placeholder="问卷说明文字"
-          ></textarea>
+          <!-- 引导语（富文本） -->
+          <div class="mt-3 mb-8">
+            <RichTextEditor
+              v-model="formSettings.description"
+              :min-height="'64px'"
+              placeholder="问卷说明文字（支持加粗、字号、超链接等）"
+            />
+          </div>
 
           <!-- 字段列表（可拖拽排序） -->
           <VueDraggable
@@ -378,7 +458,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                 <!-- 删除按钮（hover 显示） -->
                 <button
                   type="button"
-                  class="p-1 rounded text-red-400/60 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                  class="p-1 rounded text-red-500 dark:text-red-400/60 hover:text-red-500 dark:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
                   title="删除"
                   @click.stop="removeField(idx)"
                 >
@@ -394,7 +474,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                 <!-- 删除按钮（hover 显示） -->
                 <button
                   type="button"
-                  class="p-1 rounded text-red-400/60 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                  class="p-1 rounded text-red-500 dark:text-red-400/60 hover:text-red-500 dark:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
                   title="删除"
                   @click.stop="removeField(idx)"
                 >
@@ -426,14 +506,19 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                       @input="onFieldUpdate"
                     />
                     <!-- 必填星号 -->
-                    <span v-if="field.required" class="text-red-400 text-sm">*</span>
+                    <span v-if="field.required" class="text-red-500 dark:text-red-400 text-sm">*</span>
                     <!-- 系统字段锁标 -->
                     <UIcon v-if="field.systemField" name="i-lucide-lock" class="w-3 h-3 text-[var(--color-text-muted)]" />
                   </div>
                   <!-- 占位提示 / 描述 -->
-                  <p v-if="field.placeholder || field.description" class="mt-1 text-xs text-[var(--color-text-muted)] truncate">
-                    {{ field.placeholder || field.description }}
+                  <p v-if="field.placeholder" class="mt-1 text-xs text-[var(--color-text-muted)] truncate">
+                    {{ field.placeholder }}
                   </p>
+                  <p
+                    v-else-if="fieldDescHtml(field)"
+                    class="mt-1 text-xs text-[var(--color-text-muted)] line-clamp-2 fd-field-desc"
+                    v-html="fieldDescHtml(field)"
+                  ></p>
                   <!-- 选项预览（select/radio/checkbox）：改为可直接编辑 -->
                   <div v-if="['select', 'radio', 'checkbox'].includes(field.fieldType)" class="mt-2 space-y-2">
                     <!-- 当前选项列表（全部显示，不再限制只显示前3个） -->
@@ -455,7 +540,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                       <!-- 删除选项按钮 -->
                       <button
                         type="button"
-                        class="p-1 text-[var(--color-border-muted)] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                        class="p-1 text-[var(--color-border-muted)] hover:text-red-500 dark:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                         @click="removeOption(idx, oIdx)"
                       >
                         <UIcon name="i-lucide-x" class="w-4 h-4" />
@@ -464,11 +549,25 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                     <!-- 添加选项按钮 -->
                     <button
                       type="button"
-                      class="flex items-center gap-1 px-3 py-2 text-xs text-indigo-400 border border-indigo-500/30 rounded-lg hover:bg-indigo-500/10 transition-colors"
+                      class="flex items-center gap-1 px-3 py-2 text-xs text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 rounded-lg hover:bg-indigo-500/10 transition-colors"
                       @click="addOption(idx)"
                     >
                       <UIcon name="i-lucide-plus" class="w-3 h-3" />添加选项
                     </button>
+                  </div>
+                  <!-- 量表预览（scale）：只读分值按钮 + 端点标签 -->
+                  <div v-if="field.fieldType === 'scale'" class="mt-3">
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-xs text-[var(--color-text-muted)]">{{ parseScaleMeta(field).leftLabel }}</span>
+                      <span class="text-xs text-[var(--color-text-muted)]">{{ parseScaleMeta(field).rightLabel }}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                      <span
+                        v-for="n in (parseScaleMeta(field).max - parseScaleMeta(field).min + 1)"
+                        :key="n"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-tertiary)] text-sm text-[var(--color-text-secondary)]"
+                      >{{ parseScaleMeta(field).min + n - 1 }}</span>
+                    </div>
                   </div>
                   <!-- 字段元信息：仅显示题型中文标签，不暴露 fieldKey（开发态信息） -->
                   <div class="flex items-center gap-2 mt-1.5">
@@ -489,7 +588,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                   <button
                     v-if="!field.systemField"
                     type="button"
-                    class="p-1 rounded text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
+                    class="p-1 rounded text-red-500 dark:text-red-400/60 hover:text-red-500 dark:text-red-400 hover:bg-red-500/10"
                     title="删除"
                     @click.stop="removeField(idx)"
                   >
@@ -512,7 +611,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
             <span class="text-[11px] text-[var(--color-text-muted)]">第 1 页 / 共 1 页 （{{ fields.length }} 题）</span>
           </div>
         </div>
-      </main>
+      </div>
 
       <!-- ═══ 右侧：设置面板（280px） ═══ -->
       <aside class="fd-right w-[280px] shrink-0 overflow-y-auto border-l border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
@@ -523,7 +622,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
             :class="[
               'flex-1 text-xs transition-colors border-b-2',
               settingsTab === 'form'
-                ? 'text-indigo-400 border-indigo-400'
+                ? 'text-indigo-600 dark:text-indigo-400 border-indigo-400'
                 : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text-secondary)]'
             ]"
             @click="() => { settingsTab = 'form' }"
@@ -533,7 +632,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
             :class="[
               'flex-1 text-xs transition-colors border-b-2',
               settingsTab === 'field'
-                ? 'text-indigo-400 border-indigo-400'
+                ? 'text-indigo-600 dark:text-indigo-400 border-indigo-400'
                 : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text-secondary)]'
             ]"
             @click="() => { settingsTab = 'field' }"
@@ -552,14 +651,65 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
             />
           </div>
           <div>
-            <label class="block text-xs text-[var(--color-text-secondary)] mb-1">问卷说明</label>
-            <textarea
+            <label class="block text-xs text-[var(--color-text-secondary)] mb-1">问卷说明（富文本）</label>
+            <RichTextEditor
               v-model="formSettings.description"
-              rows="3"
-              class="fd-input resize-none"
-              placeholder="问卷说明文字"
-            ></textarea>
+              :min-height="'120px'"
+              placeholder="问卷说明文字（支持加粗、字号、超链接等）"
+            />
           </div>
+
+          <!-- 提交按钮文案 -->
+          <div>
+            <label class="block text-xs text-[var(--color-text-secondary)] mb-1">提交按钮文案</label>
+            <input
+              v-model="formSettings.submitText"
+              type="text"
+              class="fd-input"
+              placeholder="提交"
+            />
+          </div>
+
+          <!-- 完成致谢语 -->
+          <div>
+            <label class="block text-xs text-[var(--color-text-secondary)] mb-1">完成致谢语</label>
+            <input
+              v-model="formSettings.thankYouText"
+              type="text"
+              class="fd-input"
+              placeholder="感谢您的参与！"
+            />
+          </div>
+
+          <!-- 标题对齐 -->
+          <div>
+            <label class="block text-xs text-[var(--color-text-secondary)] mb-1">标题对齐</label>
+            <div class="grid grid-cols-3 gap-1.5">
+              <button
+                v-for="opt in [{ v: 'left', l: '左' }, { v: 'center', l: '居中' }, { v: 'right', l: '右' }]"
+                :key="opt.v"
+                type="button"
+                :class="[
+                  'h-8 text-xs rounded border transition-colors',
+                  formSettings.align === opt.v
+                    ? 'border-indigo-500 bg-indigo-600 text-white dark:bg-indigo-500/15 dark:text-indigo-300'
+                    : 'border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+                ]"
+                @click="formSettings.align = opt.v"
+              >{{ opt.l }}</button>
+            </div>
+          </div>
+
+          <!-- 显示题号 -->
+          <div class="flex items-center justify-between h-8">
+            <label class="text-xs text-[var(--color-text-secondary)]">显示题号</label>
+            <span class="relative inline-block w-9 h-5">
+              <input type="checkbox" v-model="formSettings.showNumber" class="sr-only peer" />
+              <span class="block w-9 h-5 bg-[var(--color-bg-tertiary)] rounded-full peer-checked:bg-indigo-500 transition-colors"></span>
+              <span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></span>
+            </span>
+          </div>
+
           <!-- 开关组 -->
           <div class="space-y-2 pt-2">
             <label class="flex items-center justify-between h-8 text-xs text-[var(--color-text-secondary)]">
@@ -625,16 +775,15 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
               />
             </div>
 
-            <!-- 字段描述 -->
-            <div v-if="!['divider'].includes(selectedField.fieldType)">
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">题目说明</label>
-              <textarea
+            <!-- 字段描述（富文本，所有题型通用） -->
+            <div>
+              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">题目说明（富文本）</label>
+              <RichTextEditor
                 v-model="selectedField.description"
-                rows="2"
-                class="fd-input resize-none"
-                placeholder="帮助文字（选填）"
-                @input="onFieldUpdate"
-              ></textarea>
+                :min-height="'80px'"
+                placeholder="帮助文字（支持加粗、字号、超链接等）"
+                @update:modelValue="onFieldUpdate"
+              />
             </div>
 
             <!-- 选项编辑 -->
@@ -652,6 +801,74 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
               ></textarea>
             </div>
 
+            <!-- 量表设置（scale）-->
+            <div v-if="selectedField.fieldType === 'scale'" class="space-y-3">
+              <p class="text-xs text-[var(--color-text-secondary)] font-medium">量表设置</p>
+              <div class="grid grid-cols-3 gap-1.5">
+                <div>
+                  <label class="block text-[11px] text-[var(--color-text-muted)] mb-1">最小值</label>
+                  <input
+                    v-model.number="scaleMeta.min"
+                    type="number"
+                    class="fd-input"
+                    @input="onFieldUpdate"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-[var(--color-text-muted)] mb-1">最大值</label>
+                  <input
+                    v-model.number="scaleMeta.max"
+                    type="number"
+                    class="fd-input"
+                    @input="onFieldUpdate"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-[var(--color-text-muted)] mb-1">步长</label>
+                  <input
+                    v-model.number="scaleMeta.step"
+                    type="number"
+                    class="fd-input"
+                    @input="onFieldUpdate"
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5">
+                <div>
+                  <label class="block text-[11px] text-[var(--color-text-muted)] mb-1">左端标签</label>
+                  <input
+                    v-model="scaleMeta.leftLabel"
+                    type="text"
+                    class="fd-input"
+                    placeholder="差"
+                    @input="onFieldUpdate"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-[var(--color-text-muted)] mb-1">右端标签</label>
+                  <input
+                    v-model="scaleMeta.rightLabel"
+                    type="text"
+                    class="fd-input"
+                    placeholder="好"
+                    @input="onFieldUpdate"
+                  />
+                </div>
+              </div>
+              <!-- 量表预览 -->
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-[11px] text-[var(--color-text-muted)]">{{ scaleMeta.leftLabel || '左' }}</span>
+                <div class="flex flex-wrap gap-1">
+                  <span
+                    v-for="n in (Number(scaleMeta.max) - Number(scaleMeta.min) + 1)"
+                    :key="n"
+                    class="w-7 h-7 flex items-center justify-center rounded border border-[var(--color-border)] bg-[var(--color-bg-tertiary)] text-xs text-[var(--color-text-secondary)]"
+                  >{{ Number(scaleMeta.min) + n - 1 }}</span>
+                </div>
+                <span class="text-[11px] text-[var(--color-text-muted)]">{{ scaleMeta.rightLabel || '右' }}</span>
+              </div>
+            </div>
+
             <!-- 字段宽度 -->
             <div v-if="!['divider', 'heading', 'members'].includes(selectedField.fieldType)">
               <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字段宽度</label>
@@ -661,7 +878,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                   :class="[
                     'h-8 text-xs rounded border transition-colors',
                     selectedField.width === 'half'
-                      ? 'border-indigo-500 bg-indigo-500/15 text-white'
+                      ? 'border-indigo-500 bg-indigo-600 text-white dark:bg-indigo-500/15 dark:text-indigo-300'
                       : 'border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
                   ]"
                   @click="() => { selectedField.width = 'half'; onFieldUpdate() }"
@@ -671,48 +888,11 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                   :class="[
                     'h-8 text-xs rounded border transition-colors',
                     (selectedField.width === 'full' || !selectedField.width)
-                      ? 'border-indigo-500 bg-indigo-500/15 text-white'
+                      ? 'border-indigo-500 bg-indigo-600 text-white dark:bg-indigo-500/15 dark:text-indigo-300'
                       : 'border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
                   ]"
                   @click="() => { selectedField.width = 'full'; onFieldUpdate() }"
                 >全宽</button>
-              </div>
-            </div>
-
-            <!-- 适用报名类型 -->
-            <div v-if="!['divider', 'heading'].includes(selectedField.fieldType)">
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">适用报名类型</label>
-              <div class="grid grid-cols-3 gap-1.5">
-                <button
-                  type="button"
-                  :class="[
-                    'h-8 text-[11px] rounded border transition-colors',
-                    selectedField.appliesTo === 'both'
-                      ? 'border-indigo-500 bg-indigo-500/15 text-white'
-                      : 'border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
-                  ]"
-                  @click="() => { selectedField.appliesTo = 'both'; onFieldUpdate() }"
-                >个人+队伍</button>
-                <button
-                  type="button"
-                  :class="[
-                    'h-8 text-[11px] rounded border transition-colors',
-                    selectedField.appliesTo === 'individual'
-                      ? 'border-indigo-500 bg-indigo-500/15 text-white'
-                      : 'border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
-                  ]"
-                  @click="() => { selectedField.appliesTo = 'individual'; onFieldUpdate() }"
-                >仅个人</button>
-                <button
-                  type="button"
-                  :class="[
-                    'h-8 text-[11px] rounded border transition-colors',
-                    selectedField.appliesTo === 'team'
-                      ? 'border-indigo-500 bg-indigo-500/15 text-white'
-                      : 'border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
-                  ]"
-                  @click="() => { selectedField.appliesTo = 'team'; onFieldUpdate() }"
-                >仅队伍</button>
               </div>
             </div>
 
@@ -728,7 +908,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
 
             <!-- 系统字段提示 -->
             <div v-if="selectedField.systemField" class="p-2 rounded bg-amber-500/10 border border-amber-500/20">
-              <p class="text-[11px] text-amber-300/80 flex items-start gap-1">
+              <p class="text-[11px] text-amber-700/80 dark:text-amber-300/80 flex items-start gap-1">
                 <UIcon name="i-lucide-info" class="w-3 h-3 mt-0.5 shrink-0" />
                 <span>系统字段：不可删除、不可修改类型和标识。可调整显示名、必填、适用类型等。</span>
               </p>
@@ -738,6 +918,24 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
       </aside>
     </div>
   </div>
+
+  <!-- ═══ 试答预览弹窗（受访者视角，纯前端模拟） ═══ -->
+  <UModal
+    v-model:open="showTrial"
+    :title="`试答预览 · ${formSettings.title || '问卷标题'}`"
+    :ui="{ content: 'sm:max-w-2xl' }"
+  >
+    <template #body>
+      <div class="max-h-[70vh] overflow-y-auto pr-1">
+        <QuestionnairePreview
+          :fields="fields"
+          :title="formSettings.title"
+          :description="formSettings.description"
+          :settings="formSettings"
+        />
+      </div>
+    </template>
+  </UModal>
 </template>
 
 <style scoped>
@@ -765,6 +963,19 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
   border-color: var(--color-accent-primary);
   background: var(--color-bg-tertiary);
   box-shadow: 0 0 0 2px var(--color-accent-bg);
+}
+
+/* 画布列表里的题目说明富文本预览 */
+.fd-field-desc :deep(a) {
+  color: #818cf8;
+  text-decoration: underline;
+}
+.fd-field-desc :deep(ul),
+.fd-field-desc :deep(ol) {
+  padding-left: 1rem;
+}
+.fd-field-desc :deep(p) {
+  margin: 0.15rem 0;
 }
 
 /* 拖拽占位符（虚线占位框） */

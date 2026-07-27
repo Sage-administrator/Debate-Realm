@@ -43,18 +43,31 @@ export interface DebateStage {
   id: number
   name: string
   duration: number        // 主时长（秒）
-  type: string            // 'speech' | 'question' | 'summary' | 'special' | 'dual-timer'
+  type: string            // 环节类型，统一用新枚举值（normalizeStageType 映射后）
   description?: string
   allowedRoles?: string[]
   order?: number          // 排序顺序
   // 双计时器可选的独立时长
   positiveDuration?: number
   negativeDuration?: number
-  // ponytail: 以下为环节扩展字段（TimerPreview 等组件使用），可选兼容
+  // 角色字段
   speaker?: string
   questioner?: string
   responder?: string
   firstSpeaker?: string
+  protectionTime?: number
+  // 对辩双方参与辩手（多选）
+  positiveSpeakers?: string[]
+  negativeSpeakers?: string[]
+  // 单方发问拆分时长
+  questionDuration?: number
+  answerDuration?: number
+  // 无计时器环节的可发言角色（multi-select，角色 label 列表，用于发言权限联动）
+  speakers?: string[]
+  // PPT/图片展示环节：上传到 /uploads/images/ 的相对路径（纯播报不计时）
+  pptImage?: string
+  // 启用开关
+  enabled?: boolean
 }
 
 /** 辩论项目的全局配置 */
@@ -88,6 +101,19 @@ export interface DebateProject {
   }
 }
 
+/** 提示音配置（来自赛事/独立赛的 timer-config.audioConfig） */
+export interface TimerAudioConfig {
+  enabled?: boolean
+  /** 声音方案：default=默认提示音(30/5/0)；formal=正式比赛提示音·钉钉响铃(30/0，5秒不响) */
+  scheme?: 'default' | 'formal'
+  /** 时间到(0秒) 自定义音，缺省回退内置音 */
+  startSound?: string
+  /** 30秒 自定义音，缺省回退内置音 */
+  warningSound?: string
+  /** 5秒 自定义音，缺省回退内置音（formal 方案下忽略） */
+  endSound?: string
+}
+
 /** Store 的完整状态 */
 interface DebateState {
   currentStage: number                 // 当前环节（从1开始）
@@ -95,6 +121,7 @@ interface DebateState {
   stageStates: Record<number, StageState> // 各环节的运行状态
   completedStages: number[]            // 已完成的环节
   project: DebateProject | null        // 当前项目
+  audioConfig: TimerAudioConfig | null // 当前提示音配置（含声音方案）
 }
 
 // ============ 辅助函数 ============
@@ -115,7 +142,7 @@ function getCachedAudio(file: string): HTMLAudioElement {
 function generateInitialStatesFrom(stages: DebateStage[]): Record<number, StageState> {
   const states: Record<number, StageState> = {}
   stages.forEach((stage) => {
-    if (stage.type === 'dual-timer') {
+    if (isDualTimer(stage.type)) {
       states[stage.id] = {
         type: 'dual-timer',
         positiveTime: stage.positiveDuration ?? stage.duration,
@@ -168,9 +195,10 @@ function runLoop() {
     stopLoop()
     return
   }
-  if (s.type === 'dual-timer') {
+  if (isDualTimer(s.type)) {
     const st = s as DualTimerState
-    const remaining = remainingFrom(st.endAt)
+    // endAt 已在上方 isRunning 判断中保证非空
+    const remaining = remainingFrom(st.endAt!)
     if (st.activeTimer === 'positive') {
       fireCues(prevPos, remaining)
       prevPos = remaining
@@ -187,7 +215,8 @@ function runLoop() {
     }
   } else {
     const st = s as SingleTimerState
-    const remaining = remainingFrom(st.endAt)
+    // endAt 已在上方 isRunning 判断中保证非空
+    const remaining = remainingFrom(st.endAt!)
     fireCues(prevSingle, remaining)
     prevSingle = remaining
     st.timeRemaining = remaining
@@ -226,6 +255,7 @@ export const useDebateStore = defineStore('debate', {
     stageStates: {},
     completedStages: [],
     project: null,
+    audioConfig: null,
   }),
 
   getters: {
@@ -264,7 +294,7 @@ export const useDebateStore = defineStore('debate', {
     dualTimer(): DualTimerState {
       const stage = this.stages[this.currentStage - 1]
       const s = stage ? this.stageStates[stage.id] : null
-      if (s && s.type === 'dual-timer') return s as DualTimerState
+      if (s && isDualTimer(s.type)) return s as DualTimerState
       return {
         type: 'dual-timer',
         positiveTime: 0,
@@ -286,7 +316,7 @@ export const useDebateStore = defineStore('debate', {
     /** 是否为时间警告阶段（剩余20%-10%） */
     isTimeWarning(): boolean {
       const info = this.currentStageInfo
-      if (!info || info.type === 'dual-timer') return false
+      if (!info || isDualTimer(info.type)) return false
       return (
         this.timeRemaining <= info.duration * 0.2 &&
         this.timeRemaining > info.duration * 0.1
@@ -296,7 +326,7 @@ export const useDebateStore = defineStore('debate', {
     /** 是否为时间危急阶段（剩余10%以内） */
     isTimeCritical(): boolean {
       const info = this.currentStageInfo
-      if (!info || info.type === 'dual-timer') return false
+      if (!info || isDualTimer(info.type)) return false
       return this.timeRemaining <= info.duration * 0.1
     },
   },
@@ -343,7 +373,7 @@ export const useDebateStore = defineStore('debate', {
     ensureStagesUpToDate() {
       this.stages.forEach((s) => {
         if (!this.stageStates[s.id]) {
-          if (s.type === 'dual-timer') {
+          if (isDualTimer(s.type)) {
             this.stageStates[s.id] = {
               type: 'dual-timer',
               positiveTime: s.positiveDuration ?? s.duration,
@@ -449,7 +479,8 @@ export const useDebateStore = defineStore('debate', {
     /** 开始计时（单计时器） */
     startTimer() {
       const s = this.currentStageState as StageState | null
-      if (!s || s.type === 'dual-timer') return
+      // 双计时器与无计时器/PPT 环节均不启动单计时（PPT 为纯播报不计时）
+      if (!s || isDualTimer(s.type) || !hasTimer(s.type)) return
       const st = s as SingleTimerState
       st.endAt = Date.now() + Math.max(0, st.timeRemaining) * 1000
       st.isRunning = true
@@ -464,7 +495,7 @@ export const useDebateStore = defineStore('debate', {
       if (!s) return
       if (s.isRunning && s.endAt != null) {
         const remaining = remainingFrom(s.endAt)
-        if (s.type === 'dual-timer') {
+        if (isDualTimer(s.type)) {
           const st = s as DualTimerState
           if (st.activeTimer === 'positive') st.positiveTime = remaining
           else st.negativeTime = remaining
@@ -483,7 +514,7 @@ export const useDebateStore = defineStore('debate', {
       const info = this.currentStageInfo
       const s = this.currentStageState as StageState | null
       if (!s || !info) return
-      if (s.type === 'dual-timer') {
+      if (isDualTimer(s.type)) {
         const st = s as DualTimerState
         st.positiveTime = info.positiveDuration ?? info.duration
         st.negativeTime = info.negativeDuration ?? info.duration
@@ -512,7 +543,7 @@ export const useDebateStore = defineStore('debate', {
     /** 设置自定义时间（双计时器） */
     setCustomDualTime(positiveTime: number, negativeTime: number) {
       const s = this.currentStageState as StageState | null
-      if (s && s.type === 'dual-timer') {
+      if (s && isDualTimer(s.type)) {
         const st = s as DualTimerState
         st.positiveTime = positiveTime
         st.negativeTime = negativeTime
@@ -674,14 +705,38 @@ export const useDebateStore = defineStore('debate', {
 
     // ============ 音效播放 ============
 
-    /** 播放提示音（剩余30秒、5秒、0秒） */
+    /** 设置提示音配置（含声音方案），由计时页在加载 timer-config 后调用 */
+    setAudioConfig(cfg: TimerAudioConfig | null | undefined) {
+      this.audioConfig = cfg ? { ...cfg } : null
+    },
+
+    /**
+     * 根据当前声音方案解析某一剩余秒数应播放的音频文件路径。
+     * - default（默认提示音）：30秒→warningSound/30.mp3，5秒→endSound/5.mp3，0秒→startSound/End.mp3
+     * - formal（正式比赛提示音·钉钉响铃）：30秒与结束时各响一次钉钉铃，5秒不响
+     * 未启用提示音时返回 ''（不播放）。
+     */
+    resolveSoundFile(timeRemaining: number): string {
+      const cfg = this.audioConfig
+      if (!cfg || cfg.enabled === false) return ''
+      const scheme = cfg.scheme || 'default'
+      if (scheme === 'formal') {
+        // 正式比赛提示音：30秒响、结束响，5秒静音
+        if (timeRemaining === 30) return cfg.warningSound || '/dingtalk.mp3'
+        if (timeRemaining === 0) return cfg.startSound || '/dingtalk.mp3'
+        return '' // 5秒：不响
+      }
+      // 默认提示音
+      if (timeRemaining === 30) return cfg.warningSound || '/30.mp3'
+      if (timeRemaining === 5) return cfg.endSound || '/5.mp3'
+      if (timeRemaining === 0) return cfg.startSound || '/End.mp3'
+      return ''
+    },
+
+    /** 播放提示音（剩余30秒、5秒、0秒），音源由当前声音方案决定 */
     playTimerSound(timeRemaining: number) {
       try {
-        let audioFile = ''
-        if (timeRemaining === 30) audioFile = '/30.mp3'
-        else if (timeRemaining === 5) audioFile = '/5.mp3'
-        else if (timeRemaining === 0) audioFile = '/End.mp3'
-
+        const audioFile = this.resolveSoundFile(timeRemaining)
         if (audioFile) {
           // 复用缓存的 Audio 对象，避免重复创建和加载
           const audio = getCachedAudio(audioFile)
@@ -697,13 +752,17 @@ export const useDebateStore = defineStore('debate', {
       }
     },
 
-    /** 手动播放测试音效 */
+    /** 手动播放测试音效（复用方案解析，使测试与实际播放一致） */
     playTestSound(type: '30' | '5' | 'End') {
       try {
-        const audio = getCachedAudio(`/${type}.mp3`)
-        if (audio) {
-          audio.currentTime = 0
-          audio.play().catch(() => {})
+        const map: Record<'30' | '5' | 'End', number> = { '30': 30, '5': 5, 'End': 0 }
+        const audioFile = this.resolveSoundFile(map[type])
+        if (audioFile) {
+          const audio = getCachedAudio(audioFile)
+          if (audio) {
+            audio.currentTime = 0
+            audio.play().catch(() => {})
+          }
         }
       } catch {}
     },

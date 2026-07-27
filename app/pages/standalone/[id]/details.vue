@@ -149,7 +149,7 @@ watch(
 
 <template>
   <template v-if="tournament">
-  <main class="py-6 grid grid-cols-12 gap-6">
+  <div class="py-6 grid grid-cols-12 gap-6">
 
     <div class="col-span-4">
       <TimerPreviewCard
@@ -243,7 +243,7 @@ watch(
 
       </UCard>
     </div>
-  </main>
+  </div>
   </template>
 </template>
 

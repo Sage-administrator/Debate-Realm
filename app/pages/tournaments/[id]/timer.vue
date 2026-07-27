@@ -5,42 +5,47 @@
   不包含"快捷时间"div
 -->
 <template>
-  <div class="h-screen text-white overflow-hidden responsive-container scale-wrapper" :style="[{ '--ui-scale': uiScale }, backgroundStyle]">
-
-    <!-- 顶部辩题展示区（横幅）- 显示横幅/辩题时显示完整横幅 -->
-    <div class="debate-header" v-if="(uiConfig.bannerVisible !== false && uiConfig.showBanner !== false)">
-      <div class="flex w-full" :style="{ marginTop: `${uiConfig.bannerPos ?? 0}vh` }">
-        <!-- 正方横幅（红色） -->
-        <div class="flex-1 debate-side-positive flex items-center" :style="{ backgroundColor: uiConfig.bannerColorPos || 'rgb(169, 35, 35)' }">
-          <div class="debate-label-white">
-            <span class="font-bold" :style="{ color: uiConfig.bannerFontColorPos || 'white' }">{{ positiveLabel }}</span>
-          </div>
-          <div ref="positiveTopicRef" class="text-white font-bold debate-topic-text">{{ positiveTopic || '' }}</div>
-        </div>
-        <!-- 反方横幅（蓝色） -->
-        <div class="flex-1 debate-side-negative flex items-center justify-end" :style="{ backgroundColor: uiConfig.bannerColorNeg || 'rgb(3, 105, 161)' }">
-          <div ref="negativeTopicRef" class="text-white font-bold text-right debate-topic-text debate-topic-right">{{ negativeTopic || '' }}</div>
-          <div class="debate-label-white">
-            <span class="font-bold" :style="{ color: uiConfig.bannerFontColorNeg || 'white' }">{{ negativeLabel }}</span>
-          </div>
-        </div>
-      </div>
+  <div ref="rootRef" class="h-screen w-screen overflow-hidden relative timer-page-root" :style="backgroundStyle">
+    <!-- 缩放画布：固定 1280x720 设计基准，等比缩放填满屏幕（与 TimerPreview 预览一致） -->
+    <div class="timer-scale-wrapper" :style="scaleWrapperStyle">
+      <TimerDisplay
+        :hide-banner="true"
+        :contest-title="contestTitle"
+        :positive-topic="positiveTopic"
+        :negative-topic="negativeTopic"
+        :team-positive-name="teamPositiveName"
+        :team-negative-name="teamNegativeName"
+        :positive-label="positiveLabel"
+        :negative-label="negativeLabel"
+        :ui-config="uiConfig"
+        :skin-config="skinConfig"
+        :team-logo-config="teamLogoConfig"
+        :current-stage-info="currentStageInfo"
+        :is-dual-timer-stage="isDualTimerStage"
+        :is-special-stage="isSpecialStage"
+        :display-time="displayTime"
+        :is-time-warning="isTimeWarning"
+        :is-time-critical="isTimeCritical"
+        :dual-positive-time="formatDualTime(dualTimer.positiveTime)"
+        :dual-negative-time="formatDualTime(dualTimer.negativeTime)"
+      />
     </div>
 
-    <!-- 不显示横幅/辩题时，仍显示正方/反方标签 -->
-    <div v-else class="flex w-full justify-between px-8 mt-2">
-      <div class="debate-label-white">
-        <span class="font-bold" :style="{ color: uiConfig.bannerFontColorPos || 'white' }">{{ positiveLabel }}</span>
+    <!-- 全屏宽红蓝横幅覆盖层：与画布内横幅同一槽位，但左右延伸至屏幕边缘 -->
+    <div
+      v-if="bannerShouldShowPage && pageViewport.h > 0"
+      class="full-bleed-banner"
+      :style="fullBleedBannerStyle"
+    >
+      <div :style="fullBleedScalerStyle">
+        <TimerBanner
+          :ui-config="uiConfig"
+          :positive-label="positiveLabel"
+          :negative-label="negativeLabel"
+          :positive-topic="positiveTopic"
+          :negative-topic="negativeTopic"
+        />
       </div>
-      <div class="debate-label-white">
-        <span class="font-bold" :style="{ color: uiConfig.bannerFontColorNeg || 'white' }">{{ negativeLabel }}</span>
-      </div>
-    </div>
-
-    <!-- 队伍名（横幅下方，空值不显示） -->
-    <div class="flex w-full items-start justify-between px-4 mt-2">
-      <div v-if="teamPositiveName" class="debate-topic-text" :style="{ color: uiConfig.teamNameColor || 'white' }">{{ teamPositiveName }}</div>
-      <div v-if="teamNegativeName" class="debate-topic-text debate-topic-right" :style="{ color: uiConfig.teamNameColor || 'white', textAlign: 'right' }">{{ teamNegativeName }}</div>
     </div>
 
     <!-- 进入前设置面板 -->
@@ -114,49 +119,6 @@
       </div>
     </div>
 
-    <!-- 主要内容区域 -->
-    <div class="main-content">
-      <!-- 赛事名称 -->
-      <div class="text-center contest-title" v-if="(uiConfig.eventNameVisible !== false && uiConfig.showTitle !== false)">
-        <h1 class="font-bold contest-title-text contest-title-color" :style="{ color: (uiConfig.titleColor || uiConfig.eventColor) || 'rgb(3, 105, 161)', fontSize: uiConfig.eventFontSize ? `${(uiConfig.eventFontSize / 16).toFixed(4)}rem` : '' }">{{ contestTitle }}</h1>
-      </div>
-
-      <!-- 计时器区域 -->
-      <div class="stage-timer-container">
-        <!-- 当前环节名称 -->
-        <div class="text-center stage-title">
-          <h2 class="font-bold text-white" :class="isSpecialStage ? 'special-stage-text' : 'stage-title-text'">
-            {{ currentStageInfo?.name || '彩排·试音' }}
-          </h2>
-        </div>
-
-        <!-- 双计时器显示 -->
-        <div v-if="isDualTimerStage" class="dual-timer-container">
-          <div class="dual-timer-display">
-            <div class="timer-side positive-side">
-              <div class="digital-display">
-                <span v-for="(char, index) in formatDualTime(dualTimer.positiveTime)" :key="`pos-${index}`" class="digital-char" :style="{ color: uiConfig.bannerFontColorPos || 'rgb(169, 35, 35)' }">{{ char }}</span>
-              </div>
-              <div class="timer-label positive-label">{{ positiveLabel }}</div>
-            </div>
-            <div class="timer-side negative-side">
-              <div class="digital-display">
-                <span v-for="(char, index) in formatDualTime(dualTimer.negativeTime)" :key="`neg-${index}`" class="digital-char" :style="{ color: uiConfig.bannerFontColorNeg || 'rgb(3, 105, 161)' }">{{ char }}</span>
-              </div>
-              <div class="timer-label negative-label">{{ negativeLabel }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 单计时器显示 -->
-        <div v-else-if="!isSpecialStage" class="text-center timer-display-section">
-          <div class="digital-display">
-            <span v-for="(char, index) in displayTime" :key="index" class="digital-char" :class="{'text-orange-400': isTimeWarning, 'text-red-400': isTimeCritical, 'text-white': !isTimeWarning && !isTimeCritical}">{{ char }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- 控制面板（左下角，默认透明，悬停显示） -->
     <div class="fixed bottom-4 left-4 control-panel">
       <!-- 双计时器控制 -->
@@ -175,7 +137,7 @@
       </div>
 
       <!-- 单计时器控制 -->
-      <div v-else-if="!isSpecialStage" class="flex items-center space-x-1 mb-1">
+      <div v-else-if="!isNonTimerStage" class="flex items-center space-x-1 mb-1">
         <span class="text-white text-xs font-bold w-16">计时控制:</span>
         <button class="control-btn" @click="isRunning ? pauseTimer() : startTimer()" :disabled="currentStage === 0">{{ isRunning ? '暂停计时(空格)' : (isPaused ? '继续计时(空格)' : '启动计时(空格)') }}</button>
         <button class="control-btn" @click="pauseTimer" :disabled="!isRunning && !isPaused">中断(P)</button>
@@ -192,7 +154,7 @@
       <div class="flex items-center space-x-1 mb-1">
         <span class="text-white text-xs font-bold w-16">试音环节:</span>
         <button class="control-btn" @click="playTestSound('30')">30秒(Q)</button>
-        <button class="control-btn" @click="playTestSound('5')">5秒(W)</button>
+        <button class="control-btn" @click="playTestSound('5')" :disabled="debateStore.audioConfig?.scheme === 'formal'" :title="debateStore.audioConfig?.scheme === 'formal' ? '正式比赛提示音方案下 5 秒不响' : ''">5秒(W)</button>
         <button class="control-btn" @click="playTestSound('End')">时间到(E)</button>
       </div>
 
@@ -316,6 +278,9 @@
         </div>
       </div>
     </div>
+
+    <!-- 发言权限管理（仅 QQ 频道模式团队显示，右下角悬浮） -->
+    <SpeechPermissionPanel v-if="isQQBotTeam" />
   </div>
 </template>
 
@@ -327,6 +292,8 @@ definePageMeta({ ssr: false, layout: false })
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter, useToast } from '#imports'
 import { useDebateStore } from '~/stores/debate'
+import TimerDisplay from '~/components/TimerDisplay.vue'
+import SpeechPermissionPanel from '~/components/SpeechPermissionPanel.vue'
 
 // ═══════════ 全局组合式 ═══════════
 const debateStore = useDebateStore()
@@ -334,6 +301,9 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const tournamentId = computed(() => route.params.id as string)
+
+// 仅 QQ 频道模式（team.mode === 'qq_bot'）团队显示发言权限管理浮窗
+const isQQBotTeam = computed(() => useAuthStore().user?.team?.mode === 'qq_bot')
 
 // ═══════════ 赛事基本信息和辩题 ═══════════
 const contestTitle = ref('辩论赛')
@@ -343,6 +313,9 @@ const teamPositiveName = ref('')
 const teamNegativeName = ref('')
 const positiveLabel = ref('正方')
 const negativeLabel = ref('反方')
+
+// 队徽配置（从 timer-config 同步，供 TimerDisplay 渲染队徽）
+const teamLogoConfig = ref({ positiveLogoUrl: '', negativeLogoUrl: '', showTeamLogo: true })
 
 // ═══════════ UI 缩放与UI配置参数解析 ═══════════
 const uiScale = ref(1)
@@ -376,14 +349,30 @@ const uiConfig = ref({
   teamNameColor: '#FFFFFF',  /* 队伍名称颜色（details.vue 表单字段）*/
   backgroundType: 'default' as 'default' | 'image',
   imageFileName: '',
+  fontFamily: '',
+  titleFontFamily: '',
+  stageTitleFontFamily: '',
+  bannerFontFamily: '',
+  teamNameFontFamily: '',
+  timerFontFamily: '',
   bannerPos: 0,
-  bannerFontSize: 20,
-  bannerColorPos: '',
-  bannerColorNeg: '',
-  bannerFontColorPos: '',
-  bannerFontColorNeg: '',
+  bannerHeight: 5,
+  bannerFontSize: 21,
+  labelFontSize: 38,
+  bannerColorPos: 'rgb(169, 35, 35)',
+  bannerColorNeg: 'rgb(3, 105, 161)',
+  bannerFontColorPos: '#FFFFFF',
+  bannerFontColorNeg: '#FFFFFF',
   eventColor: '',
-  eventFontSize: 0,
+  eventFontSize: 50,
+  teamNameFontSize: 21,
+  stageTitleFontSize: 64,
+  timerFontSize: 200,
+  stageTitleColor: '#FFFFFF',
+  timerColor: '#FFFFFF',
+  contentPaddingTop: 56,
+  titleMarginBottom: 12,
+  stageTimerGap: 10,
   positiveLabel: '正方',
   negativeLabel: '反方',
 })
@@ -435,32 +424,58 @@ const backgroundStyle = computed(() => {
   return { background }
 })
 
-// ═══════════ 辩题文字溢出检测与字体大小调整 ═══════════
-const positiveTopicRef = ref<HTMLElement | null>(null)
-const negativeTopicRef = ref<HTMLElement | null>(null)
-// 检测元素是否溢出单行，若是则切换为小字体两行
-function checkTopicOverflow() {
-  const check = (el: HTMLElement | null) => {
-    if (!el || !el.textContent) return
-    // 先去掉溢出类，检测是否会溢出
-    el.classList.remove('topic-overflow')
-    // 使用scrollWidth > clientWidth来检测
-    const isOverflow = el.scrollWidth > el.clientWidth + 1
-    if (isOverflow) el.classList.add('topic-overflow')
-  }
-  check(positiveTopicRef.value)
-  check(negativeTopicRef.value)
+// ═══════════ 缩放画布：固定 1280x720 设计基准，等比缩放填满屏幕（与 TimerPreview 一致） ═══════════
+const rootRef = ref<HTMLElement | null>(null)
+const pageScale = ref(1)
+const pageViewport = ref({ w: 0, h: 0 })
+function updatePageScale() {
+  if (!rootRef.value) return
+  const rect = rootRef.value.getBoundingClientRect()
+  // 使用 contain 缩放：取宽高比例较小者，保证 16:9 画布完整可见（非 16:9 屏幕两侧留渐变背景）
+  const s = Math.min(rect.width / 1280, rect.height / 720)
+  pageScale.value = s > 0 ? s : 1
+  pageViewport.value = { w: rect.width, h: rect.height }
 }
+let pageResizeObserver: ResizeObserver | null = null
+const scaleWrapperStyle = computed(() => ({
+  width: '1280px',
+  height: '720px',
+  transform: `translate(-50%, -50%) scale(${pageScale.value * uiScale.value})`,
+  transformOrigin: 'center center',
+}))
 
-// 性能优化：resize 时只做强制重排检测，用 rAF 节流避免连续 resize 反复触发同步 layout
-let resizeRaf: number | null = null
-function onResizeThrottled() {
-  if (resizeRaf != null) return
-  resizeRaf = requestAnimationFrame(() => {
-    resizeRaf = null
-    checkTopicOverflow()
-  })
-}
+// ═══════════ 全屏宽红蓝横幅覆盖层 ═══════════
+// 计时页画布用 contain 缩放，非 16:9 屏幕下画布左右留边，红蓝条到不了屏幕边。
+// 这里把横幅抽出来，用「100% 宽 + transform:scale(effScale)」把 1280 设计宽拉伸到屏幕宽，
+// 使红蓝条左右贴屏幕边缘；横幅定位与画布内原横幅槽位完全一致，仅左右外扩。
+const effScale = computed(() => pageScale.value * uiScale.value)
+// 横幅是否显示（与画布内一致）
+const bannerShouldShowPage = computed(() => {
+  const ui = uiConfig.value || {}
+  return ui.bannerVisible !== false && ui.showBanner !== false
+})
+// 覆盖层定位：与画布顶部对齐（画布居中，top = (视口高 - 720*effScale)/2），横幅顶部留 6vh 间距由 TimerBanner 自身 padding 提供
+const fullBleedBannerStyle = computed(() => {
+  const e = effScale.value
+  const top = (pageViewport.value.h - 720 * e) / 2
+  return {
+    position: 'absolute' as const,
+    top: `${top}px`,
+    left: '0',
+    right: '0',
+    zIndex: '30',
+    pointerEvents: 'none' as const,
+  }
+})
+// 内层缩放器：宽 = 视口宽 / effScale，再整体 scale(effScale)，等价于把 1280 设计宽铺满视口宽
+const fullBleedScalerStyle = computed(() => {
+  const e = effScale.value
+  return {
+    width: `calc(100% / ${e})`,
+    transform: `scale(${e})`,
+    transformOrigin: 'top left',
+  }
+})
 
 // ═══════════ 设置面板 ═══════════
 // 检测 URL 是否包含预览参数——如有则跳过初始设置弹窗
@@ -517,6 +532,9 @@ const secondChunk = computed(() => stages.value.slice(half.value))
 const completedStages = computed(() => debateStore.completedStages)
 
 const isSpecialStage = computed(() => currentStageInfo.value?.type === 'special')
+const isPptStage = computed(() => isPpt(currentStageInfo.value?.type))
+// 无计时器环节（special / PPT）：不显示计时控制，仅保留环节切换
+const isNonTimerStage = computed(() => isSpecialStage.value || isPptStage.value)
 const isDualTimerStage = computed(() => currentStageInfo.value?.type === 'dual-timer')
 const displayTime = computed(() => (formattedTime.value || '00:00').padStart(5, '0'))
 
@@ -760,7 +778,15 @@ function applySetupAndStart() {
   showSetup.value = false
 }
 function goBack() {
-  router.push(`/tournaments/${tournamentId.value}`)
+  // 先停止计时器，防止跳转后继续运行
+  debateStore.disposeTimer()
+  // 如果有历史记录（从其他页面进入），返回上一页
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    // 兜底：跳转到赛事详情页
+    router.push(`/tournaments/${tournamentId.value}`)
+  }
 }
 
 // ═══════════ 键盘快捷键 ═══════════
@@ -774,7 +800,7 @@ function handleKeyPress(event: KeyboardEvent) {
     ' ': () => {
       if (isDualTimerStage.value) {
         isRunning.value ? switchActiveTimer() : startTimer()
-      } else if (!isSpecialStage.value) {
+      } else if (!isNonTimerStage.value) {
         isRunning.value ? pauseTimer() : startTimer()
       }
     },
@@ -837,19 +863,41 @@ async function loadTournamentData() {
       if (cfg.uiConfig) Object.assign(uiConfig.value, cfg.uiConfig)
       // 同步皮肤配置（背景等整体外观）
       if (cfg.skinConfig) Object.assign(skinConfig.value, cfg.skinConfig)
+      // 同步队徽配置（队徽显示）
+      if (cfg.teamLogoConfig) Object.assign(teamLogoConfig.value, cfg.teamLogoConfig)
       // 同步环节配置（从 timer-config 的 stages 字段读取，与 timing.vue 保存的数据源一致）
       if (cfg.stages && Array.isArray(cfg.stages) && cfg.stages.length > 0) {
         const convertedStages = cfg.stages.map((s: any, idx: number) => ({
           id: Number(s.id) || idx + 1,
           name: s.name || '未命名环节',
           duration: s.duration || 60,
-          type: s.type === 'free_debate' || s.type === 'dual-timer' ? 'dual-timer' : (s.type === 'special' ? 'special' : 'speech'),
+          type: s.type === 'free_debate' || s.type === 'dual-timer'
+            ? 'dual-timer'
+            : s.type === 'special'
+              ? 'special'
+              : s.type === 'ppt_replace'
+                ? 'ppt_replace'
+                : 'speech',
           order: typeof s.orderIndex === 'number' ? s.orderIndex : (s.order ?? idx + 1),
           positiveDuration: s.positiveDuration || s.duration || 60,
           negativeDuration: s.negativeDuration || s.duration || 60,
+          speaker: s.speaker,
+          questioner: s.questioner,
+          responder: s.responder,
+          firstSpeaker: s.firstSpeaker,
+          protectionTime: s.protectionTime,
+          positiveSpeakers: s.positiveSpeakers,
+          negativeSpeakers: s.negativeSpeakers,
+          questionDuration: s.questionDuration,
+          answerDuration: s.answerDuration,
+          speakers: s.speakers,
+          pptImage: s.pptImage || null,
+          enabled: s.enabled !== false,
         }))
         debateStore.setStages(convertedStages)
       }
+      // 同步提示音配置（含声音方案 default/formal），缺省不影响默认行为
+      if (cfg.audioConfig) debateStore.setAudioConfig(cfg.audioConfig)
     } else {
       // 没有配置时使用赛事名称
       contestTitle.value = tournamentName
@@ -858,10 +906,10 @@ async function loadTournamentData() {
     // 如果环节为空，使用默认模板
     if (!stages.value.length) {
       const defaultStages = [
-        { id: 1, name: '开篇立论', duration: 180, type: 'speech' as const, order: 1, positiveDuration: 180, negativeDuration: 180 },
-        { id: 2, name: '攻辩', duration: 120, type: 'speech' as const, order: 2, positiveDuration: 120, negativeDuration: 120 },
-        { id: 3, name: '自由辩论', duration: 240, type: 'dual-timer' as const, order: 3, positiveDuration: 240, negativeDuration: 240 },
-        { id: 4, name: '总结陈词', duration: 180, type: 'speech' as const, order: 4, positiveDuration: 180, negativeDuration: 180 },
+        { id: 1, name: '开篇立论', duration: 180, type: 'single_speech' as const, order: 1, positiveDuration: 180, negativeDuration: 180 },
+        { id: 2, name: '攻辩', duration: 120, type: 'single_speech' as const, order: 2, positiveDuration: 120, negativeDuration: 120 },
+        { id: 3, name: '自由辩论', duration: 240, type: 'free_debate' as const, order: 3, positiveDuration: 240, negativeDuration: 240 },
+        { id: 4, name: '总结陈词', duration: 180, type: 'single_speech' as const, order: 4, positiveDuration: 180, negativeDuration: 180 },
       ]
       debateStore.setStages(defaultStages)
     }
@@ -881,108 +929,41 @@ onMounted(async () => {
     showSetup.value = false
   }
   document.addEventListener('keydown', handleKeyPress)
-  // 等待DOM渲染后检测辩题文字溢出
-  setTimeout(() => {
-    checkTopicOverflow()
-    window.addEventListener('resize', onResizeThrottled)
-  }, 100)
+  // 计算缩放画布比例并监听容器尺寸变化
+  requestAnimationFrame(() => updatePageScale())
+  if (rootRef.value && typeof ResizeObserver !== 'undefined') {
+    pageResizeObserver = new ResizeObserver(() => updatePageScale())
+    pageResizeObserver.observe(rootRef.value)
+  }
 })
 
 onUnmounted(() => {
   debateStore.disposeTimer()
+  if (pageResizeObserver) { pageResizeObserver.disconnect(); pageResizeObserver = null }
   if (modalHoverTimer.value) clearTimeout(modalHoverTimer.value)
   document.removeEventListener('keydown', handleKeyPress)
-  window.removeEventListener('resize', onResizeThrottled)
 })
 </script>
 
 <style scoped>
-/* ═══════════ 字体定义（全局main.css已定义，此处仅作引用）═══════════ */
-/* ponytail: 删除重复的@font-face定义，使用全局定义 */
-/* 性能优化：用具体元素选择器替代 * 通配符（原 `*:not(.digital-char)` 会扫描所有 DOM 节点）
-   显式列出页面用到的元素类型，覆盖范围相同但计算成本大幅降低 */
-.responsive-container,
-.responsive-container h1, .responsive-container h2, .responsive-container h3,
-.responsive-container h4, .responsive-container h5, .responsive-container h6,
-.responsive-container p, .responsive-container span, .responsive-container div,
-.responsive-container button, .responsive-container input, .responsive-container label,
-.responsive-container td, .responsive-container th, .responsive-container li,
-.responsive-container a, .responsive-container strong, .responsive-container em {
-  font-family: 'SourceHanSerifCN-Heavy', 'SimSun', '宋体', serif !important;
-  user-select: none !important;
-  -webkit-user-select: none !important;
+/* 计时页根容器：字体继承（控制面板自身声明了字体，其余统一宋体） */
+.timer-page-root {
+  font-family: 'SourceHanSerifCN-Heavy', 'SimSun', '宋体', serif;
+  user-select: none;
+  -webkit-user-select: none;
 }
-/* digital-char 元素保留 Digiface 字体（在更具体的类中定义） */
+:deep(html), :deep(body) { overflow: hidden; }
 
-/* ═══════════ 缩放容器 ═══════════ */
-.scale-wrapper { transform: scale(var(--ui-scale)); transform-origin: top center; }
-
-/* ═══════════ 渐变背景（复刻原始设计） ═══════════ */
-.gradient-background { background: radial-gradient(ellipse at center bottom, rgb(57, 76, 86) 0%, rgb(14, 17, 17) 100%); }
-.responsive-container, :deep(html), :deep(body) { min-height: 100vh; overflow: hidden; }
-.responsive-container { display: flex; flex-direction: column; }
-
-/* ═══════════ 横幅（顶部红蓝条） ═══════════ */
-.debate-header { padding-top: 6vh; flex-shrink: 0; }
-.debate-side-positive { background-color: rgb(169, 35, 35); padding: 1vh 2vw; }
-.debate-side-negative { background-color: rgb(3, 105, 161); padding: 1vh 2vw; }
-.debate-label-white {
-  border: 1px solid white; border-radius: 0.5vw; padding: 0; /* 边框细一些，圆角更圆润 */
-  font-size: clamp(2vw, 3vw, 2.8vw); /* 标签字体加大，更醒目 */
-  flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  height: 1.3em; line-height: 1.3;
+/* 缩放画布：固定 1280x720 设计基准，等比缩放填满屏幕（与 TimerPreview 预览一致） */
+.timer-scale-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1280px;
+  height: 720px;
+  display: flex;
+  flex-direction: column;
 }
-.debate-label-white span { padding: 0.1vh 0.5vw; line-height: 1; }
-/* 辩题文字：默认与标签同大小，单行；溢出时自动变两行并缩小字体 */
-.debate-topic-text {
-  font-size: clamp(2vw, 3vw, 2.8vw); /* 默认与标签同大小 */
-  line-height: 1.2;
-  max-width: 45vw;
-  white-space: nowrap;              /* 默认单行 */
-  overflow: hidden;
-  flex: 1;
-  min-width: 0;
-}
-.debate-topic-text.topic-overflow {
-  font-size: 1.5vw;                 /* 溢出时变小字体 */
-  white-space: normal;              /* 允许换行 */
-  word-wrap: break-word;
-  line-height: 1.3;
-}
-.debate-side-positive .debate-label-white { margin-left: 1vw; margin-right: 2vw; }
-.debate-side-negative .debate-label-white { margin-right: 1vw; margin-left: 2vw; }
-
-/* ═══════════ 主内容区 ═══════════ */
-/* 使用从顶部固定偏移的布局，确保单/双计时器模式下 h1 和计时器位置一致 */
-/* 基准换算：vw/vh 基于屏幕实际尺寸（1vw=屏幕宽度的1%, 1vh=屏幕高度的1%） */
-/* 与 TimerPreview.vue 的对应关系：1vw = 12.8px (1280px宽度基准), 1vh = 10.8px (1080px高度基准) */
-.main-content { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: 8vh; padding-bottom: 25vh; }
-.contest-title { margin-bottom: 5vh; }
-.contest-title-text { font-size: 4.5vw; } /* 赛事名称标题在原基础上加 0.5 倍 */
-.contest-title-color { color: rgb(3, 105, 161); }
-
-/* ═══════════ 计时器区域 ═══════════ */
-/* 固定最小高度容器，确保单/双计时器模式下环节标题位置一致 */
-.stage-timer-container { display: flex; flex-direction: column; align-items: center; gap: 2vh; min-height: 40vh; }
-.stage-title-text { font-size: 4.376vw; } /* 环节标题在原 2.917vw 基础上加 0.5 倍 */
-.special-stage-text { font-size: 13.281vw; line-height: 1.2; } /* 特殊环节在原 8.854vw 基础上加 0.5 倍 */
-
-/* ═══════════ 双计时器 ═══════════ */
-.dual-timer-display { display: flex; justify-content: center; align-items: center; gap: 8vw; }
-.timer-side { display: flex; flex-direction: column; align-items: center; }
-.timer-label { font-size: 1.875vw; font-weight: bold; margin-top: 2vh; } /* 在原 1.25vw 基础上加 0.5 倍 */
-.positive-label { color: rgb(179, 37, 37); }
-.negative-label { color: rgb(3, 105, 161); }
-
-/* ═══════════ 单计时器显示容器 ═══════════ */
-/* 给单计时器区域设置最小高度，使单/双计时器模式下计时器上方位置对齐 */
-.timer-display-section { min-height: 13.75vw; display: flex; align-items: flex-start; justify-content: center; }
-
-/* ═══════════ 数码时钟 ═══════════ */
-.digital-display { display: flex; justify-content: center; align-items: center; gap: 0.1em; }
-/* 提权到高于 `.responsive-container span`（ponytail 优化把它圈进了 serif 规则），确保计时数字用 Digiface */
-.digital-display .digital-char { font-family: 'Digiface', monospace !important; font-size: 13.75vw; font-weight: normal; line-height: 1; } /* 在原 9.167vw 基础上加 0.5 倍 */
 
 /* ═══════════ 控制面板：默认透明，悬停可见 ═══════════ */
 .control-panel {
@@ -990,6 +971,8 @@ onUnmounted(() => {
   transition: opacity 0.3s ease-in-out;
   background: transparent;
   min-width: 14vw; /* 确保全屏时能放下标签+按钮 */
+  transform: scale(0.8); /* 整体缩小面板，保持内部比例 */
+  transform-origin: bottom left; /* 锚定左下角，缩放后仍贴左下 */
 }
 .control-panel:hover { opacity: 1; }
 
@@ -1046,6 +1029,4 @@ onUnmounted(() => {
 }
 .control-btn:hover { border-color: #718096; background: rgba(255, 255, 255, 0.05); }
 .control-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* ═══════════ 全屏适配（缩放倍率自动跟随视口，无需额外设置） ═══════════ */
 </style>

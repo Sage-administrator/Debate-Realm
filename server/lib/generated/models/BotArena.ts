@@ -29,6 +29,7 @@ export type BotArenaMinAggregateOutputType = {
   teamId: string | null
   name: string | null
   matchFormat: string | null
+  originalChannelName: string | null
   status: string | null
   guildId: string | null
   channelId: string | null
@@ -41,6 +42,7 @@ export type BotArenaMaxAggregateOutputType = {
   teamId: string | null
   name: string | null
   matchFormat: string | null
+  originalChannelName: string | null
   status: string | null
   guildId: string | null
   channelId: string | null
@@ -53,6 +55,7 @@ export type BotArenaCountAggregateOutputType = {
   teamId: number
   name: number
   matchFormat: number
+  originalChannelName: number
   status: number
   guildId: number
   channelId: number
@@ -67,6 +70,7 @@ export type BotArenaMinAggregateInputType = {
   teamId?: true
   name?: true
   matchFormat?: true
+  originalChannelName?: true
   status?: true
   guildId?: true
   channelId?: true
@@ -79,6 +83,7 @@ export type BotArenaMaxAggregateInputType = {
   teamId?: true
   name?: true
   matchFormat?: true
+  originalChannelName?: true
   status?: true
   guildId?: true
   channelId?: true
@@ -91,6 +96,7 @@ export type BotArenaCountAggregateInputType = {
   teamId?: true
   name?: true
   matchFormat?: true
+  originalChannelName?: true
   status?: true
   guildId?: true
   channelId?: true
@@ -176,6 +182,7 @@ export type BotArenaGroupByOutputType = {
   teamId: string
   name: string
   matchFormat: string
+  originalChannelName: string | null
   status: string
   guildId: string | null
   channelId: string | null
@@ -209,6 +216,7 @@ export type BotArenaWhereInput = {
   teamId?: Prisma.StringFilter<"BotArena"> | string
   name?: Prisma.StringFilter<"BotArena"> | string
   matchFormat?: Prisma.StringFilter<"BotArena"> | string
+  originalChannelName?: Prisma.StringNullableFilter<"BotArena"> | string | null
   status?: Prisma.StringFilter<"BotArena"> | string
   guildId?: Prisma.StringNullableFilter<"BotArena"> | string | null
   channelId?: Prisma.StringNullableFilter<"BotArena"> | string | null
@@ -223,6 +231,7 @@ export type BotArenaOrderByWithRelationInput = {
   teamId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   matchFormat?: Prisma.SortOrder
+  originalChannelName?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   guildId?: Prisma.SortOrderInput | Prisma.SortOrder
   channelId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -241,6 +250,7 @@ export type BotArenaWhereUniqueInput = Prisma.AtLeast<{
   teamId?: Prisma.StringFilter<"BotArena"> | string
   name?: Prisma.StringFilter<"BotArena"> | string
   matchFormat?: Prisma.StringFilter<"BotArena"> | string
+  originalChannelName?: Prisma.StringNullableFilter<"BotArena"> | string | null
   status?: Prisma.StringFilter<"BotArena"> | string
   guildId?: Prisma.StringNullableFilter<"BotArena"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BotArena"> | Date | string
@@ -254,6 +264,7 @@ export type BotArenaOrderByWithAggregationInput = {
   teamId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   matchFormat?: Prisma.SortOrder
+  originalChannelName?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   guildId?: Prisma.SortOrderInput | Prisma.SortOrder
   channelId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -272,6 +283,7 @@ export type BotArenaScalarWhereWithAggregatesInput = {
   teamId?: Prisma.StringWithAggregatesFilter<"BotArena"> | string
   name?: Prisma.StringWithAggregatesFilter<"BotArena"> | string
   matchFormat?: Prisma.StringWithAggregatesFilter<"BotArena"> | string
+  originalChannelName?: Prisma.StringNullableWithAggregatesFilter<"BotArena"> | string | null
   status?: Prisma.StringWithAggregatesFilter<"BotArena"> | string
   guildId?: Prisma.StringNullableWithAggregatesFilter<"BotArena"> | string | null
   channelId?: Prisma.StringNullableWithAggregatesFilter<"BotArena"> | string | null
@@ -283,6 +295,7 @@ export type BotArenaCreateInput = {
   id?: string
   name?: string
   matchFormat?: string
+  originalChannelName?: string | null
   status?: string
   guildId?: string | null
   channelId?: string | null
@@ -297,6 +310,7 @@ export type BotArenaUncheckedCreateInput = {
   teamId: string
   name?: string
   matchFormat?: string
+  originalChannelName?: string | null
   status?: string
   guildId?: string | null
   channelId?: string | null
@@ -309,6 +323,7 @@ export type BotArenaUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   matchFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  originalChannelName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   guildId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -323,6 +338,7 @@ export type BotArenaUncheckedUpdateInput = {
   teamId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   matchFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  originalChannelName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   guildId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -336,6 +352,7 @@ export type BotArenaCreateManyInput = {
   teamId: string
   name?: string
   matchFormat?: string
+  originalChannelName?: string | null
   status?: string
   guildId?: string | null
   channelId?: string | null
@@ -347,6 +364,7 @@ export type BotArenaUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   matchFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  originalChannelName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   guildId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -359,6 +377,7 @@ export type BotArenaUncheckedUpdateManyInput = {
   teamId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   matchFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  originalChannelName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   guildId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -381,6 +400,7 @@ export type BotArenaCountOrderByAggregateInput = {
   teamId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   matchFormat?: Prisma.SortOrder
+  originalChannelName?: Prisma.SortOrder
   status?: Prisma.SortOrder
   guildId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
@@ -393,6 +413,7 @@ export type BotArenaMaxOrderByAggregateInput = {
   teamId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   matchFormat?: Prisma.SortOrder
+  originalChannelName?: Prisma.SortOrder
   status?: Prisma.SortOrder
   guildId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
@@ -405,6 +426,7 @@ export type BotArenaMinOrderByAggregateInput = {
   teamId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   matchFormat?: Prisma.SortOrder
+  originalChannelName?: Prisma.SortOrder
   status?: Prisma.SortOrder
   guildId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
@@ -477,6 +499,7 @@ export type BotArenaCreateWithoutTeamInput = {
   id?: string
   name?: string
   matchFormat?: string
+  originalChannelName?: string | null
   status?: string
   guildId?: string | null
   channelId?: string | null
@@ -489,6 +512,7 @@ export type BotArenaUncheckedCreateWithoutTeamInput = {
   id?: string
   name?: string
   matchFormat?: string
+  originalChannelName?: string | null
   status?: string
   guildId?: string | null
   channelId?: string | null
@@ -530,6 +554,7 @@ export type BotArenaScalarWhereInput = {
   teamId?: Prisma.StringFilter<"BotArena"> | string
   name?: Prisma.StringFilter<"BotArena"> | string
   matchFormat?: Prisma.StringFilter<"BotArena"> | string
+  originalChannelName?: Prisma.StringNullableFilter<"BotArena"> | string | null
   status?: Prisma.StringFilter<"BotArena"> | string
   guildId?: Prisma.StringNullableFilter<"BotArena"> | string | null
   channelId?: Prisma.StringNullableFilter<"BotArena"> | string | null
@@ -541,6 +566,7 @@ export type BotArenaCreateWithoutRolesInput = {
   id?: string
   name?: string
   matchFormat?: string
+  originalChannelName?: string | null
   status?: string
   guildId?: string | null
   channelId?: string | null
@@ -554,6 +580,7 @@ export type BotArenaUncheckedCreateWithoutRolesInput = {
   teamId: string
   name?: string
   matchFormat?: string
+  originalChannelName?: string | null
   status?: string
   guildId?: string | null
   channelId?: string | null
@@ -581,6 +608,7 @@ export type BotArenaUpdateWithoutRolesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   matchFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  originalChannelName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   guildId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -594,6 +622,7 @@ export type BotArenaUncheckedUpdateWithoutRolesInput = {
   teamId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   matchFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  originalChannelName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   guildId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -605,6 +634,7 @@ export type BotArenaCreateManyTeamInput = {
   id?: string
   name?: string
   matchFormat?: string
+  originalChannelName?: string | null
   status?: string
   guildId?: string | null
   channelId?: string | null
@@ -616,6 +646,7 @@ export type BotArenaUpdateWithoutTeamInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   matchFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  originalChannelName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   guildId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -628,6 +659,7 @@ export type BotArenaUncheckedUpdateWithoutTeamInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   matchFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  originalChannelName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   guildId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -640,6 +672,7 @@ export type BotArenaUncheckedUpdateManyWithoutTeamInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   matchFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  originalChannelName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   guildId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -683,6 +716,7 @@ export type BotArenaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   teamId?: boolean
   name?: boolean
   matchFormat?: boolean
+  originalChannelName?: boolean
   status?: boolean
   guildId?: boolean
   channelId?: boolean
@@ -698,6 +732,7 @@ export type BotArenaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   teamId?: boolean
   name?: boolean
   matchFormat?: boolean
+  originalChannelName?: boolean
   status?: boolean
   guildId?: boolean
   channelId?: boolean
@@ -711,6 +746,7 @@ export type BotArenaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   teamId?: boolean
   name?: boolean
   matchFormat?: boolean
+  originalChannelName?: boolean
   status?: boolean
   guildId?: boolean
   channelId?: boolean
@@ -724,6 +760,7 @@ export type BotArenaSelectScalar = {
   teamId?: boolean
   name?: boolean
   matchFormat?: boolean
+  originalChannelName?: boolean
   status?: boolean
   guildId?: boolean
   channelId?: boolean
@@ -731,7 +768,7 @@ export type BotArenaSelectScalar = {
   updatedAt?: boolean
 }
 
-export type BotArenaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "teamId" | "name" | "matchFormat" | "status" | "guildId" | "channelId" | "createdAt" | "updatedAt", ExtArgs["result"]["botArena"]>
+export type BotArenaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "teamId" | "name" | "matchFormat" | "originalChannelName" | "status" | "guildId" | "channelId" | "createdAt" | "updatedAt", ExtArgs["result"]["botArena"]>
 export type BotArenaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
   roles?: boolean | Prisma.BotArena$rolesArgs<ExtArgs>
@@ -755,6 +792,7 @@ export type $BotArenaPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     teamId: string
     name: string
     matchFormat: string
+    originalChannelName: string | null
     status: string
     guildId: string | null
     channelId: string | null
@@ -1189,6 +1227,7 @@ export interface BotArenaFieldRefs {
   readonly teamId: Prisma.FieldRef<"BotArena", 'String'>
   readonly name: Prisma.FieldRef<"BotArena", 'String'>
   readonly matchFormat: Prisma.FieldRef<"BotArena", 'String'>
+  readonly originalChannelName: Prisma.FieldRef<"BotArena", 'String'>
   readonly status: Prisma.FieldRef<"BotArena", 'String'>
   readonly guildId: Prisma.FieldRef<"BotArena", 'String'>
   readonly channelId: Prisma.FieldRef<"BotArena", 'String'>

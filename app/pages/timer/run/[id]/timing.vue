@@ -65,15 +65,30 @@ async function loadProject() {
         id: s.id,
         name: s.name,
         duration: s.duration,
-        type: s.type,
+        type: normalizeStageType(s.type),
         description: s.description,
         order: s.order,
         positiveDuration: s.positiveDuration,
         negativeDuration: s.negativeDuration,
         allowedRoles: s.allowedRoles,
+        speaker: s.speaker,
+        questioner: s.questioner,
+        responder: s.responder,
+        firstSpeaker: s.firstSpeaker,
+        protectionTime: s.protectionTime,
+        positiveSpeakers: s.positiveSpeakers,
+        negativeSpeakers: s.negativeSpeakers,
+        questionDuration: s.questionDuration,
+        answerDuration: s.answerDuration,
+        speakers: s.speakers,
+        pptImage: s.pptImage || null,
+        enabled: s.enabled !== false,
       })),
     }
     debateStore.setProject(projectForStore)
+
+    // 同步提示音配置（含声音方案 default/formal）
+    if (res.data.audioConfig) debateStore.setAudioConfig(res.data.audioConfig)
 
     // 如果没有环节，提示用户
     if (!debateStore.stages.length) {
@@ -277,6 +292,9 @@ const currentStage = computed(() => debateStore.currentStage)
 const currentStageInfo = computed(() => debateStore.currentStageInfo)
 const isDualTimer = computed(() => currentStageInfo.value?.type === 'dual-timer')
 const isSpecial = computed(() => currentStageInfo.value?.type === 'special')
+// PPT/图片展示环节（纯播报不计时）
+const isPptStage = computed(() => currentStageInfo.value?.type === 'ppt_replace')
+const pptImage = computed(() => currentStageInfo.value?.pptImage || '')
 
 // 双计时器状态
 const dualTimer = computed(() => debateStore.dualTimer)
@@ -353,8 +371,13 @@ const isTimeCritical = computed(() => debateStore.isTimeCritical)
         </h2>
       </div>
 
+      <!-- PPT 图片展示（纯播报，不计时） -->
+      <div v-if="isPptStage && pptImage" class="w-full flex justify-center items-center" style="height: 62vh;">
+        <img :src="pptImage" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.45);" alt="PPT展示" />
+      </div>
+
       <!-- 双计时器显示 -->
-      <div v-if="isDualTimer" class="flex justify-center items-center gap-16">
+      <div v-else-if="isDualTimer" class="flex justify-center items-center gap-16">
         <!-- 正方计时器 -->
         <div class="text-center">
           <div class="mb-3" style="font-family: 'SimSun', '宋体', serif; font-size: 28px; color: rgb(179, 37, 37); font-weight: bold;">
@@ -375,8 +398,8 @@ const isTimeCritical = computed(() => debateStore.isTimeCritical)
         </div>
       </div>
 
-      <!-- 单计时器显示 -->
-      <div v-else-if="!isSpecial" class="text-center">
+      <!-- 单计时器显示（PPT/无计时器环节不显示） -->
+      <div v-else-if="!isSpecial && !isPptStage" class="text-center">
         <div
           style="font-family: 'Digiface', monospace; font-size: 200px; line-height: 1; font-weight: normal;"
           :class="{
@@ -424,7 +447,7 @@ const isTimeCritical = computed(() => debateStore.isTimeCritical)
       </div>
 
       <!-- 计时控制（单计时器） -->
-      <div v-if="!isDualTimer && !isSpecial">
+      <div v-if="!isDualTimer && !isSpecial && !isPptStage">
         <span class="label-text text-gray-400">计时:</span>
         <div class="button-group">
           <button
@@ -512,6 +535,8 @@ const isTimeCritical = computed(() => debateStore.isTimeCritical)
           <button
             class="timing-btn"
             @click="() => debateStore.playTestSound('5')"
+            :disabled="debateStore.audioConfig?.scheme === 'formal'"
+            :title="debateStore.audioConfig?.scheme === 'formal' ? '正式比赛提示音方案下 5 秒不响' : ''"
           >
             5秒
           </button>

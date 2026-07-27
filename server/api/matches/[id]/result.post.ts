@@ -110,8 +110,6 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const updated = await prisma.match.findUnique({ where: { id } })
-
     // 4.2 积分累计逻辑（非手动赛制才会累计积分）
     // 修复：统一使用 recalculateRankings 全量重算积分，
     // 替代原有的 updateTeamPoints increment 累加方式，避免与 bot-scoring.ts 的全量重算机制冲突
@@ -185,16 +183,19 @@ export default defineEventHandler(async (event) => {
       console.error('[Result] Bot 通知发送失败:', err)
     })
 
+    // 注：updateMany 后不再二次 findUnique 取同一行（省一次 DB 往返），
+    // 返回值可直接由请求体与已知版本号推导。
+    const newVersion = (match.version ?? 0) + 1
     return {
       code: 0,
       message: 'success',
       data: {
-        id: updated!.id,
-        winner: updated!.winner,
-        scoreA: updated!.scoreA,
-        scoreB: updated!.scoreB,
-        status: updated!.status,
-        version: updated!.version,
+        id,
+        winner: resolvedWinner,
+        scoreA,
+        scoreB,
+        status: 'finished',
+        version: newVersion,
         advanced: advanceResult,
         format,
       },

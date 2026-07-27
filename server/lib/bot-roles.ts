@@ -398,7 +398,7 @@ export async function closeArena(
   }
 
   // 还原语音子频道名为原名（比赛期间被改为「赛场名 比赛形式辩论」）
-  if (originalChannelName) {
+  if (originalChannelName && arena.channelId) {
     try {
       await renameChannel(botConfig, arena.channelId, originalChannelName)
     } catch (err) {

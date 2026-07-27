@@ -31,6 +31,9 @@ export type DebateTimerStageAvgAggregateOutputType = {
   orderIndex: number | null
   positiveDuration: number | null
   negativeDuration: number | null
+  protectionTime: number | null
+  questionDuration: number | null
+  answerDuration: number | null
 }
 
 export type DebateTimerStageSumAggregateOutputType = {
@@ -38,6 +41,9 @@ export type DebateTimerStageSumAggregateOutputType = {
   orderIndex: number | null
   positiveDuration: number | null
   negativeDuration: number | null
+  protectionTime: number | null
+  questionDuration: number | null
+  answerDuration: number | null
 }
 
 export type DebateTimerStageMinAggregateOutputType = {
@@ -51,6 +57,18 @@ export type DebateTimerStageMinAggregateOutputType = {
   positiveDuration: number | null
   negativeDuration: number | null
   allowedRoles: string | null
+  speaker: string | null
+  questioner: string | null
+  responder: string | null
+  firstSpeaker: string | null
+  protectionTime: number | null
+  positiveSpeakers: string | null
+  negativeSpeakers: string | null
+  questionDuration: number | null
+  answerDuration: number | null
+  enabled: boolean | null
+  speakers: string | null
+  pptImage: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -66,6 +84,18 @@ export type DebateTimerStageMaxAggregateOutputType = {
   positiveDuration: number | null
   negativeDuration: number | null
   allowedRoles: string | null
+  speaker: string | null
+  questioner: string | null
+  responder: string | null
+  firstSpeaker: string | null
+  protectionTime: number | null
+  positiveSpeakers: string | null
+  negativeSpeakers: string | null
+  questionDuration: number | null
+  answerDuration: number | null
+  enabled: boolean | null
+  speakers: string | null
+  pptImage: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -81,6 +111,18 @@ export type DebateTimerStageCountAggregateOutputType = {
   positiveDuration: number
   negativeDuration: number
   allowedRoles: number
+  speaker: number
+  questioner: number
+  responder: number
+  firstSpeaker: number
+  protectionTime: number
+  positiveSpeakers: number
+  negativeSpeakers: number
+  questionDuration: number
+  answerDuration: number
+  enabled: number
+  speakers: number
+  pptImage: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -92,6 +134,9 @@ export type DebateTimerStageAvgAggregateInputType = {
   orderIndex?: true
   positiveDuration?: true
   negativeDuration?: true
+  protectionTime?: true
+  questionDuration?: true
+  answerDuration?: true
 }
 
 export type DebateTimerStageSumAggregateInputType = {
@@ -99,6 +144,9 @@ export type DebateTimerStageSumAggregateInputType = {
   orderIndex?: true
   positiveDuration?: true
   negativeDuration?: true
+  protectionTime?: true
+  questionDuration?: true
+  answerDuration?: true
 }
 
 export type DebateTimerStageMinAggregateInputType = {
@@ -112,6 +160,18 @@ export type DebateTimerStageMinAggregateInputType = {
   positiveDuration?: true
   negativeDuration?: true
   allowedRoles?: true
+  speaker?: true
+  questioner?: true
+  responder?: true
+  firstSpeaker?: true
+  protectionTime?: true
+  positiveSpeakers?: true
+  negativeSpeakers?: true
+  questionDuration?: true
+  answerDuration?: true
+  enabled?: true
+  speakers?: true
+  pptImage?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -127,6 +187,18 @@ export type DebateTimerStageMaxAggregateInputType = {
   positiveDuration?: true
   negativeDuration?: true
   allowedRoles?: true
+  speaker?: true
+  questioner?: true
+  responder?: true
+  firstSpeaker?: true
+  protectionTime?: true
+  positiveSpeakers?: true
+  negativeSpeakers?: true
+  questionDuration?: true
+  answerDuration?: true
+  enabled?: true
+  speakers?: true
+  pptImage?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -142,6 +214,18 @@ export type DebateTimerStageCountAggregateInputType = {
   positiveDuration?: true
   negativeDuration?: true
   allowedRoles?: true
+  speaker?: true
+  questioner?: true
+  responder?: true
+  firstSpeaker?: true
+  protectionTime?: true
+  positiveSpeakers?: true
+  negativeSpeakers?: true
+  questionDuration?: true
+  answerDuration?: true
+  enabled?: true
+  speakers?: true
+  pptImage?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -244,6 +328,18 @@ export type DebateTimerStageGroupByOutputType = {
   positiveDuration: number | null
   negativeDuration: number | null
   allowedRoles: string | null
+  speaker: string | null
+  questioner: string | null
+  responder: string | null
+  firstSpeaker: string | null
+  protectionTime: number | null
+  positiveSpeakers: string | null
+  negativeSpeakers: string | null
+  questionDuration: number | null
+  answerDuration: number | null
+  enabled: boolean
+  speakers: string | null
+  pptImage: string | null
   createdAt: Date
   updatedAt: Date
   _count: DebateTimerStageCountAggregateOutputType | null
@@ -282,6 +378,18 @@ export type DebateTimerStageWhereInput = {
   positiveDuration?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
   negativeDuration?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
   allowedRoles?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  speaker?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  questioner?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  responder?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  firstSpeaker?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  protectionTime?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
+  positiveSpeakers?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  negativeSpeakers?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  questionDuration?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
+  answerDuration?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
+  enabled?: Prisma.BoolFilter<"DebateTimerStage"> | boolean
+  speakers?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  pptImage?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DebateTimerStage"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DebateTimerStage"> | Date | string
   project?: Prisma.XOR<Prisma.DebateTimerProjectScalarRelationFilter, Prisma.DebateTimerProjectWhereInput>
@@ -298,6 +406,18 @@ export type DebateTimerStageOrderByWithRelationInput = {
   positiveDuration?: Prisma.SortOrderInput | Prisma.SortOrder
   negativeDuration?: Prisma.SortOrderInput | Prisma.SortOrder
   allowedRoles?: Prisma.SortOrderInput | Prisma.SortOrder
+  speaker?: Prisma.SortOrderInput | Prisma.SortOrder
+  questioner?: Prisma.SortOrderInput | Prisma.SortOrder
+  responder?: Prisma.SortOrderInput | Prisma.SortOrder
+  firstSpeaker?: Prisma.SortOrderInput | Prisma.SortOrder
+  protectionTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  positiveSpeakers?: Prisma.SortOrderInput | Prisma.SortOrder
+  negativeSpeakers?: Prisma.SortOrderInput | Prisma.SortOrder
+  questionDuration?: Prisma.SortOrderInput | Prisma.SortOrder
+  answerDuration?: Prisma.SortOrderInput | Prisma.SortOrder
+  enabled?: Prisma.SortOrder
+  speakers?: Prisma.SortOrderInput | Prisma.SortOrder
+  pptImage?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   project?: Prisma.DebateTimerProjectOrderByWithRelationInput
@@ -317,6 +437,18 @@ export type DebateTimerStageWhereUniqueInput = Prisma.AtLeast<{
   positiveDuration?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
   negativeDuration?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
   allowedRoles?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  speaker?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  questioner?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  responder?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  firstSpeaker?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  protectionTime?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
+  positiveSpeakers?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  negativeSpeakers?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  questionDuration?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
+  answerDuration?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
+  enabled?: Prisma.BoolFilter<"DebateTimerStage"> | boolean
+  speakers?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  pptImage?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DebateTimerStage"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DebateTimerStage"> | Date | string
   project?: Prisma.XOR<Prisma.DebateTimerProjectScalarRelationFilter, Prisma.DebateTimerProjectWhereInput>
@@ -333,6 +465,18 @@ export type DebateTimerStageOrderByWithAggregationInput = {
   positiveDuration?: Prisma.SortOrderInput | Prisma.SortOrder
   negativeDuration?: Prisma.SortOrderInput | Prisma.SortOrder
   allowedRoles?: Prisma.SortOrderInput | Prisma.SortOrder
+  speaker?: Prisma.SortOrderInput | Prisma.SortOrder
+  questioner?: Prisma.SortOrderInput | Prisma.SortOrder
+  responder?: Prisma.SortOrderInput | Prisma.SortOrder
+  firstSpeaker?: Prisma.SortOrderInput | Prisma.SortOrder
+  protectionTime?: Prisma.SortOrderInput | Prisma.SortOrder
+  positiveSpeakers?: Prisma.SortOrderInput | Prisma.SortOrder
+  negativeSpeakers?: Prisma.SortOrderInput | Prisma.SortOrder
+  questionDuration?: Prisma.SortOrderInput | Prisma.SortOrder
+  answerDuration?: Prisma.SortOrderInput | Prisma.SortOrder
+  enabled?: Prisma.SortOrder
+  speakers?: Prisma.SortOrderInput | Prisma.SortOrder
+  pptImage?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.DebateTimerStageCountOrderByAggregateInput
@@ -356,6 +500,18 @@ export type DebateTimerStageScalarWhereWithAggregatesInput = {
   positiveDuration?: Prisma.IntNullableWithAggregatesFilter<"DebateTimerStage"> | number | null
   negativeDuration?: Prisma.IntNullableWithAggregatesFilter<"DebateTimerStage"> | number | null
   allowedRoles?: Prisma.StringNullableWithAggregatesFilter<"DebateTimerStage"> | string | null
+  speaker?: Prisma.StringNullableWithAggregatesFilter<"DebateTimerStage"> | string | null
+  questioner?: Prisma.StringNullableWithAggregatesFilter<"DebateTimerStage"> | string | null
+  responder?: Prisma.StringNullableWithAggregatesFilter<"DebateTimerStage"> | string | null
+  firstSpeaker?: Prisma.StringNullableWithAggregatesFilter<"DebateTimerStage"> | string | null
+  protectionTime?: Prisma.IntNullableWithAggregatesFilter<"DebateTimerStage"> | number | null
+  positiveSpeakers?: Prisma.StringNullableWithAggregatesFilter<"DebateTimerStage"> | string | null
+  negativeSpeakers?: Prisma.StringNullableWithAggregatesFilter<"DebateTimerStage"> | string | null
+  questionDuration?: Prisma.IntNullableWithAggregatesFilter<"DebateTimerStage"> | number | null
+  answerDuration?: Prisma.IntNullableWithAggregatesFilter<"DebateTimerStage"> | number | null
+  enabled?: Prisma.BoolWithAggregatesFilter<"DebateTimerStage"> | boolean
+  speakers?: Prisma.StringNullableWithAggregatesFilter<"DebateTimerStage"> | string | null
+  pptImage?: Prisma.StringNullableWithAggregatesFilter<"DebateTimerStage"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DebateTimerStage"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"DebateTimerStage"> | Date | string
 }
@@ -370,6 +526,18 @@ export type DebateTimerStageCreateInput = {
   positiveDuration?: number | null
   negativeDuration?: number | null
   allowedRoles?: string | null
+  speaker?: string | null
+  questioner?: string | null
+  responder?: string | null
+  firstSpeaker?: string | null
+  protectionTime?: number | null
+  positiveSpeakers?: string | null
+  negativeSpeakers?: string | null
+  questionDuration?: number | null
+  answerDuration?: number | null
+  enabled?: boolean
+  speakers?: string | null
+  pptImage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.DebateTimerProjectCreateNestedOneWithoutStagesInput
@@ -386,6 +554,18 @@ export type DebateTimerStageUncheckedCreateInput = {
   positiveDuration?: number | null
   negativeDuration?: number | null
   allowedRoles?: string | null
+  speaker?: string | null
+  questioner?: string | null
+  responder?: string | null
+  firstSpeaker?: string | null
+  protectionTime?: number | null
+  positiveSpeakers?: string | null
+  negativeSpeakers?: string | null
+  questionDuration?: number | null
+  answerDuration?: number | null
+  enabled?: boolean
+  speakers?: string | null
+  pptImage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -400,6 +580,18 @@ export type DebateTimerStageUpdateInput = {
   positiveDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   negativeDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   allowedRoles?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  speaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questioner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstSpeaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  protectionTime?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  positiveSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negativeSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questionDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  answerDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  speakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pptImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.DebateTimerProjectUpdateOneRequiredWithoutStagesNestedInput
@@ -416,6 +608,18 @@ export type DebateTimerStageUncheckedUpdateInput = {
   positiveDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   negativeDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   allowedRoles?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  speaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questioner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstSpeaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  protectionTime?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  positiveSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negativeSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questionDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  answerDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  speakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pptImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -431,6 +635,18 @@ export type DebateTimerStageCreateManyInput = {
   positiveDuration?: number | null
   negativeDuration?: number | null
   allowedRoles?: string | null
+  speaker?: string | null
+  questioner?: string | null
+  responder?: string | null
+  firstSpeaker?: string | null
+  protectionTime?: number | null
+  positiveSpeakers?: string | null
+  negativeSpeakers?: string | null
+  questionDuration?: number | null
+  answerDuration?: number | null
+  enabled?: boolean
+  speakers?: string | null
+  pptImage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -445,6 +661,18 @@ export type DebateTimerStageUpdateManyMutationInput = {
   positiveDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   negativeDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   allowedRoles?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  speaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questioner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstSpeaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  protectionTime?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  positiveSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negativeSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questionDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  answerDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  speakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pptImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -460,6 +688,18 @@ export type DebateTimerStageUncheckedUpdateManyInput = {
   positiveDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   negativeDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   allowedRoles?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  speaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questioner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstSpeaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  protectionTime?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  positiveSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negativeSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questionDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  answerDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  speakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pptImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -485,6 +725,18 @@ export type DebateTimerStageCountOrderByAggregateInput = {
   positiveDuration?: Prisma.SortOrder
   negativeDuration?: Prisma.SortOrder
   allowedRoles?: Prisma.SortOrder
+  speaker?: Prisma.SortOrder
+  questioner?: Prisma.SortOrder
+  responder?: Prisma.SortOrder
+  firstSpeaker?: Prisma.SortOrder
+  protectionTime?: Prisma.SortOrder
+  positiveSpeakers?: Prisma.SortOrder
+  negativeSpeakers?: Prisma.SortOrder
+  questionDuration?: Prisma.SortOrder
+  answerDuration?: Prisma.SortOrder
+  enabled?: Prisma.SortOrder
+  speakers?: Prisma.SortOrder
+  pptImage?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -494,6 +746,9 @@ export type DebateTimerStageAvgOrderByAggregateInput = {
   orderIndex?: Prisma.SortOrder
   positiveDuration?: Prisma.SortOrder
   negativeDuration?: Prisma.SortOrder
+  protectionTime?: Prisma.SortOrder
+  questionDuration?: Prisma.SortOrder
+  answerDuration?: Prisma.SortOrder
 }
 
 export type DebateTimerStageMaxOrderByAggregateInput = {
@@ -507,6 +762,18 @@ export type DebateTimerStageMaxOrderByAggregateInput = {
   positiveDuration?: Prisma.SortOrder
   negativeDuration?: Prisma.SortOrder
   allowedRoles?: Prisma.SortOrder
+  speaker?: Prisma.SortOrder
+  questioner?: Prisma.SortOrder
+  responder?: Prisma.SortOrder
+  firstSpeaker?: Prisma.SortOrder
+  protectionTime?: Prisma.SortOrder
+  positiveSpeakers?: Prisma.SortOrder
+  negativeSpeakers?: Prisma.SortOrder
+  questionDuration?: Prisma.SortOrder
+  answerDuration?: Prisma.SortOrder
+  enabled?: Prisma.SortOrder
+  speakers?: Prisma.SortOrder
+  pptImage?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -522,6 +789,18 @@ export type DebateTimerStageMinOrderByAggregateInput = {
   positiveDuration?: Prisma.SortOrder
   negativeDuration?: Prisma.SortOrder
   allowedRoles?: Prisma.SortOrder
+  speaker?: Prisma.SortOrder
+  questioner?: Prisma.SortOrder
+  responder?: Prisma.SortOrder
+  firstSpeaker?: Prisma.SortOrder
+  protectionTime?: Prisma.SortOrder
+  positiveSpeakers?: Prisma.SortOrder
+  negativeSpeakers?: Prisma.SortOrder
+  questionDuration?: Prisma.SortOrder
+  answerDuration?: Prisma.SortOrder
+  enabled?: Prisma.SortOrder
+  speakers?: Prisma.SortOrder
+  pptImage?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -531,6 +810,9 @@ export type DebateTimerStageSumOrderByAggregateInput = {
   orderIndex?: Prisma.SortOrder
   positiveDuration?: Prisma.SortOrder
   negativeDuration?: Prisma.SortOrder
+  protectionTime?: Prisma.SortOrder
+  questionDuration?: Prisma.SortOrder
+  answerDuration?: Prisma.SortOrder
 }
 
 export type DebateTimerStageCreateNestedManyWithoutProjectInput = {
@@ -585,6 +867,18 @@ export type DebateTimerStageCreateWithoutProjectInput = {
   positiveDuration?: number | null
   negativeDuration?: number | null
   allowedRoles?: string | null
+  speaker?: string | null
+  questioner?: string | null
+  responder?: string | null
+  firstSpeaker?: string | null
+  protectionTime?: number | null
+  positiveSpeakers?: string | null
+  negativeSpeakers?: string | null
+  questionDuration?: number | null
+  answerDuration?: number | null
+  enabled?: boolean
+  speakers?: string | null
+  pptImage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -599,6 +893,18 @@ export type DebateTimerStageUncheckedCreateWithoutProjectInput = {
   positiveDuration?: number | null
   negativeDuration?: number | null
   allowedRoles?: string | null
+  speaker?: string | null
+  questioner?: string | null
+  responder?: string | null
+  firstSpeaker?: string | null
+  protectionTime?: number | null
+  positiveSpeakers?: string | null
+  negativeSpeakers?: string | null
+  questionDuration?: number | null
+  answerDuration?: number | null
+  enabled?: boolean
+  speakers?: string | null
+  pptImage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -642,6 +948,18 @@ export type DebateTimerStageScalarWhereInput = {
   positiveDuration?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
   negativeDuration?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
   allowedRoles?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  speaker?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  questioner?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  responder?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  firstSpeaker?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  protectionTime?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
+  positiveSpeakers?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  negativeSpeakers?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  questionDuration?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
+  answerDuration?: Prisma.IntNullableFilter<"DebateTimerStage"> | number | null
+  enabled?: Prisma.BoolFilter<"DebateTimerStage"> | boolean
+  speakers?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
+  pptImage?: Prisma.StringNullableFilter<"DebateTimerStage"> | string | null
   createdAt?: Prisma.DateTimeFilter<"DebateTimerStage"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DebateTimerStage"> | Date | string
 }
@@ -656,6 +974,18 @@ export type DebateTimerStageCreateManyProjectInput = {
   positiveDuration?: number | null
   negativeDuration?: number | null
   allowedRoles?: string | null
+  speaker?: string | null
+  questioner?: string | null
+  responder?: string | null
+  firstSpeaker?: string | null
+  protectionTime?: number | null
+  positiveSpeakers?: string | null
+  negativeSpeakers?: string | null
+  questionDuration?: number | null
+  answerDuration?: number | null
+  enabled?: boolean
+  speakers?: string | null
+  pptImage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -670,6 +1000,18 @@ export type DebateTimerStageUpdateWithoutProjectInput = {
   positiveDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   negativeDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   allowedRoles?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  speaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questioner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstSpeaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  protectionTime?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  positiveSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negativeSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questionDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  answerDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  speakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pptImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -684,6 +1026,18 @@ export type DebateTimerStageUncheckedUpdateWithoutProjectInput = {
   positiveDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   negativeDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   allowedRoles?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  speaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questioner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstSpeaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  protectionTime?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  positiveSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negativeSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questionDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  answerDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  speakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pptImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -698,6 +1052,18 @@ export type DebateTimerStageUncheckedUpdateManyWithoutProjectInput = {
   positiveDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   negativeDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   allowedRoles?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  speaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questioner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  responder?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstSpeaker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  protectionTime?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  positiveSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  negativeSpeakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  questionDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  answerDuration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  speakers?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pptImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -715,6 +1081,18 @@ export type DebateTimerStageSelect<ExtArgs extends runtime.Types.Extensions.Inte
   positiveDuration?: boolean
   negativeDuration?: boolean
   allowedRoles?: boolean
+  speaker?: boolean
+  questioner?: boolean
+  responder?: boolean
+  firstSpeaker?: boolean
+  protectionTime?: boolean
+  positiveSpeakers?: boolean
+  negativeSpeakers?: boolean
+  questionDuration?: boolean
+  answerDuration?: boolean
+  enabled?: boolean
+  speakers?: boolean
+  pptImage?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.DebateTimerProjectDefaultArgs<ExtArgs>
@@ -731,6 +1109,18 @@ export type DebateTimerStageSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   positiveDuration?: boolean
   negativeDuration?: boolean
   allowedRoles?: boolean
+  speaker?: boolean
+  questioner?: boolean
+  responder?: boolean
+  firstSpeaker?: boolean
+  protectionTime?: boolean
+  positiveSpeakers?: boolean
+  negativeSpeakers?: boolean
+  questionDuration?: boolean
+  answerDuration?: boolean
+  enabled?: boolean
+  speakers?: boolean
+  pptImage?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.DebateTimerProjectDefaultArgs<ExtArgs>
@@ -747,6 +1137,18 @@ export type DebateTimerStageSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   positiveDuration?: boolean
   negativeDuration?: boolean
   allowedRoles?: boolean
+  speaker?: boolean
+  questioner?: boolean
+  responder?: boolean
+  firstSpeaker?: boolean
+  protectionTime?: boolean
+  positiveSpeakers?: boolean
+  negativeSpeakers?: boolean
+  questionDuration?: boolean
+  answerDuration?: boolean
+  enabled?: boolean
+  speakers?: boolean
+  pptImage?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.DebateTimerProjectDefaultArgs<ExtArgs>
@@ -763,11 +1165,23 @@ export type DebateTimerStageSelectScalar = {
   positiveDuration?: boolean
   negativeDuration?: boolean
   allowedRoles?: boolean
+  speaker?: boolean
+  questioner?: boolean
+  responder?: boolean
+  firstSpeaker?: boolean
+  protectionTime?: boolean
+  positiveSpeakers?: boolean
+  negativeSpeakers?: boolean
+  questionDuration?: boolean
+  answerDuration?: boolean
+  enabled?: boolean
+  speakers?: boolean
+  pptImage?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DebateTimerStageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "name" | "duration" | "type" | "description" | "orderIndex" | "positiveDuration" | "negativeDuration" | "allowedRoles" | "createdAt" | "updatedAt", ExtArgs["result"]["debateTimerStage"]>
+export type DebateTimerStageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "name" | "duration" | "type" | "description" | "orderIndex" | "positiveDuration" | "negativeDuration" | "allowedRoles" | "speaker" | "questioner" | "responder" | "firstSpeaker" | "protectionTime" | "positiveSpeakers" | "negativeSpeakers" | "questionDuration" | "answerDuration" | "enabled" | "speakers" | "pptImage" | "createdAt" | "updatedAt", ExtArgs["result"]["debateTimerStage"]>
 export type DebateTimerStageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.DebateTimerProjectDefaultArgs<ExtArgs>
 }
@@ -794,6 +1208,18 @@ export type $DebateTimerStagePayload<ExtArgs extends runtime.Types.Extensions.In
     positiveDuration: number | null
     negativeDuration: number | null
     allowedRoles: string | null
+    speaker: string | null
+    questioner: string | null
+    responder: string | null
+    firstSpeaker: string | null
+    protectionTime: number | null
+    positiveSpeakers: string | null
+    negativeSpeakers: string | null
+    questionDuration: number | null
+    answerDuration: number | null
+    enabled: boolean
+    speakers: string | null
+    pptImage: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["debateTimerStage"]>
@@ -1230,6 +1656,18 @@ export interface DebateTimerStageFieldRefs {
   readonly positiveDuration: Prisma.FieldRef<"DebateTimerStage", 'Int'>
   readonly negativeDuration: Prisma.FieldRef<"DebateTimerStage", 'Int'>
   readonly allowedRoles: Prisma.FieldRef<"DebateTimerStage", 'String'>
+  readonly speaker: Prisma.FieldRef<"DebateTimerStage", 'String'>
+  readonly questioner: Prisma.FieldRef<"DebateTimerStage", 'String'>
+  readonly responder: Prisma.FieldRef<"DebateTimerStage", 'String'>
+  readonly firstSpeaker: Prisma.FieldRef<"DebateTimerStage", 'String'>
+  readonly protectionTime: Prisma.FieldRef<"DebateTimerStage", 'Int'>
+  readonly positiveSpeakers: Prisma.FieldRef<"DebateTimerStage", 'String'>
+  readonly negativeSpeakers: Prisma.FieldRef<"DebateTimerStage", 'String'>
+  readonly questionDuration: Prisma.FieldRef<"DebateTimerStage", 'Int'>
+  readonly answerDuration: Prisma.FieldRef<"DebateTimerStage", 'Int'>
+  readonly enabled: Prisma.FieldRef<"DebateTimerStage", 'Boolean'>
+  readonly speakers: Prisma.FieldRef<"DebateTimerStage", 'String'>
+  readonly pptImage: Prisma.FieldRef<"DebateTimerStage", 'String'>
   readonly createdAt: Prisma.FieldRef<"DebateTimerStage", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"DebateTimerStage", 'DateTime'>
 }

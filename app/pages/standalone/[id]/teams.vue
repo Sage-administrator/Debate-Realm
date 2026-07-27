@@ -38,6 +38,9 @@ const fullConfig = ref<{
     positiveLogoUrl?: string
     negativeLogoUrl?: string
     showTeamLogo?: boolean
+    logoSize?: number
+    logoOffsetX?: number
+    logoOffsetY?: number
   }
   stages: any[]
 }>({
@@ -54,6 +57,9 @@ const fullConfig = ref<{
     positiveLogoUrl: '',
     negativeLogoUrl: '',
     showTeamLogo: true,
+    logoSize: 57.6,
+    logoOffsetX: 0,
+    logoOffsetY: 0,
   },
   stages: [],
 })
@@ -85,6 +91,9 @@ async function loadConfig() {
         positiveLogoUrl: '',
         negativeLogoUrl: '',
         showTeamLogo: true,
+        logoSize: 57.6,
+        logoOffsetX: 0,
+        logoOffsetY: 0,
         ...(cfg.teamLogoConfig || {}),
       }
       fullConfig.value.stages = cfg.stages || []
@@ -104,10 +113,10 @@ async function loadConfig() {
 
 function getDefaultStages() {
   return [
-    { id: 1, name: '开篇立论', duration: 180, type: 'speech', order: 1 },
-    { id: 2, name: '攻辩', duration: 120, type: 'speech', order: 2 },
-    { id: 3, name: '自由辩论', duration: 240, type: 'dual-timer', order: 3, positiveDuration: 120, negativeDuration: 120 },
-    { id: 4, name: '总结陈词', duration: 180, type: 'speech', order: 4 },
+    { id: 1, name: '开篇立论', duration: 180, type: 'single_speech', order: 1 },
+    { id: 2, name: '攻辩', duration: 120, type: 'single_speech', order: 2 },
+    { id: 3, name: '自由辩论', duration: 240, type: 'free_debate', order: 3, positiveDuration: 120, negativeDuration: 120 },
+    { id: 4, name: '总结陈词', duration: 180, type: 'single_speech', order: 4 },
   ]
 }
 
@@ -152,6 +161,7 @@ async function onLogoSelect(event: Event, field: 'positiveLogoUrl' | 'negativeLo
 
     const uploadRes = await $fetch<any>('/api/upload', {
       method: 'POST',
+      headers: authStore.token ? { Authorization: `Bearer ${authStore.token}` } : {},
       body: formData,
     })
 
@@ -194,7 +204,7 @@ watch(
 
 <template>
   <template v-if="tournament">
-  <main class="py-6 grid grid-cols-12 gap-6">
+  <div class="py-6 grid grid-cols-12 gap-6">
 
     <div class="col-span-4">
       <TimerPreviewCard
@@ -225,6 +235,37 @@ watch(
           </label>
         </div>
 
+        <!-- 队徽大小和位置 -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">队徽大小 (px)</label>
+            <input
+              type="number" min="10" max="400" step="1"
+              v-model.number="fullConfig.teamLogoConfig.logoSize"
+              class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
+            />
+            <p class="text-xs text-[var(--color-text-muted)] mt-1">默认 57.6</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">水平位置 (左右, px)</label>
+            <input
+              type="number" step="1"
+              v-model.number="fullConfig.teamLogoConfig.logoOffsetX"
+              class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
+            />
+            <p class="text-xs text-[var(--color-text-muted)] mt-1">正数向右，负数向左</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">垂直位置 (上下, px)</label>
+            <input
+              type="number" step="1"
+              v-model.number="fullConfig.teamLogoConfig.logoOffsetY"
+              class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
+            />
+            <p class="text-xs text-[var(--color-text-muted)] mt-1">正数向下，负数向上</p>
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-4 mb-4">
           <div class="border border-[var(--color-border)] rounded-lg p-4">
             <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
@@ -248,7 +289,7 @@ watch(
                 <button
                   v-if="fullConfig.teamLogoConfig.positiveLogoUrl"
                   @click="removeLogo('positiveLogoUrl')"
-                  class="px-4 py-2 text-sm text-red-400 border border-red-500/30 rounded hover:bg-red-500/10 transition-colors flex items-center gap-2"
+                  class="px-4 py-2 text-sm text-red-500 dark:text-red-400 border border-red-500/30 rounded hover:bg-red-500/10 transition-colors flex items-center gap-2"
                 >
                   <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
                   移除队徽
@@ -279,7 +320,7 @@ watch(
                 <button
                   v-if="fullConfig.teamLogoConfig.negativeLogoUrl"
                   @click="removeLogo('negativeLogoUrl')"
-                  class="px-4 py-2 text-sm text-red-400 border border-red-500/30 rounded hover:bg-red-500/10 transition-colors flex items-center gap-2"
+                  class="px-4 py-2 text-sm text-red-500 dark:text-red-400 border border-red-500/30 rounded hover:bg-red-500/10 transition-colors flex items-center gap-2"
                 >
                   <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
                   移除队徽
@@ -296,7 +337,7 @@ watch(
         </div>
       </UCard>
     </div>
-  </main>
+  </div>
   </template>
 </template>
 

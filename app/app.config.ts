@@ -59,7 +59,26 @@ export default defineAppConfig({
     } as any,
     // 徽标组件：使用 CSS 变量，支持深浅色模式
     badge: {
-      neutral: 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',
+      // 抬升过小字号，避免可访问性/可读性问题（原 xs=8px、sm=10px 均 < 12px 下限）
+      variants: {
+        size: {
+          xs: { base: 'text-xs px-1.5 py-0.5' },
+          sm: { base: 'text-xs px-2 py-1' },
+        },
+      },
+      // soft 彩色徽标对比度修复：
+      // Nuxt UI 默认 soft 用 `bg-${color}/10 text-${color}`（完整色值文字压在同色 10% 底上），
+      // 亮色卡片上对比度仅约 2:1，文字几乎糊进底色；且 primary 默认=green，与 success 同色难区分。
+      // 这里把文字压暗一档（-700 / 暗色 -300），并用 ! 提升优先级覆盖默认 compoundVariant 的 text-${color}。
+      // neutral soft 用 text-default bg-elevated 本身可读，无需处理；solid/outline 不受影响。
+      compoundVariants: [
+        { color: 'primary', variant: 'soft', class: 'text-primary-700! dark:text-primary-200!' },
+        { color: 'secondary', variant: 'soft', class: 'text-secondary-700! dark:text-secondary-200!' },
+        { color: 'success', variant: 'soft', class: 'text-success-700! dark:text-success-300!' },
+        { color: 'info', variant: 'soft', class: 'text-info-700! dark:text-info-300!' },
+        { color: 'warning', variant: 'soft', class: 'text-warning-700! dark:text-warning-300!' },
+        { color: 'error', variant: 'soft', class: 'text-error-700! dark:text-error-300!' },
+      ],
     } as any,
   },
 })

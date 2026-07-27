@@ -6,6 +6,7 @@ definePageMeta({ layout: 'tournament' })
 
 const route = useRoute()
 const tournamentId = computed(() => route.params.id as string)
+const authStore = useAuthStore()
 
 // ═══════════════════════════════════════════
 // 数据状态
@@ -17,10 +18,16 @@ const loading = ref(true)
 async function loadMatches() {
   try {
     loading.value = true
-    const res = await fetch(`/api/tournaments/${tournamentId.value}/matches`)
-    matches.value = await res.json()
+    const res = await fetch(`/api/tournaments/${tournamentId.value}/matches`, {
+      headers: { Authorization: `Bearer ${authStore.token}` },
+    })
+    const data = await res.json()
+    // 防御：鉴权失败时接口返回错误对象而非数组，直接赋值会让 matchesByRound 等
+    // 计算属性在 matches.value.forEach(...) 时抛 TypeError，导致整页渲染崩溃（空白）
+    matches.value = Array.isArray(data) ? data : []
   } catch (error) {
     console.error('加载比赛数据失败:', error)
+    matches.value = []
   } finally {
     loading.value = false
   }
@@ -123,14 +130,6 @@ const getStatusText = (status: string) => {
 
 <template>
   <div>
-    <!-- ═══ 页面标题 ═══ -->
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-xl font-bold text-[var(--color-text-primary)]">对阵图</h1>
-        <p class="text-sm text-[var(--color-text-muted)] mt-1">可视化展示赛事对阵结构与比赛结果</p>
-      </div>
-    </div>
-
     <!-- ═══ 加载状态 ═══ -->
     <div v-if="loading" class="text-center py-12">
       <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-[var(--color-text-muted)] mx-auto" />

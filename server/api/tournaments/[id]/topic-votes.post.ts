@@ -2,9 +2,11 @@ import { readBody } from 'h3'
 import { prisma } from '../../../lib/prisma'
 import { requireWriteTournament } from '../../../utils/tournament-auth'
 import { syncTopicVoteQuestionnaire } from '../../../utils/questionnaire'
+import { normalizeTopicItem, topicDisplayText } from '../../../utils/topic-vote'
 
 // 管理端：创建辩题投票
 // 支持赛事级（不传 matchId）与场次级（传 matchId）两种粒度
+// 候选辩题 topics 支持结构化：字符串 或 { text, affirmative, negative, sourceTopicId, category }
 export default defineEventHandler(async (event) => {
   try {
     // 1. 解析赛事 ID 并鉴权（需写权限）
@@ -15,7 +17,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody<{
       title: string
       description?: string
-      topics: string[]          // 候选辩题数组
+      topics: any[]             // 候选辩题数组（字符串或结构化对象）
       matchId?: string | null   // 关联比赛 ID；不传/null 为赛事级
       allowedVoters?: string[]  // 允许的投票者类型
       multipleChoice?: boolean  // 是否多选
@@ -29,12 +31,18 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: '投票标题不能为空' })
     }
 
-    // 4. 校验：候选辩题至少 2 个且不重复
-    const topics = (body.topics || [])
-      .map((t) => String(t).trim())
-      .filter((t) => t.length > 0)
-    // 去重
-    const uniqueTopics = [...new Set(topics)]
+    // 4. 校验：候选辩题至少 2 个且不重复（按展示文本去重）
+    const normalized = (body.topics || [])
+      .map(normalizeTopicItem)
+      .filter((t): t is NonNullable<typeof t> => t !== null)
+    const seen = new Set<string>()
+    const uniqueTopics: ReturnType<typeof normalizeTopicItem>[] = []
+    for (const t of normalized) {
+      const key = topicDisplayText(t)
+      if (!key || seen.has(key)) continue
+      seen.add(key)
+      uniqueTopics.push(t)
+    }
     if (uniqueTopics.length < 2) {
       throw createError({ statusCode: 400, message: '至少需要 2 个候选辩题' })
     }

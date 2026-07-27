@@ -90,8 +90,9 @@ export default defineEventHandler(async (event) => {
       console.log(`[Bot Config] 已更新团队「${updated.name}」的默认频道为 ${updated.botChannelId}`)
     } else {
       // 更新凭证：停止旧实例后重建
-      const newAppId = updateData.botAppId ?? team.botAppId
-      const newAppSecret = updateData.botAppSecret ?? team.botAppSecret
+      // 强制转换为 string | null：updateData 中这两个字段实际只会是 string | null
+      const newAppId = (updateData.botAppId as string | null) ?? team.botAppId
+      const newAppSecret = (updateData.botAppSecret as string | null) ?? team.botAppSecret
       const hasCredentials = !!(newAppId && newAppSecret)
 
       stopBotInstance(teamId)

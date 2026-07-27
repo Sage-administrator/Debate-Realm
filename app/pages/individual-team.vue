@@ -100,7 +100,7 @@ onMounted(() => {
 
     <!-- 加载状态 -->
     <div v-if="loading" class="text-center py-12">
-      <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-indigo-400" />
+      <UIcon name="i-lucide-loader" class="w-8 h-8 animate-spin mx-auto text-indigo-600 dark:text-indigo-400" />
       <p class="text-[var(--color-text-muted)] mt-2">加载中...</p>
     </div>
 
@@ -108,17 +108,17 @@ onMounted(() => {
       <!-- 统计卡片 -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div class="glass-card-strong p-6 text-center">
-          <div class="text-2xl font-bold text-indigo-400">{{ individualUsers.length }}</div>
+          <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{{ individualUsers.length }}</div>
           <div class="text-sm text-[var(--color-text-muted)]">个人用户总数</div>
         </div>
         <div class="glass-card-strong p-6 text-center">
-          <div class="text-2xl font-bold text-indigo-400">
+          <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
             {{ individualUsers.reduce((sum, u) => sum + u.standaloneMatchCount, 0) }}
           </div>
           <div class="text-sm text-[var(--color-text-muted)]">独立赛事总数</div>
         </div>
         <div class="glass-card-strong p-6 text-center">
-          <div class="text-2xl font-bold text-indigo-400">
+          <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
             {{ individualUsers.reduce((sum, u) => sum + u.standaloneMatches.reduce((s: number, m: any) => s + m.matchCount, 0), 0) }}
           </div>
           <div class="text-sm text-[var(--color-text-muted)]">比赛场次总数</div>

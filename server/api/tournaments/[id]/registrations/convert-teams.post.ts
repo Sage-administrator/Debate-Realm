@@ -5,10 +5,9 @@
 //   - 将一批报名记录合并为 TournamentTeam（回填 Registration.convertedTeamId）
 //   - 每支新队伍：
 //       * 建一条 TournamentTeam 记录
-//       * 建一间「队伍聊天房」(ChatRoom type='team', tournamentTeamId=队id)
 //       * 为该队伍每一位队员创建一个子账号(User role='subaccount',
-//         tournamentTeamId=队id, teamId=赛事所属全局Team)，供其登录后在
-//         本队聊天房发言。子账号明文密码仅此一次返回，供管理员分发。
+//         teamId=赛事所属全局Team)，供其登录后参与赛事。子账号明文密码
+//         仅此一次返回，供管理员分发。
 //   - 整个操作在事务内完成，保证原子性
 // 请求体：
 //   { items: [ { name: string, registrationIds: string[] } ] }
@@ -151,20 +150,7 @@ export default defineEventHandler(async (event) => {
           data: { tournamentId: id, name: teamName },
         })
 
-        // 5b. 创建队伍聊天房（幂等 upsert）
-        await tx.chatRoom.upsert({
-          where: {
-            tournamentId_type_tournamentTeamId: {
-              tournamentId: id,
-              type: 'team',
-              tournamentTeamId: team.id,
-            },
-          },
-          create: { tournamentId: id, type: 'team', tournamentTeamId: team.id, name: teamName },
-          update: { name: teamName },
-        })
-
-        // 5c. 为该队伍每位队员创建子账号
+        // 5b. 为该队伍每位队员创建子账号
         for (const acc of accounts) {
           const newUser = await tx.user.create({
             data: {
@@ -174,7 +160,6 @@ export default defineEventHandler(async (event) => {
               role: 'subaccount',
               mode: 'debater',
               teamId: tournament.teamId,
-              tournamentTeamId: team.id,
             },
           })
           // 加入赛事所属全局团队（与既有辩手子账号一致）

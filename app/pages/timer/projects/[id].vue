@@ -122,23 +122,23 @@ function insertDebateTemplate() {
   if (form.stages.length > 0 && !confirm('将替换当前环节列表为标准辩论赛模板，确定吗？')) return
 
   form.stages = [
-    { id: `tpl_${Date.now()}_1`, name: '开场介绍', duration: 0, type: 'special', description: '主持人介绍比赛规则', order: 0 },
-    { id: `tpl_${Date.now()}_2`, name: '正方一辩立论', duration: 180, type: 'speech', description: '正方一辩进行开篇立论', order: 1 },
-    { id: `tpl_${Date.now()}_3`, name: '反方二辩质询正方一辩', duration: 120, type: 'question', description: '反方二辩对正方一辩进行质询', order: 2 },
-    { id: `tpl_${Date.now()}_4`, name: '反方一辩立论', duration: 180, type: 'speech', description: '反方一辩进行开篇立论', order: 3 },
-    { id: `tpl_${Date.now()}_5`, name: '正方二辩质询反方一辩', duration: 120, type: 'question', description: '正方二辩对反方一辩进行质询', order: 4 },
+    { id: `tpl_${Date.now()}_1`, name: '开场介绍', duration: 0, type: 'no_timer', description: '主持人介绍比赛规则', order: 0 },
+    { id: `tpl_${Date.now()}_2`, name: '正方一辩立论', duration: 180, type: 'single_speech', description: '正方一辩进行开篇立论', order: 1 },
+    { id: `tpl_${Date.now()}_3`, name: '反方二辩质询正方一辩', duration: 120, type: 'single_question', description: '反方二辩对正方一辩进行质询', order: 2 },
+    { id: `tpl_${Date.now()}_4`, name: '反方一辩立论', duration: 180, type: 'single_speech', description: '反方一辩进行开篇立论', order: 3 },
+    { id: `tpl_${Date.now()}_5`, name: '正方二辩质询反方一辩', duration: 120, type: 'single_question', description: '正方二辩对反方一辩进行质询', order: 4 },
     { id: `tpl_${Date.now()}_6`, name: '反方二辩质询小结', duration: 90, type: 'summary', description: '反方二辩就质询内容进行小结', order: 5 },
     { id: `tpl_${Date.now()}_7`, name: '正方二辩质询小结', duration: 90, type: 'summary', description: '正方二辩就质询内容进行小结', order: 6 },
-    { id: `tpl_${Date.now()}_8`, name: '正反方四辩对辩', duration: 90, type: 'dual-timer', description: '正反方四辩进行对辩', order: 7, positiveDuration: 90, negativeDuration: 90 },
-    { id: `tpl_${Date.now()}_9`, name: '正方三辩盘问', duration: 90, type: 'question', description: '正方三辩盘问反方', order: 8 },
-    { id: `tpl_${Date.now()}_10`, name: '反方三辩盘问', duration: 90, type: 'question', description: '反方三辩盘问正方', order: 9 },
+    { id: `tpl_${Date.now()}_8`, name: '正反方四辩对辩', duration: 90, type: 'bilateral_debate', description: '正反方四辩进行对辩', order: 7, positiveDuration: 90, negativeDuration: 90 },
+    { id: `tpl_${Date.now()}_9`, name: '正方三辩盘问', duration: 90, type: 'single_question', description: '正方三辩盘问反方', order: 8 },
+    { id: `tpl_${Date.now()}_10`, name: '反方三辩盘问', duration: 90, type: 'single_question', description: '反方三辩盘问正方', order: 9 },
     { id: `tpl_${Date.now()}_11`, name: '正方三辩盘问小结', duration: 90, type: 'summary', description: '正方三辩小结', order: 10 },
     { id: `tpl_${Date.now()}_12`, name: '反方三辩盘问小结', duration: 90, type: 'summary', description: '反方三辩小结', order: 11 },
-    { id: `tpl_${Date.now()}_13`, name: '自由辩论', duration: 240, type: 'dual-timer', description: '双方自由辩论', order: 12, positiveDuration: 240, negativeDuration: 240 },
+    { id: `tpl_${Date.now()}_13`, name: '自由辩论', duration: 240, type: 'free_debate', description: '双方自由辩论', order: 12, positiveDuration: 240, negativeDuration: 240 },
     { id: `tpl_${Date.now()}_14`, name: '反方四辩总结陈词', duration: 210, type: 'summary', description: '反方四辩进行总结陈词', order: 13 },
     { id: `tpl_${Date.now()}_15`, name: '正方四辩总结陈词', duration: 210, type: 'summary', description: '正方四辩进行总结陈词', order: 14 },
-    { id: `tpl_${Date.now()}_16`, name: '评委点评', duration: 0, type: 'special', description: '评委对比赛进行点评', order: 15 },
-    { id: `tpl_${Date.now()}_17`, name: '公布结果', duration: 0, type: 'special', description: '主持人公布比赛结果', order: 16 },
+    { id: `tpl_${Date.now()}_16`, name: '评委点评', duration: 0, type: 'no_timer', description: '评委对比赛进行点评', order: 15 },
+    { id: `tpl_${Date.now()}_17`, name: '公布结果', duration: 0, type: 'no_timer', description: '主持人公布比赛结果', order: 16 },
   ]
 
   toast.add({ title: '已应用标准辩论赛模板', color: 'success' })
@@ -266,7 +266,7 @@ onMounted(() => {
 
     <!-- 加载状态 -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <UIcon name="i-lucide-loader-2" class="w-6 h-6 animate-spin text-indigo-400" />
+      <UIcon name="i-lucide-loader-2" class="w-6 h-6 animate-spin text-indigo-600 dark:text-indigo-400" />
     </div>
 
     <template v-else>
@@ -502,7 +502,7 @@ onMounted(() => {
                   <UIcon name="i-lucide-chevron-down" class="w-4 h-4" />
                 </button>
                 <button
-                  class="w-7 h-7 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-500/15 rounded transition"
+                  class="w-7 h-7 flex items-center justify-center text-red-500 hover:text-red-600 dark:text-red-400 hover:bg-red-500/15 rounded transition"
                   @click="removeStage(idx)"
                   title="删除"
                 >

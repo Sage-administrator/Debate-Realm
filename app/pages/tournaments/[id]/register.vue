@@ -219,7 +219,7 @@ const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString('zh-
       <!-- ═══ 提交成功状态 ═══ -->
       <div v-else-if="submitted" class="glass-card-strong p-10 mt-10 text-center">
         <div class="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-          <UIcon name="i-lucide-check" class="w-9 h-9 text-green-400" />
+          <UIcon name="i-lucide-check" class="w-9 h-9 text-green-600 dark:text-green-400" />
         </div>
         <h2 class="text-xl font-bold text-[var(--color-text-primary)] mb-2">报名提交成功</h2>
         <p class="text-sm text-[var(--color-text-secondary)] mb-6">
@@ -285,7 +285,7 @@ const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString('zh-
         </header>
 
         <!-- 表单主体：动态渲染所有字段 -->
-        <main class="space-y-6 pb-12">
+        <div class="space-y-6 pb-12">
 
           <!-- ── 报名类型选择（仅当允许个人+队伍时显示） ── -->
           <UCard v-if="canIndividual && canTeam">
@@ -301,7 +301,7 @@ const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString('zh-
                 :class="regType === 'individual' ? 'border-indigo-500 bg-indigo-500/10' : 'border-[var(--color-border)] hover:border-[var(--color-border)]'"
                 @click="() => { regType = 'individual' }"
               >
-                <UIcon name="i-lucide-user" class="w-6 h-6 mb-2" :class="regType === 'individual' ? 'text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
+                <UIcon name="i-lucide-user" class="w-6 h-6 mb-2" :class="regType === 'individual' ? 'text-indigo-600 dark:text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
                 <h3 class="text-sm font-semibold text-[var(--color-text-primary)]">个人报名</h3>
                 <p class="text-xs text-[var(--color-text-muted)] mt-1">单独报名，可后续调剂到队伍或组队</p>
               </div>
@@ -310,7 +310,7 @@ const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString('zh-
                 :class="regType === 'team' ? 'border-indigo-500 bg-indigo-500/10' : 'border-[var(--color-border)] hover:border-[var(--color-border)]'"
                 @click="() => { regType = 'team' }"
               >
-                <UIcon name="i-lucide-users" class="w-6 h-6 mb-2" :class="regType === 'team' ? 'text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
+                <UIcon name="i-lucide-users" class="w-6 h-6 mb-2" :class="regType === 'team' ? 'text-indigo-600 dark:text-indigo-400' : 'text-[var(--color-text-secondary)]'" />
                 <h3 class="text-sm font-semibold text-[var(--color-text-primary)]">队伍报名</h3>
                 <p class="text-xs text-[var(--color-text-muted)] mt-1">以队伍形式报名，需填写队伍名称</p>
               </div>
@@ -340,7 +340,7 @@ const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString('zh-
                   </h2>
                   <button
                     v-if="regType === 'team'"
-                    class="flex items-center gap-1 px-3 py-1.5 text-sm border border-indigo-500/30 rounded text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+                    class="flex items-center gap-1 px-3 py-1.5 text-sm border border-indigo-500/30 rounded text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
                     @click="addMember"
                   >
                     <UIcon name="i-lucide-plus" class="w-3.5 h-3.5" />添加成员
@@ -357,7 +357,7 @@ const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString('zh-
                     </span>
                     <button
                       v-if="members.length > 1"
-                      class="text-xs text-red-400 hover:text-red-300 flex items-center gap-1"
+                      class="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex items-center gap-1"
                       @click="removeMember(mIdx)"
                     >
                       <UIcon name="i-lucide-trash-2" class="w-3 h-3" />移除
@@ -449,12 +449,11 @@ const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString('zh-
                 />
 
                 <!-- 日期 -->
-                <UInput
+                <BaseDateTimePicker
                   v-else-if="field.fieldType === 'date'"
                   v-model="formData[field.fieldKey]"
-                  type="date"
-                  class="w-full"
-                  :ui="{ base: 'input-glass' }"
+                  mode="date"
+                  placeholder="选择日期"
                 />
 
                 <!-- 电话 -->
@@ -538,7 +537,7 @@ const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString('zh-
               {{ submitting ? '提交中...' : '提交报名' }}
             </UButton>
           </div>
-        </main>
+        </div>
       </template>
     </div>
   </div>

@@ -1,53 +1,64 @@
 <script setup lang="ts">
-// 环节表单组件 - 根据单边发言ui.md / 单边发问ui.md
-// 包含：顶部状态栏 + 表单字段区
-// 根据环节类型动态切换不同的表单内容
+// 环节表单组件 - 根据环节类型动态展示不同字段
+// 单方发言：发言方 + 时长
+// 单方发问：发问人 + 接受人 + 提问时长 + 回答时长 + 保护时间
+// 双边对辩：正方参与辩手(多选) + 反方参与辩手(多选) + 率先发言方 + 每方时长 + 保护时间
 
 import StageTypeCascader from './StageTypeCascader.vue'
 import RolePicker from './RolePicker.vue'
+import SpeechRolePicker from './SpeechRolePicker.vue'
 
-// 环节数据模型
 interface StageFormData {
-  // 基础
-  type: string           // 环节类型（级联选择器的值）
-  name: string           // 环节名称
-  duration: number       // 时长（秒）
-  protectionTime: number // 保护时间（秒，仅发问/对辩）
-  // 发言方（单方发言）
-  speaker?: string       // 如 "正方·一辩"
-  // 发问人 & 接受人（单方发问）
-  questioner?: string    // 如 "反方·二辩"
-  responder?: string     // 如 "正方·一辩"
-  // 率先发言方（自由辩论、双边对辩）
-  firstSpeaker?: string  // 如 "正方·一辩"
+  type: string
+  name: string
+  duration: number
+  protectionTime: number
+  speaker?: string
+  questioner?: string
+  responder?: string
+  firstSpeaker?: string
+  // 对辩双方参与辩手（多选）
+  positiveSpeakers?: string[]
+  negativeSpeakers?: string[]
+  // 单方发问拆分时长
+  questionDuration?: number
+  answerDuration?: number
+  // 无计时器环节的可发言角色（multi-select，角色 label 列表，用于发言权限联动）
+  speakers?: string[]
+  // PPT/图片展示环节：上传到 /uploads/images/ 的相对路径（纯播报不计时）
+  pptImage?: string
 }
 
-// 组件入参定义
 interface Props {
-  modelValue: StageFormData   // 当前环节的表单数据（双向绑定）
+  modelValue: StageFormData
 }
 
 const props = defineProps<Props>()
 
-// 内部数据变化时回写父组件
 const emit = defineEmits<{
   'update:modelValue': [value: StageFormData]
 }>()
 
-// 为了便于双向绑定，使用内部 ref + watch
+// 上传需要鉴权：PPT 图片上传走 /api/upload（服务端校验 tokenVersion），必须带上 Bearer token
+const authStore = useAuthStore()
+
 const localData = ref<StageFormData>({
   type: props.modelValue?.type || '',
   name: props.modelValue?.name || '',
   duration: props.modelValue?.duration ?? 180,
   protectionTime: props.modelValue?.protectionTime ?? 0,
-  // 默认值分隔符 " · "（·前后各有一个空格）
   speaker: props.modelValue?.speaker || '正方 · 一辩',
   questioner: props.modelValue?.questioner || '反方 · 二辩',
   responder: props.modelValue?.responder || '正方 · 一辩',
   firstSpeaker: props.modelValue?.firstSpeaker || '正方 · 一辩',
+  positiveSpeakers: props.modelValue?.positiveSpeakers || [],
+  negativeSpeakers: props.modelValue?.negativeSpeakers || [],
+  questionDuration: props.modelValue?.questionDuration ?? 0,
+  answerDuration: props.modelValue?.answerDuration ?? 0,
+  speakers: props.modelValue?.speakers ? [...props.modelValue.speakers] : [],
+  pptImage: props.modelValue?.pptImage || '',
 })
 
-// 当外部 modelValue 变化时更新内部
 watch(
   () => props.modelValue,
   (val) => {
@@ -57,18 +68,22 @@ watch(
         name: val.name || '',
         duration: val.duration ?? 180,
         protectionTime: val.protectionTime ?? 0,
-        // 默认值分隔符 " · "（·前后各有一个空格）
         speaker: val.speaker || '正方 · 一辩',
         questioner: val.questioner || '反方 · 二辩',
         responder: val.responder || '正方 · 一辩',
         firstSpeaker: val.firstSpeaker || '正方 · 一辩',
+        positiveSpeakers: val.positiveSpeakers || [],
+        negativeSpeakers: val.negativeSpeakers || [],
+        questionDuration: val.questionDuration ?? 0,
+        answerDuration: val.answerDuration ?? 0,
+        speakers: val.speakers ? [...val.speakers] : [],
+        pptImage: val.pptImage || '',
       }
     }
   },
   { deep: true },
 )
 
-// 当内部数据变化时，通知父级
 watch(
   localData,
   (val) => {
@@ -77,33 +92,55 @@ watch(
   { deep: true },
 )
 
-// === 类型判断 ===
-// 判断是否为单边发言类环节
-function isSpeech(type: string) { return type === 'single_speech' || type === 'speech' }
-// 判断是否为单边发问类环节
-function isQuestion(type: string) { return type === 'single_question' || type === 'question' }
-// 判断是否为双边对辩/自由辩论类环节
-function isBilateral(type: string) { return type === 'bilateral_debate' || type === 'dual-timer' || type === 'free_debate' }
-// 判断是否需要计时器（包含以上所有计时类环节）
-function isTimerType(type: string) { return type === 'single_timer' || type === 'double_timer' || isSpeech(type) || isQuestion(type) || isBilateral(type) }
-// 判断是否为不显示计时器的环节
-function isNoTimer(type: string) { return type === 'no_timer' }
-// 判断是否为 PPT/图片展示类环节
-function isPpt(type: string) { return type === 'ppt_replace' }
+// 类型判断函数统一使用 app/utils/stageType.ts（Nuxt 4 自动导入）
+
+// ═══════════ PPT/图片上传 ═══════════
+const pptFileInput = ref<HTMLInputElement | null>(null)
+const pptUploading = ref(false)
+
+async function onPptFileChange(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  const fd = new FormData()
+  fd.append('file', file)
+  fd.append('folder', 'images')
+  pptUploading.value = true
+  try {
+    const headers: Record<string, string> = {}
+    if (authStore.token) headers.Authorization = `Bearer ${authStore.token}`
+    const res: any = await $fetch('/api/upload', { method: 'POST', body: fd, headers })
+    if (res?.success && res?.data?.path) {
+      localData.value.pptImage = res.data.path
+    } else {
+      // 上传失败：提示（不阻断编辑）
+      console.error('图片上传失败：', res?.message || '未知错误')
+    }
+  } catch (err) {
+    console.error('图片上传异常：', err)
+  } finally {
+    pptUploading.value = false
+    // 清空 input，允许重复选择同一文件
+    if (pptFileInput.value) pptFileInput.value.value = ''
+  }
+}
+
+function clearPptImage() {
+  localData.value.pptImage = ''
+}
 </script>
 
 <template>
   <div class="stage-form">
-    <!-- ======== 表单字段区 ======== -->
     <div class="form-content">
 
-      <!-- ==== 通用字段：环节类型 ==== -->
+      <!-- 环节类型 -->
       <div class="form-field">
         <label class="form-label">环节类型</label>
         <StageTypeCascader v-model="localData.type" placeholder="请选择环节类型" />
       </div>
 
-      <!-- ==== 通用字段：环节名称 ==== -->
+      <!-- 环节名称 -->
       <div class="form-field">
         <label class="form-label">环节名称</label>
         <input
@@ -112,25 +149,47 @@ function isPpt(type: string) { return type === 'ppt_replace' }
           class="form-input"
           :placeholder="isQuestion(localData.type) ? '例如：质询、盘问...' : '例如：开篇陈词...'"
         />
-        <p v-if="isQuestion(localData.type)" class="form-hint">例如：质询、盘问...</p>
       </div>
 
-      <!-- ==== 单边发言：角色选择（复合）==== -->
+      <!-- ==== 单方发言：发言方 ==== -->
       <div v-if="isSpeech(localData.type)" class="form-field">
         <label class="form-label">发言方</label>
-        <RolePicker v-model="localData.speaker" placeholder="请选择发言方" />
-        <p class="form-hint">选择正方/反方及辩手编号</p>
+        <RolePicker v-model="localData.speaker" multiple reverse placeholder="请选择发言方（可多选，或排除某辩手）" />
+        <p class="form-hint">用下拉顶部的「正常 / 排除」切换：正常模式可勾选多位辩手（如"正方 · 一/二辩"）；排除模式下勾选要排除的辩手，其余同方辩手均可发言（获得发言权限）。</p>
       </div>
 
-      <!-- ==== 单边发问：发问人 & 接受人 ==== -->
+      <!-- ==== 单方发问：发问人 + 接受人（可多选正常 / 排除模式） ==== -->
       <div v-if="isQuestion(localData.type)" class="form-row-2col">
         <div class="form-field">
           <label class="form-label">发问人</label>
-          <RolePicker v-model="localData.questioner" placeholder="请选择发问人" />
+          <RolePicker v-model="localData.questioner" multiple reverse placeholder="请选择发问人（可多选，或排除某辩手）" />
+          <p class="form-hint">下拉顶部「正常 / 排除」切换：正常可勾选多位辩手；排除模式勾选要排除的辩手，其余同方辩手均可发问。</p>
         </div>
         <div class="form-field">
           <label class="form-label">接受人</label>
-          <RolePicker v-model="localData.responder" placeholder="请选择接受人" />
+          <RolePicker v-model="localData.responder" multiple reverse placeholder="请选择接受人（可多选，或排除某辩手）" />
+          <p class="form-hint">下拉顶部「正常 / 排除」切换：正常可勾选多位辩手；排除模式勾选要排除的辩手，其余同方辩手均可接受发问。</p>
+        </div>
+      </div>
+
+      <!-- ==== 单方发问：提问时长（去除回答时长，环节总时长=提问时长） ==== -->
+      <div v-if="isQuestion(localData.type)" class="form-field">
+        <label class="form-label">提问时长</label>
+        <div class="input-with-suffix">
+          <input v-model.number="localData.questionDuration" type="number" min="0" class="form-input" />
+          <span class="input-suffix">秒</span>
+        </div>
+      </div>
+
+      <!-- ==== 双边对辩/自由辩论：正方参与辩手 + 反方参与辩手 ==== -->
+      <div v-if="isBilateral(localData.type)" class="form-row-2col">
+        <div class="form-field">
+          <label class="form-label">正方参与辩手</label>
+          <RolePicker v-model="localData.positiveSpeakers" multiple side="positive" placeholder="选择正方辩手" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">反方参与辩手</label>
+          <RolePicker v-model="localData.negativeSpeakers" multiple side="negative" placeholder="选择反方辩手" />
         </div>
       </div>
 
@@ -138,40 +197,39 @@ function isPpt(type: string) { return type === 'ppt_replace' }
       <div v-if="isBilateral(localData.type)" class="form-field">
         <label class="form-label">率先发言方</label>
         <RolePicker v-model="localData.firstSpeaker" placeholder="请选择率先发言方" />
+        <p class="form-hint">从上方已选的参与辩手中选择率先发言的一方</p>
       </div>
 
-      <!-- ==== 通用字段：环节时长 + 保护时间 ==== -->
-      <div v-if="isTimerType(localData.type)" class="form-row-2col">
-        <div class="form-field">
-          <label class="form-label">环节时长</label>
-          <div class="input-with-suffix">
-            <input
-              v-model.number="localData.duration"
-              type="number"
-              min="0"
-              class="form-input"
-            />
-            <span class="input-suffix">秒</span>
-          </div>
-        </div>
-
-        <!-- 仅发问/对辩类型显示保护时间 -->
-        <div v-if="isQuestion(localData.type) || isBilateral(localData.type)" class="form-field">
-          <label class="form-label">保护时间</label>
-          <div class="input-with-suffix">
-            <input
-              v-model.number="localData.protectionTime"
-              type="number"
-              min="0"
-              class="form-input"
-            />
-            <span class="input-suffix">秒</span>
-          </div>
-          <p class="form-hint">该功能可不启用，设置为0或留空即可</p>
+      <!-- ==== 通用：环节时长（单方发言/单计时器/双计时器） ==== -->
+      <div v-if="isTimerType(localData.type) && !isQuestion(localData.type)" class="form-field">
+        <label class="form-label">{{ isDualTimer(localData.type) ? '每方时长' : '环节时长' }}</label>
+        <div class="input-with-suffix">
+          <input v-model.number="localData.duration" type="number" min="0" class="form-input" />
+          <span class="input-suffix">秒</span>
         </div>
       </div>
 
-      <!-- ==== 无计时器/PPT图片时的提示 ==== -->
+      <!-- ==== 保护时间（发问/对辩） ==== -->
+      <div v-if="isQuestion(localData.type) || isBilateral(localData.type)" class="form-field">
+        <label class="form-label">保护时间</label>
+        <div class="input-with-suffix">
+          <input v-model.number="localData.protectionTime" type="number" min="0" class="form-input" />
+          <span class="input-suffix">秒</span>
+        </div>
+        <p class="form-hint">{{ isQuestion(localData.type) ? '接受人开头 N 秒内不可被打断，0 表示不启用' : '发言方开头 N 秒内不可被打断，0 表示不启用' }}</p>
+      </div>
+
+      <!-- ==== 无计时器：发言方（可多选，用于发言权限联动） ==== -->
+      <div v-if="isNoTimer(localData.type)" class="form-field">
+        <label class="form-label">发言方</label>
+        <SpeechRolePicker
+          v-model="localData.speakers"
+          placeholder="选择可发言的角色（可多选）"
+        />
+        <p class="form-hint">选择本环节由哪些角色发言（可多选）。计时器运行时将自动套用对应发言权限：被选中的角色可发言（绿），其余不可发言（红）。</p>
+      </div>
+
+      <!-- ==== 无计时器/PPT 提示 ==== -->
       <div v-if="isNoTimer(localData.type)" class="form-field">
         <div class="info-note">
           <UIcon name="i-lucide-info" class="info-note-icon" />
@@ -180,9 +238,42 @@ function isPpt(type: string) { return type === 'ppt_replace' }
       </div>
 
       <div v-if="isPpt(localData.type)" class="form-field">
+        <label class="form-label">发言方</label>
+        <SpeechRolePicker
+          v-model="localData.speakers"
+          placeholder="选择本环节可发言的角色（可多选）"
+        />
+        <p class="form-hint">选择本环节由哪些角色发言（可多选）。QQ 频道模式下将自动套用对应发言权限：被选中的角色可发言（绿），其余不可发言（红）。</p>
+      </div>
+
+      <div v-if="isPpt(localData.type)" class="form-field">
+        <label class="form-label">展示图片</label>
+        <div class="ppt-upload-row">
+          <input
+            ref="pptFileInput"
+            type="file"
+            accept="image/*"
+            class="hidden"
+            @change="onPptFileChange"
+          />
+          <button type="button" class="upload-btn" :disabled="pptUploading" @click="pptFileInput?.click()">
+            {{ pptUploading ? '上传中…' : '选择图片' }}
+          </button>
+          <span v-if="localData.pptImage && !pptUploading" class="upload-status success">已上传 ✓</span>
+          <button v-if="localData.pptImage" type="button" class="clear-btn" @click="clearPptImage">移除</button>
+        </div>
+        <div v-if="localData.pptImage" class="ppt-preview">
+          <img :src="localData.pptImage" alt="PPT预览" />
+        </div>
+        <p class="form-hint">
+          上传后将在计时器该环节居中展示此图片（纯展示，不计时）。支持 JPG/PNG/GIF，≤10MB。
+        </p>
+      </div>
+
+      <div v-if="isPpt(localData.type)" class="form-field">
         <div class="info-note">
           <UIcon name="i-lucide-image" class="info-note-icon" />
-          此环节用于展示图片/PPT内容，不显示计时器。
+          此环节用于展示图片/PPT内容，不显示计时器（纯播报）。
         </div>
       </div>
     </div>
@@ -190,51 +281,16 @@ function isPpt(type: string) { return type === 'ppt_replace' }
 </template>
 
 <style scoped>
-/* ========= 整体容器 ========= */
 .stage-form {
   width: 100%;
 }
 
-/* 标签通用样式（在卡片头等处使用） */
-.status-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 10px;
-  font-size: 14px;
-  border-radius: 4px;
-  flex-shrink: 0;
-  line-height: 1.4;
-}
-
-/* 白字深绿底标签（"类"、"时"） */
-.status-tag--green {
-  color: #FFFFFF;
-  background-color: var(--color-success);
-  font-weight: 500;
-}
-
-/* 黑字白底/浅灰底标签（"单方发言"/"单方发问"/时间值） */
-.status-tag--white {
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  font-weight: 500;
-}
-
-.status-tag--time {
-  font-variant-numeric: tabular-nums;
-  min-width: 48px;
-}
-
-/* ========= 表单内容区 ========= */
 .form-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* 通用字段 */
 .form-field {
   display: flex;
   flex-direction: column;
@@ -266,7 +322,6 @@ function isPpt(type: string) { return type === 'ppt_replace' }
   box-shadow: 0 0 0 2px var(--color-accent-bg);
 }
 
-/* 辅助文本 */
 .form-hint {
   font-size: 12px;
   color: var(--color-text-muted);
@@ -274,14 +329,12 @@ function isPpt(type: string) { return type === 'ppt_replace' }
   line-height: 1.4;
 }
 
-/* 双栏布局 */
 .form-row-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
-/* 带后缀的输入框 */
 .input-with-suffix {
   display: flex;
   border: 1px solid var(--color-border);
@@ -300,7 +353,7 @@ function isPpt(type: string) { return type === 'ppt_replace' }
   flex: 1;
   border: none;
   border-radius: 0;
-  height: 46px; /* 减去边框 */
+  height: 46px;
 }
 
 .input-suffix {
@@ -315,7 +368,6 @@ function isPpt(type: string) { return type === 'ppt_replace' }
   flex-shrink: 0;
 }
 
-/* 提示信息块（无计时器/PPT时） */
 .info-note {
   display: flex;
   align-items: center;
@@ -334,4 +386,68 @@ function isPpt(type: string) { return type === 'ppt_replace' }
   color: var(--color-success);
   flex-shrink: 0;
 }
+
+/* ═══════════ PPT 图片上传 ═══════════ */
+.ppt-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-btn {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background-color: var(--color-accent-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+.upload-btn:hover { opacity: 0.9; }
+.upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.upload-status {
+  font-size: 13px;
+}
+.upload-status.success {
+  color: var(--color-success);
+}
+
+.clear-btn {
+  height: 40px;
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.clear-btn:hover {
+  border-color: var(--color-danger, #e53e3e);
+  color: var(--color-danger, #e53e3e);
+}
+
+.ppt-preview {
+  margin-top: 10px;
+  width: 100%;
+  max-height: 220px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--color-bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ppt-preview img {
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+}
+
 </style>

@@ -1,9 +1,13 @@
 // 获取赛事的计时器环节模板
 import { prisma } from '../../../lib/prisma'
+import { requireReadTournament } from '../../../utils/tournament-auth'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, message: '缺少赛事ID' })
+
+  // 权限：系统管理员 或 该赛事所属团队的管理员 / 子账号
+  await requireReadTournament(event, prisma, id)
 
   let template = await prisma.timerTemplate.findUnique({
     where: { tournamentId: id },

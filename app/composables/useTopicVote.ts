@@ -60,7 +60,7 @@ export function useTopicVote() {
   async function createTopicVote(tournamentId: string, data: {
     title: string
     description?: string
-    topics: string[]
+    topics: any[]
     matchId?: string | null
     allowedVoters?: string[]
     multipleChoice?: boolean
@@ -78,7 +78,7 @@ export function useTopicVote() {
   async function updateTopicVote(tournamentId: string, voteId: string, data: {
     title?: string
     description?: string | null
-    topics?: string[]
+    topics?: any[]
     matchId?: string | null
     allowedVoters?: string[] | null
     multipleChoice?: boolean

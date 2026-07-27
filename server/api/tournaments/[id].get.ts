@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
       id: tournament.id, name: tournament.name, description: tournament.description,
       format: tournament.format, status: tournament.status,
       scheduledAt: tournament.scheduledAt, venue: tournament.venue,
-      team: { id: tournament.team.id, name: tournament.team.name },
+      team: { id: tournament.team.id, name: tournament.team.name, adminId: tournament.team.adminId },
       teams: tournament.teams.map((t) => t.name),
       judges: tournament.judges.map((j) => j.name),
       // 赛程页面所需的扩展配置字段

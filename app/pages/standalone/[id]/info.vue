@@ -80,7 +80,7 @@ const statusColor = (s: string): any => ({ pending: 'neutral', running: 'primary
 <template>
   <template v-if="standaloneMatch">
   <!-- ═══ 比赛信息内容 ═══ -->
-  <main class="py-6 space-y-6">
+  <div class="py-6 space-y-6">
     <!-- 赛事信息编辑 -->
     <UCard class="mb-6">
       <template #header>
@@ -187,7 +187,7 @@ const statusColor = (s: string): any => ({ pending: 'neutral', running: 'primary
     <!-- 危险操作区 -->
     <UCard class="mb-6 border border-red-500/30">
       <template #header>
-        <h3 class="text-sm font-semibold text-red-400 flex items-center gap-2">
+        <h3 class="text-sm font-semibold text-red-500 dark:text-red-400 flex items-center gap-2">
           <UIcon name="i-lucide-alert-triangle" class="w-4 h-4" />危险操作
         </h3>
       </template>
@@ -196,6 +196,6 @@ const statusColor = (s: string): any => ({ pending: 'neutral', running: 'primary
         {{ deleting ? '删除中...' : '删除此赛事' }}
       </UButton>
     </UCard>
-  </main>
+  </div>
   </template>
 </template>

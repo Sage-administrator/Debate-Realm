@@ -42,7 +42,8 @@
       </div>
 
       <!-- ── 导航区域 ── -->
-      <nav class="sidebar-nav flex-1 mt-2 px-3 overflow-y-auto min-h-0 pointer-events-auto">
+      <!-- 层级根：aside 已设 z-50 + isolation-isolate + pointer-events-auto，nav 及子元素继承即可，无需重复声明 -->
+      <nav class="sidebar-nav flex-1 mt-2 px-3 overflow-y-auto min-h-0">
         <template v-if="store.user">
           <ul class="space-y-1">
             <li v-for="item in navItems" :key="item.to">
@@ -52,7 +53,7 @@
                   'sidebar-nav-item',
                   'flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200',
                   'touch-manipulation',
-                  'pointer-events-auto',
+                  'relative', // 建立定位上下文，确保 hover/active 背景色层级正确
                   isActive(item.to)
                     ? 'sidebar-nav-item--active bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)]'
                     : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]',
@@ -131,7 +132,7 @@
         <button class="hamburger-btn p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-all duration-200" @click="() => { sidebarOpen = true }">
           <UIcon name="i-lucide-menu" class="w-5 h-5" />
         </button>
-        <NuxtLink to="/" class="flex items-center gap-2">
+        <NuxtLink to="/home" class="flex items-center gap-2">
           <div class="gradient-icon w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
             <UIcon name="i-lucide-trophy" class="w-3.5 h-3.5 text-white" />
           </div>
@@ -207,14 +208,14 @@ const navItems = computed<NavItem[]>(() => {
   switch (role) {
     case 'system_admin':
       return [
-        { label: '仪表盘', icon: 'i-lucide-layout-dashboard', to: '/' },
+        { label: '仪表盘', icon: 'i-lucide-layout-dashboard', to: '/home' },
         { label: '团队管理', icon: 'i-lucide-users', to: '/teams' },
       ]
     case 'admin':
     case 'subaccount':
       return [
-        { label: '仪表盘', icon: 'i-lucide-layout-dashboard', to: '/' },
-        { label: '赛事管理', icon: 'i-lucide-swords', to: '/tournaments' },
+        { label: '仪表盘', icon: 'i-lucide-layout-dashboard', to: '/home' },
+        { label: '赛事管理', icon: 'i-lucide-swords', to: '/tournaments/manage' },
         { label: '创建赛事', icon: 'i-lucide-plus-circle', to: '/tournaments/create' },
         // 仅 qq_bot 模式下显示机器人管理
         ...(mode === 'qq_bot'
@@ -223,7 +224,7 @@ const navItems = computed<NavItem[]>(() => {
       ]
     case 'individual':
       return [
-        { label: '个人中心', icon: 'i-lucide-user', to: '/' },
+        { label: '个人中心', icon: 'i-lucide-user', to: '/home' },
         { label: '创建赛事', icon: 'i-lucide-plus-circle', to: '/standalone/create' },
       ]
     default:
@@ -233,11 +234,11 @@ const navItems = computed<NavItem[]>(() => {
 
 /**
  * 判断当前路由是否匹配导航项
- * 首页 "/" 需精确匹配，其他路由前缀匹配即可
+ * 首页 "/home" 需精确匹配，其他路由前缀匹配即可
  */
 function isActive(to: string): boolean {
-  if (to === '/') {
-    return route.path === '/'
+  if (to === '/home') {
+    return route.path === '/home'
   }
   return route.path.startsWith(to)
 }

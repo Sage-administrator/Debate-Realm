@@ -83,6 +83,11 @@ export type TopicVote = Prisma.TopicVoteModel
  */
 export type TopicVoteRecord = Prisma.TopicVoteRecordModel
 /**
+ * Model DebateTopic
+ * 
+ */
+export type DebateTopic = Prisma.DebateTopicModel
+/**
  * Model Questionnaire
  * 
  */
@@ -152,21 +157,6 @@ export type RegistrationMember = Prisma.RegistrationMemberModel
  * 
  */
 export type RegistrationField = Prisma.RegistrationFieldModel
-/**
- * Model ChatRoom
- * 
- */
-export type ChatRoom = Prisma.ChatRoomModel
-/**
- * Model ChatMessage
- * 
- */
-export type ChatMessage = Prisma.ChatMessageModel
-/**
- * Model ChatReadReceipt
- * 
- */
-export type ChatReadReceipt = Prisma.ChatReadReceiptModel
 /**
  * Model ScheduledPost
  * 

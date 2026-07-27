@@ -200,6 +200,52 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
+<style>
+/* 主题令牌：浅色跟随页面令牌，深色保留原玻璃质感（与 RolePicker/FormatCascader 同构） */
+:root {
+  --rc-trigger-bg: var(--color-bg-secondary);
+  --rc-trigger-border: var(--color-border);
+  --rc-trigger-border-hover: var(--color-border);
+  --rc-icon: var(--color-text-muted);
+  --rc-panel-bg: var(--color-bg-secondary);
+  --rc-panel-border: var(--color-border);
+  --rc-panel-shadow: 0 8px 24px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.08);
+  --rc-breadcrumb-bg: var(--color-bg-tertiary);
+  --rc-breadcrumb-border: var(--color-border);
+  --rc-text-muted: var(--color-text-muted);
+  --rc-text-faint: var(--color-text-muted);
+  --rc-option: var(--color-text-secondary);
+  --rc-option-back: var(--color-text-muted);
+  --rc-hover-bg: rgba(16, 185, 129, 0.1);
+  --rc-selected-bg: rgba(16, 185, 129, 0.14);
+  --rc-crumb-hover-bg: var(--color-bg-tertiary);
+  --rc-scrollbar: var(--color-border);
+  --rc-scrollbar-hover: var(--color-text-muted);
+  --rc-arrow: var(--color-text-muted);
+}
+.dark {
+  --rc-trigger-bg: rgba(255, 255, 255, 0.08);
+  --rc-trigger-border: rgba(255, 255, 255, 0.15);
+  --rc-trigger-border-hover: rgba(255, 255, 255, 0.25);
+  --rc-icon: rgba(255, 255, 255, 0.4);
+  --rc-panel-bg: rgba(30, 30, 62, 0.95);
+  --rc-panel-border: rgba(255, 255, 255, 0.15);
+  --rc-panel-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
+  --rc-breadcrumb-bg: rgba(255, 255, 255, 0.05);
+  --rc-breadcrumb-border: rgba(255, 255, 255, 0.1);
+  --rc-text-muted: rgba(255, 255, 255, 0.5);
+  --rc-text-faint: rgba(255, 255, 255, 0.4);
+  --rc-option: rgba(255, 255, 255, 0.7);
+  --rc-option-back: rgba(255, 255, 255, 0.5);
+  --rc-hover-bg: rgba(16, 185, 129, 0.08);
+  --rc-selected-bg: rgba(16, 185, 129, 0.1);
+  --rc-crumb-hover-bg: rgba(255, 255, 255, 0.1);
+  --rc-scrollbar: rgba(255, 255, 255, 0.15);
+  --rc-scrollbar-hover: rgba(255, 255, 255, 0.25);
+  --rc-arrow: rgba(255, 255, 255, 0.4);
+}
+</style>
+
 <style scoped>
 /* ── 触发按钮（与项目中 select 保持同款视觉） ── */
 .region-cascader {
@@ -212,16 +258,16 @@ onBeforeUnmount(() => {
   align-items: center;
   height: 40px;
   padding: 0 12px;
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid var(--rc-trigger-border);
   border-radius: 6px;
-  background: rgba(255,255,255,0.08);
+  background: var(--rc-trigger-bg);
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   min-width: 220px;
 }
 
 .cascader-trigger:hover {
-  border-color: rgba(255,255,255,0.25);
+  border-color: var(--rc-trigger-border-hover);
 }
 
 .cascader-trigger.is-active {
@@ -244,7 +290,7 @@ onBeforeUnmount(() => {
 .cascader-icon {
   width: 16px;
   height: 16px;
-  color: rgba(255,255,255,0.4);
+  color: var(--rc-icon);
   transition: transform 0.2s ease;
   flex-shrink: 0;
 }
@@ -261,12 +307,12 @@ onBeforeUnmount(() => {
   top: calc(100% + 4px);
   min-width: 240px;
   max-height: 320px;
-  background: rgba(30, 30, 62, 0.95);
+  background: var(--rc-panel-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid var(--rc-panel-border);
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--rc-panel-shadow);
   z-index: 100;
   overflow: hidden;
   display: flex;
@@ -284,10 +330,10 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--rc-breadcrumb-border);
+  background: var(--rc-breadcrumb-bg);
   font-size: 13px;
-  color: rgba(255,255,255,0.5);
+  color: var(--rc-text-muted);
   flex-wrap: wrap;
 }
 
@@ -296,12 +342,12 @@ onBeforeUnmount(() => {
   padding: 2px 4px;
   border-radius: 4px;
   transition: background 0.15s ease, color 0.15s ease;
-  color: rgba(255,255,255,0.5);
+  color: var(--rc-text-muted);
 }
 
 .crumb:hover {
-  background: rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.7);
+  background: var(--rc-crumb-hover-bg);
+  color: var(--rc-option);
 }
 
 .crumb.is-active {
@@ -310,13 +356,13 @@ onBeforeUnmount(() => {
 }
 
 .crumb.is-placeholder {
-  color: rgba(255,255,255,0.4);
+  color: var(--rc-text-faint);
   font-weight: normal;
 }
 
 .crumb-sep {
   margin: 0 4px;
-  color: rgba(255,255,255,0.15);
+  color: var(--rc-panel-border);
 }
 
 /* ── 选项列表 ── */
@@ -339,11 +385,11 @@ onBeforeUnmount(() => {
   background: transparent;
 }
 .cascader-list-inner::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
+  background: var(--rc-scrollbar);
   border-radius: 3px;
 }
 .cascader-list-inner::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.25);
+  background: var(--rc-scrollbar-hover);
 }
 
 .cascader-option {
@@ -352,19 +398,19 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   padding: 8px 12px;
   font-size: 14px;
-  color: rgba(255,255,255,0.7);
+  color: var(--rc-option);
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.12s ease, color 0.12s ease;
 }
 
 .cascader-option:hover {
-  background: rgba(16, 185, 129, 0.08);
+  background: var(--rc-hover-bg);
   color: #059669;
 }
 
 .cascader-option.is-selected {
-  background: rgba(16, 185, 129, 0.1);
+  background: var(--rc-selected-bg);
   color: #059669;
   font-weight: 500;
 }
@@ -372,7 +418,7 @@ onBeforeUnmount(() => {
 .cascader-arrow {
   width: 14px;
   height: 14px;
-  color: rgba(255,255,255,0.4);
+  color: var(--rc-arrow);
   margin-left: 8px;
   flex-shrink: 0;
 }
@@ -385,15 +431,15 @@ onBeforeUnmount(() => {
 .cascader-option-back {
   justify-content: flex-start;
   gap: 4px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid var(--rc-breadcrumb-border);
   padding: 6px 12px;
   font-size: 13px;
-  color: rgba(255,255,255,0.5);
+  color: var(--rc-option-back);
 }
 
 .cascader-option-back:hover {
   color: #059669;
-  background: rgba(16, 185, 129, 0.08);
+  background: var(--rc-hover-bg);
 }
 
 .cascader-option-back .cascader-arrow {
@@ -406,6 +452,6 @@ onBeforeUnmount(() => {
   padding: 16px;
   text-align: center;
   font-size: 13px;
-  color: rgba(255,255,255,0.4);
+  color: var(--rc-text-faint);
 }
 </style>

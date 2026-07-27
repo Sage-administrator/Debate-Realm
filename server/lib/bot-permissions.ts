@@ -20,7 +20,7 @@ const VIEW_CHANNEL = 1 << 10 // 1024
 /**
  * 记录权限操作日志到数据库
  */
-async function logPermissionChange(
+export async function logPermissionChange(
   prisma: PrismaClient,
   params: {
     teamId: string

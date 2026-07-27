@@ -240,11 +240,11 @@ watch([() => calcTotalA(), () => calcTotalB()], () => {
               <div class="text-xs text-[var(--color-text-muted)] mt-1">总场次</div>
             </div>
             <div class="bg-[var(--color-bg-secondary)] rounded-xl p-4 text-center">
-              <div class="text-2xl font-bold text-emerald-400">{{ stats.scored }}</div>
+              <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ stats.scored }}</div>
               <div class="text-xs text-[var(--color-text-muted)] mt-1">已评分</div>
             </div>
             <div class="bg-[var(--color-bg-secondary)] rounded-xl p-4 text-center">
-              <div class="text-2xl font-bold text-amber-400">{{ stats.pending }}</div>
+              <div class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ stats.pending }}</div>
               <div class="text-xs text-[var(--color-text-muted)] mt-1">待评分</div>
             </div>
           </div>
@@ -271,8 +271,8 @@ watch([() => calcTotalA(), () => calcTotalB()], () => {
               <span :class="[
                 'px-3 py-1 rounded-full text-xs font-medium',
                 match.scored
-                  ? 'bg-emerald-500/20 text-emerald-400'
-                  : 'bg-amber-500/20 text-amber-400',
+                  ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-amber-500/20 text-amber-600 dark:text-amber-400',
               ]">
                 {{ match.scored ? '已评分' : '待评分' }}
               </span>
@@ -320,12 +320,12 @@ watch([() => calcTotalA(), () => calcTotalB()], () => {
           <div class="flex items-center justify-center gap-8">
             <div class="text-center">
               <div class="text-xl font-bold text-[var(--color-text-primary)]">{{ selectedMatch.teamA || '待定' }}</div>
-              <div class="text-sm text-blue-400 mt-1">总分：{{ calcTotalA() }}</div>
+              <div class="text-sm text-blue-600 dark:text-blue-400 mt-1">总分：{{ calcTotalA() }}</div>
             </div>
             <div class="text-[var(--color-text-muted)] font-bold text-2xl">VS</div>
             <div class="text-center">
               <div class="text-xl font-bold text-[var(--color-text-primary)]">{{ selectedMatch.teamB || '待定' }}</div>
-              <div class="text-sm text-blue-400 mt-1">总分：{{ calcTotalB() }}</div>
+              <div class="text-sm text-blue-600 dark:text-blue-400 mt-1">总分：{{ calcTotalB() }}</div>
             </div>
           </div>
         </div>
@@ -377,7 +377,7 @@ watch([() => calcTotalA(), () => calcTotalB()], () => {
               :class="[
                 'py-3 rounded-xl font-medium transition-all',
                 scoreForm.winner === 'teamA'
-                  ? 'bg-blue-500/30 border-blue-500 text-white border'
+                  ? 'bg-blue-600 border-blue-500 text-white dark:bg-blue-500/30 dark:text-blue-300 border'
                   : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)]',
               ]"
               @click="() => { scoreForm.winner = 'teamA' }"
@@ -388,7 +388,7 @@ watch([() => calcTotalA(), () => calcTotalB()], () => {
               :class="[
                 'py-3 rounded-xl font-medium transition-all',
                 scoreForm.winner === 'draw'
-                  ? 'bg-gray-500/30 border-gray-500 text-white border'
+                  ? 'bg-gray-600 border-gray-500 text-white dark:bg-gray-500/30 dark:text-gray-300 border'
                   : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)]',
               ]"
               @click="() => { scoreForm.winner = 'draw' }"
@@ -399,7 +399,7 @@ watch([() => calcTotalA(), () => calcTotalB()], () => {
               :class="[
                 'py-3 rounded-xl font-medium transition-all',
                 scoreForm.winner === 'teamB'
-                  ? 'bg-emerald-500/30 border-emerald-500 text-white border'
+                  ? 'bg-emerald-600 border-emerald-500 text-white dark:bg-emerald-500/30 dark:text-emerald-300 border'
                   : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)]',
               ]"
               @click="() => { scoreForm.winner = 'teamB' }"

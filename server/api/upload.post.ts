@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
     let targetDir = uploadBaseDir
 
     // 根据 folder 参数或文件类型确定子文件夹
-    if (folder === 'images' || folder === 'logos' || folder === 'audio' || folder === 'chat') {
+    if (folder === 'images' || folder === 'logos' || folder === 'audio') {
       targetDir = path.join(uploadBaseDir, folder)
     } else if (isImage) {
       targetDir = path.join(uploadBaseDir, 'images')

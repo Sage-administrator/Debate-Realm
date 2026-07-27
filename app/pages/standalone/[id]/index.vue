@@ -109,7 +109,7 @@ const extendedInfo = computed(() => {
         编辑赛事信息
       </NuxtLink>
       <button
-        class="flex items-center gap-1 px-3 py-1.5 text-sm border border-red-500/30 rounded text-red-400 hover:bg-red-500/10 transition-colors"
+        class="flex items-center gap-1 px-3 py-1.5 text-sm border border-red-500/30 rounded text-red-500 dark:text-red-400 hover:bg-red-500/10 transition-colors"
         :disabled="deleting"
         @click="handleDeleteMatch"
       >

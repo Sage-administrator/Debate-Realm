@@ -16,6 +16,17 @@ const route = useRoute()
 const toast = useToast()
 const authStore = useAuthStore()
 
+// 皮肤/背景配置默认值：必须包含 solidColor / gradientStart / gradientEnd 等字段，
+// 否则纯色/渐变模式因缺少颜色值而被 rootStyle 跳过（表现为“无法使用”）
+const DEFAULT_SKIN_CONFIG = {
+  backgroundType: 'default',
+  solidColor: '#1F2937',
+  gradientStart: '#1F2937',
+  gradientEnd: '#374151',
+  imageUrl: '',
+  imageOpacity: 1,
+}
+
 const tournament = inject<Ref<any>>('standaloneMatch')!
 const loading = ref(false)
 const saving = ref(false)
@@ -46,7 +57,7 @@ const fullConfig = ref<{
   teamPositiveName: '',
   teamNegativeName: '',
   uiConfig: {},
-  skinConfig: {},
+  skinConfig: { ...DEFAULT_SKIN_CONFIG },
   audioConfig: {},
   teamLogoConfig: {},
   stages: [],
@@ -78,14 +89,9 @@ async function loadConfig() {
       fullConfig.value.teamPositiveName = cfg.teamPositiveName || ''
       fullConfig.value.teamNegativeName = cfg.teamNegativeName || ''
       fullConfig.value.uiConfig = cfg.uiConfig || {}
-      fullConfig.value.skinConfig = cfg.skinConfig || {
-        backgroundType: 'default',
-        solidColor: '#1F2937',
-        gradientStart: '#1F2937',
-        gradientEnd: '#374151',
-        imageUrl: '',
-        imageOpacity: 1,
-      }
+      // 合并默认值：保证 solidColor / gradientStart / gradientEnd 等字段始终存在，
+      // 纯色/渐变模式才不会因缺色而失效
+      fullConfig.value.skinConfig = { ...DEFAULT_SKIN_CONFIG, ...(cfg.skinConfig || {}) }
       fullConfig.value.audioConfig = cfg.audioConfig || {}
       fullConfig.value.teamLogoConfig = cfg.teamLogoConfig || {}
       fullConfig.value.stages = cfg.stages || []
@@ -94,14 +100,7 @@ async function loadConfig() {
         backgroundImageUrl.value = fullConfig.value.skinConfig.imageUrl
       }
     } else {
-      fullConfig.value.skinConfig = {
-        backgroundType: 'default',
-        solidColor: '#1F2937',
-        gradientStart: '#1F2937',
-        gradientEnd: '#374151',
-        imageUrl: '',
-        imageOpacity: 1,
-      }
+      fullConfig.value.skinConfig = { ...DEFAULT_SKIN_CONFIG }
     }
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '加载失败', color: 'error' })
@@ -176,7 +175,7 @@ watch(
 
 <template>
   <template v-if="tournament">
-  <main class="py-6 grid grid-cols-12 gap-6">
+  <div class="py-6 grid grid-cols-12 gap-6">
 
     <div class="col-span-4">
       <TimerPreviewCard
@@ -314,7 +313,7 @@ watch(
             </div>
             <button
               @click="removeBackgroundImage"
-              class="mt-2 text-sm text-red-400 hover:text-red-300 flex items-center justify-center gap-1 w-full"
+              class="mt-2 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex items-center justify-center gap-1 w-full"
             >
               <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
               移除背景图片
@@ -339,7 +338,7 @@ watch(
 
     </UCard>
     </div>
-  </main>
+  </div>
   </template>
 </template>
 

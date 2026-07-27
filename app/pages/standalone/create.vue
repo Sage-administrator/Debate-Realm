@@ -138,7 +138,7 @@ async function handleCreate() {
           <!-- 1. 赛事名称 -->
           <div>
             <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
-              赛事名称 <span class="text-red-400">*</span>
+              赛事名称 <span class="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               v-model="form.name"
@@ -149,7 +149,7 @@ async function handleCreate() {
               @input="validateName"
               @blur="validateName"
             />
-            <p v-if="errors.name" class="text-red-400 text-xs mt-1.5">{{ errors.name }}</p>
+            <p v-if="errors.name" class="text-red-500 dark:text-red-400 text-xs mt-1.5">{{ errors.name }}</p>
           </div>
 
           <!-- 2. 比赛时间 + 3. 赛事地区（同一行，两列） -->
@@ -168,7 +168,7 @@ async function handleCreate() {
             <!-- 右：赛事地区 - 省市二级级联 -->
             <div>
               <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
-                赛事地区 <span class="text-red-400">*</span>
+                赛事地区 <span class="text-red-500 dark:text-red-400">*</span>
               </label>
               <div :class="errors.region ? 'ring-1 ring-red-400 rounded' : ''">
                 <RegionCascader
@@ -178,7 +178,7 @@ async function handleCreate() {
                   @update:city="form.regionCity = $event; clearError('region')"
                 />
               </div>
-              <p v-if="errors.region" class="text-red-400 text-xs mt-1.5">{{ errors.region }}</p>
+              <p v-if="errors.region" class="text-red-500 dark:text-red-400 text-xs mt-1.5">{{ errors.region }}</p>
             </div>
           </div>
 

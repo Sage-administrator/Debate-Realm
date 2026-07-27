@@ -2,6 +2,7 @@ import { readBody } from 'h3'
 import { prisma } from '../../../../lib/prisma'
 import { requireWriteTournament } from '../../../../utils/tournament-auth'
 import { syncTopicVoteQuestionnaire } from '../../../../utils/questionnaire'
+import { normalizeTopicItem, topicDisplayText } from '../../../../utils/topic-vote'
 
 // 管理端：编辑辩题投票（标题/说明/辩题/配置/状态/截止时间等）
 // 注意：已有投票记录时修改候选辩题可能导致索引错位，前端需提示
@@ -14,7 +15,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody<{
       title?: string
       description?: string | null
-      topics?: string[]
+      topics?: any[]
       matchId?: string | null
       allowedVoters?: string[] | null
       multipleChoice?: boolean
@@ -68,8 +69,17 @@ export default defineEventHandler(async (event) => {
       }
     }
     if (body.topics !== undefined) {
-      const topics = body.topics.map((t) => String(t).trim()).filter((t) => t.length > 0)
-      const uniqueTopics = [...new Set(topics)]
+      const normalized = (body.topics || [])
+        .map(normalizeTopicItem)
+        .filter((t): t is NonNullable<typeof t> => t !== null)
+      const seen = new Set<string>()
+      const uniqueTopics: ReturnType<typeof normalizeTopicItem>[] = []
+      for (const t of normalized) {
+        const key = topicDisplayText(t)
+        if (!key || seen.has(key)) continue
+        seen.add(key)
+        uniqueTopics.push(t)
+      }
       if (uniqueTopics.length < 2) {
         throw createError({ statusCode: 400, message: '至少需要 2 个候选辩题' })
       }
