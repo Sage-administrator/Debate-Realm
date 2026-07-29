@@ -9,7 +9,7 @@
 const route = useRoute()
 const store = useAuthStore()
 const { logout } = useAuth()
-const { getStandaloneMatch } = useTournament()
+const { get: getStandaloneMatch } = useStandaloneMatches()
 
 // 侧边栏展开状态（仅移动端使用）
 const sidebarOpen = ref(false)

@@ -26,8 +26,8 @@
         :display-time="displayTime"
         :is-time-warning="isTimeWarning"
         :is-time-critical="isTimeCritical"
-        :dual-positive-time="formatDualTime(dualTimer.positiveTime)"
-        :dual-negative-time="formatDualTime(dualTimer.negativeTime)"
+        :dual-positive-time="dualPositiveTimeStr"
+        :dual-negative-time="dualNegativeTimeStr"
       />
     </div>
 
@@ -222,6 +222,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter, useToast } from '#imports'
 import { useDebateStore } from '~/stores/debate'
 import TimerDisplay from '~/components/TimerDisplay.vue'
+import { normalizeStageType } from '~/utils/stageType'
 
 // ═══════════ 全局组合式 ═══════════
 const debateStore = useDebateStore()
@@ -298,6 +299,8 @@ const uiConfig = ref({
   timerFontSize: 200,
   stageTitleColor: '#FFFFFF',
   timerColor: '#FFFFFF',
+  dualTimerColorPos: 'rgb(169, 35, 35)',
+  dualTimerColorNeg: 'rgb(3, 105, 161)',
   contentPaddingTop: 56,
   titleMarginBottom: 12,
   stageTimerGap: 10,
@@ -455,12 +458,19 @@ const isNonTimerStage = computed(() => isSpecialStage.value || isPptStage.value)
 const isDualTimerStage = computed(() => currentStageInfo.value?.type === 'dual-timer')
 const displayTime = computed(() => (formattedTime.value || '00:00').padStart(5, '0'))
 
-// ═══════════ 格式化双计时器时间 ═══════════
-function formatDualTime(seconds: number): string {
+// ═══════════ 格式化双计时器时间（用 computed 缓存结果，避免每次渲染都重新计算）═══════════
+const dualPositiveTimeStr = computed(() => {
+  const seconds = dualTimer.value.positiveTime
   const minutes = Math.floor(seconds / 60)
   const secs = seconds % 60
   return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-}
+})
+const dualNegativeTimeStr = computed(() => {
+  const seconds = dualTimer.value.negativeTime
+  const minutes = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+})
 
 // ═══════════ 计时控制（委托给 debateStore 内部心跳引擎，页面不再持有 timerInterval）═══════════
 function startTimer() {
@@ -725,19 +735,21 @@ async function loadTournamentData() {
           id: Number(s.id) || idx + 1,
           name: s.name || '未命名环节',
           duration: s.duration || 60,
-          type: s.type === 'free_debate' || s.type === 'dual-timer'
-            ? 'dual-timer'
-            : s.type === 'special'
-              ? 'special'
-              : s.type === 'ppt_replace'
-                ? 'ppt_replace'
-                : 'speech',
+          // 用 normalizeStageType 统一类型，再映射到 debateStore 期望的简化值
+          type: (() => {
+            const nt = normalizeStageType(s.type)
+            if (nt === 'free_debate' || nt === 'bilateral_debate' || nt === 'double_timer') return 'dual-timer'
+            if (nt === 'no_timer') return 'special'
+            if (nt === 'ppt_replace') return 'ppt_replace'
+            return nt // single_speech, single_question, summary, single_timer 等保留原类型
+          })(),
           order: typeof s.orderIndex === 'number' ? s.orderIndex : (s.order ?? idx + 1),
           positiveDuration: s.positiveDuration || s.duration || 60,
           negativeDuration: s.negativeDuration || s.duration || 60,
           speaker: s.speaker,
           questioner: s.questioner,
           responder: s.responder,
+          responders: s.responders,
           firstSpeaker: s.firstSpeaker,
           protectionTime: s.protectionTime,
           positiveSpeakers: s.positiveSpeakers,

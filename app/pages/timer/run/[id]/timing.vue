@@ -1,313 +1,11 @@
 <!--
   /pages/timer/run/[id]/timing.vue - 计时器运行时页面
   功能：
-  - 显示辩论比赛的实时计时
+  - 显示辩论比赛的实时计时（使用 TimerDisplay 组件，与正式计时页视觉一致）
   - 支持单计时器（发言、质询等）和双计时器（对辩、自由辩论）
   - 键盘快捷键操作
   - 声音提示（剩余30秒、5秒、时间到）
 -->
-<script setup lang="ts">
-const authStore = useAuthStore()
-const debateStore = useDebateStore()
-const toast = useToast()
-const route = useRoute()
-
-const projectId = computed(() => route.params.id as string)
-
-// 页面状态
-const loading = ref(true)
-// project 加载后通常不再修改内部字段，使用 shallowRef 避免深度响应式开销
-const project = shallowRef<any>(null)
-const showSetupModal = ref(false) // 赛前设置弹窗（队伍名称、辩题）
-const showTimeModal = ref(false)  // 临时设置时间弹窗
-const showProgress = ref(false)   // 环节进度指示
-
-// 赛前设置（临时覆盖，可编辑）
-const setupForm = reactive({
-  teamPositiveName: '',
-  teamNegativeName: '',
-  positiveTopic: '',
-  negativeTopic: '',
-})
-
-// 自定义时间设置
-const customTime = ref(0)
-const customPositiveTime = ref(0)
-const customNegativeTime = ref(0)
-
-// ═══════════════════════════════════════════════
-// 1. 加载项目数据并初始化状态
-// ═══════════════════════════════════════════════
-async function loadProject() {
-  loading.value = true
-  try {
-    const res = await $fetch<any>(`/api/timer/projects/${projectId.value}`, {
-      headers: { Authorization: `Bearer ${authStore.token}` },
-    })
-    project.value = res.data
-
-    // 初始化赛前设置
-    setupForm.teamPositiveName = res.data.teamPositiveName || ''
-    setupForm.teamNegativeName = res.data.teamNegativeName || ''
-    setupForm.positiveTopic = res.data.positiveTopic || ''
-    setupForm.negativeTopic = res.data.negativeTopic || ''
-
-    // 初始化 debate store
-    const projectForStore: any = {
-      id: res.data.id,
-      name: res.data.name,
-      title: res.data.title,
-      positiveTopic: res.data.positiveTopic,
-      negativeTopic: res.data.negativeTopic,
-      teamPositiveName: res.data.teamPositiveName,
-      teamNegativeName: res.data.teamNegativeName,
-      stages: res.data.stages.map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        duration: s.duration,
-        type: normalizeStageType(s.type),
-        description: s.description,
-        order: s.order,
-        positiveDuration: s.positiveDuration,
-        negativeDuration: s.negativeDuration,
-        allowedRoles: s.allowedRoles,
-        speaker: s.speaker,
-        questioner: s.questioner,
-        responder: s.responder,
-        firstSpeaker: s.firstSpeaker,
-        protectionTime: s.protectionTime,
-        positiveSpeakers: s.positiveSpeakers,
-        negativeSpeakers: s.negativeSpeakers,
-        questionDuration: s.questionDuration,
-        answerDuration: s.answerDuration,
-        speakers: s.speakers,
-        pptImage: s.pptImage || null,
-        enabled: s.enabled !== false,
-      })),
-    }
-    debateStore.setProject(projectForStore)
-
-    // 同步提示音配置（含声音方案 default/formal）
-    if (res.data.audioConfig) debateStore.setAudioConfig(res.data.audioConfig)
-
-    // 如果没有环节，提示用户
-    if (!debateStore.stages.length) {
-      toast.add({
-        title: '该项目暂无环节，请先添加环节',
-        color: 'warning',
-      })
-    }
-  } catch (e: any) {
-    toast.add({ title: e?.data?.statusMessage || '加载失败', color: 'error' })
-  } finally {
-    loading.value = false
-  }
-}
-
-// ═══════════════════════════════════════════════
-// 2. 格式化时间显示（MM:SS）
-// ═══════════════════════════════════════════════
-function formatTime(seconds: number): string {
-  if (!seconds || seconds < 0) return '00:00'
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-}
-
-// ═══════════════════════════════════════════════
-// 3. 计时器控制
-// ═══════════════════════════════════════════════
-
-// ═══════════ 计时控制（委托给 debateStore 内部心跳引擎，页面不再持有 timerInterval）═══════════
-function startTimer() {
-  if (isDualTimer.value) debateStore.startDualTimer()
-  else debateStore.startTimer()
-}
-
-function pauseTimer() {
-  debateStore.pauseTimer()
-}
-
-function resetTimer() {
-  debateStore.resetTimer()
-}
-
-// 双计时器控制
-function switchActiveTimer() {
-  debateStore.switchDualTimer()
-}
-
-function startPositiveTimer() {
-  debateStore.startPositiveTimer()
-}
-
-function startNegativeTimer() {
-  debateStore.startNegativeTimer()
-}
-
-// 环节切换
-function goToStage(idx: number) {
-  debateStore.goToStage(idx + 1)
-}
-
-// ═══════════════════════════════════════════════
-// 4. 键盘快捷键
-// ═══════════════════════════════════════════════
-function handleKeyPress(event: KeyboardEvent) {
-  // 忽略输入框中的按键
-  const target = event.target as HTMLElement
-  if (
-    target &&
-    (target.tagName === 'INPUT' ||
-      target.tagName === 'TEXTAREA' ||
-      target.isContentEditable)
-  ) {
-    return
-  }
-
-  switch (event.key) {
-    case ' ':
-      // 空格：开始/暂停计时
-      event.preventDefault()
-      if (debateStore.currentStageInfo?.type === 'dual-timer') {
-        // 双计时模式：第一次按启动，再按切换
-        if (!debateStore.isRunning) startTimer()
-        else switchActiveTimer()
-      } else {
-        // 单计时模式：启动/暂停
-        if (debateStore.isRunning) pauseTimer()
-        else startTimer()
-      }
-      break
-
-    case 'ArrowLeft':
-      // 左箭头：上一环节
-      event.preventDefault()
-      if (debateStore.currentStage > 1) {
-        pauseTimer()
-        debateStore.previousStage()
-      }
-      break
-
-    case 'ArrowRight':
-      // 右箭头：下一环节
-      event.preventDefault()
-      if (debateStore.currentStage < debateStore.stages.length) {
-        pauseTimer()
-        debateStore.nextStage()
-      }
-      break
-
-    case 'p':
-    case 'P':
-      // P：中断/暂停
-      if (debateStore.isRunning) pauseTimer()
-      break
-
-    case ',':
-    case '，':
-      // 逗号：启动反方（双计时器模式）
-      if (debateStore.currentStageInfo?.type === 'dual-timer') {
-        startNegativeTimer()
-      }
-      break
-
-    case '.':
-    case '。':
-      // 句号：启动正方（双计时器模式）
-      if (debateStore.currentStageInfo?.type === 'dual-timer') {
-        startPositiveTimer()
-      }
-      break
-
-    case 'q':
-    case 'Q':
-      // Q：播放30秒提示音
-      debateStore.playTestSound('30')
-      break
-
-    case 'w':
-    case 'W':
-      // W：播放5秒提示音
-      debateStore.playTestSound('5')
-      break
-
-    case 'e':
-    case 'E':
-      // E：播放时间到提示音
-      debateStore.playTestSound('End')
-      break
-
-    case 'Tab':
-      // Tab：显示环节进度
-      event.preventDefault()
-      showProgress.value = !showProgress.value
-      break
-  }
-}
-
-// ═══════════════════════════════════════════════
-// 5. 自定义时间设置
-// ═══════════════════════════════════════════════
-
-function openTimeModal() {
-  if (debateStore.currentStageInfo?.type === 'dual-timer') {
-    customPositiveTime.value = debateStore.dualTimer.positiveTime
-    customNegativeTime.value = debateStore.dualTimer.negativeTime
-  } else {
-    customTime.value = (debateStore as any).timeRemaining || 0
-  }
-  showTimeModal.value = true
-}
-
-function applyCustomTime() {
-  pauseTimer()
-  if (debateStore.currentStageInfo?.type === 'dual-timer') {
-    debateStore.setCustomDualTime(
-      Number(customPositiveTime.value),
-      Number(customNegativeTime.value),
-    )
-  } else {
-    debateStore.setCustomTime(Number(customTime.value))
-  }
-  showTimeModal.value = false
-}
-
-// ═══════════════════════════════════════════════
-// 6. 生命周期
-// ═══════════════════════════════════════════════
-
-onMounted(async () => {
-  await loadProject()
-  window.addEventListener('keydown', handleKeyPress)
-})
-
-onUnmounted(() => {
-  debateStore.disposeTimer()
-  window.removeEventListener('keydown', handleKeyPress)
-})
-
-// 计算属性：当前环节信息
-const currentStage = computed(() => debateStore.currentStage)
-const currentStageInfo = computed(() => debateStore.currentStageInfo)
-const isDualTimer = computed(() => currentStageInfo.value?.type === 'dual-timer')
-const isSpecial = computed(() => currentStageInfo.value?.type === 'special')
-// PPT/图片展示环节（纯播报不计时）
-const isPptStage = computed(() => currentStageInfo.value?.type === 'ppt_replace')
-const pptImage = computed(() => currentStageInfo.value?.pptImage || '')
-
-// 双计时器状态
-const dualTimer = computed(() => debateStore.dualTimer)
-const activeTimer = computed(() => dualTimer.value.activeTimer)
-
-// 单计时器状态
-const isRunning = computed(() => debateStore.isRunning)
-const timeRemaining = computed(() => (debateStore as any).timeRemaining || 0)
-// 时间警告/紧急状态直接复用 store 的 getter，避免重复计算
-const isTimeWarning = computed(() => debateStore.isTimeWarning)
-const isTimeCritical = computed(() => debateStore.isTimeCritical)
-</script>
-
 <template>
   <!-- 加载状态 -->
   <div v-if="loading" class="min-h-screen flex items-center justify-center bg-gray-900 text-white">
@@ -318,105 +16,43 @@ const isTimeCritical = computed(() => debateStore.isTimeCritical)
   </div>
 
   <!-- 主界面 -->
-  <div v-else class="min-h-screen text-white overflow-hidden" style="background: radial-gradient(ellipse at center bottom, rgb(57, 76, 86) 0%, rgb(14, 17, 17) 100%);">
-
-    <!-- 顶部横幅：正方/反方 -->
-    <div class="w-full" style="padding-top: 4vh;">
-      <div class="flex w-full">
-        <!-- 正方（左侧，红色） -->
-        <div class="flex-1 flex items-center" style="background-color: rgb(169, 35, 35); padding: 0.6vh 0.8vw;">
-          <div class="border border-white rounded-sm px-2 py-1 flex items-center justify-center text-2xl font-bold" style="height: 1.3em; line-height: 1.3; margin-left: 0.5vw; margin-right: 1.5vw;">
-            <span class="text-white">正方</span>
-          </div>
-          <div class="text-white font-bold text-xl" style="font-family: 'SimSun', '宋体', serif;">
-            {{ setupForm.positiveTopic || '' }}
-          </div>
-        </div>
-        <!-- 反方（右侧，蓝色） -->
-        <div class="flex-1 flex items-center justify-end" style="background-color: rgb(3, 105, 161); padding: 0.6vh 0.8vw;">
-          <div class="text-white font-bold text-xl text-right" style="font-family: 'SimSun', '宋体', serif;">
-            {{ setupForm.negativeTopic || '' }}
-          </div>
-          <div class="border border-white rounded-sm px-2 py-1 flex items-center justify-center text-2xl font-bold" style="height: 1.3em; line-height: 1.3; margin-right: 0.5vw; margin-left: 1.5vw;">
-            <span class="text-white">反方</span>
-          </div>
-        </div>
-      </div>
+  <div v-else ref="rootRef" class="h-screen w-screen overflow-hidden relative timer-page-root" :style="backgroundStyle">
+    <!-- 缩放画布：固定 1280x720 设计基准，等比缩放填满屏幕（与 TimerDisplay 一致） -->
+    <div class="timer-scale-wrapper" :style="scaleWrapperStyle">
+      <TimerDisplay
+        :hide-banner="true"
+        :contest-title="project?.title || '辩论赛'"
+        :positive-topic="setupForm.positiveTopic"
+        :negative-topic="setupForm.negativeTopic"
+        :team-positive-name="setupForm.teamPositiveName"
+        :team-negative-name="setupForm.teamNegativeName"
+        :positive-label="'正方'"
+        :negative-label="'反方'"
+        :ui-config="defaultUiConfig"
+        :current-stage-info="currentStageInfo"
+        :is-dual-timer-stage="isDualTimer"
+        :is-special-stage="isSpecial"
+        :display-time="displayTime"
+        :is-time-warning="isTimeWarning"
+        :is-time-critical="isTimeCritical"
+        :dual-positive-time="dualPositiveTimeStr"
+        :dual-negative-time="dualNegativeTimeStr"
+      />
     </div>
 
-    <!-- 队伍名称（横幅下方） -->
-    <div class="flex w-full items-start justify-between px-4 mt-2">
-      <div v-if="setupForm.teamPositiveName" class="text-white" style="font-size: 18px; font-family: 'SimSun', '宋体', serif;">
-        {{ setupForm.teamPositiveName }}
-      </div>
-      <div v-if="setupForm.teamNegativeName" class="text-white text-right" style="font-size: 18px; font-family: 'SimSun', '宋体', serif;">
-        {{ setupForm.teamNegativeName }}
-      </div>
-    </div>
-
-    <!-- 比赛标题 -->
-    <div class="text-center mt-4">
-      <h1 class="font-bold text-2xl" style="color: rgb(3, 105, 161); font-family: 'SimSun', '宋体', serif;">
-        {{ project?.title || '辩论赛' }}
-      </h1>
-    </div>
-
-    <!-- 主计时器显示区域 -->
-    <div class="flex flex-col items-center justify-center" style="padding: 4vh 0;">
-
-      <!-- 当前环节名称 -->
-      <div class="text-center mb-6">
-        <h2 class="font-bold text-5xl" style="font-family: 'SimSun', '宋体', serif;">
-          {{ currentStageInfo?.name || '彩排 · 试音' }}
-        </h2>
-      </div>
-
-      <!-- PPT 图片展示（纯播报，不计时） -->
-      <div v-if="isPptStage && pptImage" class="w-full flex justify-center items-center" style="height: 62vh;">
-        <img :src="pptImage" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.45);" alt="PPT展示" />
-      </div>
-
-      <!-- 双计时器显示 -->
-      <div v-else-if="isDualTimer" class="flex justify-center items-center gap-16">
-        <!-- 正方计时器 -->
-        <div class="text-center">
-          <div class="mb-3" style="font-family: 'SimSun', '宋体', serif; font-size: 28px; color: rgb(179, 37, 37); font-weight: bold;">
-            正方
-          </div>
-          <div style="font-family: 'Digiface', monospace; font-size: 180px; line-height: 1; color: rgb(179, 37, 37); font-weight: normal;">
-            {{ formatTime(dualTimer.positiveTime) }}
-          </div>
-        </div>
-        <!-- 反方计时器 -->
-        <div class="text-center">
-          <div class="mb-3" style="font-family: 'SimSun', '宋体', serif; font-size: 28px; color: rgb(3, 105, 161); font-weight: bold;">
-            反方
-          </div>
-          <div style="font-family: 'Digiface', monospace; font-size: 180px; line-height: 1; color: rgb(3, 105, 161); font-weight: normal;">
-            {{ formatTime(dualTimer.negativeTime) }}
-          </div>
-        </div>
-      </div>
-
-      <!-- 单计时器显示（PPT/无计时器环节不显示） -->
-      <div v-else-if="!isSpecial && !isPptStage" class="text-center">
-        <div
-          style="font-family: 'Digiface', monospace; font-size: 200px; line-height: 1; font-weight: normal;"
-          :class="{
-            'text-orange-400': isTimeWarning,
-            'text-red-400': isTimeCritical,
-            'text-white': !isTimeWarning && !isTimeCritical,
-          }"
-        >
-          {{ formatTime(timeRemaining) }}
-        </div>
-      </div>
-
-      <!-- 特殊环节（无计时）：显示大字 -->
-      <div v-else class="text-center">
-        <div style="font-family: 'SimSun', '宋体', serif; font-size: 120px; line-height: 1.2; color: white; font-weight: bold;">
-          {{ currentStageInfo?.name || '' }}
-        </div>
+    <!-- 全屏宽红蓝横幅覆盖层：与画布内横幅同一槽位，但左右延伸至屏幕边缘 -->
+    <div
+      v-if="pageViewport.h > 0"
+      class="full-bleed-banner"
+      :style="fullBleedBannerStyle"
+    >
+      <div :style="fullBleedScalerStyle">
+        <TimerBanner
+          :positive-label="'正方'"
+          :negative-label="'反方'"
+          :positive-topic="setupForm.positiveTopic"
+          :negative-topic="setupForm.negativeTopic"
+        />
       </div>
     </div>
 
@@ -748,12 +384,439 @@ const isTimeCritical = computed(() => debateStore.isTimeCritical)
   </div>
 </template>
 
+<script setup lang="ts">
+definePageMeta({ ssr: false, layout: false })
+
+import { ref, reactive, computed, shallowRef, onMounted, onUnmounted } from 'vue'
+import { useRoute, useToast, navigateTo } from '#imports'
+import { normalizeStageType, isPpt } from '~/utils/stageType'
+import TimerDisplay from '~/components/TimerDisplay.vue'
+import TimerBanner from '~/components/TimerBanner.vue'
+
+const authStore = useAuthStore()
+const debateStore = useDebateStore()
+const toast = useToast()
+const route = useRoute()
+
+const projectId = computed(() => route.params.id as string)
+
+// 页面状态
+const loading = ref(true)
+// project 加载后通常不再修改内部字段，使用 shallowRef 避免深度响应式开销
+const project = shallowRef<any>(null)
+const showSetupModal = ref(false) // 赛前设置弹窗（队伍名称、辩题）
+const showTimeModal = ref(false)  // 临时设置时间弹窗
+const showProgress = ref(false)   // 环节进度指示
+
+// 赛前设置（临时覆盖，可编辑）
+const setupForm = reactive({
+  teamPositiveName: '',
+  teamNegativeName: '',
+  positiveTopic: '',
+  negativeTopic: '',
+})
+
+// 自定义时间设置
+const customTime = ref(0)
+const customPositiveTime = ref(0)
+const customNegativeTime = ref(0)
+
+// ═══════════════════════════════════════════════
+// UI 缩放画布（1280x720 设计基准，与 TimerDisplay 一致）
+// ═══════════════════════════════════════════════
+const rootRef = ref<HTMLElement | null>(null)
+const pageScale = ref(1)
+const pageViewport = ref({ w: 0, h: 0 })
+function updatePageScale() {
+  if (!rootRef.value) return
+  const rect = rootRef.value.getBoundingClientRect()
+  const s = Math.min(rect.width / 1280, rect.height / 720)
+  pageScale.value = s > 0 ? s : 1
+  pageViewport.value = { w: rect.width, h: rect.height }
+}
+let pageResizeObserver: ResizeObserver | null = null
+
+const scaleWrapperStyle = computed(() => ({
+  width: '1280px',
+  height: '720px',
+  transform: `translate(-50%, -50%) scale(${pageScale.value})`,
+  transformOrigin: 'center center',
+}))
+
+// ═══════════════════════════════════════════════
+// 全屏宽红蓝横幅覆盖层
+// ═══════════════════════════════════════════════
+const effScale = computed(() => pageScale.value)
+const fullBleedBannerStyle = computed(() => {
+  const e = effScale.value
+  const top = (pageViewport.value.h - 720 * e) / 2
+  return {
+    position: 'absolute' as const,
+    top: `${top}px`,
+    left: '0',
+    right: '0',
+    zIndex: '30',
+    pointerEvents: 'none' as const,
+  }
+})
+const fullBleedScalerStyle = computed(() => {
+  const e = effScale.value
+  return {
+    width: `calc(100% / ${e})`,
+    transform: `scale(${e})`,
+    transformOrigin: 'top left',
+  }
+})
+
+// ═══════════════════════════════════════════════
+// 默认 UI 配置（TimerDisplay 需要，计时器项目无自定义配置时使用默认值）
+// ═══════════════════════════════════════════════
+const defaultUiConfig = {
+  bannerVisible: true,
+  showBanner: true,
+  eventNameVisible: true,
+  showTitle: true,
+  contentPaddingTop: 56,
+}
+
+// ═══════════════════════════════════════════════
+// 动态背景样式
+// ═══════════════════════════════════════════════
+const backgroundStyle = computed(() => ({
+  background: 'radial-gradient(ellipse at center bottom, rgb(57, 76, 86) 0%, rgb(14, 17, 17) 100%)',
+}))
+
+// ═══════════════════════════════════════════════
+// 1. 加载项目数据并初始化状态
+// ═══════════════════════════════════════════════
+async function loadProject() {
+  loading.value = true
+  try {
+    const res = await $fetch<any>(`/api/timer/projects/${projectId.value}`, {
+      headers: { Authorization: `Bearer ${authStore.token}` },
+    })
+    project.value = res.data
+
+    // 初始化赛前设置
+    setupForm.teamPositiveName = res.data.teamPositiveName || ''
+    setupForm.teamNegativeName = res.data.teamNegativeName || ''
+    setupForm.positiveTopic = res.data.positiveTopic || ''
+    setupForm.negativeTopic = res.data.negativeTopic || ''
+
+    // 初始化 debate store
+    const projectForStore: any = {
+      id: res.data.id,
+      name: res.data.name,
+      title: res.data.title,
+      positiveTopic: res.data.positiveTopic,
+      negativeTopic: res.data.negativeTopic,
+      teamPositiveName: res.data.teamPositiveName,
+      teamNegativeName: res.data.teamNegativeName,
+      stages: res.data.stages.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        duration: s.duration,
+        type: normalizeStageType(s.type),
+        description: s.description,
+        order: s.order,
+        positiveDuration: s.positiveDuration,
+        negativeDuration: s.negativeDuration,
+        allowedRoles: s.allowedRoles,
+        speaker: s.speaker,
+        questioner: s.questioner,
+        responder: s.responder,
+        responders: s.responders,
+        firstSpeaker: s.firstSpeaker,
+        protectionTime: s.protectionTime,
+        positiveSpeakers: s.positiveSpeakers,
+        negativeSpeakers: s.negativeSpeakers,
+        questionDuration: s.questionDuration,
+        answerDuration: s.answerDuration,
+        speakers: s.speakers,
+        pptImage: s.pptImage || null,
+        enabled: s.enabled !== false,
+      })),
+    }
+    debateStore.setProject(projectForStore)
+
+    // 同步提示音配置（含声音方案 default/formal）
+    if (res.data.audioConfig) debateStore.setAudioConfig(res.data.audioConfig)
+
+    // 如果没有环节，提示用户
+    if (!debateStore.stages.length) {
+      toast.add({
+        title: '该项目暂无环节，请先添加环节',
+        color: 'warning',
+      })
+    }
+  } catch (e: any) {
+    toast.add({ title: e?.data?.statusMessage || '加载失败', color: 'error' })
+  } finally {
+    loading.value = false
+  }
+}
+
+// ═══════════════════════════════════════════════
+// 2. 格式化时间显示（MM:SS）
+// ═══════════════════════════════════════════════
+function formatDualTimeStr(seconds: number): string {
+  if (!seconds || seconds < 0) return '00:00'
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
+// ═══════════════════════════════════════════════
+// 3. 计时器控制
+// ═══════════════════════════════════════════════
+
+// ═══════════ 计时控制（委托给 debateStore 内部心跳引擎，页面不再持有 timerInterval）═══════════
+function startTimer() {
+  if (isDualTimer.value) debateStore.startDualTimer()
+  else debateStore.startTimer()
+}
+
+function pauseTimer() {
+  debateStore.pauseTimer()
+}
+
+function resetTimer() {
+  debateStore.resetTimer()
+}
+
+// 双计时器控制
+function switchActiveTimer() {
+  debateStore.switchDualTimer()
+}
+
+function startPositiveTimer() {
+  debateStore.startPositiveTimer()
+}
+
+function startNegativeTimer() {
+  debateStore.startNegativeTimer()
+}
+
+// 环节切换
+function goToStage(idx: number) {
+  debateStore.goToStage(idx + 1)
+}
+
+// ═══════════════════════════════════════════════
+// 4. 键盘快捷键
+// ═══════════════════════════════════════════════
+function handleKeyPress(event: KeyboardEvent) {
+  // 忽略输入框中的按键
+  const target = event.target as HTMLElement
+  if (
+    target &&
+    (target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.isContentEditable)
+  ) {
+    return
+  }
+
+  switch (event.key) {
+    case ' ':
+      // 空格：开始/暂停计时
+      event.preventDefault()
+      if (isDualTimer.value) {
+        // 双计时模式：第一次按启动，再按切换
+        if (!debateStore.isRunning) startTimer()
+        else switchActiveTimer()
+      } else {
+        // 单计时模式：启动/暂停
+        if (debateStore.isRunning) pauseTimer()
+        else startTimer()
+      }
+      break
+
+    case 'ArrowLeft':
+      // 左箭头：上一环节
+      event.preventDefault()
+      if (debateStore.currentStage > 1) {
+        pauseTimer()
+        debateStore.previousStage()
+      }
+      break
+
+    case 'ArrowRight':
+      // 右箭头：下一环节
+      event.preventDefault()
+      if (debateStore.currentStage < debateStore.stages.length) {
+        pauseTimer()
+        debateStore.nextStage()
+      }
+      break
+
+    case 'p':
+    case 'P':
+      // P：中断/暂停
+      if (debateStore.isRunning) pauseTimer()
+      break
+
+    case ',':
+    case '，':
+      // 逗号：启动反方（双计时器模式）
+      if (isDualTimer.value) {
+        startNegativeTimer()
+      }
+      break
+
+    case '.':
+    case '。':
+      // 句号：启动正方（双计时器模式）
+      if (isDualTimer.value) {
+        startPositiveTimer()
+      }
+      break
+
+    case 'q':
+    case 'Q':
+      // Q：播放30秒提示音
+      debateStore.playTestSound('30')
+      break
+
+    case 'w':
+    case 'W':
+      // W：播放5秒提示音
+      debateStore.playTestSound('5')
+      break
+
+    case 'e':
+    case 'E':
+      // E：播放时间到提示音
+      debateStore.playTestSound('End')
+      break
+
+    case 'Tab':
+      // Tab：显示环节进度
+      event.preventDefault()
+      showProgress.value = !showProgress.value
+      break
+  }
+}
+
+// ═══════════════════════════════════════════════
+// 5. 自定义时间设置
+// ═══════════════════════════════════════════════
+
+function openTimeModal() {
+  if (isDualTimer.value) {
+    customPositiveTime.value = debateStore.dualTimer.positiveTime
+    customNegativeTime.value = debateStore.dualTimer.negativeTime
+  } else {
+    customTime.value = (debateStore as any).timeRemaining || 0
+  }
+  showTimeModal.value = true
+}
+
+function applyCustomTime() {
+  pauseTimer()
+  if (isDualTimer.value) {
+    debateStore.setCustomDualTime(
+      Number(customPositiveTime.value),
+      Number(customNegativeTime.value),
+    )
+  } else {
+    debateStore.setCustomTime(Number(customTime.value))
+  }
+  showTimeModal.value = false
+}
+
+// ═══════════════════════════════════════════════
+// 6. 生命周期
+// ═══════════════════════════════════════════════
+
+onMounted(async () => {
+  await loadProject()
+  window.addEventListener('keydown', handleKeyPress)
+  // 计算缩放画布比例并监听容器尺寸变化
+  requestAnimationFrame(() => updatePageScale())
+  if (rootRef.value && typeof ResizeObserver !== 'undefined') {
+    pageResizeObserver = new ResizeObserver(() => updatePageScale())
+    pageResizeObserver.observe(rootRef.value)
+  }
+})
+
+onUnmounted(() => {
+  debateStore.disposeTimer()
+  window.removeEventListener('keydown', handleKeyPress)
+  if (pageResizeObserver) { pageResizeObserver.disconnect(); pageResizeObserver = null }
+})
+
+// 计算属性：当前环节信息
+const currentStage = computed(() => debateStore.currentStage)
+const currentStageInfo = computed(() => debateStore.currentStageInfo)
+// 双计时器判断：兼容用户存储的 'dual-timer' 和 normalizeStageType 后的 'bilateral_debate'/'free_debate'
+const isDualTimer = computed(() => {
+  const type = currentStageInfo.value?.type
+  return type === 'dual-timer' || type === 'bilateral_debate' || type === 'free_debate'
+})
+const isSpecial = computed(() => currentStageInfo.value?.type === 'special' || currentStageInfo.value?.type === 'no_timer')
+// PPT/图片展示环节（纯播报不计时），使用 isPpt 工具函数兼容 normalizeStageType 后的 'ppt_replace'
+const isPptStage = computed(() => isPpt(currentStageInfo.value?.type))
+
+// 双计时器状态
+const dualTimer = computed(() => debateStore.dualTimer)
+const activeTimer = computed(() => dualTimer.value.activeTimer)
+// 双计时器时间显示（用 computed 缓存结果，避免每次渲染都重新计算）
+const dualPositiveTimeStr = computed(() => {
+  const seconds = dualTimer.value.positiveTime
+  if (!seconds || seconds < 0) return '00:00'
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+})
+const dualNegativeTimeStr = computed(() => {
+  const seconds = dualTimer.value.negativeTime
+  if (!seconds || seconds < 0) return '00:00'
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+})
+
+// 单计时器状态
+const isRunning = computed(() => debateStore.isRunning)
+const timeRemaining = computed(() => (debateStore as any).timeRemaining || 0)
+// 单计时器显示时间（MM:SS 格式，供 TimerDisplay 使用，复用 store getter）
+const displayTime = computed(() => (debateStore.formattedTime || '00:00').padStart(5, '0'))
+// 时间警告/紧急状态直接复用 store 的 getter，避免重复计算
+const isTimeWarning = computed(() => debateStore.isTimeWarning)
+const isTimeCritical = computed(() => debateStore.isTimeCritical)
+</script>
+
 <style scoped>
+/* 计时页根容器：字体继承 */
+.timer-page-root {
+  font-family: 'SourceHanSerifCN-Heavy', 'SimSun', '宋体', serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+:deep(html), :deep(body) { overflow: hidden; }
+
+/* 缩放画布：固定 1280x720 设计基准，等比缩放填满屏幕 */
+.timer-scale-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1280px;
+  height: 720px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 全屏宽红蓝横幅覆盖层 */
+.full-bleed-banner {
+  pointer-events: none;
+}
+
 /* ═══════════ 控制面板：左下角，均匀分布 ═══════════ */
 .timing-panel {
   opacity: 0.15;
   transition: opacity 0.3s ease-in-out;
-  min-width: 12vw; /* 再缩窄一倍 */
+  min-width: 12vw;
 }
 .timing-panel:hover { opacity: 1; }
 
@@ -768,7 +831,7 @@ const isTimeCritical = computed(() => debateStore.isTimeCritical)
 /* 标签：固定最小宽度，不缩小 */
 .timing-panel .label-text {
   font-size: 0.875rem;
-  min-width: 2vw; /* 标签再缩窄 */
+  min-width: 2vw;
   flex-shrink: 0;
   text-align: left;
 }
@@ -777,22 +840,22 @@ const isTimeCritical = computed(() => debateStore.isTimeCritical)
 .timing-panel .button-group {
   display: flex;
   align-items: center;
-  gap: 0.15vw; /* 按钮间距缩小 */
+  gap: 0.15vw;
   flex: 1;
 }
 
 /* 按钮：均分宽度，圆角更圆润 */
 .timing-panel .timing-btn {
-  padding: 0.2vw 0.4vw; /* padding 再缩小 */
+  padding: 0.2vw 0.4vw;
   border: 2px solid #6b7280;
-  border-radius: 0.3vw; /* 圆角缩小 */
-  font-size: 0.75rem; /* 字号略缩小 */
+  border-radius: 0.3vw;
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
   flex: 1;
-  min-width: 2.5vw; /* 最小宽度再缩小 */
+  min-width: 2.5vw;
   text-align: center;
   background: transparent;
   color: #f3f4f6;

@@ -3,6 +3,50 @@
 // 关键修正：发言权限按「发言方（具体角色，可多选）」处理，而非按阵营。
 import { isSpeech, isQuestion, isBilateral, isNoTimer, isPpt } from './stageType'
 
+// ═══════════ 反向/排除模式标记 ═══════════
+// mode=0：正常模式，选中值即发言方（如 "正方·一辩"）
+// mode=1：反向模式，选中值为被排除的辩手（如选中 "正方·一辩" → 实际发言方=正方除一辩外的其余辩手）
+// DB 列：speakerMode / questionerMode / respondersMode（Int, 默认 0）
+
+/** 根据选中值和 mode 标记，格式化为展示字符串 */
+export function formatSpeakerDisplay(value: string | null | undefined, mode: number | null | undefined): string {
+  if (!value) return ''
+  if (mode === 1) return formatReverseDisplay(value)
+  // 正常模式：直接展示
+  return value.replace(/·/g, ' · ')
+}
+
+/** 反向展示：根据选中的辩手值，生成 "正方除一辩外任意辩手" 文本 */
+export function formatReverseDisplay(raw: string): string {
+  // 从选中值中提取阵营和被排除辩手
+  const values = raw.split(/[、，/]/).map(s => s.trim()).filter(Boolean)
+  if (!values.length) return raw
+  // 取第一条确定阵营
+  const first = values[0]!.replace(/[·\s]/g, '')
+  const side = first.startsWith('正方') ? '正方' : first.startsWith('反方') ? '反方' : null
+  if (!side) return raw
+  // 提取被排除的辩手位（如一辩、二辩）
+  const excludedLabels = values.map(v => {
+    const cleaned = v.replace(/[·\s]/g, '')
+    if (cleaned.startsWith('正方')) return cleaned.slice(2)
+    if (cleaned.startsWith('反方')) return cleaned.slice(2)
+    return cleaned
+  }).join('')
+  return `${side}除${excludedLabels}外任意辩手`
+}
+
+// 辩手 label → id（如 "一辩" → "de1"）
+function debaterIdFromLabel(label: string): string | null {
+  const map: Record<string, string> = { '一辩': 'de1', '二辩': 'de2', '三辩': 'de3', '四辩': 'de4' }
+  return map[label] || null
+}
+
+// 辩手 id → label（如 "de1" → "一辩"）
+export function debaterLabelFromId(id: string): string {
+  const map: Record<string, string> = { de1: '一辩', de2: '二辩', de3: '三辩', de4: '四辩' }
+  return map[id] || id
+}
+
 // 标准 10 个角色（与赛场身份组 label 一致），用于 StageForm 的"发言方"多选。
 export interface SpeakerRoleOption {
   label: string
@@ -27,49 +71,18 @@ export function normRoleName(name?: string | null): string {
   return (name || '').replace(/[·\s]/g, '')
 }
 
-// 反向/排除发言方值展开：
-//   归一化后的 "正方除一辩外任意辩手" / "正方除一辩二辩外任意辩手" → 该方其余辩手角色 label 列表
-//   （如 ["正方二辩","正方三辩","正方四辩"]）；支持多选排除。兼容旧数据无"任意辩手"后缀。
-//   非反向值（或不匹配）返回 null，调用方按原值处理。
-export function expandReverseSpeaker(normed: string | null | undefined): string[] | null {
-  const v = (normed || '').replace(/[·\/\s\-]/g, '')
-  const m = v.match(/^(正方|反方)除(.+?)外(?:任意辩手)?$/)
-  if (!m || !m[2]) return null  // 兜底：确保 m[2] 存在
-  const sideLabel = m[1]
-  const side = sideLabel === '正方' ? 'affirmative' : 'negative'
-  const all = SPEAKER_ROLE_OPTIONS.filter(o => o.side === side).map(o => o.value)
-  // m[2] 形如 "一辩二辩" 或 "一辩"：按 "辩" 拆分得到各被排除辩手标签
-  const excludedSet = new Set<string>()
-  for (const part of m[2].split('辩')) {
-    if (!part) continue
-    excludedSet.add(sideLabel + part + '辩')
-  }
-  if (excludedSet.size === 0) return null
-  const rest = all.filter(r => !excludedSet.has(r))
-  return rest // 可能为空数组（排除全部 → 该方无人可发言）
-}
+export function expandReverseSpeaker(_raw: string | null | undefined, _mode: number | null | undefined): null { return null }
 
-// 解析"发言方"字段为角色 label 列表（供 getStageSpeakerPlan 使用）：
-//  - 字符串：正常多选以 、，/ 连接（如 "正方·一辩、正方·二辩"）；反向/排除值（"正方·除一辩外"）经 expandReverseSpeaker 展开
-//  - 数组：逐个处理（兼容历史数据）
-//  - 空值：返回 []
-export function parseSpeakerRoles(raw: any): string[] {
+// 解析"发言方"字段为角色 label 列表（供 getStageSpeakerPlan 使用）
+// mode 不影响实际发言方（只影响前端展示），故始终按选中值解析
+export function parseSpeakerRoles(raw: any, _mode?: number | null): string[] {
   const items: string[] = []
-  if (Array.isArray(raw)) items.push(...raw)
-  else if (typeof raw === 'string') {
-    if (!raw) return []
+  if (Array.isArray(raw)) items.push(...raw.map(String))
+  else if (typeof raw === 'string' && raw) {
     items.push(...raw.split(/[、，/]/).map(s => s.trim()).filter(Boolean))
-  } else {
-    return []
   }
-  const roles: string[] = []
-  for (const v of items) {
-    const n = normRoleName(v)
-    const expanded = expandReverseSpeaker(n)
-    if (expanded) roles.push(...expanded)
-    else if (n) roles.push(n)
-  }
-  return roles
+  if (!items.length) return []
+  return items.map(normRoleName)
 }
 
 export type SpeakerPlan =
@@ -113,19 +126,21 @@ export function getStageSpeakerPlan(stage: any): SpeakerPlan {
       ? stage.speakers
       : (typeof stage.speakers === 'string' && stage.speakers ? JSON.parse(stage.speakers) : [])
     if (speakers.length) return { mode: 'roles', roles: speakers.map(normRoleName) }
-    const spRoles = parseSpeakerRoles(stage.speaker)
+    const spRoles = parseSpeakerRoles(stage.speaker, stage.speakerMode)
     return spRoles.length ? { mode: 'roles', roles: spRoles } : { mode: 'default' }
   }
 
   if (isSpeech(t)) {
-    const roles = parseSpeakerRoles(stage.speaker)
+    const roles = parseSpeakerRoles(stage.speaker, stage.speakerMode)
     return roles.length ? { mode: 'roles', roles } : { mode: 'default' }
   }
   if (isQuestion(t)) {
-    // 发问人 + 接受人 都需要发言，二者都纳入可发言角色
-    // 字段支持正常多选（"、" 连接，如 "正方·一辩、正方·二辩"）与反向/排除值（"正方·除一辩外"）
-    const qRoles = parseSpeakerRoles(stage.questioner)
-    const rRoles = parseSpeakerRoles(stage.responder)
+    const qRoles = parseSpeakerRoles(stage.questioner, stage.questionerMode)
+    // 接受人：优先用 responders（数组），fallback 到 responder（单值），传入 respondersMode
+    const rRaw = Array.isArray(stage.responders) && stage.responders.length
+      ? stage.responders.join('、')
+      : stage.responder || ''
+    const rRoles = parseSpeakerRoles(rRaw, stage.respondersMode)
     const roles = [...qRoles, ...rRoles]
     return roles.length ? { mode: 'roles', roles } : { mode: 'default' }
   }

@@ -50,6 +50,7 @@ export default defineEventHandler(async (event) => {
         speaker: s.speaker,
         questioner: s.questioner,
         responder: s.responder,
+        responders: s.responders ? JSON.parse(s.responders) : null,
         firstSpeaker: s.firstSpeaker,
         protectionTime: s.protectionTime,
         positiveSpeakers: s.positiveSpeakers ? JSON.parse(s.positiveSpeakers) : null,

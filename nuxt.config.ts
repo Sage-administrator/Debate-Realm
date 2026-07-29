@@ -12,6 +12,14 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
+  // #shared 别名：shared/ 目录供前后端共同引用 Schema 定义
+  alias: {
+    '#shared': join(process.cwd(), 'shared'),
+  },
+  imports: {
+    dirs: ['lib'],  // app/lib/api.ts → useApi() 全局 auto-import
+  },
+
   // 注：buildDir 不再路由到系统临时目录——项目在 D 盘、os.tmpdir() 在 C 盘，跨盘会导致
   // @nuxt/kit 把绝对路径传给 ignore 库，Vite 7.3.6 下直接抛 "path should be a path.relative()d string" 并段错误。
   // 恢复 Nuxt 默认 buildDir（项目内 .nuxt，同盘 D 盘，相对路径正常），dev 模式不触发 SAFE_DELETE 批量清理拦截。
@@ -96,6 +104,35 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    // 通过 Vite 插件的 config hook 注入 manualChunks（直接写 vite.build.rollupOptions.output 里会被
+    // Nuxt 4 的 EnvironmentsPlugin.configEnvironment 返回的 output 覆盖，需用插件改写）
+    plugins: [
+      {
+        name: 'vendor-chunks',
+        config(config: any) {
+          const manualChunks = (id: string) => {
+            if (id.includes('node_modules/vue') || id.includes('node_modules/@vue/') || id.includes('node_modules/vue-router')) return 'vendor-vue'
+            if (id.includes('node_modules/pinia') || id.includes('node_modules/@pinia')) return 'vendor-pinia'
+            if (id.includes('node_modules/@nuxt/ui') || id.includes('node_modules/@nuxtjs/') || id.includes('node_modules/@nuxt/icon')) return 'vendor-ui'
+            if (id.includes('node_modules/@vueuse')) return 'vendor-vueuse'
+            if (id.includes('node_modules/vue-draggable-plus') || id.includes('node_modules/sortablejs')) return 'vendor-drag'
+            if (id.includes('node_modules/docx')) return 'vendor-docx'
+            if (id.includes('node_modules/ws')) return 'vendor-ws'
+            if (id.includes('node_modules/iconify') || id.includes('node_modules/@iconify')) return 'vendor-icons'
+          }
+          if (!config.build) config.build = {}
+          config.build.rollupOptions = config.build.rollupOptions || {}
+          const output = config.build.rollupOptions.output
+          if (Array.isArray(output)) {
+            output.forEach((o: any) => o.manualChunks = manualChunks)
+          } else if (output && typeof output === 'object') {
+            output.manualChunks = manualChunks
+          } else {
+            config.build.rollupOptions.output = { manualChunks }
+          }
+        },
+      },
+    ],
     // vite 缓存恢复默认（node_modules/.vite，同盘 D 盘），避免跨盘绝对路径触发 ignore 报错
     // cacheDir: join(buildRoot, 'vite-cache'),
     server: {
@@ -115,25 +152,9 @@ export default defineNuxtConfig({
       // 额外的 esbuild 优化目标
       target: 'es2018',
       chunkSizeWarningLimit: 2000,
-      rollupOptions: {
-        output: {
-          manualChunks: (id: string) => {
-            // Vue 核心：vue + vue-router 一起打包
-            if (id.includes('node_modules/vue') || id.includes('node_modules/@vue/') || id.includes('node_modules/vue-router')) return 'vendor-vue'
-            if (id.includes('node_modules/pinia') || id.includes('node_modules/@pinia')) return 'vendor-pinia'
-            // Prisma 客户端较大，单独拆分
-            if (id.includes('node_modules/@prisma') || id.includes('node_modules/prisma')) return 'vendor-prisma'
-            // NuxtUI 整套 UI 组件库
-            if (id.includes('node_modules/@nuxt/ui') || id.includes('node_modules/@nuxtjs/')) return 'vendor-ui'
-            // 拖拽库（仅在部分页面使用）
-            if (id.includes('node_modules/vue-draggable-plus') || id.includes('node_modules/sortablejs')) return 'vendor-drag'
-            // 文档处理库（体积大，仅在导出功能使用）
-            if (id.includes('node_modules/docx')) return 'vendor-docx'
-            // WebSocket 库
-            if (id.includes('node_modules/ws')) return 'vendor-ws'
-          },
-        },
-      },
+      // 注：manualChunks 在 nuxt.config.ts 的 vite.build.rollupOptions 里配置无效——
+      // Nuxt 4 的 EnvironmentsPlugin(configEnvironment) 返回的 output 对象会覆盖用户配置。
+      // 已迁移到 hooks.vite:extendConfig 中生效。
     },
     // 依赖预构建优化：减少 dev 启动时间和重复构建
     optimizeDeps: {
@@ -166,9 +187,10 @@ export default defineNuxtConfig({
 
   nitro: {
     // 构建产物 .output 迁到临时目录（与 buildDir 同理，规避清理拦截）
-    output: {
-      dir: join(buildRoot, 'output'),
-    },
+    // 仅在 production 构建时使用临时目录；dev 模式用默认输出，避免 dev server 从临时目录解析模块失败
+    output: process.env.NODE_ENV === 'production'
+      ? { dir: join(buildRoot, 'output') }
+      : {},
     experimental: {
       openAPI: true,
       websocket: true,

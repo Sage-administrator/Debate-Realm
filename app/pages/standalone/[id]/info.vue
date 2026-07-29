@@ -4,7 +4,7 @@ definePageMeta({ layout: 'standalone' })
 // 独立赛事信息编辑页面
 const route = useRoute()
 const toast = useToast()
-const { getStandaloneMatch, updateStandaloneMatch, deleteStandaloneMatch } = useTournament()
+const { get: getStandaloneMatch, update: updateStandaloneMatch, delete: deleteStandaloneMatch } = useStandaloneMatches()
 
 const standaloneMatch = inject<Ref<any>>('standaloneMatch')!
 const matchId = computed(() => route.params.id as string)

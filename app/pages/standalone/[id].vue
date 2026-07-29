@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const route = useRoute()
 const toast = useToast()
-const { getStandaloneMatch, createStandaloneMatchMatch, deleteStandaloneMatch, submitResult } = useTournament()
+const { get: getStandaloneMatch, createMatch: createStandaloneMatchMatch, delete: deleteStandaloneMatch } = useStandaloneMatches()
+const { submitResult } = useMatchDetail()
 
 const match = ref<any>(null)
 const loading = ref(true)

@@ -1,7 +1,14 @@
-﻿import { prisma } from '../../lib/prisma'
+import { prisma } from '../../lib/prisma'
+import { getUserFromEventWithSession } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
+    // 鉴权：仅 system_admin 可查看个人用户列表
+    const user = await getUserFromEventWithSession(event, prisma)
+    if (user.role !== 'system_admin') {
+      throw createError({ statusCode: 403, message: '权限不足' })
+    }
+
     // 获取所有个人用户
     const individualUsers = await prisma.user.findMany({
       where: { role: 'individual', mode: 'individual' },
@@ -14,12 +21,12 @@ export default defineEventHandler(async (event) => {
       orderBy: { createdAt: 'desc' },
     })
 
-    return individualUsers.map((user) => ({
-      id: user.id,
-      username: user.username,
-      createdAt: user.createdAt,
-      standaloneMatchCount: user.standaloneMatches.length,
-      standaloneMatches: user.standaloneMatches.map((m) => ({
+    return individualUsers.map((u) => ({
+      id: u.id,
+      username: u.username,
+      createdAt: u.createdAt,
+      standaloneMatchCount: u.standaloneMatches.length,
+      standaloneMatches: u.standaloneMatches.map((m) => ({
         id: m.id,
         name: m.name,
         description: m.description,

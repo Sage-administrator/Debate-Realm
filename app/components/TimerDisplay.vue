@@ -63,10 +63,11 @@
       </div>
 
       <!-- 计时器区域 -->
+      <!-- v-memo: 只在环节信息/时间变化时才重渲染，避免每250ms整个区域重绘 -->
       <div class="stage-timer-container" :style="{ gap: typeof uiConfig.stageTimerGap === 'number' ? `${uiConfig.stageTimerGap}px` : '' }">
-        <!-- 当前环节名称 -->
-        <div class="text-center stage-title">
-          <h2 class="font-bold" :class="isSpecialStage ? 'special-stage-text' : 'stage-title-text'" :style="{ color: uiConfig.stageTitleColor || 'white', fontSize: isSpecialStage ? '' : (uiConfig.stageTitleFontSize ? `${uiConfig.stageTitleFontSize}px` : '') }">
+        <!-- 当前环节名称（v-memo：只在环节类型/标题/UI配置变化时重渲染） -->
+        <div v-memo="[isSpecialStage, currentStageFullTitle, uiConfig.stageTitleColor, uiConfig.stageTitleFontSize, uiConfig.stageTitleFontFamily, uiConfig.fontFamily]" class="text-center stage-title">
+          <h2 class="font-bold" :class="isSpecialStage ? 'special-stage-text' : 'stage-title-text'" :style="{ color: uiConfig.stageTitleColor || 'white', fontSize: isSpecialStage ? '' : (typeof uiConfig.stageTitleFontSize === 'number' ? `${uiConfig.stageTitleFontSize}px` : ''), fontFamily: uiConfig.stageTitleFontFamily || uiConfig.fontFamily || '' }">
             {{ currentStageFullTitle }}
           </h2>
         </div>
@@ -77,28 +78,28 @@
           <img :src="pptImage" class="ppt-image" alt="PPT展示" decoding="async" />
         </div>
 
-        <!-- 双计时器显示（直接渲染字符串，避免 v-for 逐个字符渲染导致的频繁 DOM 更新） -->
-        <div v-else-if="isDualTimerStage" class="dual-timer-container">
+        <!-- 双计时器显示（v-memo：只在时间/颜色/字号/字体变化时重渲染，约从4次/秒降到1次/秒） -->
+        <div v-memo="[dualPositiveTime, dualNegativeTime, positiveLabel, negativeLabel, uiConfig.dualTimerColorPos, uiConfig.dualTimerColorNeg, uiConfig.bannerFontColorPos, uiConfig.bannerFontColorNeg, uiConfig.timerFontSize, uiConfig.timerFontFamily]" v-else-if="isDualTimerStage" class="dual-timer-container">
           <div class="dual-timer-display">
             <div class="timer-side positive-side">
               <div
                 class="digital-display digital-text"
-                :style="{ color: uiConfig.bannerFontColorPos || 'rgb(169, 35, 35)', fontSize: uiConfig.timerFontSize ? `${uiConfig.timerFontSize}px` : '', fontFamily: uiConfig.timerFontFamily || 'Digiface, monospace' }"
+                :style="{ color: uiConfig.dualTimerColorPos || uiConfig.bannerFontColorPos || 'rgb(169, 35, 35)', fontSize: uiConfig.timerFontSize ? `${uiConfig.timerFontSize}px` : '', fontFamily: uiConfig.timerFontFamily || 'Digiface, monospace' }"
               >{{ dualPositiveTime }}</div>
               <div class="timer-label positive-label" :style="{ fontFamily: uiConfig.timerFontFamily || '' }">{{ positiveLabel }}</div>
             </div>
             <div class="timer-side negative-side">
               <div
                 class="digital-display digital-text"
-                :style="{ color: uiConfig.bannerFontColorNeg || 'rgb(3, 105, 161)', fontSize: uiConfig.timerFontSize ? `${uiConfig.timerFontSize}px` : '', fontFamily: uiConfig.timerFontFamily || 'Digiface, monospace' }"
+                :style="{ color: uiConfig.dualTimerColorNeg || uiConfig.bannerFontColorNeg || 'rgb(3, 105, 161)', fontSize: uiConfig.timerFontSize ? `${uiConfig.timerFontSize}px` : '', fontFamily: uiConfig.timerFontFamily || 'Digiface, monospace' }"
               >{{ dualNegativeTime }}</div>
               <div class="timer-label negative-label" :style="{ fontFamily: uiConfig.timerFontFamily || '' }">{{ negativeLabel }}</div>
             </div>
           </div>
         </div>
 
-        <!-- 单计时器显示（PPT/无计时器环节不显示，直接渲染字符串避免 v-for 性能损耗） -->
-        <div v-else-if="!isSpecialStage && !isPptStage" class="text-center timer-display-section">
+        <!-- 单计时器显示（v-memo：只在时间/警告状态/颜色/字号/字体变化时重渲染） -->
+        <div v-memo="[displayTime, isTimeWarning, isTimeCritical, uiConfig.timerColor, uiConfig.timerFontSize, uiConfig.timerFontFamily]" v-else-if="!isSpecialStage && !isPptStage" class="text-center timer-display-section">
           <div
             class="digital-display digital-text"
             :class="{
@@ -215,14 +216,14 @@ const currentStageFullTitle = computed(() => {
     return `${stripSep(info.speaker || '正方·一辩')} · ${name}`
   }
   if (isQuestion(type)) {
-    return `${stripSep(info.questioner || '反方·二辩')} · ${name} · ${stripSep(info.responder || '正方·一辩')}`
+    const rList = (info.responders && info.responders.length)
+      ? info.responders.map((r: string) => stripSep(r))
+      : [stripSep(info.responder || '正方·一辩')]
+    return `${stripSep(info.questioner || '反方·二辩')} · ${name} · ${rList.join('、')}`
   }
-  // 自由辩论：率先发言方无需放在环节标题上（仅显示环节名）
+  // 自由辩论 / 对辩：无需发言方在前，仅保留环节名称
   if (normalizeStageType(type) === 'free_debate') {
     return name
-  }
-  if (isBilateral(type)) {
-    return `${stripSep(info.firstSpeaker || '正方·一辩')} · ${name}`
   }
   return name
 })

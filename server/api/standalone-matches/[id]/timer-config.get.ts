@@ -1,6 +1,7 @@
 // 获取独立赛事的完整计时器配置（包括项目信息、环节、UI/皮肤/音频/队徽配置）
 import { prisma } from '../../../lib/prisma'
 import { getUserFromEventWithSession } from '../../../utils/auth'
+import { serializeStage } from '../../../utils/syncStages'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
@@ -65,29 +66,7 @@ export default defineEventHandler(async (event) => {
       skinConfig: project.skinConfig ? JSON.parse(project.skinConfig) : null,
       audioConfig: project.audioConfig ? JSON.parse(project.audioConfig) : null,
       teamLogoConfig: project.teamLogoConfig ? JSON.parse(project.teamLogoConfig) : null,
-      stages: project.stages.map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        duration: s.duration,
-        type: s.type,
-        description: s.description,
-        orderIndex: s.orderIndex,
-        positiveDuration: s.positiveDuration,
-        negativeDuration: s.negativeDuration,
-        allowedRoles: s.allowedRoles ? JSON.parse(s.allowedRoles) : null,
-        speaker: s.speaker,
-        questioner: s.questioner,
-        responder: s.responder,
-        firstSpeaker: s.firstSpeaker,
-        protectionTime: s.protectionTime,
-        positiveSpeakers: s.positiveSpeakers ? JSON.parse(s.positiveSpeakers) : null,
-        negativeSpeakers: s.negativeSpeakers ? JSON.parse(s.negativeSpeakers) : null,
-        speakers: s.speakers ? JSON.parse(s.speakers) : null,
-        questionDuration: s.questionDuration,
-        answerDuration: s.answerDuration,
-        enabled: s.enabled,
-        pptImage: s.pptImage || null,
-      })),
+      stages: project.stages.map(serializeStage),
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
     },

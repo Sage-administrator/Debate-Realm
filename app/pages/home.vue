@@ -15,7 +15,8 @@ const route = useRoute()
 const router = useRouter()
 const { logout } = useAuth()
 const { getTeams, getUsers, createTeam, deleteTeam, deleteUser, resetUserPassword, createUser } = useTeam()
-const { getTournaments, getStandaloneMatches } = useTournament()
+const { getTournaments } = useTournament()
+const { list: getStandaloneMatches } = useStandaloneMatches()
 
 // ── 侧边栏状态 ──
 const sidebarOpen = ref(false)

@@ -43,7 +43,7 @@ async function handleLogin() {
 
   loading.value = true
   try {
-    const result = await login(username.value, password.value)
+    const result = await login({ username: username.value, password: password.value })
 
     // 检测到已有设备登录 → 弹出"不允许多端登录"对话框
     if (result.needConfirm) {
@@ -70,7 +70,7 @@ async function handleLogin() {
 async function handleForceLogin() {
   confirmLoading.value = true
   try {
-    await confirmLogin(username.value, password.value)
+    await confirmLogin({ username: username.value, password: password.value })
     showMultiDeviceDialog.value = false
   } catch (e: any) {
     const statusMessage =

@@ -59,6 +59,7 @@ interface StageInfo {
   speaker?: string
   questioner?: string
   responder?: string
+  responders?: string[] // 单方发问接受人（多选）
   firstSpeaker?: string
   [key: string]: any
 }
@@ -167,15 +168,17 @@ const uiConfig = computed<UIConfig>(() => {
     bannerHeight: 5,
     bannerFontSize: 21,
     labelFontSize: 38,
-    bannerColorPos: '',
-    bannerColorNeg: '',
-    bannerFontColorPos: '',
-    bannerFontColorNeg: '',
-    eventColor: '',
-    titleColor: '',
-    teamNameColor: '',
-    stageTitleColor: '',
-    timerColor: '',
+    bannerColorPos: 'rgb(169, 35, 35)',
+    bannerColorNeg: 'rgb(3, 105, 161)',
+    bannerFontColorPos: 'white',
+    bannerFontColorNeg: 'white',
+    eventColor: 'rgb(3, 105, 161)',
+    titleColor: 'rgb(3, 105, 161)',
+    teamNameColor: 'white',
+    stageTitleColor: 'white',
+    timerColor: 'white',
+    dualTimerColorPos: 'rgb(169, 35, 35)',
+    dualTimerColorNeg: 'rgb(3, 105, 161)',
     eventFontSize: 50,
     stageTitleFontSize: 64,
     teamNameFontSize: 21,

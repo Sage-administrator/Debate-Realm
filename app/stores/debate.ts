@@ -54,6 +54,7 @@ export interface DebateStage {
   speaker?: string
   questioner?: string
   responder?: string
+  responders?: string[] // 单方发问接受人（多选）
   firstSpeaker?: string
   protectionTime?: number
   // 对辩双方参与辩手（多选）
@@ -167,11 +168,20 @@ function generateInitialStatesFrom(stages: DebateStage[]): Record<number, StageS
 
 // ============ 计时心跳引擎（store 层，单一循环） ============
 // 由 start* 动作启动，所有运行中环节共用一个 250ms 心跳。
+// 性能优化：
+//   1. 缓存 store 引用，避免每帧重复调用 useDebateStore()
+//   2. 只在整秒变化时才更新响应式状态（减少 Vue 重渲染次数）
 let loopHandle: ReturnType<typeof setInterval> | null = null
+// 缓存 store 引用（首次调用时初始化，后续直接复用）
+let cachedStore: any = null
 // 提示音穿越检测用的「上一帧剩余秒」快照（按侧记录）
 let prevSingle: number | null = null
 let prevPos: number | null = null
 let prevNeg: number | null = null
+// 上一次写入响应式状态的整秒值（避免每250ms都触发重渲染）
+let lastWrittenSingle: number | null = null
+let lastWrittenPos: number | null = null
+let lastWrittenNeg: number | null = null
 
 /** 根据锚点计算当前剩余秒（向上取整到整秒，最小 0） */
 function remainingFrom(endAt: number): number {
@@ -181,14 +191,16 @@ function remainingFrom(endAt: number): number {
 /** 提示音穿越检测：当剩余秒从上方向下穿过 30/5/0 时触发对应音效 */
 function fireCues(prev: number | null, remaining: number) {
   if (prev === null) return
-  if (prev > 30 && remaining <= 30) getStore().playTimerSound(30)
-  if (prev > 5 && remaining <= 5) getStore().playTimerSound(5)
-  if (prev > 0 && remaining <= 0) getStore().playTimerSound(0)
+  if (prev > 30 && remaining <= 30) cachedStore.playTimerSound(30)
+  if (prev > 5 && remaining <= 5) cachedStore.playTimerSound(5)
+  if (prev > 0 && remaining <= 0) cachedStore.playTimerSound(0)
 }
 
 /** 心跳主循环（模块级，运行时由 store 动作启动） */
 function runLoop() {
-  const store = getStore()
+  // 首次调用时缓存 store 引用
+  if (!cachedStore) cachedStore = useDebateStore()
+  const store = cachedStore
   const s = store.currentStageState as StageState | null
   // 没有任何在计时的环节 → 停止循环，省电
   if (!s || !s.isRunning || s.endAt == null) {
@@ -202,11 +214,19 @@ function runLoop() {
     if (st.activeTimer === 'positive') {
       fireCues(prevPos, remaining)
       prevPos = remaining
-      st.positiveTime = remaining
+      // 只在整秒变化时更新响应式状态，减少重渲染
+      if (remaining !== lastWrittenPos) {
+        st.positiveTime = remaining
+        lastWrittenPos = remaining
+      }
     } else {
       fireCues(prevNeg, remaining)
       prevNeg = remaining
-      st.negativeTime = remaining
+      // 只在整秒变化时更新响应式状态
+      if (remaining !== lastWrittenNeg) {
+        st.negativeTime = remaining
+        lastWrittenNeg = remaining
+      }
     }
     // 当前激活侧耗尽：冻结（endAt 置空），保留 isRunning 以便空格切换另一侧
     if (remaining <= 0) {
@@ -219,11 +239,15 @@ function runLoop() {
     const remaining = remainingFrom(st.endAt!)
     fireCues(prevSingle, remaining)
     prevSingle = remaining
-    st.timeRemaining = remaining
+    // 只在整秒变化时更新响应式状态，减少重渲染（约从4次/秒降到1次/秒）
+    if (remaining !== lastWrittenSingle) {
+      st.timeRemaining = remaining
+      lastWrittenSingle = remaining
+    }
     if (remaining <= 0) {
       st.isRunning = false
       st.endAt = null
-      getStore().completeCurrentStage()
+      store.completeCurrentStage()
       stopLoop()
     }
   }
@@ -241,9 +265,11 @@ function stopLoop() {
   }
 }
 
-// 在模块函数里延迟获取 store 实例（调用时 Pinia 已激活）
-function getStore(): any {
-  return useDebateStore()
+// 重置整秒写入缓存（在开始/重置/切换环节时调用，确保首次值被正确写入）
+function resetWriteCache() {
+  lastWrittenSingle = null
+  lastWrittenPos = null
+  lastWrittenNeg = null
 }
 
 // ============ Store 定义 ============
@@ -367,6 +393,7 @@ export const useDebateStore = defineStore('debate', {
       // 校正当前环节
       if (this.currentStage > sorted.length) this.currentStage = sorted.length
       if (this.currentStage < 1) this.currentStage = 1
+      resetWriteCache()
     },
 
     /** 确保所有环节都有状态（在运行时按需补齐） */
@@ -415,6 +442,7 @@ export const useDebateStore = defineStore('debate', {
         s.endAt = null
       }
       stopLoop()
+      resetWriteCache()
     },
 
     /** 跳转到指定环节（1-based index） */
@@ -486,6 +514,7 @@ export const useDebateStore = defineStore('debate', {
       st.isRunning = true
       st.isPaused = false
       prevSingle = st.timeRemaining
+      resetWriteCache()
       ensureLoop()
     },
 
@@ -526,6 +555,7 @@ export const useDebateStore = defineStore('debate', {
       s.isPaused = false
       s.endAt = null
       stopLoop()
+      resetWriteCache()
     },
 
     /** 设置自定义时间（单计时器） */
@@ -537,6 +567,7 @@ export const useDebateStore = defineStore('debate', {
         s.isPaused = false
         s.endAt = null
         stopLoop()
+        resetWriteCache()
       }
     },
 
@@ -551,6 +582,7 @@ export const useDebateStore = defineStore('debate', {
         s.isPaused = false
         s.endAt = null
         stopLoop()
+        resetWriteCache()
       }
     },
 
@@ -578,6 +610,7 @@ export const useDebateStore = defineStore('debate', {
       st.isPaused = false
       prevPos = st.positiveTime
       prevNeg = st.negativeTime
+      resetWriteCache()
       ensureLoop()
     },
 
@@ -609,6 +642,7 @@ export const useDebateStore = defineStore('debate', {
         st.isPaused = false
         prevPos = st.positiveTime
         prevNeg = st.negativeTime
+        resetWriteCache()
         ensureLoop()
       } else if (currHas) {
         // 保持当前侧继续计时（按需重新锚定）
@@ -619,6 +653,7 @@ export const useDebateStore = defineStore('debate', {
         }
         st.isRunning = true
         st.isPaused = false
+        resetWriteCache()
         ensureLoop()
       } else {
         // 双方均耗尽
@@ -645,6 +680,7 @@ export const useDebateStore = defineStore('debate', {
       st.isPaused = false
       prevPos = st.positiveTime
       prevNeg = st.negativeTime
+      resetWriteCache()
       ensureLoop()
     },
 
@@ -664,6 +700,7 @@ export const useDebateStore = defineStore('debate', {
       st.isPaused = false
       prevPos = st.positiveTime
       prevNeg = st.negativeTime
+      resetWriteCache()
       ensureLoop()
     },
 
@@ -701,6 +738,7 @@ export const useDebateStore = defineStore('debate', {
         }
       }
       stopLoop()
+      resetWriteCache()
     },
 
     // ============ 音效播放 ============
@@ -779,6 +817,7 @@ export const useDebateStore = defineStore('debate', {
       }
       this.completedStages = []
       stopLoop()
+      resetWriteCache()
     },
 
     /** 页面卸载时调用：停止心跳循环并清空提示音快照 */
@@ -787,6 +826,9 @@ export const useDebateStore = defineStore('debate', {
       prevSingle = null
       prevPos = null
       prevNeg = null
+      resetWriteCache()
+      // 页面卸载时也清空缓存的 store 引用，避免跨页面复用旧引用
+      cachedStore = null
     },
   },
 })

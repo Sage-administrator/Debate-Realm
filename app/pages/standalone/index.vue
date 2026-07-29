@@ -6,7 +6,7 @@
 // - 进入赛事详情或删除赛事
 // ════════════════════════════════════════════════════
 const toast = useToast()
-const { getStandaloneMatches, deleteStandaloneMatch } = useTournament()
+const { list: getStandaloneMatches, delete: deleteStandaloneMatch } = useStandaloneMatches()
 
 const matches = ref<any[]>([])
 const loading = ref(true)

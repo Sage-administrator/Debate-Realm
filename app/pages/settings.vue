@@ -228,9 +228,9 @@ async function saveProfile() {
   try {
     await updateProfile({
       username: form.username.trim(),
-      nickname: form.nickname.trim() || null,
-      email: form.email.trim() || null,
-      avatar: form.avatar.trim() || null,
+      nickname: form.nickname.trim() || undefined,
+      email: form.email.trim() || undefined,
+      avatar: form.avatar.trim() || undefined,
     })
     // 成功提示
     showToast('个人信息已保存')

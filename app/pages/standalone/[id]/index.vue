@@ -4,7 +4,7 @@ definePageMeta({ layout: 'standalone' })
 
 const route = useRoute()
 const toast = useToast()
-const { deleteStandaloneMatch } = useTournament()
+const { delete: deleteStandaloneMatch } = useStandaloneMatches()
 
 // 从布局层注入的赛事数据
 const standaloneMatch = inject<Ref<any>>('standaloneMatch')!

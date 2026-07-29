@@ -7,7 +7,9 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "start": "node start.mjs",
+    "release": "nuxt build && node scripts/fix-nitro-output.mjs && node start.mjs",
+    "start": "node scripts/fix-nitro-output.mjs && node start.mjs",
+    "validate:templates": "node scripts/validate-debate-templates.mjs",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {

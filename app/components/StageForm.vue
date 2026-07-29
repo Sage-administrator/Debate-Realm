@@ -14,8 +14,11 @@ interface StageFormData {
   duration: number
   protectionTime: number
   speaker?: string
+  speakerMode?: number       // 0=正常 1=反向
   questioner?: string
-  responder?: string
+  questionerMode?: number
+  responders?: string[]      // 单方发问接受人（多选）
+  respondersMode?: number
   firstSpeaker?: string
   // 对辩双方参与辩手（多选）
   positiveSpeakers?: string[]
@@ -42,14 +45,25 @@ const emit = defineEmits<{
 // 上传需要鉴权：PPT 图片上传走 /api/upload（服务端校验 tokenVersion），必须带上 Bearer token
 const authStore = useAuthStore()
 
+// 向后兼容：旧数据的 responder 是单值字符串，新数据用 responders（数组）
+// 模板/DB 可能提供其中任意一个，这里统一解析为数组
+function resolveResponders(mv: StageFormData | null | undefined): string[] {
+  if (mv?.responders && mv.responders.length) return [...mv.responders]
+  if (mv?.responder && typeof mv.responder === 'string') return [mv.responder]
+  return ['正方 · 一辩']
+}
+
 const localData = ref<StageFormData>({
   type: props.modelValue?.type || '',
   name: props.modelValue?.name || '',
   duration: props.modelValue?.duration ?? 180,
   protectionTime: props.modelValue?.protectionTime ?? 0,
   speaker: props.modelValue?.speaker || '正方 · 一辩',
+  speakerMode: props.modelValue?.speakerMode ?? 0,
   questioner: props.modelValue?.questioner || '反方 · 二辩',
-  responder: props.modelValue?.responder || '正方 · 一辩',
+  questionerMode: props.modelValue?.questionerMode ?? 0,
+  responders: resolveResponders(props.modelValue),
+  respondersMode: props.modelValue?.respondersMode ?? 0,
   firstSpeaker: props.modelValue?.firstSpeaker || '正方 · 一辩',
   positiveSpeakers: props.modelValue?.positiveSpeakers || [],
   negativeSpeakers: props.modelValue?.negativeSpeakers || [],
@@ -59,18 +73,41 @@ const localData = ref<StageFormData>({
   pptImage: props.modelValue?.pptImage || '',
 })
 
+// 环节表单数据深比较：用于双向 watch 的回环保护。
+// 父组件（timing 页）在收到 update:modelValue 后会就地修改 stage 并重新下发新的 :model-value 对象，
+// 若两个 watch 各自无脑回写就会无限互触发（Maximum recursive updates），并导致 RolePicker 的
+// <Transition> 离场被打断、下拉卡在可见状态。只有"值真的变化"时才回写，打断回环。
+function stageDataEqual(
+  a: StageFormData | null | undefined,
+  b: StageFormData | null | undefined,
+): boolean {
+  if (!a || !b) return a === b
+  const keys: (keyof StageFormData)[] = [
+    'type', 'name', 'duration', 'protectionTime', 'speaker', 'speakerMode', 'questioner', 'questionerMode',
+    'responders', 'respondersMode', 'firstSpeaker', 'positiveSpeakers', 'negativeSpeakers',
+    'questionDuration', 'answerDuration', 'pptImage', 'speakers',
+  ]
+  for (const k of keys) {
+    if (JSON.stringify(a[k]) !== JSON.stringify(b[k])) return false
+  }
+  return true
+}
+
 watch(
   () => props.modelValue,
   (val) => {
-    if (val) {
+    if (val && !stageDataEqual(val, localData.value)) {
       localData.value = {
         type: val.type || '',
         name: val.name || '',
         duration: val.duration ?? 180,
         protectionTime: val.protectionTime ?? 0,
         speaker: val.speaker || '正方 · 一辩',
+        speakerMode: val.speakerMode ?? 0,
         questioner: val.questioner || '反方 · 二辩',
-        responder: val.responder || '正方 · 一辩',
+        questionerMode: val.questionerMode ?? 0,
+        responders: resolveResponders(val),
+        respondersMode: val.respondersMode ?? 0,
         firstSpeaker: val.firstSpeaker || '正方 · 一辩',
         positiveSpeakers: val.positiveSpeakers || [],
         negativeSpeakers: val.negativeSpeakers || [],
@@ -87,7 +124,9 @@ watch(
 watch(
   localData,
   (val) => {
-    emit('update:modelValue', { ...val })
+    if (!stageDataEqual(val, props.modelValue)) {
+      emit('update:modelValue', { ...val })
+    }
   },
   { deep: true },
 )
@@ -154,7 +193,7 @@ function clearPptImage() {
       <!-- ==== 单方发言：发言方 ==== -->
       <div v-if="isSpeech(localData.type)" class="form-field">
         <label class="form-label">发言方</label>
-        <RolePicker v-model="localData.speaker" multiple reverse placeholder="请选择发言方（可多选，或排除某辩手）" />
+        <RolePicker v-model="localData.speaker" v-model:mode="localData.speakerMode" multiple reverse placeholder="请选择发言方（可多选，或排除某辩手）" />
         <p class="form-hint">用下拉顶部的「正常 / 排除」切换：正常模式可勾选多位辩手（如"正方 · 一/二辩"）；排除模式下勾选要排除的辩手，其余同方辩手均可发言（获得发言权限）。</p>
       </div>
 
@@ -162,12 +201,12 @@ function clearPptImage() {
       <div v-if="isQuestion(localData.type)" class="form-row-2col">
         <div class="form-field">
           <label class="form-label">发问人</label>
-          <RolePicker v-model="localData.questioner" multiple reverse placeholder="请选择发问人（可多选，或排除某辩手）" />
+          <RolePicker v-model="localData.questioner" v-model:mode="localData.questionerMode" multiple reverse placeholder="请选择发问人（可多选，或排除某辩手）" />
           <p class="form-hint">下拉顶部「正常 / 排除」切换：正常可勾选多位辩手；排除模式勾选要排除的辩手，其余同方辩手均可发问。</p>
         </div>
         <div class="form-field">
           <label class="form-label">接受人</label>
-          <RolePicker v-model="localData.responder" multiple reverse placeholder="请选择接受人（可多选，或排除某辩手）" />
+          <RolePicker v-model="localData.responders" v-model:mode="localData.respondersMode" multiple reverse placeholder="请选择接受人（可多选，或排除某辩手）" />
           <p class="form-hint">下拉顶部「正常 / 排除」切换：正常可勾选多位辩手；排除模式勾选要排除的辩手，其余同方辩手均可接受发问。</p>
         </div>
       </div>

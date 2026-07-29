@@ -11,10 +11,11 @@
 definePageMeta({ layout: 'tournament' })
 
 // ═══════════ 导入 ═══════════
-import { computed, ref, onMounted, watch, watchEffect } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import TimerPreviewCard from '~/components/TimerPreviewCard.vue'
 import StageForm from '~/components/StageForm.vue'
 import { debateTemplates } from '~/data/debate-templates'
+import { typeLabel, hasTimer, isDualTimer, isNoTimer, isPpt, normalizeStageType } from '~/utils/stageType'
 
 // ═══════════ 类型定义 ═══════════
 interface Stage {
@@ -29,8 +30,12 @@ interface Stage {
   negativeDuration?: number
   // 角色相关
   speaker?: string
+  speakerMode?: number
   questioner?: string
+  questionerMode?: number
   responder?: string
+  responders?: string[]
+  respondersMode?: number
   firstSpeaker?: string
   protectionTime?: number
   // 对辩双方参与辩手（多选）
@@ -66,16 +71,23 @@ const expandedId = ref<number | string | null>(null)
 // 模板选择弹窗
 const showTemplateModal = ref(false)
 
+function openTemplateModal() {
+  showTemplateModal.value = true
+}
+
+function closeTemplateModal() {
+  showTemplateModal.value = false
+}
+
 
 // 应用选定的模板
 function applyTemplate(tplId: string) {
   const tpl = debateTemplates.find(t => t.id === tplId)
   if (!tpl) return
+  // 模板 stages 已用正式字段名 orderIndex，直接展开即可（id 在套用时生成）
   config.value.stages = tpl.stages.map(s => ({
     id: genTmpId(),
     ...s,
-    // 模板用 1-based 的 order，真实 Stage 用 orderIndex 排序，这里做一次映射
-    orderIndex: s.order,
   }))
   showTemplateModal.value = false
   stageChangeCounter.value++ // 触发自动保存
@@ -116,7 +128,7 @@ const dualTypes = [
   { name: '自由辩论' },
 ]
 
-// typeLabel / hasTimer / isDualTimer 统一使用 app/utils/stageType.ts 的实现（Nuxt 4 自动导入）
+// typeLabel / hasTimer / isDualTimer 统一使用 app/utils/stageType.ts 的实现
 
 // 获取环节对应的角色信息（用于卡片头标题显示）
 function getStageSpeaker(stage: any): string {
@@ -124,15 +136,21 @@ function getStageSpeaker(stage: any): string {
   const speaker = stage.speaker
   const questioner = stage.questioner
   const responder = stage.responder
+  const responders = stage.responders // 多接盘：数组或 null
   const first = stage.firstSpeaker
 
   // 单方发言：正方一辩·开篇陈词
   if (t === 'single_speech' || t === 'speech' || t === 'question' || t === 'summary') {
     return (speaker || '正方·一辩').replace(/[·\/\s\-]/g, '')
   }
-  // 单方发问：反方二辩·质询·正方一辩
+  // 单方发问：反方二辩·质询·正方一辩（多人接盘用「、」拼接，排除模式用「除XX外」）
   if (t === 'single_question') {
-    return `${(questioner || '反方·二辩').replace(/[·\/\s\-]/g, '')}·${stage.name || ''}·${(responder || '正方·一辩').replace(/[·\/\s\-]/g, '')}`
+    const strip = (s: string) => (s || '').replace(/[·\/\s\-]/g, '')
+    const q = strip(questioner || '反方·二辩')
+    const rList = (responders && responders.length)
+      ? responders.map((r: string) => strip(r))
+      : [strip(responder || '正方·一辩')]
+    return `${q} · ${stage.name || ''} · ${rList.join('、')}`
   }
   // 双边对辩/自由辩论：正方一辩·自由辩论
   if (isDualTimer(t)) {
@@ -211,12 +229,12 @@ function addStageByType(type: string, name: string) {
   const newStage: Stage = {
     id: genTmpId(),
     name,
-    duration: type === 'special' ? 0 : 180,
+    duration: (isNoTimer(type) || isPpt(type)) ? 0 : 180,
     type: type as Stage['type'],
     orderIndex: config.value.stages.length + 1,
     description: '',
   }
-  if (type === 'dual-timer') {
+  if (isDualTimer(type)) {
     newStage.positiveDuration = 120
     newStage.negativeDuration = 120
   }
@@ -303,7 +321,7 @@ function onStageFormUpdate(stage: Stage, formData: {
   protectionTime: number
   speaker?: string
   questioner?: string
-  responder?: string
+  responders?: string[] // 单方发问接受人（多选，与 StageForm 对齐）
   firstSpeaker?: string
   positiveSpeakers?: string[]
   negativeSpeakers?: string[]
@@ -316,8 +334,11 @@ function onStageFormUpdate(stage: Stage, formData: {
   stage.name = formData.name
   stage.protectionTime = formData.protectionTime
   stage.speaker = formData.speaker
+  stage.speakerMode = formData.speakerMode
   stage.questioner = formData.questioner
-  stage.responder = formData.responder
+  stage.questionerMode = formData.questionerMode
+  stage.responders = formData.responders
+  stage.respondersMode = formData.respondersMode
   stage.firstSpeaker = formData.firstSpeaker
   stage.positiveSpeakers = formData.positiveSpeakers
   stage.negativeSpeakers = formData.negativeSpeakers
@@ -480,7 +501,7 @@ watch(
             <!-- 环节卡片列表（可拖拽排序）-->
             <div class="stages-scroll">
               <!-- 顶部：使用模板按钮（随列表滚动） -->
-              <button class="template-btn" @click="() => { showTemplateModal = true }">
+              <button class="template-btn" @click="openTemplateModal">
                 <UIcon name="i-lucide-download" class="template-btn-icon" />
                 <span>使用模板</span>
               </button>
@@ -527,7 +548,7 @@ watch(
                         {{ (stage.speaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }} · {{ stage.name }}
                       </template>
                       <template v-else-if="stage.type === 'single_question'">
-                        {{ (stage.questioner || '反方·二辩').replace(/[·\/\s\-]/g, '') }} · {{ stage.name }} · {{ (stage.responder || '正方·一辩').replace(/[·\/\s\-]/g, '') }}
+                        {{ getStageSpeaker(stage) }}
                       </template>
                       <template v-else-if="isDualTimer(stage.type)">
                         <template v-if="normalizeStageType(stage.type) === 'free_debate'">{{ stage.name }}</template>
@@ -553,8 +574,12 @@ watch(
                       duration: isDualTimer(stage.type) ? (stage.positiveDuration ?? 120) : (stage.duration ?? 180),
                       protectionTime: stage.protectionTime ?? 0,
                       speaker: stage.speaker || '正方 · 一辩',
+                      speakerMode: stage.speakerMode ?? 0,
                       questioner: stage.questioner || '反方 · 二辩',
+                      questionerMode: stage.questionerMode ?? 0,
                       responder: stage.responder || '正方 · 一辩',
+                      responders: stage.responders || null,
+                      respondersMode: stage.respondersMode ?? 0,
                       firstSpeaker: stage.firstSpeaker || '正方 · 一辩',
                       positiveSpeakers: stage.positiveSpeakers || [],
                       negativeSpeakers: stage.negativeSpeakers || [],
@@ -593,11 +618,11 @@ watch(
     </div>
 
     <!-- ═══ 模板选择弹窗 ═══ -->
-    <div v-if="showTemplateModal" class="template-modal-mask" @click.self="showTemplateModal = false">
+    <div v-if="showTemplateModal" class="template-modal-mask" @click.self="closeTemplateModal">
       <div class="template-modal">
         <div class="template-modal-header">
           <h3 class="text-lg font-bold text-[var(--color-text-primary)]/90">选择计时器模板</h3>
-          <button class="template-modal-close" @click="() => { showTemplateModal = false }">×</button>
+          <button class="template-modal-close" @click="closeTemplateModal">×</button>
         </div>
         <div class="template-modal-body">
           <div
@@ -626,10 +651,16 @@ watch(
 
 /* ═══════════ 分类栏与环节配置 ═══════════ */
 .category-sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 11.25rem;
-  flex-shrink: 0;
+  height: 100%;
   border-right: 1px solid var(--color-border);
   padding: 0.75rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
 }
 
 .category-group {
@@ -1023,7 +1054,6 @@ watch(
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .stages-flex-container {
@@ -1031,24 +1061,14 @@ watch(
   min-height: 0;
 }
 
-.category-sidebar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 11.25rem;
-  height: 100%;
-  border-right: 1px solid var(--color-border);
-  padding: 0.75rem;
-  overflow-y: auto;
-  flex-shrink: 0;
-}
-
 .stages-right-container {
+  position: relative;
   margin-left: calc(11.25rem + 1rem);
   min-width: 0;
 }
 
 .stages-scroll {
+  position: relative;
   overflow-y: auto;
   max-height: 72vh;
   padding-bottom: 0.25rem;

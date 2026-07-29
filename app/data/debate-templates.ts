@@ -1,41 +1,49 @@
 // 辩论计时器模板列表
 // 从 timing.vue 抽出，便于后续扩展（用户自建/分享模板）
 //
-// ⚠️ 数据结构必须与计时器真实的 Stage 字段对齐（见 app/pages/tournaments/[id]/timing.vue 的 Stage 接口
-// 与 app/components/StageForm.vue 的 StageFormData）。applyTemplate 会把它整体灌入 fullConfig.stages，
-// 缺的字段在计时器标题/角色联动里就显示不出来（例如率先发言方、质询方等）。
+// ⚠️ 数据结构严格遵循 app/data/debate-template.schema.json（JSON Schema），
+//    以对齐后端「正式」环节结构：prisma/schema.prisma 的 DebateTimerStage 模型
+//    + server/utils/syncStages.ts 的 buildStageData()/serializeStage()。
+//    运行 `npm run validate:templates` 可校验本文件是否与 schema 对齐（字段名/类型漂移会报错）。
 //
-// 角色字段取值格式（来自 RolePicker，中文「·」两侧带空格）：
-//   "正方 · 一辩" / "反方 · 二辩" / "正方 · 全体" 等
-// 多选字段（positiveSpeakers / negativeSpeakers / speakers）为上述字符串的数组。
+// 字段名必须与正式结构一致：
+//   - 排序字段是 `orderIndex`（不是 `order`）
+//   - 角色取值格式（来自 RolePicker，中文「·」两侧带空格）："正方 · 一辩" / "反方 · 二辩"
+//   - 多选字段（positiveSpeakers / negativeSpeakers / speakers / allowedRoles）为字符串数组
+//   - 模板是蓝图，不含 id / projectId（applyTemplate 套用时生成）
 
 export interface DebateTemplateStage {
   name: string
   duration: number
   type: string
-  order: number // 1-based，applyTemplate 会映射到 Stage.orderIndex
+  orderIndex: number // 1-based，对应 DebateTimerStage.orderIndex（正式字段名）
+  description?: string | null
   // —— 双计时（自由辩论 / 双边对辩）——
-  positiveDuration?: number
-  negativeDuration?: number
-  // —— 单方发言 / 小结 / 总结陈词（计时环节）：发言方（单选）——
-  // 注意：PPT 展示环节属于「无计时器」类，不用此字段，改用下方 speakers（多选，做发言权限联动）
-  speaker?: string
+  positiveDuration?: number | null
+  negativeDuration?: number | null
+  // —— 单方发言 / 小结 / 总结陈词：发言方 ——
+  speaker?: string | null
   // —— 单方发问：发问人 + 接受人 ——
-  questioner?: string
-  responder?: string
+  questioner?: string | null
+  responder?: string | null // [已废弃] 单值，保留向后兼容
+  responders?: string[] | null // 接受人（多选），如 ["正方 · 一辩","反方 · 二辩"]
   // 单方发问：提问/回答拆分时长（不填则整体用 duration）
-  questionDuration?: number
-  answerDuration?: number
+  questionDuration?: number | null
+  answerDuration?: number | null
   // —— 双边对辩 / 自由辩论：率先发言方 + 双方参与辩手（多选）——
-  firstSpeaker?: string
-  positiveSpeakers?: string[]
-  negativeSpeakers?: string[]
-  // 发问 / 对辩保护时间（秒，0 表示不启用）
-  protectionTime?: number
-  // —— 无计时器环节（含 PPT 展示环节）：可发言角色（多选），用于 QQ 频道发言权限联动 ——
-  speakers?: string[]
-  // 备注
-  description?: string
+  firstSpeaker?: string | null
+  positiveSpeakers?: string[] | null
+  negativeSpeakers?: string[] | null
+  // 发问 / 对辩保护时间（秒，0/null 表示不启用）
+  protectionTime?: number | null
+  // 允许发言的角色 label 列表（用于发言权限联动），如 ["正方一辩","反方二辩"]
+  allowedRoles?: string[] | null
+  // 无计时器环节：可发言角色（多选，角色 label）
+  speakers?: string[] | null
+  // 环节启用开关（默认 true）
+  enabled?: boolean
+  // PPT/图片展示环节的图片路径（/uploads/images/...），纯播报不计时
+  pptImage?: string | null
 }
 
 export interface DebateTemplate {
@@ -51,80 +59,34 @@ const NEG_ALL = ['反方 · 一辩', '反方 · 二辩', '反方 · 三辩', '�
 
 export const debateTemplates: DebateTemplate[] = [
   {
-    id: 'international',
-    name: '国际华语辩论邀请赛',
-    description: '标准赛制：立论、质询、小结、自由辩论、总结陈词',
-    stages: [
-      { name: '正方一辩立论', duration: 180, type: 'single_speech', order: 1, speaker: '正方 · 一辩' },
-      { name: '反方四辩质询正方一辩', duration: 120, type: 'single_question', order: 2, questioner: '反方 · 四辩', responder: '正方 · 一辩' },
-      { name: '反方一辩立论', duration: 180, type: 'single_speech', order: 3, speaker: '反方 · 一辩' },
-      { name: '正方四辩质询反方一辩', duration: 120, type: 'single_question', order: 4, questioner: '正方 · 四辩', responder: '反方 · 一辩' },
-      { name: '正方二辩申论', duration: 180, type: 'single_speech', order: 5, speaker: '正方 · 二辩' },
-      { name: '反方三辩质询正方二辩', duration: 120, type: 'single_question', order: 6, questioner: '反方 · 三辩', responder: '正方 · 二辩' },
-      { name: '反方二辩申论', duration: 180, type: 'single_speech', order: 7, speaker: '反方 · 二辩' },
-      { name: '正方三辩质询反方二辩', duration: 120, type: 'single_question', order: 8, questioner: '正方 · 三辩', responder: '反方 · 二辩' },
-      { name: '正方三辩小结', duration: 120, type: 'summary', order: 9, speaker: '正方 · 三辩' },
-      { name: '反方三辩小结', duration: 120, type: 'summary', order: 10, speaker: '反方 · 三辩' },
-      {
-        name: '自由辩论', duration: 240, type: 'free_debate', order: 11,
-        positiveDuration: 120, negativeDuration: 120,
-        firstSpeaker: '正方 · 一辩', positiveSpeakers: [...POS_ALL], negativeSpeakers: [...NEG_ALL],
-        protectionTime: 0,
-      },
-      { name: '反方四辩总结陈词', duration: 240, type: 'summary', order: 12, speaker: '反方 · 四辩' },
-      { name: '正方四辩总结陈词', duration: 240, type: 'summary', order: 13, speaker: '正方 · 四辩' },
-    ]
-  },
-  {
     id: 'worldcup2024',
     name: '华语辩论世界杯[2024]',
-    description: '简化赛制：立论、质询、自由辩论、总结陈词',
+    description: '赛制：立论、质询、自由辩论、总结陈词',
     stages: [
-      { name: '立论', duration: 210, type: 'single_speech', order: 1, speaker: '正方 · 一辩' },
-      { name: '质询', duration: 150, type: 'single_question', order: 2, questioner: '反方 · 二辩', responder: '正方 · 一辩' },
-      { name: '立论', duration: 210, type: 'single_speech', order: 3, speaker: '反方 · 一辩' },
-      { name: '质询', duration: 150, type: 'single_question', order: 2, questioner: '正方 · 二辩', responder: '反方 · 一辩' },
-      { name: '质询小结', duration: 180, type: 'single_speech', order: 5, speaker: '反方 · 二辩' },
-      { name: '质询小结', duration: 180, type: 'single_speech', order: 5, speaker: '正方 · 二辩' },
+      { name: '立论', duration: 210, type: 'single_speech', orderIndex: 1, speaker: '正方 · 一辩' },
+      { name: '质询', duration: 120, type: 'single_question', orderIndex: 2, questioner: '反方 · 二辩', responders: ['正方 · 一辩'] },
+      { name: '立论', duration: 210, type: 'single_speech', orderIndex: 3, speaker: '反方 · 一辩' },
+      { name: '质询', duration: 120, type: 'single_question', orderIndex: 4, questioner: '正方 · 二辩', responders: ['反方 · 一辩'] },
+      { name: '质询小结', duration: 90, type: 'single_speech', orderIndex: 5, speaker: '反方 · 二辩' },
+      { name: '质询小结', duration: 90, type: 'single_speech', orderIndex: 6, speaker: '正方 · 二辩' },
       {
-        name: '双方四辩对辩', duration: 240, type: 'free_debate', order: 7,
-        positiveDuration: 120, negativeDuration: 120,
-        firstSpeaker: '正方 · 四辩', positiveSpeakers: [...POS_ALL], negativeSpeakers: [...NEG_ALL],
+        name: '双方四辩对辩', duration: 180, type: 'bilateral_debate', orderIndex: 7,
+        positiveDuration: 90, negativeDuration: 90,
+        firstSpeaker: '正方 · 四辩', positiveSpeakers: ["正方 · 四辩"], negativeSpeakers: ["反方 · 四辩"],
         protectionTime: 0,
       },
-      { name: '反方三辩总结陈词', duration: 210, type: 'summary', order: 8, speaker: '反方 · 三辩' },
-      { name: '正方三辩总结陈词', duration: 210, type: 'summary', order: 9, speaker: '正方 · 三辩' },
-    ]
-  },
-  {
-    id: 'simple',
-    name: '简单标准赛制',
-    description: '四环节：立论、攻辩、自由辩论、总结陈词',
-    stages: [
-      { name: '开篇立论', duration: 180, type: 'single_speech', order: 1, speaker: '正方 · 一辩' },
-      { name: '攻辩', duration: 120, type: 'single_speech', order: 2, speaker: '反方 · 二辩' },
+      { name: '质询', duration: 90, type: 'single_question', orderIndex: 8, questioner: '正方 · 三辩', responders: ['反方 · 一辩','反方 · 二辩','反方 · 四辩'] },
+      { name: '质询', duration: 90, type: 'single_question', orderIndex: 9, questioner: '反方 · 三辩', responders: ['正方 · 一辩','正方 · 二辩','正方 · 四辩'] },
+      { name: '质询小结', duration: 90, type: 'single_speech', orderIndex: 10, speaker: '正方 · 三辩' },
+      { name: '质询小结', duration: 90, type: 'single_speech', orderIndex: 11, speaker: '反方 · 三辩' },
       {
-        name: '自由辩论', duration: 240, type: 'free_debate', order: 3,
-        positiveDuration: 120, negativeDuration: 120,
+        name: '自由辩论', duration: 480, type: 'free_debate', orderIndex: 12,
+        positiveDuration: 240, negativeDuration: 240,
         firstSpeaker: '正方 · 一辩', positiveSpeakers: [...POS_ALL], negativeSpeakers: [...NEG_ALL],
         protectionTime: 0,
       },
-      { name: '总结陈词', duration: 180, type: 'summary', order: 4, speaker: '反方 · 四辩' },
-    ]
-  },
-  {
-    id: 'englishbp',
-    name: '英国议会制辩论赛',
-    description: 'BP赛制：四位首相/反对党发言（映射为正方/反方 一~四辩）',
-    stages: [
-      { name: '首相', duration: 420, type: 'single_speech', order: 1, speaker: '正方 · 一辩' },
-      { name: '反对党领袖', duration: 420, type: 'single_speech', order: 2, speaker: '反方 · 一辩' },
-      { name: '副首相', duration: 420, type: 'single_speech', order: 3, speaker: '正方 · 二辩' },
-      { name: '反对党副领袖', duration: 420, type: 'single_speech', order: 4, speaker: '反方 · 二辩' },
-      { name: '政府成员', duration: 420, type: 'single_speech', order: 5, speaker: '正方 · 三辩' },
-      { name: '反对党成员', duration: 420, type: 'single_speech', order: 6, speaker: '反方 · 三辩' },
-      { name: '政府党鞭', duration: 420, type: 'single_speech', order: 7, speaker: '正方 · 四辩' },
-      { name: '反对党党鞭', duration: 420, type: 'single_speech', order: 8, speaker: '反方 · 四辩' },
+      { name: '总结陈词', duration: 210, type: 'summary', orderIndex: 13, speaker: '反方 · 四辩' },
+      { name: '总结陈词', duration: 210, type: 'summary', orderIndex: 14, speaker: '正方 · 四辩' },
     ]
   },
 ]

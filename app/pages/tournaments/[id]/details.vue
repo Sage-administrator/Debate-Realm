@@ -44,6 +44,8 @@ const defaultUiConfig = {
   // —— 颜色 ——
   stageTitleColor: '#FFFFFF',   // 环节名颜色
   timerColor: '#FFFFFF',        // 计时数字颜色（非告警态）
+  dualTimerColorPos: 'rgb(169, 35, 35)',   // 双计时器正方数字颜色（红）
+  dualTimerColorNeg: 'rgb(3, 105, 161)',   // 双计时器反方数字颜色（蓝）
   bannerColorPos: '#A92323',    // 横幅颜色·正方（红）
   bannerColorNeg: '#0369A1',    // 横幅颜色·反方（蓝）
   bannerFontColorPos: '#FFFFFF',// 横幅文字颜色·正方
@@ -84,7 +86,16 @@ const tournamentId = computed(() => route.params.id as string)
 const previewStageIndex = ref(0)
 
 // ═══════════ 生命周期 ═══════════
-onMounted(() => loadConfig(tournamentId.value, 'tournament'))
+onMounted(async () => {
+  await loadConfig(tournamentId.value, 'tournament')
+  // 首次打开或 uiConfig 为空时，用默认值补齐，确保颜色选择器/预览有正确初始值
+  if (!config.value.uiConfig || Object.keys(config.value.uiConfig).length === 0) {
+    config.value.uiConfig = { ...defaultUiConfig }
+  } else {
+    // 以默认值为底，已有配置值覆盖（保持兼容：用户未改的字段用默认值）
+    config.value.uiConfig = { ...defaultUiConfig, ...config.value.uiConfig }
+  }
+})
 
 // 配置变化时自动保存（防抖）
 let saveTimeout: ReturnType<typeof setTimeout> | null = null
@@ -349,12 +360,28 @@ watch(
           </label>
           <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 grid grid-cols-3 gap-3">
             <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">颜色（非告警态）</label>
+              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">单计时器颜色（非告警态）</label>
               <div class="flex items-center gap-2">
                 <ColorPicker v-model="config.uiConfig.timerColor" />
                 <input type="text" v-model="config.uiConfig.timerColor" class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="#FFFFFF" />
               </div>
             </div>
+            <div>
+              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">双计时器正方数字</label>
+              <div class="flex items-center gap-2">
+                <ColorPicker v-model="config.uiConfig.dualTimerColorPos" :preset-colors="bannerColorPresets" />
+                <input type="text" v-model="config.uiConfig.dualTimerColorPos" class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="rgb(169, 35, 35)" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">双计时器反方数字</label>
+              <div class="flex items-center gap-2">
+                <ColorPicker v-model="config.uiConfig.dualTimerColorNeg" :preset-colors="bannerColorPresets" />
+                <input type="text" v-model="config.uiConfig.dualTimerColorNeg" class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="rgb(3, 105, 161)" />
+              </div>
+            </div>
+          </div>
+          <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 grid grid-cols-2 gap-3 mt-3">
             <div>
               <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字体（留空=数码字体）</label>
               <select

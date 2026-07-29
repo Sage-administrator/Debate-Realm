@@ -6,7 +6,8 @@ definePageMeta({ layout: 'tournament' })
 const route = useRoute()
 const toast = useToast()
 const authStore = useAuthStore()
-const { getTournament, updateTournament, createMatch, deleteTournament, deleteMatch, submitResult } = useTournament()
+const { getTournament, updateTournament, createMatch, deleteTournament } = useTournament()
+const { delete: deleteMatch, submitResult } = useMatchDetail()
 
 const tournament = inject<Ref<any>>('tournament')!
 const tournamentId = computed(() => route.params.id as string)

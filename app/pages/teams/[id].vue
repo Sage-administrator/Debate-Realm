@@ -9,7 +9,7 @@
 const route = useRoute()
 const toast = useToast()
 const store = useAuthStore()
-const { getTeam, updateTeam, getTeamMembers, updateTeamMember, resetTeamMemberPassword, deleteTeamMember, cleanupTeamMembers } = useTeam()
+const { getTeam, updateTeam, getMembers, updateMember, resetMemberPassword, deleteMember, cleanupMembers } = useTeam()
 
 const team = ref<any>(null)
 const members = ref<any[]>([])
@@ -74,7 +74,7 @@ async function loadTeam() {
   try {
     const [teamData, membersData] = await Promise.all([
       getTeam(teamId.value),
-      getTeamMembers(teamId.value),
+      getMembers(teamId.value),
     ])
     team.value = teamData
     members.value = membersData
@@ -109,7 +109,7 @@ async function handleUpdateTeam() {
 async function handleDeleteMember(userId: string, username: string) {
   if (!confirm(`确定要删除子账号「${username}」吗？`)) return
   try {
-    await deleteTeamMember(teamId.value, userId)
+    await deleteMember(teamId.value, userId)
     toast.add({ title: '子账号已删除', color: 'success' })
     loadTeam()
   } catch (e: any) {
@@ -137,7 +137,7 @@ async function handleUpdateMember() {
   }
   savingMember.value = true
   try {
-    await updateTeamMember(teamId.value, editingMember.value.userId, {
+    await updateMember(teamId.value, editingMember.value.userId, {
       username: editMemberForm.username.trim(),
       nickname: editMemberForm.nickname.trim() || null,
       email: editMemberForm.email.trim() || null,
@@ -179,7 +179,7 @@ async function handleResetPassword() {
   }
   resettingPassword.value = true
   try {
-    const res = await resetTeamMemberPassword(
+    const res = await resetMemberPassword(
       teamId.value,
       resettingMember.value.userId,
       resetPasswordForm.newPassword,
@@ -200,7 +200,7 @@ async function handleCleanupMembers() {
   if (!confirm(`⚠️ 确定要删除该团队的所有子账号吗？（共 ${members.value.filter((m: any) => m.role === 'subaccount').length} 个）\n\n此操作将删除所有子账号用户及其数据，不可撤销！`)) return
   cleaningMember.value = true
   try {
-    const result = await cleanupTeamMembers(teamId.value)
+    const result = await cleanupMembers(teamId.value)
     toast.add({ title: `清理完成：${result.message}`, color: 'success' })
     loadTeam()
   } catch (e: any) {

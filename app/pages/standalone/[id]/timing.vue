@@ -29,8 +29,12 @@ interface Stage {
   negativeDuration?: number
   // 角色相关
   speaker?: string
+  speakerMode?: number
   questioner?: string
+  questionerMode?: number
   responder?: string
+  responders?: string[]
+  respondersMode?: number
   firstSpeaker?: string
   protectionTime?: number
   // 对辩双方参与辩手（多选）
@@ -71,11 +75,10 @@ const showTemplateModal = ref(false)
 function applyTemplate(tplId: string) {
   const tpl = debateTemplates.find(t => t.id === tplId)
   if (!tpl) return
+  // 模板 stages 已用正式字段名 orderIndex，直接展开即可（id 在套用时生成）
   config.value.stages = tpl.stages.map(s => ({
     id: genTmpId(),
     ...s,
-    // 模板用 1-based 的 order，真实 Stage 用 orderIndex 排序，这里做一次映射
-    orderIndex: s.order,
   }))
   showTemplateModal.value = false
 }
@@ -123,15 +126,21 @@ function getStageSpeaker(stage: any): string {
   const speaker = stage.speaker
   const questioner = stage.questioner
   const responder = stage.responder
+  const responders = stage.responders
   const first = stage.firstSpeaker
 
   // 单方发言：正方一辩·开篇陈词
   if (t === 'single_speech' || t === 'speech' || t === 'question' || t === 'summary') {
     return (speaker || '正方·一辩').replace(/[·\/\s\-]/g, '')
   }
-  // 单方发问：反方二辩·质询·正方一辩
+  // 单方发问：反方二辩·质询·正方一辩（多人接盘用「、」拼接）
   if (t === 'single_question') {
-    return `${(questioner || '反方·二辩').replace(/[·\/\s\-]/g, '')}·${stage.name || ''}·${(responder || '正方·一辩').replace(/[·\/\s\-]/g, '')}`
+    const strip = (s: string) => (s || '').replace(/[·\/\s\-]/g, '')
+    const q = strip(questioner || '反方·二辩')
+    const rList = (responders && responders.length)
+      ? responders.map((r: string) => strip(r))
+      : [strip(responder || '正方·一辩')]
+    return `${q} · ${stage.name || ''} · ${rList.join('、')}`
   }
   // 双边对辩/自由辩论：正方一辩·自由辩论
   if (isDualTimer(t)) {
@@ -289,7 +298,7 @@ function onStageFormUpdate(stage: Stage, formData: {
   protectionTime: number
   speaker?: string
   questioner?: string
-  responder?: string
+  responders?: string[] // 单方发问接受人（多选，与 StageForm 对齐）
   firstSpeaker?: string
   positiveSpeakers?: string[]
   negativeSpeakers?: string[]
@@ -302,8 +311,11 @@ function onStageFormUpdate(stage: Stage, formData: {
   stage.name = formData.name
   stage.protectionTime = formData.protectionTime
   stage.speaker = formData.speaker
+  stage.speakerMode = formData.speakerMode
   stage.questioner = formData.questioner
-  stage.responder = formData.responder
+  stage.questionerMode = formData.questionerMode
+  stage.responders = formData.responders
+  stage.respondersMode = formData.respondersMode
   stage.firstSpeaker = formData.firstSpeaker
   stage.positiveSpeakers = formData.positiveSpeakers
   stage.negativeSpeakers = formData.negativeSpeakers
@@ -501,7 +513,7 @@ onBeforeUnmount(() => {
                         {{ (stage.speaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}
                       </template>
                       <template v-else-if="stage.type === 'single_question'">
-                        {{ (stage.questioner || '反方·二辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}·{{ (stage.responder || '正方·一辩').replace(/[·\/\s\-]/g, '') }}
+                        {{ getStageSpeaker(stage) }}
                       </template>
                       <template v-else-if="isDualTimer(stage.type)">
                         <template v-if="normalizeStageType(stage.type) === 'free_debate'">{{ stage.name }}</template>
@@ -526,8 +538,12 @@ onBeforeUnmount(() => {
                       duration: isDualTimer(stage.type) ? (stage.positiveDuration ?? 120) : (stage.duration ?? 180),
                       protectionTime: stage.protectionTime ?? 0,
                       speaker: stage.speaker || '正方 · 一辩',
+                      speakerMode: stage.speakerMode ?? 0,
                       questioner: stage.questioner || '反方 · 二辩',
+                      questionerMode: stage.questionerMode ?? 0,
                       responder: stage.responder || '正方 · 一辩',
+                      responders: stage.responders || null,
+                      respondersMode: stage.respondersMode ?? 0,
                       firstSpeaker: stage.firstSpeaker || '正方 · 一辩',
                       positiveSpeakers: stage.positiveSpeakers || [],
                       negativeSpeakers: stage.negativeSpeakers || [],

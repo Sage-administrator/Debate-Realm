@@ -1,18 +1,24 @@
-import { readBody } from 'h3'
+/**
+ * POST /api/tournaments/[id]/matches — 创建比赛
+ * 使用共享 Schema 校验请求体 (#shared/schemas/match)
+ */
 import { prisma } from '../../../lib/prisma'
 import { requireWriteTournament } from '../../../utils/tournament-auth'
+import { CreateMatchRequest } from '../../../../shared/schemas/match'
 
 export default defineEventHandler(async (event) => {
   try {
     const id = getRouterParam(event, 'id')!
-    const { round, orderNum, teamA, teamB, scheduledAt } = await readBody<{
-      round: string; orderNum: number; teamA?: string; teamB?: string; scheduledAt?: string
-    }>(event)
 
-    if (!round || orderNum === undefined) throw createError({ statusCode: 400, message: '轮次和顺序不能为空' })
-    if (teamA && teamB && teamA.trim() === teamB.trim()) throw createError({ statusCode: 400, message: '两支队伍不能相同' })
+    // 使用共享 Schema 校验请求体（前后端同一份类型定义）
+    const { round, orderNum, teamA, teamB, scheduledAt } =
+      await validateBody(event, CreateMatchRequest)
 
-    // 权限：系统管理员 或 该赛事所属团队的管理员
+    if (teamA && teamB && teamA.trim() === teamB.trim()) {
+      throw createError({ statusCode: 400, message: '两支队伍不能相同' })
+    }
+
+    // 权限
     await requireWriteTournament(event, prisma, id)
 
     const match = await prisma.match.create({

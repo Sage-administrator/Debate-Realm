@@ -8,7 +8,7 @@ import { cityData } from '~~/app/data/cities'
 import type { CityGroup } from '~~/app/data/cities'
 
 const toast = useToast()
-const { createStandaloneMatch } = useTournament()
+const { create: createStandaloneMatch } = useStandaloneMatches()
 
 // ── 表单数据 ──
 const form = reactive({

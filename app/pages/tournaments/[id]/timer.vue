@@ -26,8 +26,8 @@
         :display-time="displayTime"
         :is-time-warning="isTimeWarning"
         :is-time-critical="isTimeCritical"
-        :dual-positive-time="formatDualTime(dualTimer.positiveTime)"
-        :dual-negative-time="formatDualTime(dualTimer.negativeTime)"
+        :dual-positive-time="dualPositiveTimeStr"
+        :dual-negative-time="dualNegativeTimeStr"
       />
     </div>
 
@@ -294,6 +294,7 @@ import { useRoute, useRouter, useToast } from '#imports'
 import { useDebateStore } from '~/stores/debate'
 import TimerDisplay from '~/components/TimerDisplay.vue'
 import SpeechPermissionPanel from '~/components/SpeechPermissionPanel.vue'
+import { normalizeStageType, isPpt } from '~/utils/stageType'
 
 // ═══════════ 全局组合式 ═══════════
 const debateStore = useDebateStore()
@@ -373,6 +374,8 @@ const uiConfig = ref({
   timerFontSize: 200,
   stageTitleColor: '#FFFFFF',
   timerColor: '#FFFFFF',
+  dualTimerColorPos: 'rgb(169, 35, 35)',
+  dualTimerColorNeg: 'rgb(3, 105, 161)',
   contentPaddingTop: 56,
   titleMarginBottom: 12,
   stageTimerGap: 10,
@@ -541,12 +544,19 @@ const isNonTimerStage = computed(() => isSpecialStage.value || isPptStage.value)
 const isDualTimerStage = computed(() => currentStageInfo.value?.type === 'dual-timer')
 const displayTime = computed(() => (formattedTime.value || '00:00').padStart(5, '0'))
 
-// ═══════════ 格式化双计时器时间 ═══════════
-function formatDualTime(seconds: number): string {
+// ═══════════ 格式化双计时器时间（用 computed 缓存结果，避免每次渲染都重新计算）═══════════
+const dualPositiveTimeStr = computed(() => {
+  const seconds = dualTimer.value.positiveTime
   const minutes = Math.floor(seconds / 60)
   const secs = seconds % 60
   return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-}
+})
+const dualNegativeTimeStr = computed(() => {
+  const seconds = dualTimer.value.negativeTime
+  const minutes = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+})
 
 // ═══════════ 计时控制 ═══════════
 function startTimer() {
@@ -844,6 +854,11 @@ async function loadTournamentData() {
       const teams: string[] = t.teams || []
       if (teams.length >= 1 && !manualSetupApplied.value) setupTeamPositiveName.value = teams[0]!
       if (teams.length >= 2 && !manualSetupApplied.value) setupTeamNegativeName.value = teams[1]!
+      // 如果配置中没有队伍名称/辩题，自动从赛事数据中预填（避免新建赛事参数不显示）
+      if (!manualSetupApplied.value) {
+        if (teams.length >= 1 && !teamPositiveName.value) teamPositiveName.value = teams[0]!
+        if (teams.length >= 2 && !teamNegativeName.value) teamNegativeName.value = teams[1]!
+      }
     }
 
     // 加载计时器配置（共享缓存，避免跨页数据不一致 + 重复网络请求）
@@ -872,19 +887,22 @@ async function loadTournamentData() {
           id: Number(s.id) || idx + 1,
           name: s.name || '未命名环节',
           duration: s.duration || 60,
-          type: s.type === 'free_debate' || s.type === 'dual-timer'
-            ? 'dual-timer'
-            : s.type === 'special'
-              ? 'special'
-              : s.type === 'ppt_replace'
-                ? 'ppt_replace'
-                : 'speech',
+          // 用 normalizeStageType 统一类型，再映射到 debateStore 期望的简化值：
+          // dual-timer 保留原值（store 内部多处 === 'dual-timer'），其余用规范化类型
+          type: (() => {
+            const nt = normalizeStageType(s.type)
+            if (nt === 'free_debate' || nt === 'bilateral_debate' || nt === 'double_timer') return 'dual-timer'
+            if (nt === 'no_timer') return 'special'
+            if (nt === 'ppt_replace') return 'ppt_replace'
+            return nt // single_speech, single_question, summary, single_timer 等保留原类型
+          })(),
           order: typeof s.orderIndex === 'number' ? s.orderIndex : (s.order ?? idx + 1),
           positiveDuration: s.positiveDuration || s.duration || 60,
           negativeDuration: s.negativeDuration || s.duration || 60,
           speaker: s.speaker,
           questioner: s.questioner,
           responder: s.responder,
+          responders: s.responders,
           firstSpeaker: s.firstSpeaker,
           protectionTime: s.protectionTime,
           positiveSpeakers: s.positiveSpeakers,

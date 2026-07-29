@@ -575,8 +575,12 @@ model DebateTimerStage {
   allowedRoles     String?  // JSON 字符串：允许的角色/选手
   // ====== 角色字段（单方发言/发问/对辩）======
   speaker          String?  // 单方发言的发言方，如 "正方 · 一辩"
+  speakerMode      Int?     @default(0) // 0=正常模式 1=反向/排除模式（选中值=被排除的辩手）
   questioner       String?  // 单方发问的发问人
-  responder        String?  // 单方发问的接受人
+  questionerMode   Int?     @default(0) // 同上
+  responder        String?  // [已废弃] 单方发问的接受人（单值；多接盘请用 responders）
+  responders       String?  // JSON: ["正方 · 一辩","反方 · 二辩",...] — 单方发问的接受人（多选）
+  respondersMode   Int?     @default(0) // 同上
   firstSpeaker     String?  // 双边对辩/自由辩论的率先发言方
   protectionTime   Int?     // 保护时间（秒），0/null 表示不启用。单方发问：接受人开头 N 秒不可被打断
   // ====== 对辩双方参与辩手（多选，JSON 数组）======
