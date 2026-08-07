@@ -10,6 +10,9 @@
     "release": "nuxt build && node scripts/fix-nitro-output.mjs && node start.mjs",
     "start": "node scripts/fix-nitro-output.mjs && node start.mjs",
     "validate:templates": "node scripts/validate-debate-templates.mjs",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
@@ -31,11 +34,14 @@
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.112",
+    "@nuxt/test-utils": "^4.1.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/ws": "^8.18.1",
+    "@vue/test-utils": "^2.4.11",
     "prisma": "^7.8.0",
     "typescript": "^5.9.3",
+    "vitest": "^4.1.10",
     "vue-tsc": "^3.3.8"
   }
 }
