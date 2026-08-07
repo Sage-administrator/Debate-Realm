@@ -57,15 +57,21 @@ export function getUserFromEvent(event: H3Event<EventHandlerRequest>): JWTPayloa
 
 /**
  * 从请求事件中获取用户信息，并校验 tokenVersion 是否与数据库一致（单设备登录校验）
- * 若 tokenVersion 不匹配，说明账号已在其他设备登录，返回 401 含被踢提示
+ *
+ * 若 auth 中间件已在 event.context.user 中注入了校验过的用户信息，直接复用（免 DB 查询）。
+ * 否则走完整的 token 提取 → JWT 验证 → DB tokenVersion 校验流程。
  */
 export async function getUserFromEventWithSession(
   event: H3Event<EventHandlerRequest>,
   prisma: PrismaClient,
 ): Promise<JWTPayload> {
+  // 快速路径：auth 中间件已校验过，直接返回缓存结果
+  if (event.context.user) {
+    return event.context.user as JWTPayload
+  }
+
   const payload = getUserFromEvent(event)
 
-  // 查询数据库中的当前 tokenVersion
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },
     select: { tokenVersion: true },
@@ -79,11 +85,17 @@ export async function getUserFromEventWithSession(
     throw createError({ statusCode: 401, message: KICKED_MESSAGE })
   }
 
+  // 缓存到 context，后续调用直接复用
+  event.context.user = payload as JWTPayload & Record<string, unknown>
   return payload
 }
 
+/**
+ * requireRole — 角色断言
+ * 优先使用 event.context.user（中间件注入），否则走 getUserFromEvent 提取 token。
+ */
 export function requireRole(event: H3Event<EventHandlerRequest>, ...roles: string[]): JWTPayload {
-  const user = getUserFromEvent(event)
+  const user = (event.context.user as JWTPayload | undefined) ?? getUserFromEvent(event)
 
   if (!roles.includes(user.role)) {
     throw createError({ statusCode: 403, message: '权限不足' })
