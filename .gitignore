@@ -83,6 +83,16 @@ logs
 Thumbs.db
 # macOS 元数据
 ._*
+
+# 打包文件
+*.7z
+
+# CodeBuddy 本地配置
+.codebuddy/
+
+# 设计文档归档
+docs/ARCHITECTURE.md
+docs/architecture.svg
 # SSH / PEM 私钥
 *.pem
 *.key
