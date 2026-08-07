@@ -10,8 +10,6 @@ const toast = useToast()
 const { getTournaments, deleteTournament } = useTournament()
 
 // ── 数据状态 ──
-const tournaments = ref<any[]>([])
-const loading = ref(false)
 const keyword = ref('')
 const statusFilter = ref('all')
 
@@ -47,23 +45,28 @@ const statusColors: Record<string, string> = {
 // ── 团队 ID ──
 const teamId = computed(() => store.user?.team?.id ?? '')
 
-// ── 加载赛事列表 ──
-async function loadTournaments() {
-  if (!teamId.value) return
-  loading.value = true
-  try {
-    tournaments.value = await getTournaments(teamId.value)
-  } catch (e: any) {
-    toast.add({ title: e?.statusMessage || '加载失败', color: 'error' })
-  } finally {
-    loading.value = false
+// ── SSR 数据预取：使用 useAsyncData 在服务端预加载赛事列表 ──
+const { data: tournaments, pending: loading, refresh: loadTournaments, error } = useAsyncData(
+  'tournaments-manage',
+  () => {
+    if (!teamId.value) return []
+    return getTournaments(teamId.value)
+  },
+  { watch: [teamId], default: () => [] },
+)
+
+// Error handling for SSR/client fetch
+watch(error, (err) => {
+  if (err) {
+    toast.add({ title: (err as any)?.statusMessage || '加载失败', color: 'error' })
   }
-}
+})
 
 // ── 客户端搜索 + 状态筛选（数据量小，无需服务端分页）──
 const filtered = computed(() => {
+  const list = tournaments.value ?? []
   const kw = keyword.value.trim().toLowerCase()
-  return tournaments.value.filter((t) => {
+  return list.filter((t) => {
     const matchKw = !kw || t.name?.toLowerCase().includes(kw)
     const matchStatus = statusFilter.value === 'all' || t.status === statusFilter.value
     return matchKw && matchStatus
@@ -87,10 +90,6 @@ function fmtDate(s: string | null) {
   const d = new Date(s)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
-
-onMounted(() => {
-  loadTournaments()
-})
 </script>
 
 <template>
