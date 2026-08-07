@@ -59,19 +59,19 @@ async function get<T>(url: string, token: string | null, params?: Record<string,
         Object.entries(params).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)])
       ).toString()
     : ''
-  return $fetch(url + query, { headers: buildHeaders(token) }) as Promise<T>
+  return $fetch<T>(url + query, { headers: buildHeaders(token) })
 }
 
 async function post<T>(url: string, token: string | null, body?: unknown): Promise<T> {
-  return $fetch(url, { method: 'POST', body: body as any, headers: buildHeaders(token) }) as Promise<T>
+  return $fetch<T>(url, { method: 'POST', body: body as BodyInit | undefined, headers: buildHeaders(token) })
 }
 
 async function put<T>(url: string, token: string | null, body?: unknown): Promise<T> {
-  return $fetch(url, { method: 'PUT', body: body as any, headers: buildHeaders(token) }) as Promise<T>
+  return $fetch<T>(url, { method: 'PUT', body: body as BodyInit | undefined, headers: buildHeaders(token) })
 }
 
 async function del<T>(url: string, token: string | null, body?: unknown): Promise<T> {
-  return $fetch(url, { method: 'DELETE', body: body as any, headers: buildHeaders(token) }) as Promise<T>
+  return $fetch<T>(url, { method: 'DELETE', body: body as BodyInit | undefined, headers: buildHeaders(token) })
 }
 
 // ── API 客户端 ──
@@ -127,18 +127,18 @@ export function useApi() {
     update:       (id: string, body: UpdateTournamentRequest) => put(`/api/tournaments/${id}`, t(), body),
     delete:       (id: string) => del(`/api/tournaments/${id}`, t()),
     public:       (id: string) => get<PublicTournamentInfo>(`/api/tournaments/${id}/public`, null),
-    publicList:   (query: PublicTournamentListQuery) => get('/api/tournaments/public.list', null, query as any),
+    publicList:   (query: PublicTournamentListQuery) => get<PublicTournamentInfo[]>('/api/tournaments/public.list', null, query as Record<string, unknown>),
 
     // Registration
     registration: {
       config:   (tournamentId: string) => get<RegistrationConfig>(`/api/tournaments/${tournamentId}/registration-config`, t()),
       settings: (tournamentId: string, body: RegistrationSettings) => put(`/api/tournaments/${tournamentId}/registration-settings`, t(), body),
-      fields:   (tournamentId: string, fields: any[]) => put(`/api/tournaments/${tournamentId}/registration-fields`, t(), { fields }),
+      fields:   (tournamentId: string, fields: Record<string, unknown>[]) => put(`/api/tournaments/${tournamentId}/registration-fields`, t(), { fields }),
       list:     (tournamentId: string, params?: { status?: string; type?: string }) =>
-        get<{ registrations: RegistrationRecord[]; pagination: any }>(`/api/tournaments/${tournamentId}/registrations`, t(), params as any),
+        get<{ registrations: RegistrationRecord[]; pagination: { total: number; page: number; pageSize: number } }>(`/api/tournaments/${tournamentId}/registrations`, t(), params as Record<string, unknown>),
       my:       (tournamentId: string) => get<RegistrationRecord[]>(`/api/tournaments/${tournamentId}/my-registration`, t()),
       submit:   (tournamentId: string, body: SubmitRegistrationRequest) =>
-        post<{ code: number; message: string; data: any }>(`/api/tournaments/${tournamentId}/register`, t(), body),
+        post<{ code: number; message: string; data: RegistrationRecord }>(`/api/tournaments/${tournamentId}/register`, t(), body),
       review:   (tournamentId: string, regId: string, body: ReviewRegistrationRequest) =>
         put(`/api/tournaments/${tournamentId}/registrations/${regId}`, t(), body),
       autoMatch: (tournamentId: string, body: AutoMatchRequest) =>
@@ -160,7 +160,7 @@ export function useApi() {
     // Scores
     scores: {
       get:    (id: string, params?: { matchId?: string; type?: string }) =>
-        get(`/api/tournaments/${id}/scores`, t(), params as any),
+        get<Record<string, unknown>[]>(`/api/tournaments/${id}/scores`, t(), params as Record<string, unknown>),
       submit: (id: string, body: SubmitScoreRequest) => post(`/api/tournaments/${id}/scores`, t(), body),
     },
 
@@ -175,24 +175,24 @@ export function useApi() {
     // Topics (debate)
     topics: {
       list:   (id: string, params?: { search?: string; category?: string }) =>
-        get(`/api/tournaments/${id}/debate-topics`, t(), params as any),
-      create: (id: string, body: any) => post(`/api/tournaments/${id}/debate-topics`, t(), body),
-      update: (id: string, topicId: string, body: any) => put(`/api/tournaments/${id}/debate-topics/${topicId}`, t(), body),
+        get<Record<string, unknown>[]>(`/api/tournaments/${id}/debate-topics`, t(), params as Record<string, unknown>),
+      create: (id: string, body: Record<string, unknown>) => post(`/api/tournaments/${id}/debate-topics`, t(), body),
+      update: (id: string, topicId: string, body: Record<string, unknown>) => put(`/api/tournaments/${id}/debate-topics/${topicId}`, t(), body),
       delete: (id: string, topicId: string) => del(`/api/tournaments/${id}/debate-topics/${topicId}`, t()),
-      import: (id: string, body: any) => post(`/api/tournaments/${id}/debate-topics/import`, t(), body),
+      import: (id: string, body: Record<string, unknown>) => post(`/api/tournaments/${id}/debate-topics/import`, t(), body),
     },
 
     // Votes (topic-votes)
     votes: {
       list:     (id: string, params?: { status?: string; matchId?: string }) =>
-        get(`/api/tournaments/${id}/topic-votes`, t(), params as any),
-      get:      (id: string, voteId: string) => get(`/api/tournaments/${id}/topic-votes/${voteId}`, t()),
-      create:   (id: string, body: any) => post(`/api/tournaments/${id}/topic-votes`, t(), body),
-      update:   (id: string, voteId: string, body: any) => put(`/api/tournaments/${id}/topic-votes/${voteId}`, t(), body),
+        get<Record<string, unknown>[]>(`/api/tournaments/${id}/topic-votes`, t(), params as Record<string, unknown>),
+      get:      (id: string, voteId: string) => get<Record<string, unknown>>(`/api/tournaments/${id}/topic-votes/${voteId}`, t()),
+      create:   (id: string, body: Record<string, unknown>) => post(`/api/tournaments/${id}/topic-votes`, t(), body),
+      update:   (id: string, voteId: string, body: Record<string, unknown>) => put(`/api/tournaments/${id}/topic-votes/${voteId}`, t(), body),
       delete:   (id: string, voteId: string) => del(`/api/tournaments/${id}/topic-votes/${voteId}`, t()),
-      cast:     (id: string, voteId: string, body: any) => post(`/api/tournaments/${id}/topic-votes/${voteId}/cast`, t(), body),
-      myRecord: (id: string, voteId: string) => get(`/api/tournaments/${id}/topic-votes/${voteId}/my-record`, t()),
-      stats:    (id: string, voteId: string) => get(`/api/tournaments/${id}/topic-votes/${voteId}/stats`, t()),
+      cast:     (id: string, voteId: string, body: Record<string, unknown>) => post(`/api/tournaments/${id}/topic-votes/${voteId}/cast`, t(), body),
+      myRecord: (id: string, voteId: string) => get<Record<string, unknown>>(`/api/tournaments/${id}/topic-votes/${voteId}/my-record`, t()),
+      stats:    (id: string, voteId: string) => get<Record<string, unknown>>(`/api/tournaments/${id}/topic-votes/${voteId}/stats`, t()),
     },
 
     // Judge
@@ -216,10 +216,10 @@ export function useApi() {
   // Standalone Matches
   // ============================================================
   const standalone = {
-    list:     () => get<any[]>('/api/standalone-matches', t()),
-    create:   (body: any) => post('/api/standalone-matches', t(), body),
-    get:      (id: string) => get<any>(`/api/standalone-matches/${id}`, t()),
-    update:   (id: string, body: any) => put(`/api/standalone-matches/${id}`, t(), body),
+    list:     () => get<Record<string, unknown>[]>('/api/standalone-matches', t()),
+    create:   (body: Record<string, unknown>) => post('/api/standalone-matches', t(), body),
+    get:      (id: string) => get<Record<string, unknown>>(`/api/standalone-matches/${id}`, t()),
+    update:   (id: string, body: Record<string, unknown>) => put(`/api/standalone-matches/${id}`, t(), body),
     delete:   (id: string) => del(`/api/standalone-matches/${id}`, t()),
     createMatch: (id: string, body: CreateMatchRequest) => post(`/api/standalone-matches/${id}/matches`, t(), body),
     timer: {
@@ -256,8 +256,8 @@ export function useApi() {
       create:   (body: CreateArenaRequest) => post('/api/bot/arena/create', t(), body),
       status:   (channelId?: string) => get('/api/bot/arena/status', t(), channelId ? { channelId } : undefined),
       close:    (channelId: string, guildId?: string) => post('/api/bot/arena/close', t(), { channelId, guildId }),
-      claim:    (body: any) => post('/api/bot/arena/claim', t(), body),
-      unclaim:  (body: any) => post('/api/bot/arena/unclaim', t(), body),
+      claim:    (body: Record<string, unknown>) => post('/api/bot/arena/claim', t(), body),
+      unclaim:  (body: Record<string, unknown>) => post('/api/bot/arena/unclaim', t(), body),
     },
     permissions: {
       grantSpeak:  (body: GrantSpeakRequest) => post('/api/bot/permissions/grant-speak', t(), body),
@@ -271,12 +271,12 @@ export function useApi() {
   // Scheduled Posts
   // ============================================================
   const scheduledPosts = {
-    list:    () => get('/api/scheduled-posts', t()),
-    create:  (body: any) => post('/api/scheduled-posts', t(), body),
-    update:  (id: string, body: any) => put(`/api/scheduled-posts/${id}`, t(), body),
+    list:    () => get<Record<string, unknown>[]>('/api/scheduled-posts', t()),
+    create:  (body: Record<string, unknown>) => post('/api/scheduled-posts', t(), body),
+    update:  (id: string, body: Record<string, unknown>) => put(`/api/scheduled-posts/${id}`, t(), body),
     delete:  (id: string) => del(`/api/scheduled-posts/${id}`, t()),
     toggle:  (id: string, paused: boolean) => post(`/api/scheduled-posts/${id}/toggle`, t(), { paused }),
-    runs:    (id: string) => get(`/api/scheduled-posts/${id}/runs`, t()),
+    runs:    (id: string) => get<Record<string, unknown>[]>(`/api/scheduled-posts/${id}/runs`, t()),
   }
 
   // ============================================================
@@ -289,10 +289,10 @@ export function useApi() {
   // Admin
   // ============================================================
   const admin = {
-    individualUsers: () => get<any[]>('/api/admin/individual-users', t()),
-    teams:     () => get<any[]>('/api/admin/teams', t()),
-    users:     (params?: { page?: number; pageSize?: number }) => get('/api/admin/users', t(), params as any),
-    createUser: (body: any) => post('/api/admin/users', t(), body),
+    individualUsers: () => get<Record<string, unknown>[]>('/api/admin/individual-users', t()),
+    teams:     () => get<Record<string, unknown>[]>('/api/admin/teams', t()),
+    users:     (params?: { page?: number; pageSize?: number }) => get<Record<string, unknown>>('/api/admin/users', t(), params as Record<string, unknown>),
+    createUser: (body: Record<string, unknown>) => post('/api/admin/users', t(), body),
     deleteUser: (id: string) => del(`/api/admin/users/${id}`, t()),
     resetUserPassword: (id: string, newPassword: string) => put(`/api/admin/users/${id}/reset`, t(), { newPassword }),
   }

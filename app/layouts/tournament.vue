@@ -8,79 +8,13 @@
 <script setup lang="ts">
 const route = useRoute()
 const store = useAuthStore()
-const { logout } = useAuth()
 const { getTournament } = useTournament()
 
-// 侧边栏展开状态（仅移动端使用）
-const sidebarOpen = ref(false)
-
-// 路由切换时自动关闭移动端侧边栏
-watch(() => route.fullPath, () => {
-  sidebarOpen.value = false
+const { sidebarOpen, closeSidebarOnMobile, roleLabel, navItems, isActive, logout } = useSidebarLayout({
+  dashboardPath: '/home',
+  includeTournamentCreate: false,
+  includeBotManagement: true,
 })
-
-function closeSidebarOnMobile() {
-  if (window.innerWidth < 1024) {
-    sidebarOpen.value = false
-  }
-}
-
-// ── 角色标签映射 ──
-const roleLabels: Record<string, string> = {
-  system_admin: '系统管理员',
-  admin: '团队管理员',
-  subaccount: '子账号',
-  individual: '个人用户',
-}
-
-const roleLabel = computed(() => roleLabels[store.user?.role ?? ''] ?? '')
-
-// ── 导航项配置（根据角色动态生成） ──
-interface NavItem {
-  label: string
-  icon: string
-  to: string
-}
-
-const navItems = computed<NavItem[]>(() => {
-  const role = store.user?.role ?? ''
-  const mode = store.user?.mode ?? ''
-
-  switch (role) {
-    case 'system_admin':
-      return [
-        { label: '仪表盘', icon: 'i-lucide-layout-dashboard', to: '/home' },
-        { label: '团队管理', icon: 'i-lucide-users', to: '/teams' },
-      ]
-    case 'admin':
-    case 'subaccount':
-      return [
-        { label: '仪表盘', icon: 'i-lucide-layout-dashboard', to: '/home' },
-        { label: '赛事管理', icon: 'i-lucide-swords', to: '/tournaments/manage' },
-        ...(mode === 'qq_bot'
-          ? [{ label: '机器人管理', icon: 'i-lucide-bot', to: '/bot' }]
-          : []),
-      ]
-    case 'individual':
-      return [
-        { label: '个人中心', icon: 'i-lucide-user', to: '/home' },
-        { label: '创建赛事', icon: 'i-lucide-plus-circle', to: '/standalone/create' },
-      ]
-    default:
-      return []
-  }
-})
-
-/**
- * 判断当前路由是否匹配导航项
- * 首页 "/" 需精确匹配，其他路由前缀匹配即可
- */
-function isActive(to: string): boolean {
-  if (to === '/') {
-    return route.path === '/'
-  }
-  return route.path.startsWith(to)
-}
 
 // ═══════════ 赛事数据 ═══════════
 const tournament = ref<any>(null)
