@@ -6,7 +6,12 @@ import { join } from 'node:path'
 // WorkBuddy 的安全删除 shim 对 os.tmpdir() 下的批量删除放行（直连原生 fs），
 // 因此 `npm run build` 在清理 .nuxt/dist 与 .output 时不再被 SAFE_DELETE 拦截。
 // Nitro ≥ 2.13 已修复 buildDir 在临时目录时 server 入口解析失败（ERR_INVALID_FILE_URL_PATH）的问题。
-const buildRoot = join(os.tmpdir(), 'debate-timer-build')
+//
+// BUILD_IN_PLACE=true 时（Docker 容器等无 WorkBuddy 环境），构建产物留在项目目录内，
+// 避免 /tmp 迂回和启动路径依赖问题。不影响开发/生产 Windows 环境的现有行为。
+const buildRoot = process.env.BUILD_IN_PLACE === 'true'
+  ? join(process.cwd(), '.build')
+  : join(os.tmpdir(), 'debate-timer-build')
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',

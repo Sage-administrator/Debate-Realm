@@ -276,6 +276,91 @@ npm run build
 
 ---
 
+## 7. Docker 部署（推荐用于消除平台差异）
+
+### 为什么用 Docker？
+
+本项目的 Windows 构建需要 3 层补丁（`os.tmpdir()` 路由 / libSQL 原生模块 / `_entry.js` 缺盘符），Docker 提供一个标准化的 Linux 环境，一次性消除所有平台差异，确保构建结果在任何机器上一致。
+
+### 前置条件
+
+- Docker Desktop（Windows/Mac）或 Docker Engine（Linux）
+- 项目已同步到最新版本
+
+### 步骤 1：构建镜像
+
+```powershell
+docker compose build
+```
+
+或手动构建：
+
+```powershell
+docker build -t debate-timer:latest .
+```
+
+### 步骤 2：启动容器
+
+```powershell
+docker compose up -d
+```
+
+验证启动：浏览器打开 `http://localhost:3000`
+
+### 步骤 3：数据库迁移
+
+首次部署或 schema 变更后，进入容器执行：
+
+```powershell
+docker compose exec debate-timer npx prisma db push
+```
+
+### 步骤 4：管理命令
+
+```powershell
+# 查看日志
+docker compose logs -f debate-timer
+
+# 停止
+docker compose down
+
+# 重建（代码改动后）
+docker compose up -d --build
+
+# 进入容器调试
+docker compose exec debate-timer sh
+```
+
+### 环境变量管理
+
+创建 `.env` 文件（不含明文密钥的 `.env.example` 已在仓库中，参考其格式）：
+
+```ini
+JWT_SECRET=your-strong-secret-key
+INTERNAL_API_KEY=your-internal-api-key
+DATABASE_URL=file:./prisma/data/dev.db
+```
+
+挂载方式（`docker-compose.yml` 已预配置）：
+```yaml
+# 取消注释以下行
+# - ./.env:/app/.env:ro
+```
+
+### 数据持久化
+
+SQLite 数据库文件通过 Docker Volume 挂载到宿主机 `./prisma/data/`：
+
+```
+宿主机: ./prisma/data/dev.db
+容器内: /app/prisma/data/dev.db
+```
+
+备份：直接复制 `prisma/data/dev.db`
+恢复：停止容器 → 覆盖 `prisma/data/dev.db` → `docker compose up -d`
+
+---
+
 ## 📎 命令速查（PowerShell）
 
 ```powershell

@@ -1,0 +1,56 @@
+# Git
+.git
+.gitignore
+.github
+
+# Node
+node_modules
+.nuxt
+.output
+.build
+*.log
+npm-debug.log*
+
+# Prisma & Database
+prisma/data/dev.db
+prisma/data/dev.db-journal
+prisma/data/*.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs
+docs
+*.md
+!README.md
+!DEPLOYMENT.md
+
+# Tests & Scripts
+tests
+coverage
+scripts/*.bak
+scripts/*.svg
+scripts/*.py
+scripts/*.bat
+scripts/*.sh
+
+# Env files (keep example)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Windows patches (Docker 内不需要)
+scripts/fix-nitro-output.mjs
+
+# Misc
+temp
+tmp
+dist

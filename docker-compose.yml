@@ -1,0 +1,27 @@
+services:
+  debate-timer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: debate-timer:latest
+    container_name: debate-timer
+    ports:
+      - '3000:3000'
+    environment:
+      # ---- 安全敏感项（生产环境从 .env 文件或 docker secrets 注入） ----
+      # JWT_SECRET: change-me-in-production
+      # INTERNAL_API_KEY: change-me
+      # DATABASE_URL: file:./prisma/data/dev.db
+      - NODE_ENV=production
+    volumes:
+      # SQLite 数据持久化：挂载到宿主机，容器销毁后数据不丢
+      - ./prisma/data:/app/prisma/data
+      # 可选：挂载 .env 使用环境变量管理所有密钥
+      # - ./.env:/app/.env:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '-', 'http://localhost:3000/']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
