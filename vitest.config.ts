@@ -15,5 +15,11 @@ export default defineConfig({
     exclude: ['node_modules', '.output', '.nuxt'],
     // 测试超时时间（某些集成测试可能需要更长时间）
     testTimeout: 10000,
+    // 覆盖率配置（需先安装 npm i -D @vitest/coverage-v8，然后运行 npm run test:coverage）
+    // coverage: {
+    //   provider: 'v8',
+    //   reporter: ['text', 'text-summary', 'lcov'],
+    //   include: ['server/utils/**', 'app/utils/**', 'shared/schemas/**', 'app/stores/**'],
+    // },
   },
 })
