@@ -87,8 +87,10 @@ Thumbs.db
 # 打包文件
 *.7z
 
-# CodeBuddy 本地配置
-.codebuddy/
+# CodeBuddy 本地配置（skills 例外，需团队共享）
+.codebuddy/*
+!.codebuddy/skills/
+.codebuddy/skills/*.zip
 
 # 设计文档归档
 docs/ARCHITECTURE.md
