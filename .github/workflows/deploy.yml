@@ -1,0 +1,116 @@
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+
+jobs:
+  # ──────────────────────────────────────────
+  # Staging Deploy
+  # ──────────────────────────────────────────
+  deploy-staging:
+    name: Deploy Staging
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      # TODO: 替换为实际部署命令
+      # 当前为占位步骤，需根据目标服务器补充（SSH / Docker / 云服务 CLI）
+      - name: Deploy to Staging
+        id: deploy
+        env:
+          DEPLOY_HOST: ${{ secrets.STAGING_HOST }}
+          DEPLOY_PORT: ${{ secrets.STAGING_PORT }}
+        run: |
+          echo "::notice title=Deploy::Staging deploy triggered"
+          echo "url=https://staging.debate-timer.example.com" >> "$GITHUB_OUTPUT"
+          # 部署示例（SSH 同步 + 重启）：
+          # rsync -avz --delete .output/ $DEPLOY_HOST:$DEPLOY_PATH
+          # ssh $DEPLOY_HOST "pm2 restart debate-timer-staging"
+          echo "部署成功 -- 请根据实际环境补充部署命令"
+
+      - name: Health Check
+        if: success()
+        run: |
+          echo "⏳ Waiting for server to start..."
+          sleep 5
+          # curl -f -s -o /dev/null https://staging.debate-timer.example.com/api/health
+          echo "Health check placeholder -- 请补充实际健康检查端点"
+
+  # ──────────────────────────────────────────
+  # Production Deploy (手动触发)
+  # ──────────────────────────────────────────
+  deploy-production:
+    name: Deploy Production
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      # TODO: 替换为实际生产部署命令
+      - name: Deploy to Production
+        id: deploy
+        env:
+          DEPLOY_HOST: ${{ secrets.PROD_HOST }}
+          DEPLOY_PORT: ${{ secrets.PROD_PORT }}
+        run: |
+          echo "::notice title=Deploy::Production deploy triggered"
+          echo "url=https://debate-timer.example.com" >> "$GITHUB_OUTPUT"
+          # 部署示例（Docker）：
+          # docker build -t debate-timer:latest .
+          # docker push registry.example.com/debate-timer:latest
+          # ssh $DEPLOY_HOST "docker pull && docker compose up -d"
+          echo "部署成功 -- 请根据实际环境补充部署命令"
+
+      - name: Health Check
+        if: success()
+        run: |
+          echo "⏳ Waiting for server to start..."
+          sleep 5
+          # curl -f -s -o /dev/null https://debate-timer.example.com/api/health
+          echo "Health check placeholder -- 请补充实际健康检查端点"
