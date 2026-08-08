@@ -1,0 +1,48 @@
+{
+  // ===== 编辑器 =====
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.tabSize": 2,
+  "editor.rulers": [100],
+
+  // ===== TypeScript =====
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+
+  // ===== Vue / Volar =====
+  "vue.server.hybridMode": true,
+
+  // ===== 文件关联 =====
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+
+  // ===== 排除搜索 / 文件浏览器 =====
+  "search.exclude": {
+    "**/.output": true,
+    "**/.nuxt": true,
+    "**/.nitro": true,
+    "**/.cache": true,
+    "**/dist": true,
+    "**/node_modules": true,
+    "server/lib/generated": true
+  },
+  "files.exclude": {
+    "**/.git": true
+  },
+  "files.watcherExclude": {
+    "**/.output/**": true,
+    "**/.nuxt/**": true,
+    "**/.nitro/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true
+  },
+
+  // ===== [colorize] 彩虹括号 =====
+  "editor.guides.bracketPairs": "active",
+  "editor.bracketPairColorization.enabled": true
+}
