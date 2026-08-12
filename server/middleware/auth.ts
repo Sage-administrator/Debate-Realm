@@ -7,8 +7,8 @@
  *
  * 跳过的路径（无需认证）：
  * - 登录相关 API (/api/auth/login, /api/auth/confirm-login)
- * - 公开赛事 API (/api/tournaments/public.list, /api/tournaments/*/public)
- * - 公开报名配置 (/api/tournaments/*/registration-config)
+ * - 公开赛事 API (/api/tournaments/public.list, /api/tournaments/{id}/public)
+ * - 公开报名配置 (/api/tournaments/{id}/registration-config)
  * - 内部 API (/api/internal/*) — 使用 INTERNAL_API_KEY
  * - 定时发布调度 (/api/scheduled-posts/dispatch-due, /api/scheduled-posts/publish) — 使用 apiToken
  */
