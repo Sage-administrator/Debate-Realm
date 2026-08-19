@@ -1,4 +1,4 @@
-# Nuxt dev/build outputs
+# ============ Nuxt / Node 构建输出 ============
 .output
 .data
 .nuxt
@@ -6,34 +6,23 @@
 .cache
 dist
 
-# Node dependencies
+# ============ Node 依赖 ============
 node_modules
 
-# Logs
+# ============ 日志 ============
 logs
 *.log
 
-# Misc
-.DS_Store
-.fleet
-.idea
-.workbuddy/
-
-# 数据库备份
+# ============ 备份 ============
 *.db.bak*
 prisma/*.db.bak*
-
-# 备份目录 / 备份文件（防止误提交如 .git.bak）
 .git.bak
 *.bak
 
-# ============ 敏感文件保护 ============
-# 环境变量（包含密钥、密码、个人 token）
+# ============ 敏感文件保护（环境变量/密钥/数据库） ============
 .env
 .env.*
 !.env.example
-
-# 数据库文件（SQLite、MS Access、本地缓存 DB）
 *.db
 *.db-journal
 *.db-wal
@@ -42,19 +31,22 @@ prisma/*.db.bak*
 *.sqlite3
 *.sqlite-journal
 *.sql
-# Prisma 特定路径
 prisma/*.db
 prisma/**/*.db
 prisma/migrations_lock.toml
+*.pem
+*.key
+*.cer
+*.crt
+*.p12
+*.pfx
 
-# 参考项目代码（往期项目、设计文档等，仅作本地参考，不纳入版本管理）
+# ============ 参考项目 / 测试脚本 ============
 reference/
-
-# 测试脚本（可能包含敏感数据）
 test-api.ts
 typecheck_log.txt
 
-# IDE / 编辑器个人设置
+# ============ IDE / 编辑器设置 ============
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -62,49 +54,20 @@ typecheck_log.txt
 !.vscode/extensions.json
 .fleet
 .idea
-
-# ============ 构建 / 依赖输出（原有） ============
-# Nuxt dev/build outputs
-.output
-.data
-.nuxt
-.nitro
-.cache
-dist
-
-# Node dependencies
-node_modules
-
-# Logs
-logs
-*.log
-
-# Misc
 .DS_Store
-
-# ============ 附加保护 ============
-# Windows 缩略图
 Thumbs.db
-# macOS 元数据
 ._*
 
-# 打包文件
-*.7z
-
-# CodeBuddy 本地配置（skills 例外，需团队共享）
+# ============ CodeBuddy 本地配置（skills 例外，需团队共享） ============
 .codebuddy/*
 !.codebuddy/skills/
 .codebuddy/skills/*.zip
+.workbuddy/
 
-# 设计文档归档
+# ============ 设计文档归档 ============
 docs/ARCHITECTURE.md
 docs/architecture.svg
-# SSH / PEM 私钥
-*.pem
-*.key
-# 证书
-*.cer
-*.crt
-*.p12
-*.pfx
+
+# ============ 打包 / 杂项 ============
+*.7z
 nul

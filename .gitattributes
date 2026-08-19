@@ -1,2 +1,27 @@
-# Prisma generated code — collapse in GitHub PR diffs
+# ============ 换行符统一规范 ============
+# 所有文本文件在 Git 存储层一律使用 LF（自动检测文本/二进制）
+* text=auto eol=lf
+
+# Windows 批处理 / PowerShell 脚本必须保留 CRLF 才能正确执行
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# ============ 二进制文件（禁止换行转换） ============
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.mp3 binary
+*.wav binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.db binary
+*.sqlite binary
+*.pdf binary
+
+# ============ Prisma 生成代码：GitHub PR diff 中自动折叠 ============
 server/lib/generated/**/*.ts linguist-generated=true
