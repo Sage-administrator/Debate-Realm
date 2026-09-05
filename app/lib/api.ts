@@ -39,6 +39,8 @@ import type {
   BotStatus, BotConfigRequest, ChannelInfo, ArenaInfo,
   CreateArenaRequest, GrantSpeakRequest, RevokeSpeakRequest, BotScheduleRequest,
 } from '#shared/schemas/bot'
+import type { DebateTopicListResult, DebateTopicImportResult } from '#shared/schemas/debate-topics'
+import type { TopicVoteListResult, TopicVoteDetail, MyVoteRecordResult, VoteStatsResult } from '#shared/schemas/topic-votes'
 
 // ── 内部请求工具 ──
 
@@ -180,24 +182,25 @@ export function useApi() {
     // Topics (debate)
     topics: {
       list:   (id: string, params?: { search?: string; category?: string }) =>
-        get<Record<string, unknown>[]>(`/api/tournaments/${id}/debate-topics`, t(), params as Record<string, unknown>),
+        get<DebateTopicListResult>(`/api/tournaments/${id}/debate-topics`, t(), params as Record<string, unknown>),
       create: (id: string, body: Record<string, unknown>) => post(`/api/tournaments/${id}/debate-topics`, t(), body),
       update: (id: string, topicId: string, body: Record<string, unknown>) => put(`/api/tournaments/${id}/debate-topics/${topicId}`, t(), body),
       delete: (id: string, topicId: string) => del(`/api/tournaments/${id}/debate-topics/${topicId}`, t()),
-      import: (id: string, body: Record<string, unknown>) => post(`/api/tournaments/${id}/debate-topics/import`, t(), body),
+      import: (id: string, body: Record<string, unknown>) =>
+        post<DebateTopicImportResult>(`/api/tournaments/${id}/debate-topics/import`, t(), body),
     },
 
     // Votes (topic-votes)
     votes: {
       list:     (id: string, params?: { status?: string; matchId?: string }) =>
-        get<Record<string, unknown>[]>(`/api/tournaments/${id}/topic-votes`, t(), params as Record<string, unknown>),
-      get:      (id: string, voteId: string) => get<Record<string, unknown>>(`/api/tournaments/${id}/topic-votes/${voteId}`, t()),
+        get<TopicVoteListResult>(`/api/tournaments/${id}/topic-votes`, t(), params as Record<string, unknown>),
+      get:      (id: string, voteId: string) => get<TopicVoteDetail>(`/api/tournaments/${id}/topic-votes/${voteId}`, t()),
       create:   (id: string, body: Record<string, unknown>) => post(`/api/tournaments/${id}/topic-votes`, t(), body),
       update:   (id: string, voteId: string, body: Record<string, unknown>) => put(`/api/tournaments/${id}/topic-votes/${voteId}`, t(), body),
       delete:   (id: string, voteId: string) => del(`/api/tournaments/${id}/topic-votes/${voteId}`, t()),
       cast:     (id: string, voteId: string, body: Record<string, unknown>) => post(`/api/tournaments/${id}/topic-votes/${voteId}/cast`, t(), body),
-      myRecord: (id: string, voteId: string) => get<Record<string, unknown>>(`/api/tournaments/${id}/topic-votes/${voteId}/my-record`, t()),
-      stats:    (id: string, voteId: string) => get<Record<string, unknown>>(`/api/tournaments/${id}/topic-votes/${voteId}/stats`, t()),
+      myRecord: (id: string, voteId: string) => get<MyVoteRecordResult>(`/api/tournaments/${id}/topic-votes/${voteId}/my-record`, t()),
+      stats:    (id: string, voteId: string) => get<VoteStatsResult>(`/api/tournaments/${id}/topic-votes/${voteId}/stats`, t()),
     },
 
     // Judge

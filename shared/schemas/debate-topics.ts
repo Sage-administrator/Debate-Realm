@@ -31,3 +31,19 @@ export const ImportDebateTopicsRequest = z.object({
   })),
 })
 export type ImportDebateTopicsRequest = z.infer<typeof ImportDebateTopicsRequest>
+
+/** Debate topic item（列表/读取响应用，与 DebateTopic Prisma model 对齐） */
+export type DebateTopicInfo = {
+  id: string
+  tournamentId: string
+  affirmative: string
+  negative: string
+  category: string | null
+  note: string | null
+  createdAt: string
+  updatedAt: string
+}
+/** Debate topic 列表接口响应：{ topics: DebateTopicInfo[] } */
+export type DebateTopicListResult = { topics: DebateTopicInfo[] }
+/** Debate topic 批量导入结果 */
+export type DebateTopicImportResult = { created: number; skipped: number; total: number }
