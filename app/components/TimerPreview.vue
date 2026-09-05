@@ -98,9 +98,12 @@ interface SkinConfig {
 
 interface AudioConfig {
   enabled?: boolean
-  startSound?: string
-  endSound?: string
+  /** 剩余 30 秒提示音 */
   warningSound?: string
+  /** 剩余 5 秒提示音 */
+  finalWarningSound?: string
+  /** 时间到（0 秒）提示音 */
+  timeUpSound?: string
   [key: string]: any
 }
 

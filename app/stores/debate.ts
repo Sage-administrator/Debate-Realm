@@ -107,12 +107,12 @@ export interface TimerAudioConfig {
   enabled?: boolean
   /** 声音方案：default=默认提示音(30/5/0)；formal=正式比赛提示音·钉钉响铃(30/0，5秒不响) */
   scheme?: 'default' | 'formal'
-  /** 时间到(0秒) 自定义音，缺省回退内置音 */
-  startSound?: string
-  /** 30秒 自定义音，缺省回退内置音 */
+  /** 剩余 30 秒 自定义音，缺省回退内置音 */
   warningSound?: string
-  /** 5秒 自定义音，缺省回退内置音（formal 方案下忽略） */
-  endSound?: string
+  /** 剩余 5 秒 自定义音，缺省回退内置音（formal 方案下不播放） */
+  finalWarningSound?: string
+  /** 时间到（剩余 0 秒）自定义音，缺省回退内置音 */
+  timeUpSound?: string
 }
 
 /** Store 的完整状态 */
@@ -750,7 +750,7 @@ export const useDebateStore = defineStore('debate', {
 
     /**
      * 根据当前声音方案解析某一剩余秒数应播放的音频文件路径。
-     * - default（默认提示音）：30秒→warningSound/30.mp3，5秒→endSound/5.mp3，0秒→startSound/End.mp3
+     * - default（默认提示音）：30秒→warningSound/30.mp3，5秒→finalWarningSound/5.mp3，0秒→timeUpSound/End.mp3
      * - formal（正式比赛提示音·钉钉响铃）：30秒与结束时各响一次钉钉铃，5秒不响
      * 未启用提示音时返回 ''（不播放）。
      */
@@ -761,13 +761,13 @@ export const useDebateStore = defineStore('debate', {
       if (scheme === 'formal') {
         // 正式比赛提示音：30秒响、结束响，5秒静音
         if (timeRemaining === 30) return cfg.warningSound || '/dingtalk.mp3'
-        if (timeRemaining === 0) return cfg.startSound || '/dingtalk.mp3'
+        if (timeRemaining === 0) return cfg.timeUpSound || '/dingtalk.mp3'
         return '' // 5秒：不响
       }
       // 默认提示音
       if (timeRemaining === 30) return cfg.warningSound || '/30.mp3'
-      if (timeRemaining === 5) return cfg.endSound || '/5.mp3'
-      if (timeRemaining === 0) return cfg.startSound || '/End.mp3'
+      if (timeRemaining === 5) return cfg.finalWarningSound || '/5.mp3'
+      if (timeRemaining === 0) return cfg.timeUpSound || '/End.mp3'
       return ''
     },
 

@@ -34,18 +34,18 @@ function isDualTimerType(t: string | null | undefined): boolean {
 /** 根据声音方案解析音频文件路径（纯函数） */
 function resolveSoundFile(
   timeRemaining: number,
-  cfg: { enabled?: boolean; scheme?: 'default' | 'formal'; warningSound?: string; endSound?: string; startSound?: string } | null,
+  cfg: { enabled?: boolean; scheme?: 'default' | 'formal'; warningSound?: string; finalWarningSound?: string; timeUpSound?: string } | null,
 ): string {
   if (!cfg || cfg.enabled === false) return ''
   const scheme = cfg.scheme || 'default'
   if (scheme === 'formal') {
     if (timeRemaining === 30) return cfg.warningSound || '/dingtalk.mp3'
-    if (timeRemaining === 0) return cfg.startSound || '/dingtalk.mp3'
+    if (timeRemaining === 0) return cfg.timeUpSound || '/dingtalk.mp3'
     return ''
   }
   if (timeRemaining === 30) return cfg.warningSound || '/30.mp3'
-  if (timeRemaining === 5) return cfg.endSound || '/5.mp3'
-  if (timeRemaining === 0) return cfg.startSound || '/End.mp3'
+  if (timeRemaining === 5) return cfg.finalWarningSound || '/5.mp3'
+  if (timeRemaining === 0) return cfg.timeUpSound || '/End.mp3'
   return ''
 }
 
@@ -197,7 +197,7 @@ describe('resolveSoundFile', () => {
   })
 
   it('should respect custom sound paths', () => {
-    const cfg = { enabled: true, warningSound: '/custom-30.mp3', endSound: '/custom-5.mp3', startSound: '/custom-end.mp3' }
+    const cfg = { enabled: true, warningSound: '/custom-30.mp3', finalWarningSound: '/custom-5.mp3', timeUpSound: '/custom-end.mp3' }
     expect(resolveSoundFile(30, cfg)).toBe('/custom-30.mp3')
     expect(resolveSoundFile(5, cfg)).toBe('/custom-5.mp3')
     expect(resolveSoundFile(0, cfg)).toBe('/custom-end.mp3')

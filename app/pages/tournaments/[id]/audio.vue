@@ -34,7 +34,10 @@ async function savePageConfig() {
 }
 
 // ═══════════ 音频文件上传处理 ═══════════
-async function onAudioSelect(event: Event, field: 'startSound' | 'endSound' | 'warningSound') {
+async function onAudioSelect(
+  event: Event,
+  field: 'warningSound' | 'finalWarningSound' | 'timeUpSound',
+) {
   const target = event.target as HTMLInputElement
   if (!target?.files?.[0]) return
 
@@ -190,13 +193,13 @@ watch(
                   type="file"
                   accept="audio/*"
                   class="hidden"
-                  @change="(e: Event) => onAudioSelect(e, 'endSound')"
+                  @change="(e: Event) => onAudioSelect(e, 'finalWarningSound')"
                 >
               </label>
-              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ config.audioConfig.endSound || '未选择文件' }}</span>
+              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ config.audioConfig.finalWarningSound || '未选择文件' }}</span>
             </div>
-            <div v-if="config.audioConfig.endSound" class="flex items-center gap-2">
-              <audio :src="config.audioConfig.endSound" controls class="h-8 w-full max-w-xs"></audio>
+            <div v-if="config.audioConfig.finalWarningSound" class="flex items-center gap-2">
+              <audio :src="config.audioConfig.finalWarningSound" controls class="h-8 w-full max-w-xs"></audio>
             </div>
           </div>
 
@@ -211,13 +214,13 @@ watch(
                   type="file"
                   accept="audio/*"
                   class="hidden"
-                  @change="(e: Event) => onAudioSelect(e, 'startSound')"
+                  @change="(e: Event) => onAudioSelect(e, 'timeUpSound')"
                 >
               </label>
-              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ config.audioConfig.startSound || '未选择文件' }}</span>
+              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ config.audioConfig.timeUpSound || '未选择文件' }}</span>
             </div>
-            <div v-if="config.audioConfig.startSound" class="flex items-center gap-2">
-              <audio :src="config.audioConfig.startSound" controls class="h-8 w-full max-w-xs"></audio>
+            <div v-if="config.audioConfig.timeUpSound" class="flex items-center gap-2">
+              <audio :src="config.audioConfig.timeUpSound" controls class="h-8 w-full max-w-xs"></audio>
             </div>
           </div>
         </div>
