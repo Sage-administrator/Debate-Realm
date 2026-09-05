@@ -11,6 +11,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    // 桥接 Nuxt 自动导入到 node 测试环境（见 tests/setup/auto-imports.ts）
+    setupFiles: ['./tests/setup/auto-imports.ts'],
     include: ['tests/**/*.test.ts'],
     exclude: ['node_modules', '.output', '.nuxt'],
     // 测试超时时间（某些集成测试可能需要更长时间）
