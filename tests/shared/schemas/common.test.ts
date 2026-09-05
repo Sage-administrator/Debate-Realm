@@ -142,7 +142,9 @@ describe('auth schemas', () => {
     it('should parse needConfirm=true variant', () => {
       const result = LoginResponse.safeParse({
         needConfirm: true,
-        existingSessions: [{ deviceInfo: 'Chrome', ipAddress: null, loggedInAt: '2024-01-01' }],
+        userId: 'u1',
+        existingSessions: [{ id: 's1', deviceInfo: 'Chrome', ipAddress: null, loggedInAt: '2024-01-01' }],
+        newDevice: { deviceInfo: 'Firefox', ipAddress: '1.2.3.4' },
       })
       expect(result.success).toBe(true)
     })

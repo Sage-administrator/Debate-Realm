@@ -76,3 +76,28 @@ export const AutoMatchRequest = z.object({
   teamSize: z.number().int().min(2).optional(),
 })
 export type AutoMatchRequest = z.infer<typeof AutoMatchRequest>
+
+// ── 响应类型别名（registration-fields / auto-match 端点真实返回） ──
+
+/** 注册字段元素（registration-fields 端点返回，含 designer 用字段） */
+export type RegistrationFieldItem = {
+  id: string
+  fieldName: string
+  fieldKey: string
+  fieldType: string
+  fieldOptions: string | null
+  required: boolean
+  sortOrder: number
+  appliesTo: string
+  placeholder?: string | null
+  description?: string | null
+  width?: string | null
+  systemField?: boolean
+}
+/** 保存注册字段响应 */
+export type SaveRegistrationFieldsResult = { success: boolean; fields: RegistrationFieldItem[] }
+/** 自动组队响应（建议分组，不写库） */
+export type AutoMatchResult = {
+  teams: Array<{ [key: string]: any }>
+  unmatched: Array<{ [key: string]: any }>
+}

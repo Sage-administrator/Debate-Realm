@@ -9,7 +9,9 @@ import { z } from 'zod'
 export const UserRole = z.enum(['system_admin', 'admin', 'subaccount', 'debater', 'individual'])
 export type UserRole = z.infer<typeof UserRole>
 
-export const TeamMode = z.enum(['qq_bot', 'individual'])
+// Team.mode 合法值：qq_bot（QQ 机器人团队）/ team（普通团队）。
+// 服务端 teams.post.ts 校验 !['qq_bot','team'].includes(mode)；'individual' 是 User.mode，勿混用。
+export const TeamMode = z.enum(['qq_bot', 'team'])
 export type TeamMode = z.infer<typeof TeamMode>
 
 export const TournamentFormat = z.enum([

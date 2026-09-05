@@ -15,21 +15,22 @@ import type {
   ChangePasswordRequest, UpdateProfileRequest, LoginSession,
 } from '#shared/schemas/auth'
 import type {
-  TeamInfo, CreateTeamRequest, UpdateTeamRequest,
+  TeamInfo, TeamDetail, CreateTeamRequest, UpdateTeamRequest,
   TeamMember, CreateMemberRequest, UpdateMemberRequest, ResetMemberPasswordRequest,
 } from '#shared/schemas/team'
 import type {
   TournamentInfo, TournamentListItem, CreateTournamentRequest, UpdateTournamentRequest,
   PublicTournamentInfo, PublicTournamentListQuery, RegistrationSettings,
-  DrawLotsRequest, GenerateMatchesRequest,
+  DrawLotsRequest, GenerateMatchesRequest, DrawLotsResult,
 } from '#shared/schemas/tournament'
 import type {
   MatchInfo, CreateMatchRequest, UpdateMatchRequest,
-  DeleteMatchRequest, SubmitResultRequest, SubmitScoreRequest,
+  DeleteMatchRequest, SubmitResultRequest, SubmitScoreRequest, MatchResultSubmitResult,
 } from '#shared/schemas/match'
 import type {
   RegistrationConfig, RegistrationRecord,
   SubmitRegistrationRequest, ReviewRegistrationRequest, AutoMatchRequest,
+  SaveRegistrationFieldsResult, AutoMatchResult,
 } from '#shared/schemas/registration'
 import type {
   TimerConfig, TimerProjectInfo, TimerTemplate,
@@ -39,6 +40,8 @@ import type {
   BotStatus, BotConfigRequest, ChannelInfo, ArenaInfo,
   CreateArenaRequest, GrantSpeakRequest, RevokeSpeakRequest, BotScheduleRequest,
 } from '#shared/schemas/bot'
+import type { DebateTopicListResult, DebateTopicImportResult } from '#shared/schemas/debate-topics'
+import type { TopicVoteListResult, TopicVoteDetail, MyVoteRecordResult, VoteStatsResult } from '#shared/schemas/topic-votes'
 
 // ── 内部请求工具 ──
 
@@ -104,7 +107,7 @@ export function useApi() {
   const teams = {
     list:           () => get<TeamInfo[]>('/api/teams', t()),
     create:         (body: CreateTeamRequest)   => post<TeamInfo>('/api/teams', t(), body),
-    get:            (id: string)                => get<TeamInfo>(`/api/teams/${id}`, t()),
+    get:            (id: string)                => get<TeamDetail>(`/api/teams/${id}`, t()),
     update:         (id: string, body: UpdateTeamRequest) => put(`/api/teams/${id}`, t(), body),
     delete:         (id: string)                => del(`/api/teams/${id}`, t()),
     members: {
@@ -114,8 +117,8 @@ export function useApi() {
       update: (teamId: string, userId: string, body: UpdateMemberRequest) =>
         put(`/api/teams/${teamId}/members/${userId}`, t(), body),
       resetPassword: (teamId: string, userId: string, body: ResetMemberPasswordRequest) =>
-        put(`/api/teams/${teamId}/members/${userId}/reset-password`, t(), body),
-      cleanup: (teamId: string) => del(`/api/teams/${teamId}/members/cleanup`, t()),
+        put<{ message: string }>(`/api/teams/${teamId}/members/${userId}/reset-password`, t(), body),
+      cleanup: (teamId: string) => del<{ deleted: number; message: string }>(`/api/teams/${teamId}/members/cleanup`, t()),
     },
     tournaments: {
       list:   (teamId: string) => get<TournamentListItem[]>(`/api/teams/${teamId}/tournaments`, t()),
@@ -138,7 +141,8 @@ export function useApi() {
     registration: {
       config:   (tournamentId: string) => get<RegistrationConfig>(`/api/tournaments/${tournamentId}/registration-config`, t()),
       settings: (tournamentId: string, body: RegistrationSettings) => put(`/api/tournaments/${tournamentId}/registration-settings`, t(), body),
-      fields:   (tournamentId: string, fields: Record<string, unknown>[]) => put(`/api/tournaments/${tournamentId}/registration-fields`, t(), { fields }),
+      fields:   (tournamentId: string, fields: Record<string, unknown>[]) =>
+        put<SaveRegistrationFieldsResult>(`/api/tournaments/${tournamentId}/registration-fields`, t(), { fields }),
       list:     (tournamentId: string, params?: { status?: string; type?: string }) =>
         get<{ registrations: RegistrationRecord[]; pagination: { total: number; page: number; pageSize: number } }>(`/api/tournaments/${tournamentId}/registrations`, t(), params as Record<string, unknown>),
       my:       (tournamentId: string) => get<RegistrationRecord[]>(`/api/tournaments/${tournamentId}/my-registration`, t()),
@@ -147,7 +151,7 @@ export function useApi() {
       review:   (tournamentId: string, regId: string, body: ReviewRegistrationRequest) =>
         put(`/api/tournaments/${tournamentId}/registrations/${regId}`, t(), body),
       autoMatch: (tournamentId: string, body: AutoMatchRequest) =>
-        post(`/api/tournaments/${tournamentId}/registrations/auto-match`, t(), body),
+        post<AutoMatchResult>(`/api/tournaments/${tournamentId}/registrations/auto-match`, t(), body),
       convertToTeams: (tournamentId: string, items: { name: string; registrationIds: string[] }[]) =>
         post(`/api/tournaments/${tournamentId}/registrations/convert-teams`, t(), { items }),
       createDebaterAccounts: (tournamentId: string, registrationIds?: string[]) =>
@@ -159,7 +163,7 @@ export function useApi() {
       list:     (tournamentId: string) => get<MatchInfo[]>(`/api/tournaments/${tournamentId}/matches`, t()),
       create:   (tournamentId: string, body: CreateMatchRequest) => post(`/api/tournaments/${tournamentId}/matches`, t(), body),
       generate: (tournamentId: string, body: GenerateMatchesRequest) => post(`/api/tournaments/${tournamentId}/matches/generate`, t(), body),
-      drawLots: (tournamentId: string, body: DrawLotsRequest) => post(`/api/tournaments/${tournamentId}/draw-lots`, t(), body),
+      drawLots: (tournamentId: string, body: DrawLotsRequest) => post<DrawLotsResult>(`/api/tournaments/${tournamentId}/draw-lots`, t(), body),
     },
 
     // Scores
@@ -180,24 +184,25 @@ export function useApi() {
     // Topics (debate)
     topics: {
       list:   (id: string, params?: { search?: string; category?: string }) =>
-        get<Record<string, unknown>[]>(`/api/tournaments/${id}/debate-topics`, t(), params as Record<string, unknown>),
+        get<DebateTopicListResult>(`/api/tournaments/${id}/debate-topics`, t(), params as Record<string, unknown>),
       create: (id: string, body: Record<string, unknown>) => post(`/api/tournaments/${id}/debate-topics`, t(), body),
       update: (id: string, topicId: string, body: Record<string, unknown>) => put(`/api/tournaments/${id}/debate-topics/${topicId}`, t(), body),
       delete: (id: string, topicId: string) => del(`/api/tournaments/${id}/debate-topics/${topicId}`, t()),
-      import: (id: string, body: Record<string, unknown>) => post(`/api/tournaments/${id}/debate-topics/import`, t(), body),
+      import: (id: string, body: Record<string, unknown>) =>
+        post<DebateTopicImportResult>(`/api/tournaments/${id}/debate-topics/import`, t(), body),
     },
 
     // Votes (topic-votes)
     votes: {
       list:     (id: string, params?: { status?: string; matchId?: string }) =>
-        get<Record<string, unknown>[]>(`/api/tournaments/${id}/topic-votes`, t(), params as Record<string, unknown>),
-      get:      (id: string, voteId: string) => get<Record<string, unknown>>(`/api/tournaments/${id}/topic-votes/${voteId}`, t()),
+        get<TopicVoteListResult>(`/api/tournaments/${id}/topic-votes`, t(), params as Record<string, unknown>),
+      get:      (id: string, voteId: string) => get<TopicVoteDetail>(`/api/tournaments/${id}/topic-votes/${voteId}`, t()),
       create:   (id: string, body: Record<string, unknown>) => post(`/api/tournaments/${id}/topic-votes`, t(), body),
       update:   (id: string, voteId: string, body: Record<string, unknown>) => put(`/api/tournaments/${id}/topic-votes/${voteId}`, t(), body),
       delete:   (id: string, voteId: string) => del(`/api/tournaments/${id}/topic-votes/${voteId}`, t()),
       cast:     (id: string, voteId: string, body: Record<string, unknown>) => post(`/api/tournaments/${id}/topic-votes/${voteId}/cast`, t(), body),
-      myRecord: (id: string, voteId: string) => get<Record<string, unknown>>(`/api/tournaments/${id}/topic-votes/${voteId}/my-record`, t()),
-      stats:    (id: string, voteId: string) => get<Record<string, unknown>>(`/api/tournaments/${id}/topic-votes/${voteId}/stats`, t()),
+      myRecord: (id: string, voteId: string) => get<MyVoteRecordResult>(`/api/tournaments/${id}/topic-votes/${voteId}/my-record`, t()),
+      stats:    (id: string, voteId: string) => get<VoteStatsResult>(`/api/tournaments/${id}/topic-votes/${voteId}/stats`, t()),
     },
 
     // Judge
@@ -213,7 +218,7 @@ export function useApi() {
     update:    (id: string, body: UpdateMatchRequest) => put(`/api/matches/${id}`, t(), body),
     delete:    (id: string, body?: DeleteMatchRequest) => del(`/api/matches/${id}`, t(), body),
     restore:   (id: string, currentVersion: number) => post(`/api/matches/${id}/restore`, t(), { currentVersion }),
-    submitResult: (id: string, body: SubmitResultRequest) => post(`/api/matches/${id}/result`, t(), body),
+    submitResult: (id: string, body: SubmitResultRequest) => post<MatchResultSubmitResult>(`/api/matches/${id}/result`, t(), body),
     start:     (id: string) => post(`/api/matches/${id}/start`, t()),
   }
 

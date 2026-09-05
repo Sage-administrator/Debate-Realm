@@ -45,9 +45,18 @@ export const LoginResponse = z.discriminatedUnion('needConfirm', [
   }),
   z.object({
     needConfirm: z.literal(true),
+    userId: z.string().optional(),
     existingSessions: z.array(z.object({
+      id: z.string(),
       deviceInfo: z.string(), ipAddress: z.string().nullable(), loggedInAt: z.string(),
     })),
+    newDevice: z.object({
+      deviceInfo: z.string(), ipAddress: z.string().nullable(),
+    }).optional(),
+    user: z.object({
+      id: ID, username: z.string(), nickname: z.string().nullable(),
+      role: UserRole, mode: z.string(), teamId: z.string().nullable(),
+    }).optional(),
   }),
 ])
 export type LoginResponse = z.infer<typeof LoginResponse>
