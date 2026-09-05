@@ -24,7 +24,7 @@ const TOKEN_COOKIE = 'auth_token'
 const PUBLIC_PREFIXES = [
   '/api/auth/login',
   '/api/auth/confirm-login',
-  '/api/auth/register',
+  // 注：本仓没有 /api/auth/register —— 账号由管理员在后台创建，无公开注册入口
   '/api/tournaments/public.list',
   '/api/internal/',
   '/api/scheduled-posts/dispatch-due',
