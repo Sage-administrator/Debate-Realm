@@ -17,9 +17,9 @@
       :value="displayLabel"
       :placeholder="defaultPlaceholder"
       :disabled="disabled"
+      :class="['w-full cursor-pointer', inputClass]"
       @click="openPicker"
       @focus="openPicker"
-      :class="['w-full cursor-pointer', inputClass]"
     />
 
     <div

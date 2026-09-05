@@ -253,7 +253,7 @@ const minutes = Array.from({ length: 60 }, (_, i) => i)
           <!-- 日期网格 -->
           <div class="grid grid-cols-7 gap-1">
             <template v-for="(d, idx) in dayCells" :key="idx">
-              <div v-if="d === null"></div>
+              <div v-if="d === null" />
               <button
                 v-else
                 type="button"

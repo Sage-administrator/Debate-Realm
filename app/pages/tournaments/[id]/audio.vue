@@ -7,11 +7,11 @@
   - 支持音频文件上传到 public/uploads/audio 文件夹
 -->
 <script setup lang="ts">
-definePageMeta({ layout: 'tournament' })
-
 // ═══════════ 导入 ═══════════
 import { computed, ref, onMounted, watch } from 'vue'
 import TimerPreviewCard from '~/components/TimerPreviewCard.vue'
+
+definePageMeta({ layout: 'tournament' })
 
 // ═══════════ 基础工具 ═══════════
 const route = useRoute()
@@ -105,9 +105,9 @@ watch(
       <!-- 左侧：实时预览（左4列，约1/3宽度） -->
       <div class="col-span-4">
         <TimerPreviewCard
+          v-model:stage-index="previewStageIndex"
           :full-config="config"
           :tournament-id="tournamentId"
-          v-model:stage-index="previewStageIndex"
         />
       </div>
 
@@ -132,8 +132,8 @@ watch(
               <p class="text-xs text-[var(--color-text-muted)]">控制是否在计时器中播放提示音</p>
             </div>
             <label class="toggle-switch">
-              <input type="checkbox" v-model="config.audioConfig.enabled" />
-              <span class="toggle-slider"></span>
+              <input v-model="config.audioConfig.enabled" type="checkbox" />
+              <span class="toggle-slider" />
             </label>
           </div>
 
@@ -202,7 +202,7 @@ watch(
                   :src="config.audioConfig.warningSound"
                   controls
                   class="h-8 w-full max-w-xs"
-                ></audio>
+                />
               </div>
             </div>
 
@@ -241,7 +241,7 @@ watch(
                   :src="config.audioConfig.finalWarningSound"
                   controls
                   class="h-8 w-full max-w-xs"
-                ></audio>
+                />
               </div>
             </div>
 
@@ -268,11 +268,7 @@ watch(
                 }}</span>
               </div>
               <div v-if="config.audioConfig.timeUpSound" class="flex items-center gap-2">
-                <audio
-                  :src="config.audioConfig.timeUpSound"
-                  controls
-                  class="h-8 w-full max-w-xs"
-                ></audio>
+                <audio :src="config.audioConfig.timeUpSound" controls class="h-8 w-full max-w-xs" />
               </div>
             </div>
           </div>

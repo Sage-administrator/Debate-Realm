@@ -261,7 +261,7 @@ export function generateRoundRobin(
   teams: TeamInput[],
   opts?: { mode?: 'single' | 'double' },
 ): MatchInput[] {
-  let teamList = teams.map((t, i) => ({ name: t.name, index: i }))
+  const teamList = teams.map((t, i) => ({ name: t.name, index: i }))
   const mode = opts?.mode ?? 'single'
   const hasOddTeams = teamList.length % 2 === 1
 
@@ -626,7 +626,7 @@ export function computeAdvanceTarget(match: {
     const nextRoundNum = roundNum + 1
     // 判断下一轮是否是半决赛或决赛（例如 bracketSize=8：round=2 是半决赛，round=3 是决赛）
     // 这里简化为统一 "第X轮"，实际需要总轮数信息；但在保存时已用显式标签，这里只做近似
-    let nextRoundLabel = `第${nextRoundNum}轮`
+    const nextRoundLabel = `第${nextRoundNum}轮`
     // 简化：直接用下一轮号匹配已保存的比赛标签
     // 实际匹配在 advanceWinnerToNextRound 中使用 roundSet 精确查找
     return {
@@ -804,7 +804,7 @@ async function findTargetMatch(
   currentRound: string,
 ) {
   // 1) 精确查找
-  let m = await prisma.match.findFirst({
+  const m = await prisma.match.findFirst({
     where: { tournamentId, round: preferredRound, orderNum },
   })
   if (m) return m

@@ -7,11 +7,11 @@
   - 配置修改实时同步到数据库（timer-config API）
 -->
 <script setup lang="ts">
-definePageMeta({ layout: 'tournament' })
-
 // ═══════════ 导入 ═══════════
 import { computed, ref, onMounted, watch } from 'vue'
 import TimerPreviewCard from '~/components/TimerPreviewCard.vue'
+
+definePageMeta({ layout: 'tournament' })
 
 // ═══════════ Nuxt 组合式 API ═══════════
 const route = useRoute()
@@ -138,9 +138,9 @@ watch(
       <!-- 左侧：实时预览（左4列，约1/3宽度） -->
       <div class="col-span-4">
         <TimerPreviewCard
+          v-model:stage-index="previewStageIndex"
           :full-config="config"
           :tournament-id="tournamentId"
-          v-model:stage-index="previewStageIndex"
         />
       </div>
 
@@ -161,8 +161,8 @@ watch(
             >
               <UIcon name="i-lucide-type" class="w-4 h-4 text-[var(--color-text-muted)]" />
               <input
-                type="checkbox"
                 v-model="config.uiConfig.showTitle"
+                type="checkbox"
                 class="w-4 h-4 rounded border-[var(--color-border)] text-indigo-600 focus:ring-2 focus:ring-indigo-500"
               />
               <span>比赛标题</span>
@@ -180,8 +180,8 @@ watch(
                   <div class="flex items-center gap-2">
                     <ColorPicker v-model="config.uiConfig.titleColor" />
                     <input
-                      type="text"
                       v-model="config.uiConfig.titleColor"
+                      type="text"
                       class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                       placeholder="#0369a1"
                     />
@@ -204,17 +204,17 @@ watch(
                   >
                   <div class="flex items-center gap-3">
                     <input
+                      v-model.number="config.uiConfig.eventFontSize"
                       type="range"
                       min="10"
                       max="200"
-                      v-model.number="config.uiConfig.eventFontSize"
                       class="range-bar flex-1"
                     />
                     <input
+                      v-model.number="config.uiConfig.eventFontSize"
                       type="number"
                       min="10"
                       max="200"
-                      v-model.number="config.uiConfig.eventFontSize"
                       class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     />
                   </div>
@@ -237,8 +237,8 @@ watch(
                 <div class="flex items-center gap-2">
                   <ColorPicker v-model="config.uiConfig.stageTitleColor" />
                   <input
-                    type="text"
                     v-model="config.uiConfig.stageTitleColor"
+                    type="text"
                     class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     placeholder="#FFFFFF"
                   />
@@ -261,17 +261,17 @@ watch(
                 >
                 <div class="flex items-center gap-3">
                   <input
+                    v-model.number="config.uiConfig.stageTitleFontSize"
                     type="range"
                     min="10"
                     max="300"
-                    v-model.number="config.uiConfig.stageTitleFontSize"
                     class="range-bar flex-1"
                   />
                   <input
+                    v-model.number="config.uiConfig.stageTitleFontSize"
                     type="number"
                     min="10"
                     max="300"
-                    v-model.number="config.uiConfig.stageTitleFontSize"
                     class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   />
                 </div>
@@ -289,8 +289,8 @@ watch(
                 class="w-4 h-4 text-[var(--color-text-muted)]"
               />
               <input
-                type="checkbox"
                 v-model="config.uiConfig.showBanner"
+                type="checkbox"
                 class="w-4 h-4 rounded border-[var(--color-border)] text-indigo-600 focus:ring-2 focus:ring-indigo-500"
               />
               <span>横幅 / 辩题</span>
@@ -316,17 +316,17 @@ watch(
                   >
                   <div class="flex items-center gap-3">
                     <input
+                      v-model.number="config.uiConfig.bannerFontSize"
                       type="range"
                       min="8"
                       max="80"
-                      v-model.number="config.uiConfig.bannerFontSize"
                       class="range-bar flex-1"
                     />
                     <input
+                      v-model.number="config.uiConfig.bannerFontSize"
                       type="number"
                       min="8"
                       max="80"
-                      v-model.number="config.uiConfig.bannerFontSize"
                       class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     />
                   </div>
@@ -337,17 +337,17 @@ watch(
                   >
                   <div class="flex items-center gap-3">
                     <input
+                      v-model.number="config.uiConfig.labelFontSize"
                       type="range"
                       min="10"
                       max="120"
-                      v-model.number="config.uiConfig.labelFontSize"
                       class="range-bar flex-1"
                     />
                     <input
+                      v-model.number="config.uiConfig.labelFontSize"
                       type="number"
                       min="10"
                       max="120"
-                      v-model.number="config.uiConfig.labelFontSize"
                       class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     />
                   </div>
@@ -358,17 +358,17 @@ watch(
                   >
                   <div class="flex items-center gap-3">
                     <input
+                      v-model.number="config.uiConfig.bannerHeight"
                       type="range"
                       min="0"
                       max="60"
-                      v-model.number="config.uiConfig.bannerHeight"
                       class="range-bar flex-1"
                     />
                     <input
+                      v-model.number="config.uiConfig.bannerHeight"
                       type="number"
                       min="0"
                       max="60"
-                      v-model.number="config.uiConfig.bannerHeight"
                       class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     />
                   </div>
@@ -379,19 +379,19 @@ watch(
                   >
                   <div class="flex items-center gap-3">
                     <input
+                      v-model.number="config.uiConfig.bannerPos"
                       type="range"
                       min="-5"
                       max="5"
                       step="0.5"
-                      v-model.number="config.uiConfig.bannerPos"
                       class="range-bar flex-1"
                     />
                     <input
+                      v-model.number="config.uiConfig.bannerPos"
                       type="number"
                       step="0.5"
                       min="-5"
                       max="5"
-                      v-model.number="config.uiConfig.bannerPos"
                       class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     />
                   </div>
@@ -411,8 +411,8 @@ watch(
                         :preset-colors="bannerColorPresets"
                       />
                       <input
-                        type="text"
                         v-model="config.uiConfig.bannerColorPos"
+                        type="text"
                         class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                         placeholder="#A92323"
                       />
@@ -428,8 +428,8 @@ watch(
                         :preset-colors="bannerColorPresets"
                       />
                       <input
-                        type="text"
                         v-model="config.uiConfig.bannerColorNeg"
+                        type="text"
                         class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                         placeholder="#0369A1"
                       />
@@ -442,8 +442,8 @@ watch(
                     <div class="flex items-center gap-2">
                       <ColorPicker v-model="config.uiConfig.bannerFontColorPos" />
                       <input
-                        type="text"
                         v-model="config.uiConfig.bannerFontColorPos"
+                        type="text"
                         class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                         placeholder="#FFFFFF"
                       />
@@ -456,8 +456,8 @@ watch(
                     <div class="flex items-center gap-2">
                       <ColorPicker v-model="config.uiConfig.bannerFontColorNeg" />
                       <input
-                        type="text"
                         v-model="config.uiConfig.bannerFontColorNeg"
+                        type="text"
                         class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                         placeholder="#FFFFFF"
                       />
@@ -482,8 +482,8 @@ watch(
                 <div class="flex items-stretch gap-2">
                   <ColorPicker v-model="config.uiConfig.teamNameColor" />
                   <input
-                    type="text"
                     v-model="config.uiConfig.teamNameColor"
+                    type="text"
                     class="input-glass w-28 h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     placeholder="#FFFFFF"
                   />
@@ -506,17 +506,17 @@ watch(
                 >
                 <div class="flex items-center gap-3">
                   <input
+                    v-model.number="config.uiConfig.teamNameFontSize"
                     type="range"
                     min="8"
                     max="80"
-                    v-model.number="config.uiConfig.teamNameFontSize"
                     class="range-bar flex-1"
                   />
                   <input
+                    v-model.number="config.uiConfig.teamNameFontSize"
                     type="number"
                     min="8"
                     max="80"
-                    v-model.number="config.uiConfig.teamNameFontSize"
                     class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   />
                 </div>
@@ -561,8 +561,8 @@ watch(
                 <div class="flex items-center gap-2">
                   <ColorPicker v-model="config.uiConfig.timerColor" />
                   <input
-                    type="text"
                     v-model="config.uiConfig.timerColor"
+                    type="text"
                     class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     placeholder="#FFFFFF"
                   />
@@ -578,8 +578,8 @@ watch(
                     :preset-colors="bannerColorPresets"
                   />
                   <input
-                    type="text"
                     v-model="config.uiConfig.dualTimerColorPos"
+                    type="text"
                     class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     placeholder="rgb(169, 35, 35)"
                   />
@@ -595,8 +595,8 @@ watch(
                     :preset-colors="bannerColorPresets"
                   />
                   <input
-                    type="text"
                     v-model="config.uiConfig.dualTimerColorNeg"
+                    type="text"
                     class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     placeholder="rgb(3, 105, 161)"
                   />
@@ -623,17 +623,17 @@ watch(
                 >
                 <div class="flex items-center gap-3">
                   <input
+                    v-model.number="config.uiConfig.timerFontSize"
                     type="range"
                     min="40"
                     max="400"
-                    v-model.number="config.uiConfig.timerFontSize"
                     class="range-bar flex-1"
                   />
                   <input
+                    v-model.number="config.uiConfig.timerFontSize"
                     type="number"
                     min="40"
                     max="400"
-                    v-model.number="config.uiConfig.timerFontSize"
                     class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   />
                 </div>
@@ -673,17 +673,17 @@ watch(
                   >
                   <div class="flex items-center gap-3">
                     <input
+                      v-model.number="config.uiConfig.contentPaddingTop"
                       type="range"
                       min="0"
                       max="300"
-                      v-model.number="config.uiConfig.contentPaddingTop"
                       class="range-bar flex-1"
                     />
                     <input
+                      v-model.number="config.uiConfig.contentPaddingTop"
                       type="number"
                       min="0"
                       max="300"
-                      v-model.number="config.uiConfig.contentPaddingTop"
                       class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     />
                   </div>
@@ -694,17 +694,17 @@ watch(
                   >
                   <div class="flex items-center gap-3">
                     <input
+                      v-model.number="config.uiConfig.titleMarginBottom"
                       type="range"
                       min="0"
                       max="200"
-                      v-model.number="config.uiConfig.titleMarginBottom"
                       class="range-bar flex-1"
                     />
                     <input
+                      v-model.number="config.uiConfig.titleMarginBottom"
                       type="number"
                       min="0"
                       max="200"
-                      v-model.number="config.uiConfig.titleMarginBottom"
                       class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     />
                   </div>
@@ -715,17 +715,17 @@ watch(
                   >
                   <div class="flex items-center gap-3">
                     <input
+                      v-model.number="config.uiConfig.stageTimerGap"
                       type="range"
                       min="0"
                       max="200"
-                      v-model.number="config.uiConfig.stageTimerGap"
                       class="range-bar flex-1"
                     />
                     <input
+                      v-model.number="config.uiConfig.stageTimerGap"
                       type="number"
                       min="0"
                       max="200"
-                      v-model.number="config.uiConfig.stageTimerGap"
                       class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     />
                   </div>

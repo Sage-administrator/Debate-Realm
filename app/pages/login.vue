@@ -140,7 +140,7 @@ function formatTime(iso: string): string {
         <div class="glass-divider my-5" />
 
         <!-- 登录表单 -->
-        <form @submit.prevent="handleLogin" class="space-y-4">
+        <form class="space-y-4" @submit.prevent="handleLogin">
           <!-- 被踢下线警告：黄色半透明背景 -->
           <div
             v-if="kickedMessage"
@@ -191,12 +191,12 @@ function formatTime(iso: string): string {
               <button
                 type="button"
                 class="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] p-1 transition-colors"
+                aria-label="切换密码显示"
                 @click="
                   () => {
                     showPassword = !showPassword
                   }
                 "
-                aria-label="切换密码显示"
               >
                 <!-- 眼睛打开图标 -->
                 <svg
@@ -283,8 +283,8 @@ function formatTime(iso: string): string {
           <!-- 半透明遮罩层（点击可关闭） -->
           <div
             class="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            @click.self="cancelMultiDevice"
             aria-hidden="true"
+            @click.self="cancelMultiDevice"
           />
 
           <!-- 弹窗内容（居中，玻璃拟态卡片） -->
@@ -297,9 +297,9 @@ function formatTime(iso: string): string {
               <button
                 type="button"
                 class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                @click="cancelMultiDevice"
                 :disabled="confirmLoading"
                 aria-label="关闭"
+                @click="cancelMultiDevice"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path

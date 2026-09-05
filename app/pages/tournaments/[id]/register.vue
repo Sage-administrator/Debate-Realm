@@ -209,7 +209,7 @@ const formatDate = (d: string | null) => (d ? new Date(d).toLocaleDateString('zh
       <div v-if="loading" class="glass-card p-8 mt-10 text-center">
         <div
           class="w-8 h-8 border-2 border-[var(--color-border)] border-t-indigo-400 rounded-full animate-spin mx-auto mb-3"
-        ></div>
+        />
         <p class="text-[var(--color-text-secondary)] text-sm">加载中...</p>
       </div>
 
@@ -408,7 +408,7 @@ const formatDate = (d: string | null) => (d ? new Date(d).toLocaleDateString('zh
             <div
               v-if="field.fieldType === 'divider'"
               class="border-t border-[var(--color-border)] my-2"
-            ></div>
+            />
 
             <!-- 装饰元素：分组标题 -->
             <h3
@@ -494,7 +494,7 @@ const formatDate = (d: string | null) => (d ? new Date(d).toLocaleDateString('zh
                         <template #fallback>
                           <div
                             class="w-full h-8 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
-                          ></div>
+                          />
                         </template>
                       </ClientOnly>
                     </div>
@@ -625,7 +625,7 @@ const formatDate = (d: string | null) => (d ? new Date(d).toLocaleDateString('zh
                   <template #fallback>
                     <div
                       class="w-full h-8 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
-                    ></div>
+                    />
                   </template>
                 </ClientOnly>
 

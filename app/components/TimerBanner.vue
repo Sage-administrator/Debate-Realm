@@ -7,7 +7,7 @@
   尺寸基于 1280x720 设计基准（px），由调用方决定缩放方式
 -->
 <template>
-  <div class="debate-header" v-if="shouldShow" :style="headerStyle">
+  <div v-if="shouldShow" class="debate-header" :style="headerStyle">
     <div
       class="flex w-full banner-row"
       :style="{ marginTop: `${(uiConfig.bannerPos ?? 0) * 7.2}px` }"

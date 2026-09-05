@@ -7,10 +7,10 @@
   - 支持队徽图片上传到 public/uploads/images 文件夹
 -->
 <script setup lang="ts">
-definePageMeta({ layout: 'standalone' })
-
 import { computed, ref, onMounted, watch } from 'vue'
 import TimerPreviewCard from '~/components/TimerPreviewCard.vue'
+
+definePageMeta({ layout: 'standalone' })
 
 const route = useRoute()
 const toast = useToast()
@@ -103,10 +103,10 @@ watch(
     <div class="py-6 grid grid-cols-12 gap-6">
       <div class="col-span-4">
         <TimerPreviewCard
+          v-model:stage-index="previewStageIndex"
           :full-config="config"
           :tournament-id="matchId"
           type="standalone"
-          v-model:stage-index="previewStageIndex"
         />
       </div>
 
@@ -131,8 +131,8 @@ watch(
               <p class="text-xs text-[var(--color-text-muted)]">控制队伍名称旁是否显示队徽</p>
             </div>
             <label class="toggle-switch">
-              <input type="checkbox" v-model="config.teamLogoConfig.showTeamLogo" />
-              <span class="toggle-slider"></span>
+              <input v-model="config.teamLogoConfig.showTeamLogo" type="checkbox" />
+              <span class="toggle-slider" />
             </label>
           </div>
 
@@ -143,11 +143,11 @@ watch(
                 >队徽大小 (px)</label
               >
               <input
+                v-model.number="config.teamLogoConfig.logoSize"
                 type="number"
                 min="10"
                 max="400"
                 step="1"
-                v-model.number="config.teamLogoConfig.logoSize"
                 class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
               />
               <p class="text-xs text-[var(--color-text-muted)] mt-1">默认 57.6</p>
@@ -157,9 +157,9 @@ watch(
                 >水平位置 (左右, px)</label
               >
               <input
+                v-model.number="config.teamLogoConfig.logoOffsetX"
                 type="number"
                 step="1"
-                v-model.number="config.teamLogoConfig.logoOffsetX"
                 class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
               />
               <p class="text-xs text-[var(--color-text-muted)] mt-1">正数向右，负数向左</p>
@@ -169,9 +169,9 @@ watch(
                 >垂直位置 (上下, px)</label
               >
               <input
+                v-model.number="config.teamLogoConfig.logoOffsetY"
                 type="number"
                 step="1"
-                v-model.number="config.teamLogoConfig.logoOffsetY"
                 class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
               />
               <p class="text-xs text-[var(--color-text-muted)] mt-1">正数向下，负数向上</p>
@@ -183,7 +183,7 @@ watch(
               <label
                 class="block text-sm font-medium text-[var(--color-text-primary)] mb-3 flex items-center gap-2"
               >
-                <span class="inline-block w-3 h-3 rounded-full bg-red-500"></span>
+                <span class="inline-block w-3 h-3 rounded-full bg-red-500" />
                 正方队伍队徽
               </label>
               <div class="flex flex-col items-center gap-3">
@@ -219,8 +219,8 @@ watch(
                   </label>
                   <button
                     v-if="config.teamLogoConfig.positiveLogoUrl"
-                    @click="removeLogo('positiveLogoUrl')"
                     class="px-4 py-2 text-sm text-red-500 dark:text-red-400 border border-red-500/30 rounded hover:bg-red-500/10 transition-colors flex items-center gap-2"
+                    @click="removeLogo('positiveLogoUrl')"
                   >
                     <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
                     移除队徽
@@ -233,7 +233,7 @@ watch(
               <label
                 class="block text-sm font-medium text-[var(--color-text-primary)] mb-3 flex items-center gap-2"
               >
-                <span class="inline-block w-3 h-3 rounded-full bg-blue-500"></span>
+                <span class="inline-block w-3 h-3 rounded-full bg-blue-500" />
                 反方队伍队徽
               </label>
               <div class="flex flex-col items-center gap-3">
@@ -269,8 +269,8 @@ watch(
                   </label>
                   <button
                     v-if="config.teamLogoConfig.negativeLogoUrl"
-                    @click="removeLogo('negativeLogoUrl')"
                     class="px-4 py-2 text-sm text-red-500 dark:text-red-400 border border-red-500/30 rounded hover:bg-red-500/10 transition-colors flex items-center gap-2"
+                    @click="removeLogo('negativeLogoUrl')"
                   >
                     <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
                     移除队徽

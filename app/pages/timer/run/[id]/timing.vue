@@ -144,11 +144,11 @@
           <button class="timing-btn" @click="() => debateStore.playTestSound('30')">30秒</button>
           <button
             class="timing-btn"
-            @click="() => debateStore.playTestSound('5')"
             :disabled="debateStore.audioConfig?.scheme === 'formal'"
             :title="
               debateStore.audioConfig?.scheme === 'formal' ? '正式比赛提示音方案下 5 秒不响' : ''
             "
+            @click="() => debateStore.playTestSound('5')"
           >
             5秒
           </button>
@@ -286,8 +286,8 @@
             <div class="flex items-center justify-between">
               <label class="text-sm text-gray-700">正方时间(秒):</label>
               <input
-                type="number"
                 v-model.number="customPositiveTime"
+                type="number"
                 class="w-20 px-2 py-1 border border-gray-300 rounded text-right"
                 min="0"
                 max="3600"
@@ -296,8 +296,8 @@
             <div class="flex items-center justify-between">
               <label class="text-sm text-gray-700">反方时间(秒):</label>
               <input
-                type="number"
                 v-model.number="customNegativeTime"
+                type="number"
                 class="w-20 px-2 py-1 border border-gray-300 rounded text-right"
                 min="0"
                 max="3600"
@@ -308,8 +308,8 @@
           <div v-else>
             <label class="block text-sm font-medium mb-1">时间(秒):</label>
             <input
-              type="number"
               v-model.number="customTime"
+              type="number"
               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none"
               min="0"
               max="3600"
@@ -395,13 +395,13 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ ssr: false, layout: false })
-
 import { ref, reactive, computed, shallowRef, onMounted, onUnmounted } from 'vue'
 import { useRoute, useToast, navigateTo } from '#imports'
 import { normalizeStageType, isPpt } from '~/utils/stageType'
 import TimerDisplay from '~/components/TimerDisplay.vue'
 import TimerBanner from '~/components/TimerBanner.vue'
+
+definePageMeta({ ssr: false, layout: false })
 
 const authStore = useAuthStore()
 const debateStore = useDebateStore()

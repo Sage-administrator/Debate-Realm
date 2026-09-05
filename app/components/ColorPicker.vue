@@ -205,7 +205,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="relative inline-block" ref="triggerRef">
+  <div ref="triggerRef" class="relative inline-block">
     <!-- 触发按钮：颜色预览 -->
     <button
       type="button"
@@ -216,11 +216,11 @@ onUnmounted(() => {
       <div
         class="w-full h-full transition-transform group-hover:scale-105"
         :style="{ backgroundColor: modelValue || '#3B82F6' }"
-      ></div>
+      />
       <!-- 边框高亮效果 -->
       <div
         class="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/10 group-hover:ring-white/20 pointer-events-none"
-      ></div>
+      />
     </button>
 
     <!-- 弹出面板 -->
@@ -260,7 +260,7 @@ onUnmounted(() => {
                 <div
                   v-if="['#FFFFFF', '#E5E7EB'].includes(color)"
                   class="absolute inset-0 rounded ring-1 ring-inset ring-black/10"
-                ></div>
+                />
               </button>
             </div>
           </div>
@@ -273,7 +273,7 @@ onUnmounted(() => {
               <div
                 class="w-8 h-8 rounded-lg ring-1 ring-inset ring-white/10 shrink-0 shadow-inner"
                 :style="{ backgroundColor: inputValue || '#000000' }"
-              ></div>
+              />
               <!-- HEX 输入 -->
               <input
                 v-model="inputValue"

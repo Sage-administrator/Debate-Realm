@@ -89,8 +89,8 @@ onMounted(() => {
       <div class="mb-8">
         <div class="flex items-center gap-4">
           <button
-            @click="router.back()"
             class="p-2 hover:bg-[var(--color-bg-tertiary)] rounded-lg transition-colors text-[var(--color-text-secondary)]"
+            @click="router.back()"
           >
             <UIcon name="i-lucide-arrow-left" class="w-5 h-5" />
           </button>

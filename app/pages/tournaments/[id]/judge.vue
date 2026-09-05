@@ -534,7 +534,7 @@ watch(
             rows="4"
             placeholder="请简要说明评分理由..."
             class="w-full px-4 py-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none focus:border-amber-500/50 transition-colors resize-none"
-          ></textarea>
+          />
         </div>
 
         <!-- 提交按钮 -->

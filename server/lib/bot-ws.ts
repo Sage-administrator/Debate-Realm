@@ -781,7 +781,7 @@ async function handleChannelMessage(config: BotConfig, data: any): Promise<void>
   if (!msg || !msg.channel_id) return
 
   // 先提取并清理内容（去重需要用到）
-  let content = (msg.content || '').replace(/<@!\d+>/g, '').trim()
+  const content = (msg.content || '').replace(/<@!\d+>/g, '').trim()
 
   // 消息去重：防止 QQ 平台重复推送
   if (checkAndMarkMessage(msg.id)) {

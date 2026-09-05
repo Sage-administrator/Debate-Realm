@@ -920,7 +920,7 @@ onMounted(() => {
           <ClientOnly v-if="isAdmin">
             <div class="mb-8">
               <h1 class="text-3xl font-bold text-[var(--color-text-primary)]">团队管理面板</h1>
-              <p class="text-[var(--color-text-secondary)] mt-2" v-if="store.user?.team">
+              <p v-if="store.user?.team" class="text-[var(--color-text-secondary)] mt-2">
                 {{ store.user.team.name }}（{{ isQQBotMode ? 'QQ频道模式' : '普通模式' }}）
               </p>
             </div>
@@ -1072,7 +1072,7 @@ onMounted(() => {
           <template v-else-if="isSubaccount">
             <div class="mb-8">
               <h1 class="text-3xl font-bold text-[var(--color-text-primary)]">欢迎回来</h1>
-              <p class="text-[var(--color-text-secondary)] mt-2" v-if="store.user?.team">
+              <p v-if="store.user?.team" class="text-[var(--color-text-secondary)] mt-2">
                 团队：{{ store.user.team.name }}（子账号）
               </p>
             </div>

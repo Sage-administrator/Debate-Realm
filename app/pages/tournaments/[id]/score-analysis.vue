@@ -395,7 +395,7 @@ function exportRankingsCSV() {
       </div>
 
       <!-- ═══ 评分进度条 ═══ -->
-      <UCard class="mb-6" v-if="scoreStats">
+      <UCard v-if="scoreStats" class="mb-6">
         <template #header>
           <h2
             class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
@@ -421,7 +421,7 @@ function exportRankingsCSV() {
       </UCard>
 
       <!-- ═══ 队伍排名榜 ═══ -->
-      <UCard class="mb-6" v-if="rankingsList.length">
+      <UCard v-if="rankingsList.length" class="mb-6">
         <template #header>
           <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-2 min-w-0">
@@ -530,7 +530,7 @@ function exportRankingsCSV() {
       </UCard>
 
       <!-- ═══ 平均分对比 ═══ -->
-      <UCard class="mb-6" v-if="scoreStats">
+      <UCard v-if="scoreStats" class="mb-6">
         <template #header>
           <h2
             class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
@@ -562,7 +562,7 @@ function exportRankingsCSV() {
       </UCard>
 
       <!-- ═══ 维度评分分析 ═══ -->
-      <UCard class="mb-6" v-if="dimensionStats.length">
+      <UCard v-if="dimensionStats.length" class="mb-6">
         <template #header>
           <div class="flex items-center justify-between">
             <h2
@@ -596,7 +596,7 @@ function exportRankingsCSV() {
       </UCard>
 
       <!-- ═══ 评委评分分布 ═══ -->
-      <UCard class="mb-6" v-if="Object.keys(judgeScoreDistribution).length">
+      <UCard v-if="Object.keys(judgeScoreDistribution).length" class="mb-6">
         <template #header>
           <div class="flex items-center justify-between">
             <h2

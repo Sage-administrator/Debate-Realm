@@ -884,7 +884,7 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
                     placeholder="请选择服务器/频道"
                     :loading="loadingGuilds"
                     :disabled="loadingGuilds"
-                    @update:modelValue="onGuildChange"
+                    @update:model-value="onGuildChange"
                   />
                   <p v-if="guildListError" class="text-red-500 text-xs mt-1">
                     {{ guildListError }}
@@ -945,7 +945,7 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
                     placeholder="请选择服务器/频道"
                     :loading="loadingGuilds"
                     :disabled="loadingGuilds"
-                    @update:modelValue="onForumGuildChange"
+                    @update:model-value="onForumGuildChange"
                   />
                   <p v-if="guildListError" class="text-red-500 text-xs mt-1">
                     {{ guildListError }}
@@ -1019,8 +1019,8 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
                       variant="ghost"
                       size="xs"
                       icon="i-lucide-refresh-cw"
-                      @click="loadArenaList"
                       :loading="loadingArena"
+                      @click="loadArenaList"
                     />
                   </div>
                 </template>
@@ -1085,8 +1085,8 @@ async function handleAdminUnclaim(userId: string, roleId: string) {
                       variant="ghost"
                       size="xs"
                       icon="i-lucide-refresh-cw"
-                      @click="loadPermLogs"
                       :loading="loadingPermLogs"
+                      @click="loadPermLogs"
                     />
                   </div>
                 </template>

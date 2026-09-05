@@ -1075,27 +1075,27 @@ onMounted(() => loadMatches())
             </h3>
             <button
               v-if="!editingTeams"
+              class="px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-500/15 rounded hover:bg-purple-500/25 transition-colors flex items-center gap-1"
               @click="
                 () => {
                   editingTeams = true
                 }
               "
-              class="px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-500/15 rounded hover:bg-purple-500/25 transition-colors flex items-center gap-1"
             >
               <UIcon name="i-lucide-pencil" class="w-3 h-3" /> 编辑
             </button>
             <template v-else>
               <div class="flex gap-2">
                 <button
-                  @click="saveTeams"
                   :disabled="savingTeams"
                   class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors flex items-center gap-1 disabled:opacity-50"
+                  @click="saveTeams"
                 >
                   <UIcon name="i-lucide-check" class="w-3 h-3" /> 保存
                 </button>
                 <button
-                  @click="cancelEditTeams"
                   class="px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] rounded hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                  @click="cancelEditTeams"
                 >
                   取消
                 </button>
@@ -1126,14 +1126,14 @@ onMounted(() => loadMatches())
           <div class="flex gap-2">
             <input
               v-model="newTeamInput"
-              @keyup.enter="addTeam"
               type="text"
               placeholder="输入队伍名称，按回车添加"
               class="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
+              @keyup.enter="addTeam"
             />
             <button
-              @click="addTeam"
               class="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-1"
+              @click="addTeam"
             >
               <UIcon name="i-lucide-plus" class="w-4 h-4" /> 添加
             </button>
@@ -1153,8 +1153,8 @@ onMounted(() => loadMatches())
             >
               {{ name }}
               <button
-                @click="removeTeam(idx)"
                 class="text-[var(--color-text-muted)] hover:text-red-500 transition-colors"
+                @click="removeTeam(idx)"
               >
                 <UIcon name="i-lucide-x" class="w-3.5 h-3.5" />
               </button>
@@ -1180,27 +1180,27 @@ onMounted(() => loadMatches())
             </h3>
             <button
               v-if="!editingJudges"
+              class="px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-500/15 rounded hover:bg-purple-500/25 transition-colors flex items-center gap-1"
               @click="
                 () => {
                   editingJudges = true
                 }
               "
-              class="px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-500/15 rounded hover:bg-purple-500/25 transition-colors flex items-center gap-1"
             >
               <UIcon name="i-lucide-pencil" class="w-3 h-3" /> 编辑
             </button>
             <template v-else>
               <div class="flex gap-2">
                 <button
-                  @click="saveJudges"
                   :disabled="savingJudges"
                   class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors flex items-center gap-1 disabled:opacity-50"
+                  @click="saveJudges"
                 >
                   <UIcon name="i-lucide-check" class="w-3 h-3" /> 保存
                 </button>
                 <button
-                  @click="cancelEditJudges"
                   class="px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] rounded hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                  @click="cancelEditJudges"
                 >
                   取消
                 </button>
@@ -1230,14 +1230,14 @@ onMounted(() => loadMatches())
           <div class="flex gap-2">
             <input
               v-model="newJudgeInput"
-              @keyup.enter="addJudge"
               type="text"
               placeholder="输入评委姓名，按回车添加"
               class="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
+              @keyup.enter="addJudge"
             />
             <button
-              @click="addJudge"
               class="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-1"
+              @click="addJudge"
             >
               <UIcon name="i-lucide-plus" class="w-4 h-4" /> 添加
             </button>
@@ -1256,8 +1256,8 @@ onMounted(() => loadMatches())
             >
               {{ name }}
               <button
-                @click="removeJudge(idx)"
                 class="text-[var(--color-text-muted)] hover:text-red-500 transition-colors"
+                @click="removeJudge(idx)"
               >
                 <UIcon name="i-lucide-x" class="w-3.5 h-3.5" />
               </button>
@@ -1281,14 +1281,14 @@ onMounted(() => loadMatches())
         </p>
         <div class="flex justify-center gap-3">
           <button
-            @click="openGenerateModal"
             class="px-5 py-2.5 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2"
+            @click="openGenerateModal"
           >
             <UIcon name="i-lucide-sparkles" class="w-4 h-4" /> 自动生成赛程
           </button>
           <button
-            @click="openCreateModal"
             class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+            @click="openCreateModal"
           >
             <UIcon name="i-lucide-plus" class="w-4 h-4" /> 手动添加比赛
           </button>
@@ -1300,31 +1300,31 @@ onMounted(() => loadMatches())
         <!-- 视图切换（仅在淘汰赛模式下显示两个选项） -->
         <div v-if="viewMode === 'bracket'" class="flex gap-2 mb-2">
           <button
-            @click="
-              () => {
-                forceListView = false
-              }
-            "
             class="px-3 py-1.5 text-xs font-medium rounded transition-colors"
             :class="
               !forceListView
                 ? 'bg-purple-600 text-white'
                 : 'bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
             "
+            @click="
+              () => {
+                forceListView = false
+              }
+            "
           >
             对阵图
           </button>
           <button
-            @click="
-              () => {
-                forceListView = true
-              }
-            "
             class="px-3 py-1.5 text-xs font-medium rounded transition-colors"
             :class="
               forceListView
                 ? 'bg-purple-600 text-white'
                 : 'bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+            "
+            @click="
+              () => {
+                forceListView = true
+              }
             "
           >
             列表视图
@@ -1541,9 +1541,9 @@ onMounted(() => loadMatches())
                       <!-- 已删除比赛：显示恢复按钮，隐藏其他操作 -->
                       <template v-if="match.deletedAt">
                         <button
-                          @click="handleRestoreMatch(match)"
                           :disabled="isMatchLocked(match.id)"
                           class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                          @click="handleRestoreMatch(match)"
                         >
                           <UIcon name="i-lucide-rotate-ccw" class="w-3.5 h-3.5" /> 恢复
                         </button>
@@ -1553,30 +1553,30 @@ onMounted(() => loadMatches())
                       <template v-else>
                         <button
                           v-if="match.status === 'finished'"
-                          @click="handleReopenMatch(match)"
                           :disabled="isMatchLocked(match.id)"
                           class="px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                          @click="handleReopenMatch(match)"
                         >
                           <UIcon name="i-lucide-undo" class="w-3.5 h-3.5" /> 撤销
                         </button>
                         <button
-                          @click="openResultModal(match)"
                           :disabled="isMatchLocked(match.id)"
                           class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                          @click="openResultModal(match)"
                         >
                           <UIcon name="i-lucide-check-circle" class="w-3.5 h-3.5" /> 录分
                         </button>
                         <button
-                          @click="openEditModal(match)"
                           :disabled="isMatchLocked(match.id)"
                           class="px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded hover:bg-[var(--color-bg-tertiary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                          @click="openEditModal(match)"
                         >
                           <UIcon name="i-lucide-edit" class="w-3.5 h-3.5" /> 编辑
                         </button>
                         <button
-                          @click="handleDeleteMatch(match)"
                           :disabled="isMatchLocked(match.id)"
                           class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                          @click="handleDeleteMatch(match)"
                         >
                           <UIcon name="i-lucide-trash-2" class="w-3.5 h-3.5" /> 删除
                         </button>
@@ -1680,17 +1680,16 @@ onMounted(() => loadMatches())
         </div>
         <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
           <button
+            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
             @click="
               () => {
                 showCreateModal = false
               }
             "
-            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
           >
             取消
           </button>
           <button
-            @click="handleCreateMatch"
             :disabled="
               !createForm.teamA ||
               !createForm.teamB ||
@@ -1698,6 +1697,7 @@ onMounted(() => loadMatches())
               createForm.teamA === createForm.teamB
             "
             class="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="handleCreateMatch"
           >
             确认创建
           </button>
@@ -1787,17 +1787,16 @@ onMounted(() => loadMatches())
         </div>
         <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
           <button
+            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
             @click="
               () => {
                 showEditModal = false
               }
             "
-            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
           >
             取消
           </button>
           <button
-            @click="handleEditMatch"
             :disabled="
               !editForm.teamA ||
               !editForm.teamB ||
@@ -1805,6 +1804,7 @@ onMounted(() => loadMatches())
               editForm.teamA === editForm.teamB
             "
             class="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="handleEditMatch"
           >
             确认保存
           </button>
@@ -1854,46 +1854,46 @@ onMounted(() => loadMatches())
             >
             <div class="grid grid-cols-3 gap-2">
               <button
-                @click="
-                  () => {
-                    resultForm.winner = 'A'
-                  }
-                "
                 class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all"
                 :class="
                   resultForm.winner === 'A'
                     ? 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400'
                     : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
                 "
+                @click="
+                  () => {
+                    resultForm.winner = 'A'
+                  }
+                "
               >
                 {{ resultMatch?.teamA || '队伍A' }} 胜
               </button>
               <button
-                @click="
-                  () => {
-                    resultForm.winner = 'draw'
-                  }
-                "
                 class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all"
                 :class="
                   resultForm.winner === 'draw'
                     ? 'border-yellow-500 bg-yellow-500/15 text-yellow-600 dark:text-yellow-400'
                     : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
                 "
+                @click="
+                  () => {
+                    resultForm.winner = 'draw'
+                  }
+                "
               >
                 平局
               </button>
               <button
-                @click="
-                  () => {
-                    resultForm.winner = 'B'
-                  }
-                "
                 class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all"
                 :class="
                   resultForm.winner === 'B'
                     ? 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400'
                     : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                "
+                @click="
+                  () => {
+                    resultForm.winner = 'B'
+                  }
                 "
               >
                 {{ resultMatch?.teamB || '队伍B' }} 胜
@@ -1958,29 +1958,29 @@ onMounted(() => loadMatches())
               <USelect
                 v-if="tournament?.judges?.length > 0"
                 :model-value="null"
-                @update:model-value="(val: string | null) => val && (resultForm.judge = val)"
                 :items="judgeItems"
                 placeholder="从评委中选择"
                 class="w-40"
                 :ui="{ base: 'input-glass' }"
+                @update:model-value="(val: string | null) => val && (resultForm.judge = val)"
               />
             </div>
           </div>
         </div>
         <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
           <button
+            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
             @click="
               () => {
                 showResultModal = false
               }
             "
-            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
           >
             取消
           </button>
           <button
-            @click="handleSubmitResult"
             class="px-5 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+            @click="handleSubmitResult"
           >
             确认比分
           </button>
@@ -2016,8 +2016,8 @@ onMounted(() => loadMatches())
               </h4>
               <div class="flex gap-1.5">
                 <button
-                  @click="downloadTopicTemplate"
                   class="px-2.5 py-1.5 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-md transition-colors flex items-center gap-1"
+                  @click="downloadTopicTemplate"
                 >
                   <UIcon name="i-lucide-download" class="w-3 h-3" /> CSV模板
                 </button>
@@ -2043,10 +2043,10 @@ onMounted(() => loadMatches())
                 >
                 <input
                   v-model="drawLotsForm.newTopicPro"
-                  @keyup.enter="addTopic"
                   type="text"
                   placeholder="正方辩题，例如：人工智能利大于弊"
                   class="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
+                  @keyup.enter="addTopic"
                 />
               </div>
               <div class="flex gap-2">
@@ -2056,17 +2056,17 @@ onMounted(() => loadMatches())
                 >
                 <input
                   v-model="drawLotsForm.newTopicCon"
-                  @keyup.enter="addTopic"
                   type="text"
                   placeholder="反方辩题，例如：人工智能弊大于利"
                   class="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
+                  @keyup.enter="addTopic"
                 />
               </div>
             </div>
             <div class="flex justify-end mb-3">
               <button
-                @click="addTopic"
                 class="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap"
+                @click="addTopic"
               >
                 + 添加
               </button>
@@ -2094,8 +2094,8 @@ onMounted(() => loadMatches())
                   >
                 </div>
                 <button
-                  @click="removeTopic(idx)"
                   class="text-[var(--color-text-muted)] hover:text-red-500 transition-colors ml-1 shrink-0"
+                  @click="removeTopic(idx)"
                 >
                   ×
                   <UIcon name="i-lucide-x" class="w-3 h-3" />
@@ -2133,31 +2133,31 @@ onMounted(() => loadMatches())
         <div class="flex flex-col gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
           <div class="grid grid-cols-3 gap-2">
             <button
-              @click="runDrawLots('groups')"
               class="px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+              @click="runDrawLots('groups')"
             >
               只分组抽签
             </button>
             <button
-              @click="runDrawLots('topics_sides')"
               class="px-4 py-2.5 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors"
+              @click="runDrawLots('topics_sides')"
             >
               辩题+正反方抽签
             </button>
             <button
-              @click="runDrawLots('all')"
               class="px-4 py-2.5 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors"
+              @click="runDrawLots('all')"
             >
               一键全部抽签
             </button>
           </div>
           <button
+            class="w-full mt-2 px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
             @click="
               () => {
                 showDrawLotsModal = false
               }
             "
-            class="w-full mt-2 px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
           >
             关闭
           </button>
@@ -2193,31 +2193,31 @@ onMounted(() => loadMatches())
             </label>
             <div class="grid grid-cols-2 gap-2">
               <button
-                @click="
-                  () => {
-                    resultSettingsForm.bestDebaterMode = 'both'
-                  }
-                "
                 class="px-4 py-3 text-sm font-medium rounded-lg border-2 transition-all text-left"
                 :class="
                   resultSettingsForm.bestDebaterMode === 'both'
                     ? 'border-rose-500 bg-rose-500/15 text-rose-400'
                     : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
                 "
+                @click="
+                  () => {
+                    resultSettingsForm.bestDebaterMode = 'both'
+                  }
+                "
               >
                 双方均可有最佳辩手
               </button>
               <button
-                @click="
-                  () => {
-                    resultSettingsForm.bestDebaterMode = 'winner_only'
-                  }
-                "
                 class="px-4 py-3 text-sm font-medium rounded-lg border-2 transition-all text-left"
                 :class="
                   resultSettingsForm.bestDebaterMode === 'winner_only'
                     ? 'border-rose-500 bg-rose-500/15 text-rose-400'
                     : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                "
+                @click="
+                  () => {
+                    resultSettingsForm.bestDebaterMode = 'winner_only'
+                  }
                 "
               >
                 只有一方可以有最佳辩手
@@ -2243,18 +2243,18 @@ onMounted(() => loadMatches())
         <!-- 底部操作 -->
         <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
           <button
+            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
             @click="
               () => {
                 showResultSettingsModal = false
               }
             "
-            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
           >
             取消
           </button>
           <button
-            @click="saveResultSettings"
             class="px-5 py-2 text-sm font-medium text-white bg-rose-600 rounded-lg hover:bg-rose-700 transition-colors flex items-center gap-2"
+            @click="saveResultSettings"
           >
             <UIcon name="i-lucide-check" class="w-4 h-4" /> 保存设置
           </button>
@@ -2286,8 +2286,8 @@ onMounted(() => loadMatches())
         >
           <span class="text-[var(--color-text-secondary)]">想要自己逐场添加？</span>
           <button
-            @click="switchToManualAdd"
             class="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+            @click="switchToManualAdd"
           >
             <UIcon name="i-lucide-arrow-right" class="w-4 h-4" /> 切换到手动添加比赛
           </button>
@@ -2303,16 +2303,16 @@ onMounted(() => loadMatches())
               <button
                 v-for="(fmt, idx) in TOURNAMENT_FORMATS"
                 :key="fmt.value"
-                @click="
-                  () => {
-                    generateForm.format = fmt.value
-                  }
-                "
                 class="p-4 text-sm rounded-lg border-2 transition-all text-left"
                 :class="
                   generateForm.format === fmt.value
                     ? 'border-purple-500 bg-purple-500/15 text-purple-700 dark:text-purple-300 shadow-sm'
                     : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] hover:border-[var(--color-border)]'
+                "
+                @click="
+                  () => {
+                    generateForm.format = fmt.value
+                  }
                 "
               >
                 <div class="flex items-center gap-2 mb-2">
@@ -2382,46 +2382,46 @@ onMounted(() => loadMatches())
             >
             <div class="grid grid-cols-3 gap-3">
               <button
-                @click="
-                  () => {
-                    generateForm.seedMethod = 'rating'
-                  }
-                "
                 class="px-3 py-2 text-sm rounded-lg border transition-all"
                 :class="
                   generateForm.seedMethod === 'rating'
                     ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
                     : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
                 "
+                @click="
+                  () => {
+                    generateForm.seedMethod = 'rating'
+                  }
+                "
               >
                 按输入顺序（默认）
               </button>
               <button
-                @click="
-                  () => {
-                    generateForm.seedMethod = 'random'
-                  }
-                "
                 class="px-3 py-2 text-sm rounded-lg border transition-all"
                 :class="
                   generateForm.seedMethod === 'random'
                     ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
                     : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
                 "
+                @click="
+                  () => {
+                    generateForm.seedMethod = 'random'
+                  }
+                "
               >
                 随机
               </button>
               <button
-                @click="
-                  () => {
-                    generateForm.seedMethod = 'name'
-                  }
-                "
                 class="px-3 py-2 text-sm rounded-lg border transition-all"
                 :class="
                   generateForm.seedMethod === 'name'
                     ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
                     : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                "
+                @click="
+                  () => {
+                    generateForm.seedMethod = 'name'
+                  }
                 "
               >
                 按名称字典序
@@ -2438,31 +2438,31 @@ onMounted(() => loadMatches())
             <div class="space-y-2">
               <div class="flex items-center gap-3">
                 <button
-                  @click="
-                    () => {
-                      generateForm.roundRobinMode = 'single'
-                    }
-                  "
                   class="px-4 py-2 text-sm rounded-lg border transition-all"
                   :class="
                     generateForm.roundRobinMode === 'single'
                       ? 'border-purple-500 bg-purple-500/15 text-purple-600 dark:text-purple-400 font-semibold'
                       : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
                   "
+                  @click="
+                    () => {
+                      generateForm.roundRobinMode = 'single'
+                    }
+                  "
                 >
                   单循环（推荐）
                 </button>
                 <button
-                  @click="
-                    () => {
-                      generateForm.roundRobinMode = 'double'
-                    }
-                  "
                   class="px-4 py-2 text-sm rounded-lg border transition-all"
                   :class="
                     generateForm.roundRobinMode === 'double'
                       ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
                       : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                  "
+                  @click="
+                    () => {
+                      generateForm.roundRobinMode = 'double'
+                    }
                   "
                 >
                   双循环（主客场）
@@ -2502,8 +2502,8 @@ onMounted(() => loadMatches())
                   >总轮数</label
                 >
                 <input
-                  type="number"
                   v-model.number="generateForm.rounds"
+                  type="number"
                   min="1"
                   max="20"
                   class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
@@ -2625,18 +2625,18 @@ onMounted(() => loadMatches())
         <!-- 底部操作 -->
         <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
           <button
+            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
             @click="
               () => {
                 showGenerateModal = false
               }
             "
-            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
           >
             取消
           </button>
           <button
-            @click="handleGenerate"
             class="px-5 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+            @click="handleGenerate"
           >
             <UIcon name="i-lucide-zap" class="w-4 h-4" /> 生成赛程
           </button>

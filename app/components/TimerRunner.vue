@@ -62,7 +62,7 @@
         }
       "
     >
-      <div class="absolute inset-0 bg-black/50"></div>
+      <div class="absolute inset-0 bg-black/50" />
       <div
         class="relative bg-white text-gray-800 rounded-lg shadow-2xl w-[45rem] max-w-[90vw] border border-gray-200 p-4"
         @click.stop
@@ -129,7 +129,7 @@
         }
       "
     >
-      <div class="absolute inset-0 bg-black/50"></div>
+      <div class="absolute inset-0 bg-black/50" />
       <div
         class="relative bg-white text-gray-800 rounded-lg shadow-2xl w-[35rem] max-w-[90vw] max-h-[70vh] border border-gray-200 p-4 overflow-hidden flex flex-col"
         @click.stop
@@ -198,15 +198,15 @@
         <button
           v-if="!dualTimer.isRunning"
           class="control-btn"
-          @click="startTimer"
           :disabled="currentStage === 0"
+          @click="startTimer"
         >
           {{ dualTimer.isPaused ? '继续计时(空格)' : '启动计时(空格)' }}
         </button>
         <button v-if="dualTimer.isRunning" class="control-btn" @click="switchActiveTimer">
           {{ dualTimer.activeTimer === 'positive' ? '切换反方(空格)' : '切换正方(空格)' }}
         </button>
-        <button class="control-btn" @click="pauseTimer" :disabled="!dualTimer.isRunning">
+        <button class="control-btn" :disabled="!dualTimer.isRunning" @click="pauseTimer">
           中断(P)
         </button>
       </div>
@@ -223,12 +223,12 @@
         <span class="text-white text-xs font-bold w-16">计时控制:</span>
         <button
           class="control-btn"
-          @click="isRunning ? pauseTimer() : startTimer()"
           :disabled="currentStage === 0"
+          @click="isRunning ? pauseTimer() : startTimer()"
         >
           {{ isRunning ? '暂停计时(空格)' : isPaused ? '继续计时(空格)' : '启动计时(空格)' }}
         </button>
-        <button class="control-btn" @click="pauseTimer" :disabled="!isRunning && !isPaused">
+        <button class="control-btn" :disabled="!isRunning && !isPaused" @click="pauseTimer">
           中断(P)
         </button>
       </div>
@@ -236,10 +236,10 @@
       <!-- 通用控制：环节切换 -->
       <div class="flex items-center space-x-1 mb-1">
         <span class="text-white text-xs font-bold w-16">环节切换:</span>
-        <button class="control-btn" @click="previousStage" :disabled="currentStage <= 1">
+        <button class="control-btn" :disabled="currentStage <= 1" @click="previousStage">
           上一个环节(←)
         </button>
-        <button class="control-btn" @click="nextStage" :disabled="currentStage >= stages.length">
+        <button class="control-btn" :disabled="currentStage >= stages.length" @click="nextStage">
           下一个环节(→)
         </button>
       </div>
@@ -250,11 +250,11 @@
         <button class="control-btn" @click="playTestSound('30')">30秒(Q)</button>
         <button
           class="control-btn"
-          @click="playTestSound('5')"
           :disabled="debateStore.audioConfig?.scheme === 'formal'"
           :title="
             debateStore.audioConfig?.scheme === 'formal' ? '正式比赛提示音方案下 5 秒不响' : ''
           "
+          @click="playTestSound('5')"
         >
           5秒(W)
         </button>
@@ -298,7 +298,6 @@
           <button
             v-for="stage in firstChunk"
             :key="stage.id"
-            @click="jumpTo(stage.id)"
             class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border transition-transform"
             :class="{
               'bg-green-600 border-green-600 text-white': completedStages.includes(stage.id),
@@ -307,6 +306,7 @@
               'bg-gray-700 border-gray-600 text-gray-300 cursor-pointer hover:scale-[1.03]':
                 !completedStages.includes(stage.id) && currentStage !== stage.id,
             }"
+            @click="jumpTo(stage.id)"
           >
             {{ stage.id }}
           </button>
@@ -315,7 +315,6 @@
           <button
             v-for="stage in secondChunk"
             :key="stage.id"
-            @click="jumpTo(stage.id)"
             class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border transition-transform"
             :class="{
               'bg-green-600 border-green-600 text-white': completedStages.includes(stage.id),
@@ -324,6 +323,7 @@
               'bg-gray-700 border-gray-600 text-gray-300 cursor-pointer hover:scale-[1.03]':
                 !completedStages.includes(stage.id) && currentStage !== stage.id,
             }"
+            @click="jumpTo(stage.id)"
           >
             {{ stage.id }}
           </button>
@@ -350,7 +350,7 @@
           <div
             class="h-full bg-white"
             :style="{ width: toastProgress + '%', transition: 'width 2s linear' }"
-          ></div>
+          />
         </div>
       </div>
       <!-- 单计时器：标题 + 调整为 + 输入框 + 秒 同行 -->
@@ -412,26 +412,26 @@
       <!-- 快捷时间按钮：-5s +5s +10s +15s -->
       <div class="flex items-center space-x-1.5 mb-2">
         <button
-          @click="addQuickTime(-5)"
           class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors"
+          @click="addQuickTime(-5)"
         >
           -5s
         </button>
         <button
-          @click="addQuickTime(5)"
           class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors"
+          @click="addQuickTime(5)"
         >
           +5s
         </button>
         <button
-          @click="addQuickTime(10)"
           class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors"
+          @click="addQuickTime(10)"
         >
           +10s
         </button>
         <button
-          @click="addQuickTime(15)"
           class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors"
+          @click="addQuickTime(15)"
         >
           +15s
         </button>
@@ -439,21 +439,21 @@
       <!-- 底部按钮区：重置(红色) | 取消 | 确定 -->
       <div class="flex justify-between items-center mt-1">
         <button
-          @click="openResetFromTimeModal"
           class="px-2.5 py-0.5 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-colors"
+          @click="openResetFromTimeModal"
         >
           重置
         </button>
         <div class="flex space-x-1.5">
           <button
-            @click="closeTimeModal"
             class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors"
+            @click="closeTimeModal"
           >
             取消
           </button>
           <button
-            @click="setCustomTime"
             class="px-2.5 py-0.5 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors"
+            @click="setCustomTime"
           >
             确定
           </button>
@@ -482,8 +482,8 @@
           <div class="flex items-center justify-between">
             <span class="text-gray-600 text-xs font-bold">正方</span>
             <button
-              @click="resetDualTimer('positive')"
               class="px-2.5 py-0.5 border border-green-500 text-green-600 rounded text-xs hover:bg-green-50 transition-colors"
+              @click="resetDualTimer('positive')"
             >
               点击重置
             </button>
@@ -491,8 +491,8 @@
           <div class="flex items-center justify-between">
             <span class="text-gray-600 text-xs font-bold">反方</span>
             <button
-              @click="resetDualTimer('negative')"
               class="px-2.5 py-0.5 border border-green-500 text-green-600 rounded text-xs hover:bg-green-50 transition-colors"
+              @click="resetDualTimer('negative')"
             >
               点击重置
             </button>
@@ -500,12 +500,12 @@
         </div>
         <div class="flex justify-end mt-3">
           <button
+            class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors"
             @click="
               () => {
                 showResetModal = false
               }
             "
-            class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors"
           >
             关闭
           </button>
@@ -516,18 +516,18 @@
         <p class="text-gray-600 mb-3 text-xs">确定要重置当前环节的计时器吗？</p>
         <div class="flex justify-end space-x-1.5">
           <button
+            class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors"
             @click="
               () => {
                 showResetModal = false
               }
             "
-            class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors"
           >
             取消
           </button>
           <button
-            @click="resetTimer"
             class="px-2.5 py-0.5 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-colors"
+            @click="resetTimer"
           >
             确定重置
           </button>
@@ -542,6 +542,14 @@
 
 <script setup lang="ts">
 // ═══════════ 宿主参数（由 tournaments / standalone 两页薄适配器注入） ═══════════
+// ═══════════ 显式导入（帮助 IDE 类型检查与自动补全） ═══════════
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter, useToast } from '#imports'
+import { useDebateStore } from '~/stores/debate'
+import TimerDisplay from '~/components/TimerDisplay.vue'
+import SpeechPermissionPanel from '~/components/SpeechPermissionPanel.vue'
+import { normalizeStageType, isPpt } from '~/utils/stageType'
+
 const props = withDefaults(
   defineProps<{
     /** 宿主类型：决定数据来源端点与返回兜底层 */
@@ -555,14 +563,6 @@ const props = withDefaults(
     showSetupPanel: true,
   },
 )
-
-// ═══════════ 显式导入（帮助 IDE 类型检查与自动补全） ═══════════
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute, useRouter, useToast } from '#imports'
-import { useDebateStore } from '~/stores/debate'
-import TimerDisplay from '~/components/TimerDisplay.vue'
-import SpeechPermissionPanel from '~/components/SpeechPermissionPanel.vue'
-import { normalizeStageType, isPpt } from '~/utils/stageType'
 
 // ═══════════ 全局组合式 ═══════════
 const debateStore = useDebateStore()
@@ -788,7 +788,7 @@ const resetModalPos = ref({ top: 0, left: 0 })
 const lastFocusedInput = ref<string | null>(null)
 // toast 进度条（100→0，2秒内完成
 const toastProgress = ref(100)
-let toastProgressTimer: ReturnType<typeof setInterval> | null = null
+const toastProgressTimer: ReturnType<typeof setInterval> | null = null
 // 快捷时间 toast 提示
 const showQuickTimeToast = ref(false)
 let quickTimeToastTimer: ReturnType<typeof setTimeout> | null = null

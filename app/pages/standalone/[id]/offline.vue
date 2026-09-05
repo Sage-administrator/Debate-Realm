@@ -36,8 +36,8 @@ function exportOffline() {
 
           <div class="flex items-center gap-2 pt-2">
             <button
-              @click="exportOffline"
               class="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center gap-2"
+              @click="exportOffline"
             >
               <UIcon name="i-lucide-download" class="w-4 h-4" />
               导出离线版

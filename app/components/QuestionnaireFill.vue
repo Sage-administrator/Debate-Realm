@@ -199,7 +199,7 @@ async function handleSubmit() {
             qAlign === 'center' ? 'text-center' : qAlign === 'right' ? 'text-right' : 'text-left'
           "
           v-html="qDescHtml"
-        ></div>
+        />
       </div>
 
       <div class="space-y-5">
@@ -208,7 +208,7 @@ async function handleSubmit() {
           <div
             v-if="q.questionType === 'divider'"
             class="border-t border-[var(--color-border)] my-2"
-          ></div>
+          />
           <!-- 分组标题 -->
           <h3
             v-else-if="q.questionType === 'heading'"
@@ -235,7 +235,7 @@ async function handleSubmit() {
               v-if="q.description"
               class="text-xs text-[var(--color-text-muted)] mb-3"
               v-html="q.description"
-            ></p>
+            />
             <div
               class="flex items-center justify-between mb-2 text-xs text-[var(--color-text-muted)]"
             >
@@ -278,7 +278,7 @@ async function handleSubmit() {
               v-if="q.description"
               class="text-xs text-[var(--color-text-muted)] mb-2"
               v-html="q.description"
-            ></p>
+            />
 
             <!-- 单行文本 -->
             <UInput
@@ -343,7 +343,7 @@ async function handleSubmit() {
               <template #fallback>
                 <div
                   class="w-full h-8 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
-                ></div>
+                />
               </template>
             </ClientOnly>
             <!-- 多选 -->

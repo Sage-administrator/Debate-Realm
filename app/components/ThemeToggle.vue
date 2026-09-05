@@ -5,8 +5,8 @@
        ════════════════════════════════════════════════ -->
   <button
     class="theme-toggle flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 hover:bg-[var(--color-bg-tertiary)]"
-    @click="toggleTheme"
     :aria-label="isDark ? '切换到浅色模式' : '切换到深色模式'"
+    @click="toggleTheme"
   >
     <!-- 月亮图标（深色模式显示） -->
     <UIcon

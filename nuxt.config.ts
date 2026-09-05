@@ -33,7 +33,9 @@ export default defineNuxtConfig({
   // @nuxt/kit 把绝对路径传给 ignore 库，Vite 7.3.6 下直接抛 "path should be a path.relative()d string" 并段错误。
   // 恢复 Nuxt 默认 buildDir（项目内 .nuxt，同盘 D 盘，相对路径正常），dev 模式不触发 SAFE_DELETE 批量清理拦截。
 
-  modules: ['@nuxt/ui', '@pinia/nuxt'],
+  // @nuxt/eslint：注册后 nuxt prepare 会稳定生成 .nuxt/eslint.config.mjs（供根 eslint.config.mjs import），
+  // 否则干净克隆下该文件缺失 → eslint 一启动就崩，提交钩子/CI lint 全线失效。
+  modules: ['@nuxt/ui', '@pinia/nuxt', '@nuxt/eslint'],
 
   css: ['~/assets/css/main.css'],
 

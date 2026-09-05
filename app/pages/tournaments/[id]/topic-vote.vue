@@ -434,7 +434,7 @@ onMounted(() => loadData())
                   <template #fallback>
                     <div
                       class="w-full h-8 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
-                    ></div>
+                    />
                   </template>
                 </ClientOnly>
               </div>

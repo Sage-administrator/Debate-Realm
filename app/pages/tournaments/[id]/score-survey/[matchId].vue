@@ -162,7 +162,7 @@ onMounted(() => {
       <div v-if="loading" class="glass-card p-10 text-center">
         <div
           class="w-8 h-8 border-2 border-[var(--color-border)] border-t-indigo-400 rounded-full animate-spin mx-auto mb-3"
-        ></div>
+        />
         <p class="text-sm text-[var(--color-text-muted)]">加载中...</p>
       </div>
 

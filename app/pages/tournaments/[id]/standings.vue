@@ -118,7 +118,7 @@ onMounted(() => {
       <div v-if="loading" class="text-center py-20">
         <div
           class="inline-block animate-spin w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full"
-        ></div>
+        />
         <p class="text-[var(--color-text-muted)] mt-4">加载中...</p>
       </div>
 
@@ -127,7 +127,7 @@ onMounted(() => {
         <div
           class="bg-[var(--color-bg-secondary)] backdrop-blur rounded-2xl border border-[var(--color-border)] overflow-hidden mb-8"
         >
-          <div class="h-2 bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400"></div>
+          <div class="h-2 bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400" />
           <div class="p-8">
             <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
               <div>
@@ -186,7 +186,7 @@ onMounted(() => {
                 <div
                   class="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-500"
                   :style="{ width: data.matchStats.progress + '%' }"
-                ></div>
+                />
               </div>
             </div>
           </div>

@@ -568,7 +568,7 @@ function exportStandingsCSV() {
       </div>
 
       <!-- ═══ 进度条 ═══ -->
-      <UCard class="mb-6" v-if="stats?.matchStats">
+      <UCard v-if="stats?.matchStats" class="mb-6">
         <template #header>
           <h2
             class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
@@ -600,7 +600,7 @@ function exportStandingsCSV() {
       </UCard>
 
       <!-- ═══ 积分榜 ═══ -->
-      <UCard class="mb-6" v-if="stats?.standings?.length">
+      <UCard v-if="stats?.standings?.length" class="mb-6">
         <template #header>
           <div class="flex items-center justify-between">
             <h2
@@ -741,7 +741,7 @@ function exportStandingsCSV() {
       </UCard>
 
       <!-- ═══ 分组积分榜 ═══ -->
-      <UCard class="mb-6" v-if="stats?.groupStandings?.length">
+      <UCard v-if="stats?.groupStandings?.length" class="mb-6">
         <template #header>
           <h2
             class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
@@ -784,7 +784,7 @@ function exportStandingsCSV() {
       </UCard>
 
       <!-- ═══ 最佳辩手榜 ═══ -->
-      <UCard class="mb-6" v-if="stats?.bestDebaters?.length">
+      <UCard v-if="stats?.bestDebaters?.length" class="mb-6">
         <template #header>
           <h2
             class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
@@ -831,7 +831,7 @@ function exportStandingsCSV() {
       </UCard>
 
       <!-- ═══ 评委评分统计 ═══ -->
-      <UCard class="mb-6" v-if="stats?.judgeRankings?.length">
+      <UCard v-if="stats?.judgeRankings?.length" class="mb-6">
         <template #header>
           <h2
             class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
@@ -870,7 +870,7 @@ function exportStandingsCSV() {
       </UCard>
 
       <!-- ═══ 比赛结果列表 ═══ -->
-      <UCard class="mb-6" v-if="matches.length">
+      <UCard v-if="matches.length" class="mb-6">
         <template #header>
           <div class="flex items-center justify-between">
             <h2
@@ -1139,7 +1139,7 @@ function exportStandingsCSV() {
                       class="w-full rounded-t bg-gradient-to-t from-[var(--color-accent-primary)] to-[var(--color-accent-secondary)]"
                       :style="{ height: `${Math.max(8, (d.count / m.submissionCount) * 100)}%` }"
                       :title="`${d.value} 分：${d.count} 人`"
-                    ></div>
+                    />
                     <span class="text-[10px] text-[var(--color-text-muted)] mt-0.5">{{
                       d.value
                     }}</span>
@@ -1205,16 +1205,15 @@ function exportStandingsCSV() {
             <template #fallback
               ><div
                 class="w-full h-8 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
-              ></div
-            ></template>
+            /></template>
           </ClientOnly>
         </div>
         <label
           class="flex items-center gap-2 text-xs text-[var(--color-text-secondary)] cursor-pointer pt-5"
         >
           <input
-            type="checkbox"
             v-model="designerAllowMultiple"
+            type="checkbox"
             class="rounded border-[var(--color-border)]"
           />
           允许同一人多次提交（重复提交将覆盖上次）

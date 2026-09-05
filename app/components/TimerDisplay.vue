@@ -23,7 +23,7 @@
 
     <!-- 队伍名（横幅下方，空值不显示） + 队徽显示 -->
     <div class="flex w-full items-start justify-between px-4 mt-2">
-      <div class="flex items-center gap-2" v-if="teamPositiveName || positiveLogoUrl">
+      <div v-if="teamPositiveName || positiveLogoUrl" class="flex items-center gap-2">
         <!-- 正方队徽 -->
         <div v-if="positiveLogoUrl && showTeamLogo" class="team-logo-wrapper" :style="logoStyle">
           <!-- 队徽图片：懒加载 + 异步解码，避免阻塞主渲染线程 -->
@@ -47,7 +47,7 @@
           {{ teamPositiveName }}
         </div>
       </div>
-      <div class="flex items-center gap-2" v-if="teamNegativeName || negativeLogoUrl">
+      <div v-if="teamNegativeName || negativeLogoUrl" class="flex items-center gap-2">
         <div
           v-if="teamNegativeName"
           class="debate-topic-text debate-topic-right"
@@ -84,8 +84,8 @@
     >
       <!-- 赛事名称（eventNameVisible/showTitle 任一为 true 即显示，默认显示）-->
       <div
-        class="text-center contest-title"
         v-if="uiConfig.eventNameVisible !== false && uiConfig.showTitle !== false"
+        class="text-center contest-title"
         :style="{
           marginBottom:
             typeof uiConfig.titleMarginBottom === 'number' ? `${uiConfig.titleMarginBottom}px` : '',
@@ -148,6 +148,7 @@
 
         <!-- 双计时器显示（v-memo：只在时间/颜色/字号/字体变化时重渲染，约从4次/秒降到1次/秒） -->
         <div
+          v-else-if="isDualTimerStage"
           v-memo="[
             dualPositiveTime,
             dualNegativeTime,
@@ -160,7 +161,6 @@
             uiConfig.timerFontSize,
             uiConfig.timerFontFamily,
           ]"
-          v-else-if="isDualTimerStage"
           class="dual-timer-container"
         >
           <div class="dual-timer-display">
@@ -207,6 +207,7 @@
 
         <!-- 单计时器显示（v-memo：只在时间/警告状态/颜色/字号/字体变化时重渲染） -->
         <div
+          v-else-if="!isSpecialStage && !isPptStage"
           v-memo="[
             displayTime,
             isTimeWarning,
@@ -215,7 +216,6 @@
             uiConfig.timerFontSize,
             uiConfig.timerFontFamily,
           ]"
-          v-else-if="!isSpecialStage && !isPptStage"
           class="text-center timer-display-section"
         >
           <div

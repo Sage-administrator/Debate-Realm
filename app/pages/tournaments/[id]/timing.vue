@@ -8,8 +8,6 @@
   - 移除导入/导出功能，仅保留配置管理
 -->
 <script setup lang="ts">
-definePageMeta({ layout: 'tournament' })
-
 // ═══════════ 导入 ═══════════
 import { computed, ref } from 'vue'
 import TimerPreviewCard from '~/components/TimerPreviewCard.vue'
@@ -24,6 +22,8 @@ import {
   normalizeStageType,
 } from '~/utils/stageType'
 import { useStageEditor } from '~/composables/useStageEditor'
+
+definePageMeta({ layout: 'tournament' })
 
 // 计时环节配置编辑器：tournaments / standalone 两宿主共享逻辑已抽到 useStageEditor。
 // 本页仅作为「正式赛事」宿主的薄适配器——注入 tournament 提供名称回填，hostType 标为 'tournament'。
@@ -70,9 +70,9 @@ const {
       <!-- ═══ 左侧：实时预览（左4列，约1/3宽度） ═══ -->
       <div class="col-span-4">
         <TimerPreviewCard
+          v-model:stage-index="previewStageIndex"
           :full-config="config"
           :tournament-id="tournamentId"
-          v-model:stage-index="previewStageIndex"
         />
       </div>
 

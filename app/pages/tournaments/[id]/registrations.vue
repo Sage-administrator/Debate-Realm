@@ -422,7 +422,6 @@ onMounted(() => loadData())
             <ClientOnly>
               <USelect
                 v-model="filterStatus"
-                @change="loadRegistrations"
                 :items="[
                   { label: '全部状态', value: 'all' },
                   { label: '待审核', value: 'pending' },
@@ -431,15 +430,15 @@ onMounted(() => loadData())
                 ]"
                 class="w-36"
                 :ui="{ base: 'input-glass' }"
+                @change="loadRegistrations"
               />
               <template #fallback>
-                <div class="w-36 h-9 rounded-lg bg-[var(--color-bg-secondary)]"></div>
+                <div class="w-36 h-9 rounded-lg bg-[var(--color-bg-secondary)]" />
               </template>
             </ClientOnly>
             <ClientOnly>
               <USelect
                 v-model="filterType"
-                @change="loadRegistrations"
                 :items="[
                   { label: '全部类型', value: 'all' },
                   { label: '个人', value: 'individual' },
@@ -447,9 +446,10 @@ onMounted(() => loadData())
                 ]"
                 class="w-36"
                 :ui="{ base: 'input-glass' }"
+                @change="loadRegistrations"
               />
               <template #fallback>
-                <div class="w-36 h-9 rounded-lg bg-[var(--color-bg-secondary)]"></div>
+                <div class="w-36 h-9 rounded-lg bg-[var(--color-bg-secondary)]" />
               </template>
             </ClientOnly>
 
@@ -671,8 +671,8 @@ onMounted(() => loadData())
                 </p>
               </div>
               <label class="toggle-switch">
-                <input type="checkbox" v-model="settingsForm.registrationOpen" />
-                <span class="toggle-slider"></span>
+                <input v-model="settingsForm.registrationOpen" type="checkbox" />
+                <span class="toggle-slider" />
               </label>
             </div>
 
@@ -686,8 +686,8 @@ onMounted(() => loadData())
                 </p>
               </div>
               <label class="toggle-switch">
-                <input type="checkbox" v-model="settingsForm.isPublic" />
-                <span class="toggle-slider"></span>
+                <input v-model="settingsForm.isPublic" type="checkbox" />
+                <span class="toggle-slider" />
               </label>
             </div>
 
@@ -1016,7 +1016,7 @@ onMounted(() => loadData())
           <UIcon name="i-lucide-user-plus" class="w-5 h-5 text-green-600 dark:text-green-400" />
           辩手账号创建结果
         </h3>
-        <p class="text-sm text-[var(--color-text-muted)] mb-4" v-if="accountResult">
+        <p v-if="accountResult" class="text-sm text-[var(--color-text-muted)] mb-4">
           共创建 {{ accountResult.created }} 个账号，请妥善保存账号密码并下发给辩手
         </p>
 

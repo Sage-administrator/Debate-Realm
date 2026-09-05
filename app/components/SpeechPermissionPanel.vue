@@ -114,7 +114,7 @@
           <span
             class="h-1.5 w-1.5 rounded-full shrink-0"
             :style="{ background: sideDot(role.side) }"
-          ></span>
+          />
           <span class="flex-1 text-left truncate">{{ role.label }}</span>
           <span class="text-[10px] opacity-80 shrink-0">{{ permGlyph(role.permission) }}</span>
         </button>
@@ -124,13 +124,13 @@
     <!-- 图例 -->
     <div v-if="roles.length" class="mt-2 flex items-center gap-3 text-[10px] text-gray-300">
       <span class="flex items-center gap-1"
-        ><i class="inline-block h-2 w-2 rounded-full bg-green-500"></i>可发言</span
+        ><i class="inline-block h-2 w-2 rounded-full bg-green-500" />可发言</span
       >
       <span class="flex items-center gap-1"
-        ><i class="inline-block h-2 w-2 rounded-full bg-red-500"></i>不可发言</span
+        ><i class="inline-block h-2 w-2 rounded-full bg-red-500" />不可发言</span
       >
       <span class="flex items-center gap-1"
-        ><i class="inline-block h-2 w-2 rounded-full bg-gray-500"></i>更新中</span
+        ><i class="inline-block h-2 w-2 rounded-full bg-gray-500" />更新中</span
       >
     </div>
   </div>

@@ -69,7 +69,7 @@ function onReset() {
 <template>
   <div class="cert-page">
     <!-- 一体化工作台：单面板外壳（标题栏 + 双栏） -->
-    <div class="cert-shell" ref="shellRef" :style="{ height: shellHeight }">
+    <div ref="shellRef" class="cert-shell" :style="{ height: shellHeight }">
       <!-- 顶部工具栏：标题 + 操作 -->
       <div class="cert-toolbar">
         <div class="cert-titles">

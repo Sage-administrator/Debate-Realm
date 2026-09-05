@@ -470,7 +470,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
         <!-- 步骤条 -->
         <nav class="flex items-center gap-3 text-xs">
           <span class="flex items-center gap-1 text-indigo-600 dark:text-indigo-400">
-            <span class="w-1 h-1 rounded-full bg-indigo-400"></span>
+            <span class="w-1 h-1 rounded-full bg-indigo-400" />
             编辑
           </span>
           <span class="text-[var(--color-border-muted)]">/</span>
@@ -490,10 +490,10 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
             <input v-model="formSettings.allowSubmit" type="checkbox" class="sr-only peer" />
             <span
               class="block w-8 h-4 bg-[var(--color-bg-tertiary)] rounded-full peer-checked:bg-indigo-500 transition-colors"
-            ></span>
+            />
             <span
               class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"
-            ></span>
+            />
           </span>
         </label>
         <!-- 试答按钮（幽灵） -->
@@ -556,7 +556,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
         <!-- 装饰性几何图形（左下角淡色圆） -->
         <div
           class="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-indigo-500/5 blur-2xl pointer-events-none"
-        ></div>
+        />
 
         <!-- 问卷纸张容器 -->
         <div
@@ -585,8 +585,8 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
             handle=".drag-handle"
             ghost-class="fd-ghost"
             chosen-class="fd-chosen"
-            @end="onDragEnd"
             class="space-y-3"
+            @end="onDragEnd"
           >
             <div
               v-for="(field, idx) in fields"
@@ -605,7 +605,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                   name="i-lucide-grip-vertical"
                   class="drag-handle w-4 h-4 text-[var(--color-border-muted)] cursor-grab active:cursor-grabbing shrink-0"
                 />
-                <div class="flex-1 mx-3 border-t border-[var(--color-border)]"></div>
+                <div class="flex-1 mx-3 border-t border-[var(--color-border)]" />
                 <!-- 删除按钮（hover 显示） -->
                 <button
                   type="button"
@@ -693,7 +693,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                     v-else-if="fieldDescHtml(field)"
                     class="mt-1 text-xs text-[var(--color-text-muted)] line-clamp-2 fd-field-desc"
                     v-html="fieldDescHtml(field)"
-                  ></p>
+                  />
                   <!-- 选项预览（select/radio/checkbox）：改为可直接编辑 -->
                   <div
                     v-if="['select', 'radio', 'checkbox'].includes(field.fieldType)"
@@ -706,7 +706,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                       class="flex items-center gap-2 h-11 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-tertiary)] hover:border-[var(--color-border)] transition-colors group"
                     >
                       <!-- 单选/多选图标 -->
-                      <span class="w-4 h-4 border border-white/30 rounded-full shrink-0"></span>
+                      <span class="w-4 h-4 border border-white/30 rounded-full shrink-0" />
                       <!-- 选项输入框 -->
                       <input
                         :value="opt"
@@ -925,13 +925,13 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
           <div class="flex items-center justify-between h-8">
             <label class="text-xs text-[var(--color-text-secondary)]">显示题号</label>
             <span class="relative inline-block w-9 h-5">
-              <input type="checkbox" v-model="formSettings.showNumber" class="sr-only peer" />
+              <input v-model="formSettings.showNumber" type="checkbox" class="sr-only peer" />
               <span
                 class="block w-9 h-5 bg-[var(--color-bg-tertiary)] rounded-full peer-checked:bg-indigo-500 transition-colors"
-              ></span>
+              />
               <span
                 class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"
-              ></span>
+              />
             </span>
           </div>
 
@@ -945,10 +945,10 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                 <input v-model="formSettings.allowSubmit" type="checkbox" class="sr-only peer" />
                 <span
                   class="block w-8 h-4 bg-[var(--color-bg-tertiary)] rounded-full peer-checked:bg-indigo-500 transition-colors"
-                ></span>
+                />
                 <span
                   class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"
-                ></span>
+                />
               </span>
             </label>
             <label
@@ -959,10 +959,10 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                 <input v-model="formSettings.showProgress" type="checkbox" class="sr-only peer" />
                 <span
                   class="block w-8 h-4 bg-[var(--color-bg-tertiary)] rounded-full peer-checked:bg-indigo-500 transition-colors"
-                ></span>
+                />
                 <span
                   class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"
-                ></span>
+                />
               </span>
             </label>
             <label
@@ -977,10 +977,10 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                 />
                 <span
                   class="block w-8 h-4 bg-[var(--color-bg-tertiary)] rounded-full peer-checked:bg-indigo-500 transition-colors"
-                ></span>
+                />
                 <span
                   class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"
-                ></span>
+                />
               </span>
             </label>
           </div>
@@ -1043,7 +1043,7 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                 v-model="selectedField.description"
                 :min-height="'80px'"
                 placeholder="帮助文字（支持加粗、字号、超链接等）"
-                @update:modelValue="onFieldUpdate"
+                @update:model-value="onFieldUpdate"
               />
             </div>
 
@@ -1055,14 +1055,14 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
               </label>
               <textarea
                 :value="getOptionsString(selectedField)"
+                rows="4"
+                class="fd-input resize-none"
+                placeholder="每行一个选项"
                 @input="
                   setOptionsFromString(selectedField, ($event.target as HTMLTextAreaElement).value)
                   onFieldUpdate()
                 "
-                rows="4"
-                class="fd-input resize-none"
-                placeholder="每行一个选项"
-              ></textarea>
+              />
             </div>
 
             <!-- 量表设置（scale）-->
@@ -1195,17 +1195,17 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
               <label class="text-xs text-[var(--color-text-secondary)]">必填字段</label>
               <span class="relative inline-block w-9 h-5">
                 <input
-                  type="checkbox"
                   v-model="selectedField.required"
+                  type="checkbox"
                   class="sr-only peer"
                   @change="onFieldUpdate"
                 />
                 <span
                   class="block w-9 h-5 bg-[var(--color-bg-tertiary)] rounded-full peer-checked:bg-indigo-500 transition-colors"
-                ></span>
+                />
                 <span
                   class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"
-                ></span>
+                />
               </span>
             </div>
 

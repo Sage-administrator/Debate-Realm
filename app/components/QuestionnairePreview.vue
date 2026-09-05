@@ -11,6 +11,8 @@
  * - 不做受众登录拦截（试答无需登录）
  * - 题目直接由 FormDesigner 的 fields 映射而来
  */
+import { sanitizeHtml } from '~/utils/richtext'
+
 const props = defineProps<{
   fields: any[]
   title?: string
@@ -18,8 +20,6 @@ const props = defineProps<{
   /** 整卷设置（FormDesigner.formSettings）：含 align / submitText / thankYouText / showNumber / title / description */
   settings?: any
 }>()
-
-import { sanitizeHtml } from '~/utils/richtext'
 
 const toast = useToast()
 
@@ -216,7 +216,7 @@ function resetForm() {
           class="qprev-rich mt-2 text-sm text-[var(--color-text-secondary)] leading-relaxed inline-block text-left"
           :class="qAlign === 'center' ? 'mx-auto' : qAlign === 'right' ? 'ml-auto' : ''"
           v-html="qDescHtml"
-        ></div>
+        />
       </div>
 
       <div class="space-y-5">
@@ -225,7 +225,7 @@ function resetForm() {
           <div
             v-if="q.questionType === 'divider'"
             class="border-t border-[var(--color-border)] my-2"
-          ></div>
+          />
           <!-- 分组标题 -->
           <h3
             v-else-if="q.questionType === 'heading'"
@@ -255,7 +255,7 @@ function resetForm() {
               v-if="q.description"
               class="text-xs text-[var(--color-text-muted)] mb-3"
               v-html="q.description"
-            ></p>
+            />
             <div
               class="flex items-center justify-between mb-2 text-xs text-[var(--color-text-muted)]"
             >
@@ -301,7 +301,7 @@ function resetForm() {
               v-if="q.description"
               class="text-xs text-[var(--color-text-muted)] mb-2"
               v-html="q.description"
-            ></p>
+            />
 
             <!-- 单行文本 -->
             <UInput
@@ -366,7 +366,7 @@ function resetForm() {
               <template #fallback>
                 <div
                   class="w-full h-8 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
-                ></div>
+                />
               </template>
             </ClientOnly>
             <!-- 多选 -->

@@ -167,7 +167,7 @@ function toggleSource() {
         <UIcon name="i-lucide-strikethrough" class="w-4 h-4" />
       </button>
 
-      <span class="rte-sep"></span>
+      <span class="rte-sep" />
 
       <select
         v-model="fontSize"
@@ -188,7 +188,7 @@ function toggleSource() {
         <input type="color" class="rte-color-input" @input="applyBg" />
       </label>
 
-      <span class="rte-sep"></span>
+      <span class="rte-sep" />
 
       <button type="button" class="rte-btn" title="左对齐" @click="alignLeft">
         <UIcon name="i-lucide-align-left" class="w-4 h-4" />
@@ -200,7 +200,7 @@ function toggleSource() {
         <UIcon name="i-lucide-align-right" class="w-4 h-4" />
       </button>
 
-      <span class="rte-sep"></span>
+      <span class="rte-sep" />
 
       <button type="button" class="rte-btn" title="有序列表" @click="toggleOl">
         <UIcon name="i-lucide-list-ordered" class="w-4 h-4" />
@@ -209,7 +209,7 @@ function toggleSource() {
         <UIcon name="i-lucide-list" class="w-4 h-4" />
       </button>
 
-      <span class="rte-sep"></span>
+      <span class="rte-sep" />
 
       <button type="button" class="rte-btn" title="插入链接" @click="applyLink">
         <UIcon name="i-lucide-link" class="w-4 h-4" />
@@ -221,7 +221,7 @@ function toggleSource() {
         <UIcon name="i-lucide-eraser" class="w-4 h-4" />
       </button>
 
-      <span class="rte-sep"></span>
+      <span class="rte-sep" />
 
       <button type="button" class="rte-btn" title="查看/编辑 HTML" @click="toggleSource">
         <UIcon name="i-lucide-code" class="w-4 h-4" />
@@ -238,7 +238,7 @@ function toggleSource() {
       :data-placeholder="placeholder"
       :style="{ minHeight }"
       @input="onInput"
-    ></div>
+    />
 
     <!-- HTML 源码 -->
     <textarea
@@ -248,7 +248,7 @@ function toggleSource() {
       :style="{ minHeight }"
       spellcheck="false"
       placeholder="在此直接编辑 HTML…"
-    ></textarea>
+    />
   </div>
 </template>
 

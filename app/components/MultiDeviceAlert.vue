@@ -145,7 +145,7 @@ async function handleTerminateOthers() {
         aria-describedby="modal-description"
       >
         <!-- 半透明背景遮罩层：点击可关闭 -->
-        <div class="modal-backdrop" @click.self="closeModal" aria-hidden="true" />
+        <div class="modal-backdrop" aria-hidden="true" @click.self="closeModal" />
 
         <!-- 对话框内容容器：居中定位 + 过渡动画 -->
         <div class="modal-container">
@@ -155,8 +155,8 @@ async function handleTerminateOthers() {
               <button
                 type="button"
                 class="modal-close-btn"
-                @click="closeModal"
                 aria-label="关闭弹窗"
+                @click="closeModal"
               >
                 <UIcon name="i-lucide-x" class="w-5 h-5" />
               </button>

@@ -7,10 +7,10 @@
   - 配置修改实时同步到数据库（timer-config API）
 -->
 <script setup lang="ts">
-definePageMeta({ layout: 'standalone' })
-
 import { computed, ref, onMounted, watch } from 'vue'
 import TimerPreviewCard from '~/components/TimerPreviewCard.vue'
+
+definePageMeta({ layout: 'standalone' })
 
 const route = useRoute()
 const toast = useToast()
@@ -86,10 +86,10 @@ watch(
     <div class="py-6 grid grid-cols-12 gap-6">
       <div class="col-span-4">
         <TimerPreviewCard
+          v-model:stage-index="previewStageIndex"
           :full-config="config"
           :tournament-id="matchId"
           type="standalone"
-          v-model:stage-index="previewStageIndex"
         />
       </div>
 
@@ -112,49 +112,49 @@ watch(
             >
             <div class="grid grid-cols-4 gap-3">
               <button
-                @click="setBackgroundType('default')"
                 :class="[
                   'config-option-dark',
                   skinConfig.backgroundType === 'default' ? 'config-option-dark--active' : '',
                 ]"
+                @click="setBackgroundType('default')"
               >
-                <div class="config-option-preview config-option-preview--default"></div>
+                <div class="config-option-preview config-option-preview--default" />
                 <span class="text-sm font-medium mt-2">默认</span>
               </button>
               <button
-                @click="setBackgroundType('solid')"
                 :class="[
                   'config-option-dark',
                   skinConfig.backgroundType === 'solid' ? 'config-option-dark--active' : '',
                 ]"
+                @click="setBackgroundType('solid')"
               >
                 <div
                   class="config-option-preview"
                   :style="{ backgroundColor: skinConfig.solidColor || '#1F2937' }"
-                ></div>
+                />
                 <span class="text-sm font-medium mt-2">纯色</span>
               </button>
               <button
-                @click="setBackgroundType('gradient')"
                 :class="[
                   'config-option-dark',
                   skinConfig.backgroundType === 'gradient' ? 'config-option-dark--active' : '',
                 ]"
+                @click="setBackgroundType('gradient')"
               >
                 <div
                   class="config-option-preview"
                   :style="{
                     background: `linear-gradient(135deg, ${skinConfig.gradientStart || '#1F2937'} 0%, ${skinConfig.gradientEnd || '#374151'} 100%)`,
                   }"
-                ></div>
+                />
                 <span class="text-sm font-medium mt-2">渐变</span>
               </button>
               <button
-                @click="setBackgroundType('image')"
                 :class="[
                   'config-option-dark',
                   skinConfig.backgroundType === 'image' ? 'config-option-dark--active' : '',
                 ]"
+                @click="setBackgroundType('image')"
               >
                 <div
                   class="config-option-preview"
@@ -184,8 +184,8 @@ watch(
             <div class="flex items-center gap-3">
               <ColorPicker v-model="skinConfig.solidColor" />
               <input
-                type="text"
                 v-model="skinConfig.solidColor"
+                type="text"
                 class="input-glass flex-1 px-3 py-2 border border-[var(--color-border)] rounded text-sm font-mono"
                 placeholder="#1F2937"
               />
@@ -200,8 +200,8 @@ watch(
               <div class="flex items-center gap-3">
                 <ColorPicker v-model="skinConfig.gradientStart" />
                 <input
-                  type="text"
                   v-model="skinConfig.gradientStart"
+                  type="text"
                   class="input-glass flex-1 px-3 py-2 border border-[var(--color-border)] rounded text-sm font-mono"
                   placeholder="#1F2937"
                 />
@@ -214,8 +214,8 @@ watch(
               <div class="flex items-center gap-3">
                 <ColorPicker v-model="skinConfig.gradientEnd" />
                 <input
-                  type="text"
                   v-model="skinConfig.gradientEnd"
+                  type="text"
                   class="input-glass flex-1 px-3 py-2 border border-[var(--color-border)] rounded text-sm font-mono"
                   placeholder="#374151"
                 />
@@ -230,15 +230,15 @@ watch(
               >
               <div class="space-y-3">
                 <input
-                  type="text"
                   v-model="backgroundImageUrl"
+                  type="text"
                   class="input-glass w-full px-3 py-2 border border-[var(--color-border)] rounded-lg text-sm"
                   placeholder="请输入图片 URL，例如：https://example.com/bg.jpg"
                   @keyup.enter="applyBackgroundImageUrl"
                 />
                 <button
-                  @click="applyBackgroundImageUrl"
                   class="w-full px-4 py-2 bg-indigo-600 text-[var(--color-text-primary)] rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                  @click="applyBackgroundImageUrl"
                 >
                   应用图片
                 </button>
@@ -254,8 +254,8 @@ watch(
                   <img :src="skinConfig.imageUrl" class="w-full h-32 object-cover" alt="背景预览" />
                 </div>
                 <button
-                  @click="removeBackgroundImage"
                   class="mt-2 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex items-center justify-center gap-1 w-full"
+                  @click="removeBackgroundImage"
                 >
                   <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
                   移除背景图片
@@ -268,8 +268,8 @@ watch(
               >
               <div class="flex items-center gap-3">
                 <input
-                  type="range"
                   v-model.number="skinConfig.imageOpacity"
+                  type="range"
                   min="0"
                   max="1"
                   step="0.1"

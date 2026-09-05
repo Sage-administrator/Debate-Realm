@@ -341,8 +341,8 @@ async function handleCreate() {
                 />
               </span>
               <input
-                type="checkbox"
                 v-model="form.agreedToTerms"
+                type="checkbox"
                 class="sr-only"
                 @change="clearError('agreedToTerms')"
               />

@@ -143,7 +143,7 @@ function close() {
             <template #fallback>
               <div
                 class="w-36 h-9 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
-              ></div>
+              />
             </template>
           </ClientOnly>
         </div>

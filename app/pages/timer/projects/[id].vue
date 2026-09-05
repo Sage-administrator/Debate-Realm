@@ -486,19 +486,19 @@ onMounted(() => {
               >添加新环节：</span
             >
             <UButton color="neutral" variant="soft" size="sm" @click="() => addStage('speech')">
-              <span class="w-2 h-2 bg-blue-500 rounded-full mr-2 inline-block"></span>
+              <span class="w-2 h-2 bg-blue-500 rounded-full mr-2 inline-block" />
               单计时（立论/小结）
             </UButton>
             <UButton color="neutral" variant="soft" size="sm" @click="() => addStage('question')">
-              <span class="w-2 h-2 bg-orange-500 rounded-full mr-2 inline-block"></span>
+              <span class="w-2 h-2 bg-orange-500 rounded-full mr-2 inline-block" />
               单计时（质询）
             </UButton>
             <UButton color="neutral" variant="soft" size="sm" @click="() => addStage('dual-timer')">
-              <span class="w-2 h-2 bg-green-500 rounded-full mr-2 inline-block"></span>
+              <span class="w-2 h-2 bg-green-500 rounded-full mr-2 inline-block" />
               双计时（对辩/自由辩论）
             </UButton>
             <UButton color="neutral" variant="soft" size="sm" @click="() => addStage('special')">
-              <span class="w-2 h-2 bg-gray-500 rounded-full mr-2 inline-block"></span>
+              <span class="w-2 h-2 bg-gray-500 rounded-full mr-2 inline-block" />
               无计时（开场/点评）
             </UButton>
           </div>
@@ -534,7 +534,7 @@ onMounted(() => {
                   <div
                     :class="[stageTypeColor(stage.type), 'w-3 h-3 rounded-full']"
                     :title="stageTypeLabel(stage.type)"
-                  ></div>
+                  />
                 </div>
 
                 <!-- 主要配置 -->
@@ -576,8 +576,8 @@ onMounted(() => {
                         >正方时长(秒)</label
                       >
                       <input
-                        type="number"
                         v-model.number="stage.positiveDuration"
+                        type="number"
                         class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] text-right"
                         min="0"
                         max="3600"
@@ -588,8 +588,8 @@ onMounted(() => {
                         >反方时长(秒)</label
                       >
                       <input
-                        type="number"
                         v-model.number="stage.negativeDuration"
+                        type="number"
                         class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] text-right"
                         min="0"
                         max="3600"
@@ -612,8 +612,8 @@ onMounted(() => {
                         >时长(秒)</label
                       >
                       <input
-                        type="number"
                         v-model.number="stage.duration"
+                        type="number"
                         class="w-full px-2 py-1.5 border border-[var(--color-border)] rounded text-sm focus:ring-1 focus:ring-blue-600 focus:outline-none bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] text-right"
                         min="0"
                         max="3600"
@@ -647,23 +647,23 @@ onMounted(() => {
                   <button
                     class="w-7 h-7 flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] rounded transition"
                     :disabled="idx === 0"
-                    @click="moveStageUp(idx)"
                     title="上移"
+                    @click="moveStageUp(idx)"
                   >
                     <UIcon name="i-lucide-chevron-up" class="w-4 h-4" />
                   </button>
                   <button
                     class="w-7 h-7 flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] rounded transition"
                     :disabled="idx === form.stages.length - 1"
-                    @click="moveStageDown(idx)"
                     title="下移"
+                    @click="moveStageDown(idx)"
                   >
                     <UIcon name="i-lucide-chevron-down" class="w-4 h-4" />
                   </button>
                   <button
                     class="w-7 h-7 flex items-center justify-center text-red-500 hover:text-red-600 dark:text-red-400 hover:bg-red-500/15 rounded transition"
-                    @click="removeStage(idx)"
                     title="删除"
+                    @click="removeStage(idx)"
                   >
                     <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
                   </button>

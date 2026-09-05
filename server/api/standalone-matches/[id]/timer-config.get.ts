@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // 1. 查找关联的计时器项目（通过 standaloneMatchId）
-  let project = await prisma.debateTimerProject.findUnique({
+  const project = await prisma.debateTimerProject.findUnique({
     where: { standaloneMatchId: id },
     include: { stages: { orderBy: { orderIndex: 'asc' } } },
   })

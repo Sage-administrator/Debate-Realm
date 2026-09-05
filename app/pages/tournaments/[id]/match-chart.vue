@@ -153,7 +153,7 @@ const getStatusText = (status: string) => {
     <!-- ═══ 数据内容 ═══ -->
     <div v-else>
       <!-- ═══ 轮次统计 ═══ -->
-      <UCard class="mb-6" v-if="matchesByRound.length">
+      <UCard v-if="matchesByRound.length" class="mb-6">
         <template #header>
           <h2
             class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
@@ -191,7 +191,7 @@ const getStatusText = (status: string) => {
       </UCard>
 
       <!-- ═══ 淘汰赛树状图（BracketView） ═══ -->
-      <UCard class="mb-6" v-if="matches.length">
+      <UCard v-if="matches.length" class="mb-6">
         <template #header>
           <h2
             class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"

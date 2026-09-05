@@ -226,7 +226,7 @@ onMounted(() => {
       <div v-if="loading" class="text-center py-20">
         <div
           class="inline-block animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full"
-        ></div>
+        />
         <p class="text-[var(--color-text-muted)] mt-4">加载中...</p>
       </div>
 
@@ -247,7 +247,7 @@ onMounted(() => {
           @click="goDetail(t.id)"
         >
           <!-- 卡片顶部装饰条 -->
-          <div class="h-2 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+          <div class="h-2 bg-gradient-to-r from-indigo-500 to-purple-600" />
 
           <div class="p-6">
             <!-- 状态标签 -->

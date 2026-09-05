@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   await requireReadTournament(event, prisma, id)
 
   // 1. 查找关联的计时器项目（通过 tournamentId）
-  let project = await prisma.debateTimerProject.findUnique({
+  const project = await prisma.debateTimerProject.findUnique({
     where: { tournamentId: id },
     include: { stages: { orderBy: { orderIndex: 'asc' } } },
   })

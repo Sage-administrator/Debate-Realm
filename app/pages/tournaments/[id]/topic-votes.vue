@@ -726,17 +726,17 @@ onMounted(() => {
             { key: 'library', label: '辩题库', icon: 'i-lucide-library' },
           ]"
           :key="tab.key"
-          @click="
-            () => {
-              activeTab = tab.key as any
-              if (tab.key === 'create' && !editingId) resetForm()
-            }
-          "
           class="px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
           :class="
             activeTab === tab.key
               ? 'bg-blue-600 text-white'
               : 'bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+          "
+          @click="
+            () => {
+              activeTab = tab.key as any
+              if (tab.key === 'create' && !editingId) resetForm()
+            }
           "
         >
           <UIcon :name="tab.icon" class="w-4 h-4" /> {{ tab.label }}
@@ -814,7 +814,6 @@ onMounted(() => {
             <ClientOnly>
               <USelect
                 v-model="filterStatus"
-                @update:model-value="loadVotes"
                 :items="[
                   { label: '全部状态', value: 'all' },
                   { label: '草稿', value: 'draft' },
@@ -825,15 +824,15 @@ onMounted(() => {
                 :ui="{
                   base: 'bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border-[var(--color-border)]',
                 }"
+                @update:model-value="loadVotes"
               />
               <template #fallback>
-                <div class="w-32 h-9 rounded-lg bg-[var(--color-bg-secondary)]"></div>
+                <div class="w-32 h-9 rounded-lg bg-[var(--color-bg-secondary)]" />
               </template>
             </ClientOnly>
             <ClientOnly>
               <USelect
                 v-model="filterScope"
-                @update:model-value="loadVotes"
                 :items="[
                   { label: '全部范围', value: 'all' },
                   { label: '赛事级', value: 'tournament' },
@@ -843,9 +842,10 @@ onMounted(() => {
                 :ui="{
                   base: 'bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border-[var(--color-border)]',
                 }"
+                @update:model-value="loadVotes"
               />
               <template #fallback>
-                <div class="w-32 h-9 rounded-lg bg-[var(--color-bg-secondary)]"></div>
+                <div class="w-32 h-9 rounded-lg bg-[var(--color-bg-secondary)]" />
               </template>
             </ClientOnly>
             <div class="flex-1" />
@@ -1026,7 +1026,7 @@ onMounted(() => {
               <!-- 步骤条 -->
               <nav class="flex items-center gap-3 text-xs">
                 <span class="flex items-center gap-1 text-indigo-600 dark:text-indigo-400">
-                  <span class="w-1 h-1 rounded-full bg-indigo-400"></span>
+                  <span class="w-1 h-1 rounded-full bg-indigo-400" />
                   编辑
                 </span>
                 <span class="text-[var(--color-border-muted)]">/</span>
@@ -1112,7 +1112,7 @@ onMounted(() => {
               <!-- 装饰性几何图形 -->
               <div
                 class="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-indigo-500/5 blur-2xl pointer-events-none"
-              ></div>
+              />
 
               <!-- 问卷纸张容器 -->
               <div
@@ -1131,7 +1131,7 @@ onMounted(() => {
                   rows="2"
                   class="w-full mt-3 mb-8 text-sm text-[var(--color-text-secondary)] bg-transparent border-none outline-none focus:bg-[var(--color-bg-tertiary)] rounded py-1 resize-none text-center leading-relaxed transition-colors"
                   placeholder="向填写者说明此次投票问卷的规则、用途和截止要求"
-                ></textarea>
+                />
 
                 <!-- 题目卡片：辩题选择题 -->
                 <div class="rounded-md border border-indigo-500/30 bg-indigo-500/[0.05] p-4">
@@ -1266,7 +1266,7 @@ onMounted(() => {
                     <template #fallback>
                       <div
                         class="w-full h-9 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
-                      ></div>
+                      />
                     </template>
                   </ClientOnly>
                 </div>
@@ -1304,13 +1304,13 @@ onMounted(() => {
                     <p class="text-[11px] text-[var(--color-text-muted)]">填写者提交后可看到统计</p>
                   </div>
                   <span class="relative inline-block w-9 h-5">
-                    <input type="checkbox" v-model="formData.showResults" class="sr-only peer" />
+                    <input v-model="formData.showResults" type="checkbox" class="sr-only peer" />
                     <span
                       class="block w-9 h-5 bg-[var(--color-bg-tertiary)] rounded-full peer-checked:bg-indigo-500 transition-colors"
-                    ></span>
+                    />
                     <span
                       class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"
-                    ></span>
+                    />
                   </span>
                 </div>
 
@@ -1346,7 +1346,7 @@ onMounted(() => {
                     <template #fallback>
                       <div
                         class="w-full h-9 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
-                      ></div>
+                      />
                     </template>
                   </ClientOnly>
                 </div>
@@ -1402,7 +1402,7 @@ onMounted(() => {
               <template #fallback>
                 <div
                   class="w-40 h-9 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
-                ></div>
+                />
               </template>
             </ClientOnly>
             <div class="flex-1" />

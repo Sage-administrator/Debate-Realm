@@ -360,8 +360,8 @@ function confirmMulti() {
     <div
       ref="triggerRef"
       class="role-picker-trigger"
-      @click="onTriggerClick"
       :class="{ 'role-picker-trigger--open': isOpen }"
+      @click="onTriggerClick"
     >
       <span :class="hasModelValue ? 'role-picker-value' : 'role-picker-placeholder'">
         {{ getDisplayText() }}

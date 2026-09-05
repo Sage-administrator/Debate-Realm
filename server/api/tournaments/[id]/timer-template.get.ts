@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   // 权限：系统管理员 或 该赛事所属团队的管理员 / 子账号
   await requireReadTournament(event, prisma, id)
 
-  let template = await prisma.timerTemplate.findUnique({
+  const template = await prisma.timerTemplate.findUnique({
     where: { tournamentId: id },
   })
 

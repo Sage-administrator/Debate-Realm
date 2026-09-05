@@ -173,8 +173,8 @@ onBeforeUnmount(() => {
     <div
       ref="triggerEl"
       class="cascader-trigger"
-      @click.stop="openDropdown"
       :class="{ 'is-active': open, 'has-value': hasValue }"
+      @click.stop="openDropdown"
     >
       <span
         class="cascader-text"

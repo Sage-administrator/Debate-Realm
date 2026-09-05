@@ -104,13 +104,13 @@ function onTriggerClick() {
 </script>
 
 <template>
-  <div class="cascader-wrap" @focusin="onTriggerClick" tabindex="-1">
+  <div class="cascader-wrap" tabindex="-1" @focusin="onTriggerClick">
     <!-- 触发器：选择框 -->
     <div
       ref="triggerRef"
       class="cascader-trigger"
-      @click="onTriggerClick"
       :class="{ 'cascader-trigger--open': isOpen }"
+      @click="onTriggerClick"
     >
       <span :class="modelValue ? 'cascader-value' : 'cascader-placeholder'">
         {{ getDisplayText(modelValue) }}

@@ -8,13 +8,13 @@
   - 移除导入/导出功能，仅保留配置管理
 -->
 <script setup lang="ts">
-definePageMeta({ layout: 'standalone' })
-
 import { computed } from 'vue'
 import TimerPreviewCard from '~/components/TimerPreviewCard.vue'
 import StageForm from '~/components/StageForm.vue'
 import { typeLabel, hasTimer, isDualTimer, normalizeStageType } from '~/utils/stageType'
 import { useStageEditor } from '~/composables/useStageEditor'
+
+definePageMeta({ layout: 'standalone' })
 
 // 计时环节配置编辑器：tournaments / standalone 两宿主共享逻辑已抽到 useStageEditor。
 // 本页仅作为「单场计时」宿主的薄适配器——注入 standaloneMatch 提供名称回填，hostType 标为 'standalone'。
@@ -62,10 +62,10 @@ const {
       <!-- ═══ 左侧：实时预览（左4列，约1/3宽度） ═══ -->
       <div class="col-span-4">
         <TimerPreviewCard
+          v-model:stage-index="previewStageIndex"
           :full-config="config"
           :tournament-id="matchId"
           type="standalone"
-          v-model:stage-index="previewStageIndex"
         />
       </div>
 
