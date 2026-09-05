@@ -37,7 +37,7 @@ interface UIConfig {
 }
 // 皮肤/背景配置
 interface SkinConfig {
-  backgroundType?: 'default' | 'gradient' | 'image' | 'solid'
+  backgroundType?: string         // 'default' | 'gradient' | 'image' | 'solid'；放开为 string 以兼容 useTimerConfig 推断的宽类型
   solidColor?: string
   gradientStart?: string
   gradientEnd?: string
