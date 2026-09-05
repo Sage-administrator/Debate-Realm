@@ -1,6 +1,8 @@
 /**
  * useTournament — 赛事管理（CRUD + 赛程生成 + 抽签）
  */
+import type { CreateTournamentRequest } from '#shared/schemas/tournament'
+
 export function useTournament() {
   const api = useApi()
 
@@ -8,10 +10,8 @@ export function useTournament() {
     // CRUD
     getTournaments: (teamId: string) => api.teams.tournaments.list(teamId),
     getTournament:  (id: string) => api.tournaments.get(id),
-    createTournament: (teamId: string, data: {
-      name: string; description?: string; format?: string
-      scheduledAt?: string; venue?: string; teams?: string[]; judges?: string[]
-    }) => api.teams.tournaments.create(teamId, data),
+    createTournament: (teamId: string, data: CreateTournamentRequest) =>
+      api.teams.tournaments.create(teamId, data),
     updateTournament: (id: string, data: any) => api.tournaments.update(id, data),
     deleteTournament: (id: string) => api.tournaments.delete(id),
 
