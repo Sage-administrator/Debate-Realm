@@ -219,13 +219,13 @@ async function handleCreate() {
                   :start-date="form.startDate"
                   :end-date="form.endDate"
                   @update:start-date="
-                    (v: string | null) => {
+                    (v: string) => {
                       form.startDate = v
                       clearError('period')
                     }
                   "
                   @update:end-date="
-                    (v: string | null) => {
+                    (v: string) => {
                       form.endDate = v
                       clearError('period')
                     }
