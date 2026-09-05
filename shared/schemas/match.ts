@@ -76,6 +76,24 @@ export const SubmitResultRequest = z.object({
 })
 export type SubmitResultRequest = z.infer<typeof SubmitResultRequest>
 
+// ── 响应类型别名（比赛操作端点真实返回） ──
+
+/** 录比分响应：POST /api/matches/:id/result → { code, message, data: {...} } */
+export type MatchResultSubmitResult = {
+  code: number
+  message: string
+  data: {
+    id: string
+    winner: string | null
+    scoreA: number
+    scoreB: number
+    status: string
+    version: number
+    advanced: { advanced: boolean; targetMatchId?: string; error?: string; info?: string; [key: string]: any }
+    format?: string
+  }
+}
+
 // ── 评委评分 ──
 
 export const SubmitScoreRequest = z.object({

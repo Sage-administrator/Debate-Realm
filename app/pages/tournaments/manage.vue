@@ -48,7 +48,7 @@ const teamId = computed(() => store.user?.team?.id ?? '')
 // ── SSR 数据预取：使用 useAsyncData 在服务端预加载赛事列表 ──
 const { data: tournaments, pending: loading, refresh: loadTournaments, error } = useAsyncData(
   'tournaments-manage',
-  () => {
+  async () => {
     if (!teamId.value) return []
     return getTournaments(teamId.value)
   },

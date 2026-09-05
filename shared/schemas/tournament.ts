@@ -113,6 +113,11 @@ export const DrawLotsRequest = z.object({
 })
 export type DrawLotsRequest = z.infer<typeof DrawLotsRequest>
 
+// ── 响应类型别名 ──
+
+/** 抽签响应：POST /api/tournaments/:id/draw-lots → { success, info } */
+export type DrawLotsResult = { success: boolean; info: string; [key: string]: any }
+
 // ── 赛程生成 ──
 
 export const GenerateMatchesRequest = z.object({

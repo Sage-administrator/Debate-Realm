@@ -21,15 +21,16 @@ import type {
 import type {
   TournamentInfo, TournamentListItem, CreateTournamentRequest, UpdateTournamentRequest,
   PublicTournamentInfo, PublicTournamentListQuery, RegistrationSettings,
-  DrawLotsRequest, GenerateMatchesRequest,
+  DrawLotsRequest, GenerateMatchesRequest, DrawLotsResult,
 } from '#shared/schemas/tournament'
 import type {
   MatchInfo, CreateMatchRequest, UpdateMatchRequest,
-  DeleteMatchRequest, SubmitResultRequest, SubmitScoreRequest,
+  DeleteMatchRequest, SubmitResultRequest, SubmitScoreRequest, MatchResultSubmitResult,
 } from '#shared/schemas/match'
 import type {
   RegistrationConfig, RegistrationRecord,
   SubmitRegistrationRequest, ReviewRegistrationRequest, AutoMatchRequest,
+  SaveRegistrationFieldsResult, AutoMatchResult,
 } from '#shared/schemas/registration'
 import type {
   TimerConfig, TimerProjectInfo, TimerTemplate,
@@ -140,7 +141,8 @@ export function useApi() {
     registration: {
       config:   (tournamentId: string) => get<RegistrationConfig>(`/api/tournaments/${tournamentId}/registration-config`, t()),
       settings: (tournamentId: string, body: RegistrationSettings) => put(`/api/tournaments/${tournamentId}/registration-settings`, t(), body),
-      fields:   (tournamentId: string, fields: Record<string, unknown>[]) => put(`/api/tournaments/${tournamentId}/registration-fields`, t(), { fields }),
+      fields:   (tournamentId: string, fields: Record<string, unknown>[]) =>
+        put<SaveRegistrationFieldsResult>(`/api/tournaments/${tournamentId}/registration-fields`, t(), { fields }),
       list:     (tournamentId: string, params?: { status?: string; type?: string }) =>
         get<{ registrations: RegistrationRecord[]; pagination: { total: number; page: number; pageSize: number } }>(`/api/tournaments/${tournamentId}/registrations`, t(), params as Record<string, unknown>),
       my:       (tournamentId: string) => get<RegistrationRecord[]>(`/api/tournaments/${tournamentId}/my-registration`, t()),
@@ -149,7 +151,7 @@ export function useApi() {
       review:   (tournamentId: string, regId: string, body: ReviewRegistrationRequest) =>
         put(`/api/tournaments/${tournamentId}/registrations/${regId}`, t(), body),
       autoMatch: (tournamentId: string, body: AutoMatchRequest) =>
-        post(`/api/tournaments/${tournamentId}/registrations/auto-match`, t(), body),
+        post<AutoMatchResult>(`/api/tournaments/${tournamentId}/registrations/auto-match`, t(), body),
       convertToTeams: (tournamentId: string, items: { name: string; registrationIds: string[] }[]) =>
         post(`/api/tournaments/${tournamentId}/registrations/convert-teams`, t(), { items }),
       createDebaterAccounts: (tournamentId: string, registrationIds?: string[]) =>
@@ -161,7 +163,7 @@ export function useApi() {
       list:     (tournamentId: string) => get<MatchInfo[]>(`/api/tournaments/${tournamentId}/matches`, t()),
       create:   (tournamentId: string, body: CreateMatchRequest) => post(`/api/tournaments/${tournamentId}/matches`, t(), body),
       generate: (tournamentId: string, body: GenerateMatchesRequest) => post(`/api/tournaments/${tournamentId}/matches/generate`, t(), body),
-      drawLots: (tournamentId: string, body: DrawLotsRequest) => post(`/api/tournaments/${tournamentId}/draw-lots`, t(), body),
+      drawLots: (tournamentId: string, body: DrawLotsRequest) => post<DrawLotsResult>(`/api/tournaments/${tournamentId}/draw-lots`, t(), body),
     },
 
     // Scores
@@ -216,7 +218,7 @@ export function useApi() {
     update:    (id: string, body: UpdateMatchRequest) => put(`/api/matches/${id}`, t(), body),
     delete:    (id: string, body?: DeleteMatchRequest) => del(`/api/matches/${id}`, t(), body),
     restore:   (id: string, currentVersion: number) => post(`/api/matches/${id}/restore`, t(), { currentVersion }),
-    submitResult: (id: string, body: SubmitResultRequest) => post(`/api/matches/${id}/result`, t(), body),
+    submitResult: (id: string, body: SubmitResultRequest) => post<MatchResultSubmitResult>(`/api/matches/${id}/result`, t(), body),
     start:     (id: string) => post(`/api/matches/${id}/start`, t()),
   }
 
