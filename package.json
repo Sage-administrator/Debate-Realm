@@ -14,7 +14,7 @@
     "release": "nuxt build && node scripts/fix-nitro-output.mjs && node start.mjs",
     "start": "node scripts/fix-nitro-output.mjs && node start.mjs",
     "validate:templates": "node scripts/validate-debate-templates.mjs",
-    "typecheck": "vue-tsc --noEmit",
+    "typecheck": "vue-tsc -b --force",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
