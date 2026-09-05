@@ -6,6 +6,12 @@
 .cache
 dist
 
+# ============ Prisma 生成客户端 ============
+# 由 `prisma generate` 产出（约 5.8 万行），已在 package.json 的 postinstall 中自动生成。
+# 不得提交：schema 每次变更都会产生海量无意义 diff。
+# 注意：本目录同时已被 .prettierignore 与 eslint.config.mjs 排除。
+server/lib/generated
+
 # ============ Node 依赖 ============
 node_modules
 

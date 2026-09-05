@@ -5,7 +5,9 @@
 
     # 缓存依赖层：先复制 package.json 和 lockfile
     COPY package.json package-lock.json ./
-    RUN npm ci
+    # --ignore-scripts: 此时源码尚未复制，postinstall 里的 prisma generate 无法运行
+    # （Prisma 客户端在下方第 21 行源码就绪后显式生成）
+    RUN npm ci --ignore-scripts
 
     # 辅助工具（fix-nitro-output.mjs 依赖）
     COPY scripts/fix-nitro-output.mjs ./scripts/

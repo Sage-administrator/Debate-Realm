@@ -1,218 +1,309 @@
 /**
- * debate.ts 纯函数提取测试
+ * debate store —— 真实行为回归套件
  *
- * 测试从 Pinia Store 中提取为独立纯函数的核心计算逻辑：
- *   - remainingFrom → calcRemaining (时间戳锚定)
- *   - generateInitialStatesFrom (状态初始化)
- *   - resolveSoundFile (音效方案解析)
+ * 直接 import 并驱动真实 Pinia store（经 tests/setup/auto-imports.ts 桥接 Nuxt 自动导入）。
+ * 用 vi.useFakeTimers() 冻结墙钟，使「时间戳锚定」计时引擎可被精确断言：
+ *   - startTimer 锚点 = Date.now() + 剩余秒*1000
+ *   - pauseTimer 按墙钟冻结剩余秒（整秒四舍五入）
+ *   - 双计时器切换时冻结当前侧、激活另一侧
+ *   - 环节切换 / 完成 / 重置的台账
+ *   - resolveSoundFile 的 default / formal 方案映射
+ *   - 心跳循环在剩余秒穿越 30/5/0 时播报对应提示音
+ *
+ * 这是 P1（计时页面收敛）前的「底片」：页面重构只调用这些公开 action，行为必须不变。
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { useDebateStore, type DebateStage } from '../../../app/stores/debate'
 
-// 被提取的纯函数（不依赖 Pinia/DOM/Date.now）
+// 冻结墙钟起点，便于精确断言锚点
+const T0 = new Date('2026-01-01T00:00:00.000Z').getTime()
 
-/** 根据锚点时间戳和当前时间计算剩余秒数（纯函数版本） */
-function calcRemaining(endAt: number, now: number): number {
-  return Math.max(0, Math.round((endAt - now) / 1000))
-}
+beforeEach(() => {
+  setActivePinia(createPinia())
+  vi.useFakeTimers()
+  vi.setSystemTime(T0)
+})
 
-/** 判断环节类型是否为双计时器（从 normalizeStageType 简化） */
-const TYPE_MAP: Record<string, string> = {
-  'speech': 'single_speech',
-  'question': 'single_question',
-  'dual-timer': 'bilateral_debate',
-  'special': 'no_timer',
-}
-function normalizeStageType(old: string | null | undefined): string {
-  if (!old) return 'single_speech'
-  return TYPE_MAP[old] || old
-}
-function isDualTimerType(t: string | null | undefined): boolean {
-  const n = normalizeStageType(t)
-  return n === 'bilateral_debate' || n === 'free_debate' || n === 'double_timer'
-}
-
-/** 根据声音方案解析音频文件路径（纯函数） */
-function resolveSoundFile(
-  timeRemaining: number,
-  cfg: { enabled?: boolean; scheme?: 'default' | 'formal'; warningSound?: string; endSound?: string; startSound?: string } | null,
-): string {
-  if (!cfg || cfg.enabled === false) return ''
-  const scheme = cfg.scheme || 'default'
-  if (scheme === 'formal') {
-    if (timeRemaining === 30) return cfg.warningSound || '/dingtalk.mp3'
-    if (timeRemaining === 0) return cfg.startSound || '/dingtalk.mp3'
-    return ''
+afterEach(() => {
+  try {
+    useDebateStore().disposeTimer()
+  } catch {
+    /* 某些用例可能已 stop */
   }
-  if (timeRemaining === 30) return cfg.warningSound || '/30.mp3'
-  if (timeRemaining === 5) return cfg.endSound || '/5.mp3'
-  if (timeRemaining === 0) return cfg.startSound || '/End.mp3'
-  return ''
+  vi.useRealTimers()
+  setActivePinia(null)
+})
+
+/** 构造一个最小环节定义 */
+function makeStage(p: Partial<DebateStage> & { id: number; type: string; duration: number }): DebateStage {
+  return { name: `S${p.id}`, ...p } as DebateStage
 }
 
-interface DebateStage {
-  id: number
-  name: string
-  duration: number
-  type: string
-  positiveDuration?: number
-  negativeDuration?: number
-}
+// ===================== setStages 初始化 =====================
 
-/** 生成初始阶段状态（纯数据转换） */
-function generateInitialStatesFrom(stages: DebateStage[]): Record<number, any> {
-  const states: Record<number, any> = {}
-  stages.forEach((stage) => {
-    if (isDualTimerType(stage.type)) {
-      states[stage.id] = {
-        type: 'dual-timer',
-        positiveTime: stage.positiveDuration ?? stage.duration,
-        negativeTime: stage.negativeDuration ?? stage.duration,
-        activeTimer: 'positive',
-        isRunning: false,
-        isPaused: false,
-        endAt: null,
-      }
-    } else {
-      states[stage.id] = {
-        type: stage.type as any,
-        timeRemaining: stage.duration,
-        isRunning: false,
-        isPaused: false,
-        endAt: null,
-      }
-    }
-  })
-  return states
-}
-
-// ===================== calcRemaining =====================
-
-describe('calcRemaining', () => {
-  it('should return full time when now=0', () => {
-    expect(calcRemaining(10000, 0)).toBe(10)    // 10s
-    expect(calcRemaining(60000, 0)).toBe(60)     // 60s
-    expect(calcRemaining(300000, 0)).toBe(300)    // 300s = 5min
+describe('setStages', () => {
+  it('为 speech 环节生成单计时器初始状态', () => {
+    const s = useDebateStore()
+    s.setStages([makeStage({ id: 1, type: 'single_speech', duration: 180 })])
+    const st = s.stageStates[1] as any
+    expect(st.type).toBe('single_speech')
+    expect(st.timeRemaining).toBe(180)
+    expect(st.isRunning).toBe(false)
+    expect(st.endAt).toBeNull()
   })
 
-  it('should return 0 when endAt = now', () => {
-    expect(calcRemaining(5000, 5000)).toBe(0)
+  it('为 bilateral 环节生成双计时器初始状态（取独立时长）', () => {
+    const s = useDebateStore()
+    s.setStages([makeStage({ id: 2, type: 'bilateral_debate', duration: 300, positiveDuration: 240, negativeDuration: 240 })])
+    const st = s.stageStates[2] as any
+    expect(st.type).toBe('dual-timer')
+    expect(st.positiveTime).toBe(240)
+    expect(st.negativeTime).toBe(240)
+    expect(st.activeTimer).toBe('positive')
   })
 
-  it('should return 0 when now > endAt', () => {
-    expect(calcRemaining(5000, 6000)).toBe(0)
+  it('无 positiveDuration 时回退 stage.duration', () => {
+    const s = useDebateStore()
+    s.setStages([makeStage({ id: 3, type: 'free_debate', duration: 300 })])
+    const st = s.stageStates[3] as any
+    expect(st.positiveTime).toBe(300)
+    expect(st.negativeTime).toBe(300)
   })
 
-  it('should round correctly at .5 boundary', () => {
-    // endAt=5500, now=0 → 5500ms = 5.5s → Math.round → 6
-    expect(calcRemaining(5500, 0)).toBe(6)
-    // endAt=5499, now=0 → 5499ms = 5.499s → Math.round → 5
-    expect(calcRemaining(5499, 0)).toBe(5)
+  it('按 order 字段排序', () => {
+    const s = useDebateStore()
+    s.setStages([
+      makeStage({ id: 1, type: 'single_speech', duration: 10, order: 3 }),
+      makeStage({ id: 2, type: 'single_speech', duration: 10, order: 1 }),
+      makeStage({ id: 3, type: 'summary', duration: 10, order: 2 }),
+    ])
+    expect(s.stages.map((x) => x.id)).toEqual([2, 3, 1])
   })
 
-  it('should count down correctly', () => {
-    // Starting at 10s (endAt=10000), after 3500ms → 6.5s → round → 7
-    expect(calcRemaining(10000, 3500)).toBe(7)
-    // After 7500ms → 2.5s → round → 3
-    expect(calcRemaining(10000, 7500)).toBe(3)
-    // After 9999ms → 0.001s → round → 0
-    expect(calcRemaining(10000, 9999)).toBe(0)
+  it('空环节不重置状态', () => {
+    const s = useDebateStore()
+    s.setStages([makeStage({ id: 1, type: 'single_speech', duration: 10 })])
+    s.setStages([]) // 空数组应被忽略
+    expect(s.stages).toHaveLength(1)
   })
 })
 
-// ===================== generateInitialStatesFrom =====================
+// ===================== 单计时器控制 =====================
 
-describe('generateInitialStatesFrom', () => {
-  it('should create single timer state for speech stage', () => {
-    const stages: DebateStage[] = [
-      { id: 1, name: '立论', duration: 180, type: 'single_speech' },
-    ]
-    const states = generateInitialStatesFrom(stages)
-    expect(states[1]).toBeDefined()
-    expect(states[1].type).toBe('single_speech')
-    expect(states[1].timeRemaining).toBe(180)
-    expect(states[1].isRunning).toBe(false)
-    expect(states[1].isPaused).toBe(false)
-    expect(states[1].endAt).toBeNull()
+describe('单计时器控制', () => {
+  it('startTimer 按墙钟锚定 endAt', () => {
+    const s = useDebateStore()
+    s.setStages([makeStage({ id: 1, type: 'single_speech', duration: 35 })])
+    s.startTimer()
+    const st = s.stageStates[1] as any
+    expect(st.endAt).toBe(T0 + 35000)
+    expect(st.isRunning).toBe(true)
+    expect(st.isPaused).toBe(false)
   })
 
-  it('should create dual timer state for debate stage', () => {
-    const stages: DebateStage[] = [
-      { id: 2, name: '对辩', duration: 300, type: 'bilateral_debate', positiveDuration: 240, negativeDuration: 240 },
-    ]
-    const states = generateInitialStatesFrom(stages)
-    expect(states[2].type).toBe('dual-timer')
-    expect(states[2].positiveTime).toBe(240)
-    expect(states[2].negativeTime).toBe(240)
-    expect(states[2].activeTimer).toBe('positive')
-    expect(states[2].isRunning).toBe(false)
+  it('pauseTimer 按墙钟冻结剩余秒（整秒四舍五入）', () => {
+    const s = useDebateStore()
+    s.setStages([makeStage({ id: 1, type: 'single_speech', duration: 35 })])
+    s.startTimer()
+    vi.advanceTimersByTime(3000) // 墙钟到 T0+3000，剩余 32
+    s.pauseTimer()
+    const st = s.stageStates[1] as any
+    expect(st.timeRemaining).toBe(32)
+    expect(st.isPaused).toBe(true)
+    expect(st.endAt).toBeNull()
+    expect(s.isRunning).toBe(false)
   })
 
-  it('should use stage.duration when positiveDuration not set', () => {
-    const stages: DebateStage[] = [
-      { id: 3, name: '自由辩论', duration: 300, type: 'free_debate' },
-    ]
-    const states = generateInitialStatesFrom(stages)
-    expect(states[3].positiveTime).toBe(300)
-    expect(states[3].negativeTime).toBe(300)
+  it('resetTimer 恢复到环节初始时长', () => {
+    const s = useDebateStore()
+    s.setStages([makeStage({ id: 1, type: 'single_speech', duration: 35 })])
+    s.startTimer()
+    vi.advanceTimersByTime(3000)
+    s.pauseTimer()
+    expect((s.stageStates[1] as any).timeRemaining).toBe(32)
+    s.resetTimer()
+    expect((s.stageStates[1] as any).timeRemaining).toBe(35)
+    expect((s.stageStates[1] as any).isPaused).toBe(false)
   })
 
-  it('should handle multiple stages', () => {
-    const stages: DebateStage[] = [
-      { id: 1, name: '立论', duration: 180, type: 'single_speech' },
-      { id: 2, name: '对辩', duration: 300, type: 'bilateral_debate' },
-      { id: 3, name: '总结', duration: 240, type: 'summary' },
-    ]
-    const states = generateInitialStatesFrom(stages)
-    expect(Object.keys(states)).toHaveLength(3)
-  })
-
-  it('should handle empty stages', () => {
-    expect(generateInitialStatesFrom([])).toEqual({})
+  it('setCustomTime 直接改写剩余秒并停止', () => {
+    const s = useDebateStore()
+    s.setStages([makeStage({ id: 1, type: 'single_speech', duration: 35 })])
+    s.startTimer()
+    s.setCustomTime(99)
+    expect((s.stageStates[1] as any).timeRemaining).toBe(99)
+    expect(s.isRunning).toBe(false)
   })
 })
 
-// ===================== resolveSoundFile =====================
+// ===================== 双计时器控制 =====================
+
+describe('双计时器控制', () => {
+  it('startDualTimer 激活正方并锚定', () => {
+    const s = useDebateStore()
+    s.setStages([makeStage({ id: 1, type: 'bilateral_debate', duration: 10, positiveDuration: 10, negativeDuration: 10 })])
+    s.startDualTimer()
+    const st = s.stageStates[1] as any
+    expect(st.activeTimer).toBe('positive')
+    expect(st.endAt).toBe(T0 + 10000)
+  })
+
+  it('switchDualTimer 冻结当前侧、激活另一侧并重新锚定', () => {
+    const s = useDebateStore()
+    s.setStages([makeStage({ id: 1, type: 'bilateral_debate', duration: 10, positiveDuration: 10, negativeDuration: 10 })])
+    s.startDualTimer()
+    vi.advanceTimersByTime(4000) // 正方剩 6
+    s.switchDualTimer()
+    const st = s.stageStates[1] as any
+    expect(st.positiveTime).toBe(6)
+    expect(st.activeTimer).toBe('negative')
+    expect(st.endAt).toBe(T0 + 4000 + 10000) // 重新锚定到墙钟
+    vi.advanceTimersByTime(2000) // 反方剩 8
+    expect(s.stageStates[1].negativeTime).toBe(8)
+  })
+
+  it('resetDualTimer(both) 两侧归位并停表', () => {
+    const s = useDebateStore()
+    s.setStages([makeStage({ id: 1, type: 'bilateral_debate', duration: 10, positiveDuration: 10, negativeDuration: 10 })])
+    s.startDualTimer()
+    vi.advanceTimersByTime(4000)
+    s.switchDualTimer()
+    vi.advanceTimersByTime(2000)
+    s.resetDualTimer('both')
+    const st = s.stageStates[1] as any
+    expect(st.positiveTime).toBe(10)
+    expect(st.negativeTime).toBe(10)
+    expect(st.activeTimer).toBe('positive')
+    expect(st.isRunning).toBe(false)
+    expect(st.endAt).toBeNull()
+  })
+})
+
+// ===================== 环节切换台账 =====================
+
+describe('环节切换', () => {
+  function threeStages() {
+    return [
+      makeStage({ id: 1, type: 'single_speech', duration: 10 }),
+      makeStage({ id: 2, type: 'single_speech', duration: 10 }),
+      makeStage({ id: 3, type: 'summary', duration: 10 }),
+    ]
+  }
+
+  it('nextStage 推进并标记完成', () => {
+    const s = useDebateStore()
+    s.setStages(threeStages())
+    expect(s.currentStage).toBe(1)
+    s.nextStage()
+    expect(s.currentStage).toBe(2)
+    expect(s.completedStages).toContain(1)
+  })
+
+  it('goToStage 跳转并夹取边界', () => {
+    const s = useDebateStore()
+    s.setStages(threeStages())
+    s.goToStage(99)
+    expect(s.currentStage).toBe(3)
+    s.goToStage(-5)
+    expect(s.currentStage).toBe(1)
+  })
+
+  it('previousStage 回退并撤销完成标记', () => {
+    const s = useDebateStore()
+    s.setStages(threeStages())
+    s.nextStage() // →2, 完成1
+    s.nextStage() // →3, 完成2
+    s.previousStage() // →2
+    expect(s.currentStage).toBe(2)
+    expect(s.completedStages).not.toContain(3)
+  })
+
+  it('resetAll 回到首环节并清空完成列表', () => {
+    const s = useDebateStore()
+    s.setStages(threeStages())
+    s.startTimer()
+    vi.advanceTimersByTime(3000)
+    s.nextStage()
+    s.resetAll()
+    expect(s.currentStage).toBe(1)
+    expect(s.completedStages).toHaveLength(0)
+    expect((s.stageStates[1] as any).timeRemaining).toBe(10)
+  })
+})
+
+// ===================== 提示音方案解析 =====================
 
 describe('resolveSoundFile', () => {
-  it('should return empty when audio disabled', () => {
-    expect(resolveSoundFile(30, { enabled: false })).toBe('')
-    expect(resolveSoundFile(5, { enabled: false })).toBe('')
-    expect(resolveSoundFile(0, { enabled: false })).toBe('')
+  it('default 方案映射 30/5/0', () => {
+    const s = useDebateStore()
+    s.setAudioConfig({ enabled: true, scheme: 'default' })
+    expect(s.resolveSoundFile(30)).toBe('/30.mp3')
+    expect(s.resolveSoundFile(5)).toBe('/5.mp3')
+    expect(s.resolveSoundFile(0)).toBe('/End.mp3')
+    expect(s.resolveSoundFile(29)).toBe('')
   })
 
-  it('should return empty when config is null', () => {
-    expect(resolveSoundFile(30, null)).toBe('')
+  it('formal 方案仅 30 与 0 响（5 秒静音）', () => {
+    const s = useDebateStore()
+    s.setAudioConfig({ enabled: true, scheme: 'formal' })
+    expect(s.resolveSoundFile(30)).toBe('/dingtalk.mp3')
+    expect(s.resolveSoundFile(5)).toBe('')
+    expect(s.resolveSoundFile(0)).toBe('/dingtalk.mp3')
   })
 
-  it('should return default 30s sound', () => {
-    expect(resolveSoundFile(30, { enabled: true })).toBe('/30.mp3')
+  it('禁用 / 空配置返回空串', () => {
+    const s = useDebateStore()
+    s.setAudioConfig(null)
+    expect(s.resolveSoundFile(30)).toBe('')
+    s.setAudioConfig({ enabled: false, scheme: 'default' })
+    expect(s.resolveSoundFile(0)).toBe('')
   })
 
-  it('should return default 5s sound', () => {
-    expect(resolveSoundFile(5, { enabled: true })).toBe('/5.mp3')
+  it('自定义音路径优先', () => {
+    const s = useDebateStore()
+    s.setAudioConfig({ enabled: true, scheme: 'default', warningSound: '/a.mp3', finalWarningSound: '/b.mp3', timeUpSound: '/c.mp3' })
+    expect(s.resolveSoundFile(30)).toBe('/a.mp3')
+    expect(s.resolveSoundFile(5)).toBe('/b.mp3')
+    expect(s.resolveSoundFile(0)).toBe('/c.mp3')
+  })
+})
+
+// ===================== 心跳提示音穿越 =====================
+
+describe('心跳提示音穿越', () => {
+  it('default 方案在剩余秒穿越 30/5/0 时播报', () => {
+    const s = useDebateStore()
+    const spy = vi.spyOn(s, 'playTimerSound')
+    s.setStages([makeStage({ id: 1, type: 'single_speech', duration: 35 })])
+    s.setAudioConfig({ enabled: true, scheme: 'default' })
+    s.startTimer()
+    vi.advanceTimersByTime(5000) // 跨越 30
+    expect(spy).toHaveBeenCalledWith(30)
+    vi.advanceTimersByTime(25000) // 跨到 5
+    expect(spy).toHaveBeenCalledWith(5)
+    vi.advanceTimersByTime(5000) // 跨到 0
+    expect(spy).toHaveBeenCalledWith(0)
   })
 
-  it('should return default 0s sound', () => {
-    expect(resolveSoundFile(0, { enabled: true })).toBe('/End.mp3')
+  it('formal 方案在 5 秒处 cue 仍触发但无声（方案只在解析层生效）', () => {
+    const s = useDebateStore()
+    const spy = vi.spyOn(s, 'playTimerSound')
+    s.setStages([makeStage({ id: 1, type: 'single_speech', duration: 35 })])
+    s.setAudioConfig({ enabled: true, scheme: 'formal' })
+    s.startTimer()
+    vi.advanceTimersByTime(30000) // 到 5 秒
+    expect(spy).toHaveBeenCalledWith(5) // 心跳 cue 与方案无关，仍会触发
+    expect(s.resolveSoundFile(5)).toBe('') // formal 方案下 5 秒解析为空 → 实际无声
+    expect(spy).toHaveBeenCalledWith(30)
   })
 
-  it('should respect custom sound paths', () => {
-    const cfg = { enabled: true, warningSound: '/custom-30.mp3', endSound: '/custom-5.mp3', startSound: '/custom-end.mp3' }
-    expect(resolveSoundFile(30, cfg)).toBe('/custom-30.mp3')
-    expect(resolveSoundFile(5, cfg)).toBe('/custom-5.mp3')
-    expect(resolveSoundFile(0, cfg)).toBe('/custom-end.mp3')
-  })
-
-  it('should use formal scheme (only 30 and 0, dingtalk.mp3)', () => {
-    const cfg = { enabled: true, scheme: 'formal' as const }
-    expect(resolveSoundFile(30, cfg)).toBe('/dingtalk.mp3')
-    expect(resolveSoundFile(5, cfg)).toBe('')       // formal scheme 5s不响
-    expect(resolveSoundFile(0, cfg)).toBe('/dingtalk.mp3')
-  })
-
-  it('should return empty for irrelevant seconds', () => {
-    expect(resolveSoundFile(29, { enabled: true })).toBe('')
-    expect(resolveSoundFile(10, { enabled: true })).toBe('')
-    expect(resolveSoundFile(1, { enabled: true })).toBe('')
+  it('时间到自动标记当前环节完成并停表', () => {
+    const s = useDebateStore()
+    s.setStages([makeStage({ id: 1, type: 'single_speech', duration: 2 })])
+    s.startTimer()
+    vi.advanceTimersByTime(2000) // 剩余 0
+    expect(s.isRunning).toBe(false)
+    expect(s.completedStages).toContain(1)
   })
 })

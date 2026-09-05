@@ -2,13 +2,16 @@
 import os from 'node:os'
 import { join } from 'node:path'
 
-// 所有构建产物（.nuxt / vite 缓存 / .output）统一路由到系统临时目录。
+// 仅用于 Nitro 生产产物（.output）的落盘目录。
 // WorkBuddy 的安全删除 shim 对 os.tmpdir() 下的批量删除放行（直连原生 fs），
-// 因此 `npm run build` 在清理 .nuxt/dist 与 .output 时不再被 SAFE_DELETE 拦截。
-// Nitro ≥ 2.13 已修复 buildDir 在临时目录时 server 入口解析失败（ERR_INVALID_FILE_URL_PATH）的问题。
+// 因此 `npm run build` 清理旧 .output 时不再被 SAFE_DELETE 拦截。
 //
-// BUILD_IN_PLACE=true 时（Docker 容器等无 WorkBuddy 环境），构建产物留在项目目录内，
+// BUILD_IN_PLACE=true 时（Docker 容器等无 WorkBuddy 环境），产物留在项目内 .build/，
 // 避免 /tmp 迂回和启动路径依赖问题。不影响开发/生产 Windows 环境的现有行为。
+//
+// 注意：buildDir（.nuxt）与 vite 的 cacheDir **故意保留在项目内**，不使用此目录。
+// 原因是项目在 D 盘而 os.tmpdir() 在 C 盘，跨盘会让 @nuxt/kit 把绝对路径传给 ignore 库，
+// 在 Vite 7 下抛出 "path should be a path.relative()d string" 并导致段错误。
 const buildRoot = process.env.BUILD_IN_PLACE === 'true'
   ? join(process.cwd(), '.build')
   : join(os.tmpdir(), 'debate-timer-build')
@@ -98,9 +101,9 @@ export default defineNuxtConfig({
 
   // 全局 URL prefetch 配置：减少不必要的预取，降低带宽和 CPU 消耗
   routeRules: {
-    // 登录/认证相关页面不预取（避免未认证用户的无效请求）
+    // 登录页不预取（避免未认证用户的无效请求）。
+    // 注：本仓没有 /register 页面 —— 账号由管理员在后台创建，无公开注册入口。
     '/login': { prerender: false, headers: { 'cache-control': 'max-age=300' } },
-    '/register': { prerender: false, headers: { 'cache-control': 'max-age=300' } },
   },
 
   features: {
@@ -157,9 +160,9 @@ export default defineNuxtConfig({
       // 额外的 esbuild 优化目标
       target: 'es2018',
       chunkSizeWarningLimit: 2000,
-      // 注：manualChunks 在 nuxt.config.ts 的 vite.build.rollupOptions 里配置无效——
+      // 注：manualChunks 不能直接写在 vite.build.rollupOptions.output 里——
       // Nuxt 4 的 EnvironmentsPlugin(configEnvironment) 返回的 output 对象会覆盖用户配置。
-      // 已迁移到 hooks.vite:extendConfig 中生效。
+      // 因此实现为上方的 `vendor-chunks` Vite 插件，在其 config hook 里改写 output（见文件顶部）。
     },
     // 依赖预构建优化：减少 dev 启动时间和重复构建
     optimizeDeps: {
