@@ -15,7 +15,7 @@ export async function validateBody<T>(event: any, schema: ZodType<T>): Promise<T
   const raw = await readBody(event)
   const result = schema.safeParse(raw)
   if (!result.success) {
-    const details = result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ')
+    const details = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
     throw createError({
       statusCode: 400,
       message: `请求参数校验失败: ${details}`,
@@ -28,7 +28,7 @@ export function validateQuery<T>(event: any, schema: ZodType<T>): T {
   const raw = getQuery(event)
   const result = schema.safeParse(raw)
   if (!result.success) {
-    const details = result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ')
+    const details = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
     throw createError({
       statusCode: 400,
       message: `查询参数校验失败: ${details}`,

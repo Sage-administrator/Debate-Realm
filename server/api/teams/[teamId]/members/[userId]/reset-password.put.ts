@@ -33,7 +33,10 @@ export default defineEventHandler(async (event) => {
 
     // 不能重置自己的密码（防止误操作，自己改密走 /api/auth/password）
     if (userId === currentUser.userId) {
-      throw createError({ statusCode: 400, message: '不能在此处重置自己的密码，请前往账户设置修改' })
+      throw createError({
+        statusCode: 400,
+        message: '不能在此处重置自己的密码，请前往账户设置修改',
+      })
     }
 
     // 读取新密码

@@ -38,9 +38,7 @@ export default defineEventHandler(async (event) => {
         accountCreated: false,
         convertedTeamId: { not: null },
         // 若指定了 registrationIds，则仅处理这些报名记录
-        ...(registrationIds && registrationIds.length > 0
-          ? { id: { in: registrationIds } }
-          : {}),
+        ...(registrationIds && registrationIds.length > 0 ? { id: { in: registrationIds } } : {}),
       },
       include: { members: true },
     })
@@ -102,7 +100,8 @@ export default defineEventHandler(async (event) => {
     }
 
     // 收集新建账号的明文信息（含密码，仅此一次返回）
-    const accounts: { username: string; password: string; name: string; registrationId: string }[] = []
+    const accounts: { username: string; password: string; name: string; registrationId: string }[] =
+      []
 
     // 4b. 落库阶段：每条报名记录一个事务，仅做轻量 DB 写入
     for (const registration of registrations) {

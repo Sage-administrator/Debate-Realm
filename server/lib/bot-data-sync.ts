@@ -248,10 +248,7 @@ export function formatScheduleText(
     completed: '已结束',
   }
 
-  const lines: string[] = [
-    `赛程：${tournamentName}`,
-    '━━━━━━━━━━━━━━━━',
-  ]
+  const lines: string[] = [`赛程：${tournamentName}`, '━━━━━━━━━━━━━━━━']
 
   for (const match of matches) {
     const statusLabel = statusLabels[match.status] || match.status
@@ -273,10 +270,7 @@ export function formatTopicsText(topics: string[], tournamentName: string): stri
     return '当前没有可用的辩题'
   }
 
-  const lines: string[] = [
-    `辩题库：${tournamentName}`,
-    '━━━━━━━━━━━━━━━━',
-  ]
+  const lines: string[] = [`辩题库：${tournamentName}`, '━━━━━━━━━━━━━━━━']
 
   topics.forEach((topic, index) => {
     lines.push(`${index + 1}. ${topic}`)

@@ -4,15 +4,15 @@
 
 // 级联类别数据结构
 interface CascaderCategory {
-  label: string                                              // 类别展示文本
-  value: string                                              // 类别值
-  items: { label: string; value: string; desc?: string }[]   // 该类别下的具体类型列表
+  label: string // 类别展示文本
+  value: string // 类别值
+  items: { label: string; value: string; desc?: string }[] // 该类别下的具体类型列表
 }
 
 // 组件入参定义
 interface Props {
-  modelValue?: string | null  // 当前选中的环节类型值
-  placeholder?: string        // 占位提示文本
+  modelValue?: string | null // 当前选中的环节类型值
+  placeholder?: string // 占位提示文本
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -49,9 +49,7 @@ const categories: CascaderCategory[] = [
   {
     label: 'PPT图片',
     value: 'image',
-    items: [
-      { label: 'PPT平替', value: 'ppt_replace', desc: '使用图片替代PPT展示' },
-    ],
+    items: [{ label: 'PPT平替', value: 'ppt_replace', desc: '使用图片替代PPT展示' }],
   },
 ]
 
@@ -69,7 +67,7 @@ const { isOpen, dropdownStyle, triggerRef, open, close } = useDropdown({
 function getDisplayText(value: string | null | undefined): string {
   if (!value) return props.placeholder
   for (const cat of categories) {
-    const item = cat.items.find(i => i.value === value)
+    const item = cat.items.find((i) => i.value === value)
     if (item) return item.label
   }
   return props.placeholder
@@ -95,7 +93,7 @@ function onTriggerClick() {
   // 打开前同步当前值
   if (props.modelValue) {
     for (const cat of categories) {
-      if (cat.items.find(i => i.value === props.modelValue)) {
+      if (cat.items.find((i) => i.value === props.modelValue)) {
         selectedCategory.value = cat.value
         break
       }
@@ -106,13 +104,13 @@ function onTriggerClick() {
 </script>
 
 <template>
-  <div class="cascader-wrap" @focusin="onTriggerClick" tabindex="-1">
+  <div class="cascader-wrap" tabindex="-1" @focusin="onTriggerClick">
     <!-- 触发器：选择框 -->
     <div
       ref="triggerRef"
       class="cascader-trigger"
-      @click="onTriggerClick"
       :class="{ 'cascader-trigger--open': isOpen }"
+      @click="onTriggerClick"
     >
       <span :class="modelValue ? 'cascader-value' : 'cascader-placeholder'">
         {{ getDisplayText(modelValue) }}
@@ -154,10 +152,11 @@ function onTriggerClick() {
 
           <!-- 右栏：具体类型 -->
           <div class="cascader-right">
-            <div v-if="!selectedCategory" class="cascader-placeholder">
-              请选择类别
-            </div>
-            <template v-for="cat in categories.filter(c => c.value === selectedCategory)" :key="'items-' + cat.value">
+            <div v-if="!selectedCategory" class="cascader-placeholder">请选择类别</div>
+            <template
+              v-for="cat in categories.filter((c) => c.value === selectedCategory)"
+              :key="'items-' + cat.value"
+            >
               <div
                 v-for="item in cat.items"
                 :key="item.value"
@@ -197,15 +196,17 @@ function onTriggerClick() {
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .cascader-trigger:hover {
-  border-color: #07C160;
+  border-color: #07c160;
 }
 
 .cascader-trigger--open {
-  border-color: #07C160;
+  border-color: #07c160;
   box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.2);
 }
 
@@ -246,7 +247,7 @@ function onTriggerClick() {
   --cc-item: var(--color-text-secondary);
   --cc-item-desc: var(--color-text-muted);
   --cc-hover-bg: var(--color-bg-tertiary);
-  --cc-active-text: #07C160;
+  --cc-active-text: #07c160;
   --cc-active-bg: rgba(7, 193, 96, 0.12);
 }
 .dark {
@@ -262,7 +263,7 @@ function onTriggerClick() {
   --cc-item: rgba(255, 255, 255, 0.7);
   --cc-item-desc: rgba(255, 255, 255, 0.4);
   --cc-hover-bg: rgba(255, 255, 255, 0.05);
-  --cc-active-text: #07C160;
+  --cc-active-text: #07c160;
   --cc-active-bg: rgba(7, 193, 96, 0.15);
 }
 
@@ -324,7 +325,7 @@ function onTriggerClick() {
 .chevron-right {
   width: 14px;
   height: 14px;
-  color: #07C160;
+  color: #07c160;
   flex-shrink: 0;
 }
 

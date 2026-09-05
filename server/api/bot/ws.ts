@@ -27,7 +27,12 @@ import { verifyToken, type JWTPayload } from '../../lib/jwt'
 import { prisma } from '../../lib/prisma'
 import { connectBot, disconnectBot, readBotRuntimeStatus, getBotInstance } from '../../lib/bot-ws'
 import { sendChannelMessage, sendGroupMessage, sendPrivateMessage } from '../../lib/bot-http'
-import { getResourceSummary, getAllResourceSnapshots, getResourceAlert, getBotHealth } from '../../lib/bot-manager'
+import {
+  getResourceSummary,
+  getAllResourceSnapshots,
+  getResourceAlert,
+  getBotHealth,
+} from '../../lib/bot-manager'
 
 // 每个 WebSocket 连接的状态
 interface PeerState {
@@ -166,7 +171,7 @@ export default defineWebSocketHandler({
 
       // 存储本次请求的 requestId，后续 send() 会自动回传
       if (data.requestId) {
-        (peer as any)._botReqId = data.requestId
+        ;(peer as any)._botReqId = data.requestId
       }
 
       // 获取已认证的状态（存储在 peer 上）
@@ -180,7 +185,7 @@ export default defineWebSocketHandler({
         }
         const newState = await authenticate(peer, data.token)
         if (newState) {
-          (peer as any)._botState = newState
+          ;(peer as any)._botState = newState
           // 认证成功后立即推送当前状态
           pushStatus(peer, newState)
           // 启动状态监控
@@ -199,10 +204,21 @@ export default defineWebSocketHandler({
         // ── 连接 Bot ──
         case 'connect': {
           if (!state.team.botAppId || !state.team.botAppSecret) {
-            send(peer, { type: 'connect_result', success: false, message: 'Bot 未配置，请先完成配置' })
+            send(peer, {
+              type: 'connect_result',
+              success: false,
+              message: 'Bot 未配置，请先完成配置',
+            })
             return
           }
-          connectBot(state.team.id, state.team.botAppId, state.team.botAppSecret, state.team.name, state.team.botChannelId, state.team.botIsPrivate ?? false)
+          connectBot(
+            state.team.id,
+            state.team.botAppId,
+            state.team.botAppSecret,
+            state.team.name,
+            state.team.botChannelId,
+            state.team.botIsPrivate ?? false,
+          )
           send(peer, { type: 'connect_result', success: true, message: 'Bot 正在连接...' })
           // 延迟推送最新状态（等连接建立）
           setTimeout(() => pushStatus(peer, state), 2000)
@@ -245,14 +261,26 @@ export default defineWebSocketHandler({
             let result: unknown
             switch (messageType) {
               case 'group':
-                result = await sendGroupMessage(credentials, data.targetId.trim(), data.content.trim())
+                result = await sendGroupMessage(
+                  credentials,
+                  data.targetId.trim(),
+                  data.content.trim(),
+                )
                 break
               case 'private':
-                result = await sendPrivateMessage(credentials, data.targetId.trim(), data.content.trim())
+                result = await sendPrivateMessage(
+                  credentials,
+                  data.targetId.trim(),
+                  data.content.trim(),
+                )
                 break
               case 'channel':
               default:
-                result = await sendChannelMessage(credentials, data.targetId.trim(), data.content.trim())
+                result = await sendChannelMessage(
+                  credentials,
+                  data.targetId.trim(),
+                  data.content.trim(),
+                )
                 break
             }
             send(peer, { type: 'send_result', success: true, message: '消息发送成功', result })
@@ -274,7 +302,12 @@ export default defineWebSocketHandler({
                 return
               }
               const health = getBotHealth(state.team.id)
-              send(peer, { type: 'monitor_result', success: true, teamId: state.team.id, ...health })
+              send(peer, {
+                type: 'monitor_result',
+                success: true,
+                teamId: state.team.id,
+                ...health,
+              })
               break
             }
             case 'detail': {

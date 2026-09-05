@@ -8,25 +8,29 @@
 <template>
   <div id="cert-paper" class="cert-paper" :style="rootStyle">
     <!-- 边框层 -->
-    <div v-if="config.style.border !== 'none'" class="cert-frame" :class="`border-${config.style.border}`">
+    <div
+      v-if="config.style.border !== 'none'"
+      class="cert-frame"
+      :class="`border-${config.style.border}`"
+    >
       <span v-if="config.style.border === 'classic'" class="cert-corner tl" />
       <span v-if="config.style.border === 'classic'" class="cert-corner tr" />
       <span v-if="config.style.border === 'classic'" class="cert-corner bl" />
       <span v-if="config.style.border === 'classic'" class="cert-corner br" />
     </div>
 
-      <!-- 内容层 -->
-      <div class="cert-content">
-        <!-- 顶部：证书编号（左上角） -->
-        <div class="cert-top">
-          <span class="cert-no">证书编号：{{ config.certNo || '（编号）' }}</span>
-        </div>
+    <!-- 内容层 -->
+    <div class="cert-content">
+      <!-- 顶部：证书编号（左上角） -->
+      <div class="cert-top">
+        <span class="cert-no">证书编号：{{ config.certNo || '（编号）' }}</span>
+      </div>
 
-        <!-- 头部：标题 + 赛事名 -->
-        <div class="cert-head">
-          <h1 class="cert-title">{{ config.title || '荣誉证书' }}</h1>
-          <div v-if="config.tournamentName" class="cert-tournament">{{ config.tournamentName }}</div>
-        </div>
+      <!-- 头部：标题 + 赛事名 -->
+      <div class="cert-head">
+        <h1 class="cert-title">{{ config.title || '荣誉证书' }}</h1>
+        <div v-if="config.tournamentName" class="cert-tournament">{{ config.tournamentName }}</div>
+      </div>
 
       <!-- 获得者 -->
       <div class="cert-recipient">
@@ -40,17 +44,26 @@
       <!-- 颁奖词 -->
       <div class="cert-award">{{ config.awardText }}</div>
 
-        <!-- 落款行（落款在上、日期在下，统一右对齐） -->
-        <div class="cert-foot">
-          <div class="cert-issuer">{{ config.issuer || '（主办方）' }}</div>
-          <div class="cert-date">{{ formattedDate }}</div>
-          <svg v-if="config.style.seal" class="cert-seal" viewBox="0 0 100 100" :style="{ width: u(220), height: u(220) }" aria-hidden="true">
-            <circle cx="50" cy="50" r="47" :fill="palette.seal" fill-opacity="0.06" />
-            <circle cx="50" cy="50" r="47" :stroke="palette.seal" stroke-width="3" fill="none" />
-            <circle cx="50" cy="50" r="38" :stroke="palette.seal" stroke-width="1.5" fill="none" />
-            <path d="M50 30 L55 45 L71 45 L58 55 L63 71 L50 61 L37 71 L42 55 L29 45 L45 45 Z" :fill="palette.seal" />
-          </svg>
-        </div>
+      <!-- 落款行（落款在上、日期在下，统一右对齐） -->
+      <div class="cert-foot">
+        <div class="cert-issuer">{{ config.issuer || '（主办方）' }}</div>
+        <div class="cert-date">{{ formattedDate }}</div>
+        <svg
+          v-if="config.style.seal"
+          class="cert-seal"
+          viewBox="0 0 100 100"
+          :style="{ width: u(220), height: u(220) }"
+          aria-hidden="true"
+        >
+          <circle cx="50" cy="50" r="47" :fill="palette.seal" fill-opacity="0.06" />
+          <circle cx="50" cy="50" r="47" :stroke="palette.seal" stroke-width="3" fill="none" />
+          <circle cx="50" cy="50" r="38" :stroke="palette.seal" stroke-width="1.5" fill="none" />
+          <path
+            d="M50 30 L55 45 L71 45 L58 55 L63 71 L50 61 L37 71 L42 55 L29 45 L45 45 Z"
+            :fill="palette.seal"
+          />
+        </svg>
+      </div>
     </div>
   </div>
 </template>
@@ -75,8 +88,12 @@ function u(px: number) {
   return `calc(var(--ck) * ${px}px)`
 }
 
-const showLogo = computed(() => props.config.recipientType === 'team' && !!props.config.recipientLogo)
-const recipientLabel = computed(() => (props.config.recipientType === 'team' ? '参赛队伍' : '获得者'))
+const showLogo = computed(
+  () => props.config.recipientType === 'team' && !!props.config.recipientLogo,
+)
+const recipientLabel = computed(() =>
+  props.config.recipientType === 'team' ? '参赛队伍' : '获得者',
+)
 
 const formattedDate = computed(() => {
   const d = props.config.date
@@ -140,10 +157,22 @@ const rootStyle = computed<Record<string, string>>(() => {
   background: var(--frame-accent);
   transform: rotate(45deg);
 }
-.cert-corner.tl { top: calc(var(--ck) * -9px); left: calc(var(--ck) * -9px); }
-.cert-corner.tr { top: calc(var(--ck) * -9px); right: calc(var(--ck) * -9px); }
-.cert-corner.bl { bottom: calc(var(--ck) * -9px); left: calc(var(--ck) * -9px); }
-.cert-corner.br { bottom: calc(var(--ck) * -9px); right: calc(var(--ck) * -9px); }
+.cert-corner.tl {
+  top: calc(var(--ck) * -9px);
+  left: calc(var(--ck) * -9px);
+}
+.cert-corner.tr {
+  top: calc(var(--ck) * -9px);
+  right: calc(var(--ck) * -9px);
+}
+.cert-corner.bl {
+  bottom: calc(var(--ck) * -9px);
+  left: calc(var(--ck) * -9px);
+}
+.cert-corner.br {
+  bottom: calc(var(--ck) * -9px);
+  right: calc(var(--ck) * -9px);
+}
 
 /* ════════ 内容层 ════════ */
 .cert-content {

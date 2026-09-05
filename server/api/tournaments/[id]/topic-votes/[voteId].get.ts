@@ -58,7 +58,13 @@ export default defineEventHandler(async (event) => {
       tournamentId: vote.tournamentId,
       matchId: vote.matchId,
       match: vote.match
-        ? { id: vote.match.id, round: vote.match.round, teamA: vote.match.teamA, teamB: vote.match.teamB, topic: vote.match.topic }
+        ? {
+            id: vote.match.id,
+            round: vote.match.round,
+            teamA: vote.match.teamA,
+            teamB: vote.match.teamB,
+            topic: vote.match.topic,
+          }
         : null,
       title: vote.title,
       description: vote.description,

@@ -14,7 +14,9 @@ export const TeamInfo = z.object({
   botChannelId: z.string().nullable(),
   botIsPrivate: z.boolean().nullable(),
   admin: z.object({
-    id: ID, username: z.string(), nickname: z.string().nullable(),
+    id: ID,
+    username: z.string(),
+    nickname: z.string().nullable(),
   }),
   memberCount: z.number().optional(),
   tournamentCount: z.number().optional(),
@@ -32,11 +34,17 @@ export const TeamDetail = z.object({
     botAppId: z.string().nullable(),
     botChannelId: z.string().nullable(),
   }),
-  members: z.array(z.object({
-    id: z.string(), userId: z.string(), username: z.string(),
-    nickname: z.string().nullable(), email: z.string().nullable(),
-    avatar: z.string().nullable(), role: z.string().nullable(),
-  })),
+  members: z.array(
+    z.object({
+      id: z.string(),
+      userId: z.string(),
+      username: z.string(),
+      nickname: z.string().nullable(),
+      email: z.string().nullable(),
+      avatar: z.string().nullable(),
+      role: z.string().nullable(),
+    }),
+  ),
   memberCount: z.number(),
   tournaments: z.array(z.any()).optional(),
   createdAt: z.string(),
@@ -58,12 +66,14 @@ export type CreateTeamRequest = z.infer<typeof CreateTeamRequest>
 
 // ── 更新团队 ──
 
-export const UpdateTeamRequest = z.object({
-  name: z.string().min(1).optional(),
-  botAppId: z.string().nullable().optional(),
-  botAppSecret: z.string().nullable().optional(),
-  botChannelId: z.string().nullable().optional(),
-}).partial()
+export const UpdateTeamRequest = z
+  .object({
+    name: z.string().min(1).optional(),
+    botAppId: z.string().nullable().optional(),
+    botAppSecret: z.string().nullable().optional(),
+    botChannelId: z.string().nullable().optional(),
+  })
+  .partial()
 export type UpdateTeamRequest = z.infer<typeof UpdateTeamRequest>
 
 // ── 团队成员 ──
@@ -86,12 +96,14 @@ export const CreateMemberRequest = z.object({
 })
 export type CreateMemberRequest = z.infer<typeof CreateMemberRequest>
 
-export const UpdateMemberRequest = z.object({
-  username: z.string().min(1).optional(),
-  nickname: z.string().optional(),
-  email: z.string().email().optional(),
-  avatar: z.string().optional(),
-}).partial()
+export const UpdateMemberRequest = z
+  .object({
+    username: z.string().min(1).optional(),
+    nickname: z.string().optional(),
+    email: z.string().email().optional(),
+    avatar: z.string().optional(),
+  })
+  .partial()
 export type UpdateMemberRequest = z.infer<typeof UpdateMemberRequest>
 
 export const ResetMemberPasswordRequest = z.object({

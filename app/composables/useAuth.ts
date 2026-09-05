@@ -20,15 +20,19 @@ export function useAuth() {
   }
 
   return {
-    login:            (body: { username: string; password: string }) => api.auth.login(body),
-    confirmLogin:     (body: { username: string; password: string }) => api.auth.confirmLogin(body),
-    loginStatus:      () => api.auth.loginStatus(),
-    fetchUser:        () => api.auth.me(),
-    changePassword:   (oldPassword: string, newPassword: string) =>
+    login: (body: { username: string; password: string }) => api.auth.login(body),
+    confirmLogin: (body: { username: string; password: string }) => api.auth.confirmLogin(body),
+    loginStatus: () => api.auth.loginStatus(),
+    fetchUser: () => api.auth.me(),
+    changePassword: (oldPassword: string, newPassword: string) =>
       api.auth.changePassword({ oldPassword, newPassword }),
-    updateProfile:    (body: { username?: string; nickname?: string; email?: string; avatar?: string }) =>
-      api.auth.updateProfile(body),
-    terminateOthers:  () => api.auth.terminateOthers(),
+    updateProfile: (body: {
+      username?: string
+      nickname?: string
+      email?: string
+      avatar?: string
+    }) => api.auth.updateProfile(body),
+    terminateOthers: () => api.auth.terminateOthers(),
     logout,
   }
 }

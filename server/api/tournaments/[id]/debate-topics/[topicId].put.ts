@@ -25,7 +25,8 @@ export default defineEventHandler(async (event) => {
 
     const data: Record<string, any> = {}
     if (body.affirmative !== undefined) {
-      if (!body.affirmative.trim()) throw createError({ statusCode: 400, message: '正方立场不能为空' })
+      if (!body.affirmative.trim())
+        throw createError({ statusCode: 400, message: '正方立场不能为空' })
       data.affirmative = body.affirmative.trim()
     }
     if (body.negative !== undefined) {

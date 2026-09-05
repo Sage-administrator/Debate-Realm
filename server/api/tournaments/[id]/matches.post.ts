@@ -11,8 +11,10 @@ export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, 'id')!
 
     // 使用共享 Schema 校验请求体（前后端同一份类型定义）
-    const { round, orderNum, teamA, teamB, scheduledAt } =
-      await validateBody(event, CreateMatchRequest)
+    const { round, orderNum, teamA, teamB, scheduledAt } = await validateBody(
+      event,
+      CreateMatchRequest,
+    )
 
     if (teamA && teamB && teamA.trim() === teamB.trim()) {
       throw createError({ statusCode: 400, message: '两支队伍不能相同' })
@@ -23,8 +25,11 @@ export default defineEventHandler(async (event) => {
 
     const match = await prisma.match.create({
       data: {
-        tournamentId: id, round, orderNum,
-        teamA: teamA || null, teamB: teamB || null,
+        tournamentId: id,
+        round,
+        orderNum,
+        teamA: teamA || null,
+        teamB: teamB || null,
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
         status: 'pending',
       },
@@ -32,11 +37,17 @@ export default defineEventHandler(async (event) => {
 
     setResponseStatus(event, 201)
     return {
-      code: 0, message: 'success',
+      code: 0,
+      message: 'success',
       data: {
-        id: match.id, round: match.round, orderNum: match.orderNum,
-        teamA: match.teamA, teamB: match.teamB, status: match.status,
-        scheduledAt: match.scheduledAt, version: match.version,
+        id: match.id,
+        round: match.round,
+        orderNum: match.orderNum,
+        teamA: match.teamA,
+        teamB: match.teamB,
+        status: match.status,
+        scheduledAt: match.scheduledAt,
+        version: match.version,
       },
     }
   } catch (error: any) {

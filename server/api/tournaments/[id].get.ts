@@ -11,7 +11,9 @@ export default defineEventHandler(async (event) => {
     const tournament = await prisma.tournament.findUnique({
       where: { id },
       include: {
-        team: true, teams: true, judges: true,
+        team: true,
+        teams: true,
+        judges: true,
         regFields: { orderBy: { sortOrder: 'asc' } },
         matches: {
           where: { deletedAt: null },
@@ -35,10 +37,18 @@ export default defineEventHandler(async (event) => {
     }
 
     return {
-      id: tournament.id, name: tournament.name, description: tournament.description,
-      format: tournament.format, status: tournament.status,
-      scheduledAt: tournament.scheduledAt, venue: tournament.venue,
-      team: { id: tournament.team.id, name: tournament.team.name, adminId: tournament.team.adminId },
+      id: tournament.id,
+      name: tournament.name,
+      description: tournament.description,
+      format: tournament.format,
+      status: tournament.status,
+      scheduledAt: tournament.scheduledAt,
+      venue: tournament.venue,
+      team: {
+        id: tournament.team.id,
+        name: tournament.team.name,
+        adminId: tournament.team.adminId,
+      },
       teams: tournament.teams.map((t) => t.name),
       judges: tournament.judges.map((j) => j.name),
       // 赛程页面所需的扩展配置字段
@@ -56,9 +66,16 @@ export default defineEventHandler(async (event) => {
       // 统一字段配置（系统字段 + 自定义字段，已包含所有字段属性）
       fields: (tournament as any).regFields || [],
       matches: tournament.matches.map((m) => ({
-        id: m.id, round: m.round, orderNum: m.orderNum,
-        teamA: m.teamA, teamB: m.teamB, winner: m.winner,
-        scoreA: m.scoreA, scoreB: m.scoreB, status: m.status, scheduledAt: m.scheduledAt,
+        id: m.id,
+        round: m.round,
+        orderNum: m.orderNum,
+        teamA: m.teamA,
+        teamB: m.teamB,
+        winner: m.winner,
+        scoreA: m.scoreA,
+        scoreB: m.scoreB,
+        status: m.status,
+        scheduledAt: m.scheduledAt,
         topic: (m as any).topic,
         affirmativeSide: (m as any).affirmativeSide,
         bestDebaterA: (m as any).bestDebaterA,

@@ -23,9 +23,9 @@ const form = reactive({
   tags: '',
   pollOptions: [] as string[],
   scheduleType: 'once' as 'once' | 'daily' | 'weekly',
-  runAt: '',       // datetime-local: "YYYY-MM-DDTHH:mm"（本地）
+  runAt: '', // datetime-local: "YYYY-MM-DDTHH:mm"（本地）
   timeHHMM: '09:00', // time: "HH:mm"
-  weekday: 1,      // 0-6 周日..周六
+  weekday: 1, // 0-6 周日..周六
   timezone: 'Asia/Shanghai',
 })
 
@@ -45,12 +45,19 @@ const scheduleItems = [
   { label: '每周', value: 'weekly' },
 ]
 const weekdayItems = [
-  { label: '周日', value: 0 }, { label: '周一', value: 1 }, { label: '周二', value: 2 },
-  { label: '周三', value: 3 }, { label: '周四', value: 4 }, { label: '周五', value: 5 },
+  { label: '周日', value: 0 },
+  { label: '周一', value: 1 },
+  { label: '周二', value: 2 },
+  { label: '周三', value: 3 },
+  { label: '周四', value: 4 },
+  { label: '周五', value: 5 },
   { label: '周六', value: 6 },
 ]
 
-const statusMeta: Record<string, { label: string; color: 'info' | 'success' | 'neutral' | 'error' }> = {
+const statusMeta: Record<
+  string,
+  { label: string; color: 'info' | 'success' | 'neutral' | 'error' }
+> = {
   pending: { label: '待发布', color: 'info' },
   published: { label: '已发布', color: 'success' },
   paused: { label: '已暂停', color: 'neutral' },
@@ -62,9 +69,14 @@ function formatZoned(iso: string | null, tz: string): string {
   if (!iso) return '-'
   try {
     return new Intl.DateTimeFormat('zh-CN', {
-      timeZone: tz, hour12: false,
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', weekday: 'short',
+      timeZone: tz,
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      weekday: 'short',
     }).format(new Date(iso))
   } catch {
     return iso
@@ -75,8 +87,13 @@ function formatZoned(iso: string | null, tz: string): string {
 function utcToLocalInput(iso: string, tz: string): string {
   const d = new Date(iso)
   const dtf = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz, hour12: false,
-    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    timeZone: tz,
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
   })
   const m: Record<string, string> = {}
   for (const p of dtf.formatToParts(d)) if (p.type !== 'literal') m[p.type] = p.value
@@ -134,12 +151,25 @@ function openEdit(task: any) {
 
 // ---------- 保存 ----------
 async function saveTask() {
-  if (!form.title.trim()) { toast.add({ title: '标题不能为空', color: 'warning' }); return }
-  if (!form.content.trim()) { toast.add({ title: '正文不能为空', color: 'warning' }); return }
-  if (!form.channelId.trim()) { toast.add({ title: '目标论坛子频道 ID 不能为空', color: 'warning' }); return }
-  if (form.scheduleType === 'once' && !form.runAt) { toast.add({ title: '请选择触发时间', color: 'warning' }); return }
+  if (!form.title.trim()) {
+    toast.add({ title: '标题不能为空', color: 'warning' })
+    return
+  }
+  if (!form.content.trim()) {
+    toast.add({ title: '正文不能为空', color: 'warning' })
+    return
+  }
+  if (!form.channelId.trim()) {
+    toast.add({ title: '目标论坛子频道 ID 不能为空', color: 'warning' })
+    return
+  }
+  if (form.scheduleType === 'once' && !form.runAt) {
+    toast.add({ title: '请选择触发时间', color: 'warning' })
+    return
+  }
   if ((form.scheduleType === 'daily' || form.scheduleType === 'weekly') && !form.timeHHMM) {
-    toast.add({ title: '请选择触发时间', color: 'warning' }); return
+    toast.add({ title: '请选择触发时间', color: 'warning' })
+    return
   }
 
   saving.value = true
@@ -159,12 +189,16 @@ async function saveTask() {
   try {
     if (editingId.value) {
       await $fetch(`/api/scheduled-posts/${editingId.value}`, {
-        method: 'PUT', body: payload, headers: { Authorization: `Bearer ${store.token}` },
+        method: 'PUT',
+        body: payload,
+        headers: { Authorization: `Bearer ${store.token}` },
       })
       toast.add({ title: '已更新任务', color: 'success' })
     } else {
       await $fetch('/api/scheduled-posts', {
-        method: 'POST', body: payload, headers: { Authorization: `Bearer ${store.token}` },
+        method: 'POST',
+        body: payload,
+        headers: { Authorization: `Bearer ${store.token}` },
       })
       toast.add({ title: '已创建任务', color: 'success' })
     }
@@ -181,7 +215,8 @@ async function saveTask() {
 async function toggleTask(task: any) {
   try {
     await $fetch(`/api/scheduled-posts/${task.id}/toggle`, {
-      method: 'POST', body: { paused: task.status !== 'paused' },
+      method: 'POST',
+      body: { paused: task.status !== 'paused' },
       headers: { Authorization: `Bearer ${store.token}` },
     })
     toast.add({ title: task.status === 'paused' ? '已恢复' : '已暂停', color: 'info' })
@@ -196,7 +231,8 @@ async function deleteTask(task: any) {
   if (!confirm(`确定删除任务「${task.title}」？`)) return
   try {
     await $fetch(`/api/scheduled-posts/${task.id}`, {
-      method: 'DELETE', headers: { Authorization: `Bearer ${store.token}` },
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${store.token}` },
     })
     toast.add({ title: '已删除', color: 'success' })
     await loadTasks()
@@ -212,9 +248,12 @@ async function openHistory(task: any) {
   historyLoading.value = true
   historyRuns.value = []
   try {
-    const data = await $fetch<{ success: boolean; runs: any[] }>(`/api/scheduled-posts/${task.id}/runs`, {
-      headers: { Authorization: `Bearer ${store.token}` },
-    })
+    const data = await $fetch<{ success: boolean; runs: any[] }>(
+      `/api/scheduled-posts/${task.id}/runs`,
+      {
+        headers: { Authorization: `Bearer ${store.token}` },
+      },
+    )
     historyRuns.value = data.runs || []
   } catch (e: any) {
     toast.add({ title: e?.statusMessage || '加载历史失败', color: 'error' })
@@ -241,7 +280,9 @@ async function openHistory(task: any) {
       <!-- 非 QQ 频道团队 -->
       <div v-if="!isQQBotTeam" class="text-center py-12">
         <UIcon name="i-lucide-bot" class="w-16 h-16 mx-auto mb-4 text-[var(--color-text-muted)]" />
-        <p class="text-[var(--color-text-muted)]">当前团队不是 QQ 频道模式，定时发布仅限 QQ 频道模式团队使用。</p>
+        <p class="text-[var(--color-text-muted)]">
+          当前团队不是 QQ 频道模式，定时发布仅限 QQ 频道模式团队使用。
+        </p>
       </div>
 
       <template v-else>
@@ -261,10 +302,18 @@ async function openHistory(task: any) {
             </div>
 
             <UFormField label="正文（支持 Markdown）" required>
-              <UTextarea v-model="form.content" :rows="4" placeholder="辩论题目内容 / 讨论话题描述" />
+              <UTextarea
+                v-model="form.content"
+                :rows="4"
+                placeholder="辩论题目内容 / 讨论话题描述"
+              />
             </UFormField>
 
-            <UFormField label="目标论坛子频道 ID" required hint="发帖将发布到该 QQ 论坛子频道（需私域机器人）">
+            <UFormField
+              label="目标论坛子频道 ID"
+              required
+              hint="发帖将发布到该 QQ 论坛子频道（需私域机器人）"
+            >
               <UInput v-model="form.channelId" placeholder="论坛子频道 ID" />
             </UFormField>
 
@@ -282,10 +331,20 @@ async function openHistory(task: any) {
               <div class="space-y-2">
                 <div v-for="(opt, i) in form.pollOptions" :key="i" class="flex items-center gap-2">
                   <UInput v-model="form.pollOptions[i]" placeholder="选项内容" class="flex-1" />
-                  <UButton color="error" variant="ghost" size="xs" icon="i-lucide-x"
-                    @click="void form.pollOptions.splice(i, 1)" />
+                  <UButton
+                    color="error"
+                    variant="ghost"
+                    size="xs"
+                    icon="i-lucide-x"
+                    @click="void form.pollOptions.splice(i, 1)"
+                  />
                 </div>
-                <UButton variant="soft" size="xs" icon="i-lucide-plus" @click="void form.pollOptions.push('')">
+                <UButton
+                  variant="soft"
+                  size="xs"
+                  icon="i-lucide-plus"
+                  @click="void form.pollOptions.push('')"
+                >
                   添加选项
                 </UButton>
               </div>
@@ -323,46 +382,91 @@ async function openHistory(task: any) {
           <template #header>
             <div class="flex items-center justify-between">
               <h2 class="font-bold">定时任务</h2>
-              <UButton variant="ghost" size="xs" icon="i-lucide-refresh-cw" :loading="loading" @click="loadTasks" />
+              <UButton
+                variant="ghost"
+                size="xs"
+                icon="i-lucide-refresh-cw"
+                :loading="loading"
+                @click="loadTasks"
+              />
             </div>
           </template>
 
           <div v-if="loading" class="text-center py-6">
             <UIcon name="i-lucide-loader" class="w-5 h-5 animate-spin mx-auto" />
           </div>
-          <div v-else-if="tasks.length === 0" class="text-[var(--color-text-muted)] text-sm py-4 text-center">
+          <div
+            v-else-if="tasks.length === 0"
+            class="text-[var(--color-text-muted)] text-sm py-4 text-center"
+          >
             暂无定时任务。在上方创建第一个定时发布任务吧。
           </div>
           <div v-else class="space-y-2">
-            <div v-for="task in tasks" :key="task.id"
-              class="p-3 rounded border border-[var(--color-border)] hover:bg-[var(--color-bg-secondary)] transition-colors">
+            <div
+              v-for="task in tasks"
+              :key="task.id"
+              class="p-3 rounded border border-[var(--color-border)] hover:bg-[var(--color-bg-secondary)] transition-colors"
+            >
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="font-medium truncate">{{ task.title }}</span>
-                    <UBadge :label="task.type === 'debate' ? '辩论题目' : '讨论话题'" size="xs" variant="soft" />
-                    <UBadge :label="statusMeta[task.status]?.label || task.status"
-                      :color="statusMeta[task.status]?.color || 'neutral'" size="xs" variant="solid" />
+                    <UBadge
+                      :label="task.type === 'debate' ? '辩论题目' : '讨论话题'"
+                      size="xs"
+                      variant="soft"
+                    />
+                    <UBadge
+                      :label="statusMeta[task.status]?.label || task.status"
+                      :color="statusMeta[task.status]?.color || 'neutral'"
+                      size="xs"
+                      variant="solid"
+                    />
                   </div>
                   <div class="text-xs text-[var(--color-text-muted)] mt-1 space-y-0.5">
-                    <div>子频道：<span class="font-mono">{{ task.channelId }}</span></div>
-                    <div>下次触发：{{ formatZoned(task.nextRunAt ? new Date(task.nextRunAt).toISOString() : null, task.timezone) }}</div>
-                    <div v-if="task.lastResult" :class="task.status === 'failed' ? 'text-red-500' : ''">
+                    <div>
+                      子频道：<span class="font-mono">{{ task.channelId }}</span>
+                    </div>
+                    <div>
+                      下次触发：{{
+                        formatZoned(
+                          task.nextRunAt ? new Date(task.nextRunAt).toISOString() : null,
+                          task.timezone,
+                        )
+                      }}
+                    </div>
+                    <div
+                      v-if="task.lastResult"
+                      :class="task.status === 'failed' ? 'text-red-500' : ''"
+                    >
                       最近结果：{{ task.lastResult }}
                     </div>
                   </div>
                 </div>
                 <div class="flex flex-col gap-1 shrink-0">
-                  <UButton size="xs" :color="task.status === 'paused' ? 'success' : 'neutral'"
+                  <UButton
+                    size="xs"
+                    :color="task.status === 'paused' ? 'success' : 'neutral'"
                     :variant="task.status === 'paused' ? 'solid' : 'outline'"
                     :disabled="task.status === 'published' || task.status === 'failed'"
-                    @click="toggleTask(task)">
+                    @click="toggleTask(task)"
+                  >
                     {{ task.status === 'paused' ? '恢复' : '暂停' }}
                   </UButton>
-                  <UButton size="xs" variant="ghost" icon="i-lucide-eye" @click="openHistory(task)">历史</UButton>
-                  <UButton size="xs" variant="ghost" icon="i-lucide-edit" @click="openEdit(task)">编辑</UButton>
-                  <UButton size="xs" variant="ghost" color="error" icon="i-lucide-trash"
-                    @click="deleteTask(task)">删除</UButton>
+                  <UButton size="xs" variant="ghost" icon="i-lucide-eye" @click="openHistory(task)"
+                    >历史</UButton
+                  >
+                  <UButton size="xs" variant="ghost" icon="i-lucide-edit" @click="openEdit(task)"
+                    >编辑</UButton
+                  >
+                  <UButton
+                    size="xs"
+                    variant="ghost"
+                    color="error"
+                    icon="i-lucide-trash"
+                    @click="deleteTask(task)"
+                    >删除</UButton
+                  >
                 </div>
               </div>
             </div>
@@ -376,28 +480,43 @@ async function openHistory(task: any) {
       <template #content>
         <UCard>
           <template #header>
-          <div class="flex items-center justify-between">
-            <h3 class="font-bold">发布历史 — {{ historyTitle }}</h3>
-            <UButton color="neutral" variant="ghost" icon="i-lucide-x" @click="void (showHistory = false)" />
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold">发布历史 — {{ historyTitle }}</h3>
+              <UButton
+                color="neutral"
+                variant="ghost"
+                icon="i-lucide-x"
+                @click="void (showHistory = false)"
+              />
+            </div>
+          </template>
+          <div v-if="historyLoading" class="text-center py-6">
+            <UIcon name="i-lucide-loader" class="w-5 h-5 animate-spin mx-auto" />
           </div>
-        </template>
-        <div v-if="historyLoading" class="text-center py-6">
-          <UIcon name="i-lucide-loader" class="w-5 h-5 animate-spin mx-auto" />
-        </div>
-        <div v-else-if="historyRuns.length === 0" class="text-[var(--color-text-muted)] text-sm py-4 text-center">
-          暂无发布记录。
-        </div>
-        <div v-else class="space-y-1.5 max-h-96 overflow-y-auto">
-          <div v-for="run in historyRuns" :key="run.id"
-            class="flex items-center gap-2 p-2 rounded text-sm hover:bg-[var(--color-bg-secondary)]">
-            <UBadge :label="run.status === 'success' ? '成功' : '失败'"
-              :color="run.status === 'success' ? 'success' : 'error'" size="xs" variant="soft" />
-            <span class="font-mono text-xs text-[var(--color-text-muted)] shrink-0">
-              {{ new Date(run.runAt).toLocaleString() }}
-            </span>
-            <span class="truncate flex-1 min-w-0 text-xs">{{ run.message || '' }}</span>
+          <div
+            v-else-if="historyRuns.length === 0"
+            class="text-[var(--color-text-muted)] text-sm py-4 text-center"
+          >
+            暂无发布记录。
           </div>
-        </div>
+          <div v-else class="space-y-1.5 max-h-96 overflow-y-auto">
+            <div
+              v-for="run in historyRuns"
+              :key="run.id"
+              class="flex items-center gap-2 p-2 rounded text-sm hover:bg-[var(--color-bg-secondary)]"
+            >
+              <UBadge
+                :label="run.status === 'success' ? '成功' : '失败'"
+                :color="run.status === 'success' ? 'success' : 'error'"
+                size="xs"
+                variant="soft"
+              />
+              <span class="font-mono text-xs text-[var(--color-text-muted)] shrink-0">
+                {{ new Date(run.runAt).toLocaleString() }}
+              </span>
+              <span class="truncate flex-1 min-w-0 text-xs">{{ run.message || '' }}</span>
+            </div>
+          </div>
         </UCard>
       </template>
     </UModal>

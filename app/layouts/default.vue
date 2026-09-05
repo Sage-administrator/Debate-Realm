@@ -1,7 +1,6 @@
 <template>
   <!-- 整体布局：左侧侧边栏 + 右侧主内容区 -->
   <div class="layout-root flex h-screen overflow-hidden relative">
-
     <!-- ════════════════════════════════════════════
          移动端遮罩层：点击关闭侧边栏
          放在 layout-root 内，与侧边栏共享同一个层叠上下文
@@ -12,7 +11,11 @@
         <div
           v-if="sidebarOpen"
           class="sidebar-overlay fixed inset-0 z-40 bg-[var(--overlay-overlay)] lg:hidden"
-          @click="() => { sidebarOpen = false }"
+          @click="
+            () => {
+              sidebarOpen = false
+            }
+          "
         />
       </Transition>
     </ClientOnly>
@@ -32,7 +35,9 @@
     >
       <!-- ── Logo 区域 ── -->
       <div class="flex items-center gap-3 px-6 py-5">
-        <div class="gradient-icon w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+        <div
+          class="gradient-icon w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20"
+        >
           <UIcon name="i-lucide-trophy" class="w-5 h-5 text-white" />
         </div>
         <div class="flex flex-col leading-tight">
@@ -68,7 +73,11 @@
         </template>
         <!-- 未加载完成时显示骨架屏 -->
         <div v-else class="space-y-2 px-3">
-          <div v-for="i in 3" :key="i" class="h-10 rounded-lg bg-[var(--color-bg-tertiary)] animate-pulse" />
+          <div
+            v-for="i in 3"
+            :key="i"
+            class="h-10 rounded-lg bg-[var(--color-bg-tertiary)] animate-pulse"
+          />
         </div>
       </nav>
 
@@ -77,7 +86,9 @@
         <template v-if="store.user">
           <div class="flex items-center gap-3 mb-3">
             <!-- 用户头像：有 avatar 显示图片，否则显示首字母 -->
-            <div class="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
+            <div
+              class="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold shrink-0"
+            >
               <img
                 v-if="store.user.avatar"
                 :src="store.user.avatar"
@@ -87,7 +98,9 @@
               <span v-else>{{ store.user.username?.charAt(0)?.toUpperCase() }}</span>
             </div>
             <div class="flex-1 min-w-0">
-              <div class="text-sm font-medium text-[var(--color-text-primary)] truncate">{{ store.user.nickname || store.user.username }}</div>
+              <div class="text-sm font-medium text-[var(--color-text-primary)] truncate">
+                {{ store.user.nickname || store.user.username }}
+              </div>
               <div class="text-xs text-[var(--color-text-muted)]">{{ roleLabel }}</div>
             </div>
           </div>
@@ -128,12 +141,23 @@
          ════════════════════════════════════════════ -->
     <div class="flex-1 flex flex-col overflow-hidden relative z-0">
       <!-- 移动端顶栏（768px以下显示） -->
-      <header class="mobile-header lg:hidden flex items-center justify-between px-4 h-14 bg-[var(--color-bg-secondary)] backdrop-blur-md border-b border-[var(--color-border)]">
-        <button class="hamburger-btn p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-all duration-200" @click="() => { sidebarOpen = true }">
+      <header
+        class="mobile-header lg:hidden flex items-center justify-between px-4 h-14 bg-[var(--color-bg-secondary)] backdrop-blur-md border-b border-[var(--color-border)]"
+      >
+        <button
+          class="hamburger-btn p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-all duration-200"
+          @click="
+            () => {
+              sidebarOpen = true
+            }
+          "
+        >
           <UIcon name="i-lucide-menu" class="w-5 h-5" />
         </button>
         <NuxtLink to="/home" class="flex items-center gap-2">
-          <div class="gradient-icon w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <div
+            class="gradient-icon w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center"
+          >
             <UIcon name="i-lucide-trophy" class="w-3.5 h-3.5 text-white" />
           </div>
           <span class="text-sm font-bold text-[var(--color-text-primary)]">辩境</span>
@@ -158,11 +182,12 @@
  */
 
 const store = useAuthStore()
-const { sidebarOpen, closeSidebarOnMobile, roleLabel, navItems, isActive, logout } = useSidebarLayout({
-  dashboardPath: '/home',
-  includeTournamentCreate: true,
-  includeBotManagement: true,
-})
+const { sidebarOpen, closeSidebarOnMobile, roleLabel, navItems, isActive, logout } =
+  useSidebarLayout({
+    dashboardPath: '/home',
+    includeTournamentCreate: true,
+    includeBotManagement: true,
+  })
 </script>
 
 <style scoped>

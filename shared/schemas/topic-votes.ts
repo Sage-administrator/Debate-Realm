@@ -28,7 +28,13 @@ export type TopicVoteInfo = {
   id: string
   tournamentId: string
   matchId: string | null
-  match?: { id: string; round: string | null; teamA: string | null; teamB: string | null; topic: string | null } | null
+  match?: {
+    id: string
+    round: string | null
+    teamA: string | null
+    teamB: string | null
+    topic: string | null
+  } | null
   title: string
   description: string | null
   topics: any[]

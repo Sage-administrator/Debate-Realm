@@ -57,30 +57,73 @@
       <div class="cz-card-title">内容</div>
 
       <label class="cz-label">证书标题</label>
-      <UInput v-model="config.title" placeholder="荣誉证书" class="w-full" :ui="{ base: 'input-glass' }" />
+      <UInput
+        v-model="config.title"
+        placeholder="荣誉证书"
+        class="w-full"
+        :ui="{ base: 'input-glass' }"
+      />
 
       <label class="cz-label">证书编号</label>
-      <UInput v-model="config.certNo" placeholder="如 2024-001" class="w-full" :ui="{ base: 'input-glass' }" />
+      <UInput
+        v-model="config.certNo"
+        placeholder="如 2024-001"
+        class="w-full"
+        :ui="{ base: 'input-glass' }"
+      />
 
       <label class="cz-label">获得者类型</label>
       <div class="cz-seg">
-        <button class="cz-seg-btn" :class="{ active: config.recipientType === 'team' }" @click="config.recipientType = 'team'">队伍</button>
-        <button class="cz-seg-btn" :class="{ active: config.recipientType === 'person' }" @click="config.recipientType = 'person'">个人</button>
+        <button
+          class="cz-seg-btn"
+          :class="{ active: config.recipientType === 'team' }"
+          @click="config.recipientType = 'team'"
+        >
+          队伍
+        </button>
+        <button
+          class="cz-seg-btn"
+          :class="{ active: config.recipientType === 'person' }"
+          @click="config.recipientType = 'person'"
+        >
+          个人
+        </button>
       </div>
 
       <label class="cz-label">获得者姓名</label>
-      <UInput v-model="config.recipientName" placeholder="获得者姓名" class="w-full" :ui="{ base: 'input-glass' }" />
+      <UInput
+        v-model="config.recipientName"
+        placeholder="获得者姓名"
+        class="w-full"
+        :ui="{ base: 'input-glass' }"
+      />
 
       <template v-if="config.recipientType === 'team'">
         <label class="cz-label">队徽图片 URL（可选）</label>
-        <UInput v-model="config.recipientLogo" placeholder="https://… 或 /uploads/…" class="w-full" :ui="{ base: 'input-glass' }" />
+        <UInput
+          v-model="config.recipientLogo"
+          placeholder="https://… 或 /uploads/…"
+          class="w-full"
+          :ui="{ base: 'input-glass' }"
+        />
       </template>
 
       <label class="cz-label">赛事名称</label>
-      <UInput v-model="config.tournamentName" placeholder="赛事名称" class="w-full" :ui="{ base: 'input-glass' }" />
+      <UInput
+        v-model="config.tournamentName"
+        placeholder="赛事名称"
+        class="w-full"
+        :ui="{ base: 'input-glass' }"
+      />
 
       <label class="cz-label">颁奖词 / 事由</label>
-      <UTextarea v-model="config.awardText" :rows="3" placeholder="填写颁奖词…" class="w-full" :ui="{ base: 'input-glass' }" />
+      <UTextarea
+        v-model="config.awardText"
+        :rows="3"
+        placeholder="填写颁奖词…"
+        class="w-full"
+        :ui="{ base: 'input-glass' }"
+      />
 
       <div class="cz-row">
         <div class="flex-1">
@@ -90,7 +133,12 @@
       </div>
 
       <label class="cz-label">落款 / 主办方</label>
-      <UInput v-model="config.issuer" placeholder="主办方名称" class="w-full" :ui="{ base: 'input-glass' }" />
+      <UInput
+        v-model="config.issuer"
+        placeholder="主办方名称"
+        class="w-full"
+        :ui="{ base: 'input-glass' }"
+      />
     </section>
 
     <!-- 样式 -->
@@ -114,23 +162,56 @@
 
       <label class="cz-label">边框</label>
       <div class="cz-seg">
-        <button v-for="b in BORDER_LIST" :key="b.key" class="cz-seg-btn" :class="{ active: config.style.border === b.key }" @click="config.style.border = b.key">{{ b.label }}</button>
+        <button
+          v-for="b in BORDER_LIST"
+          :key="b.key"
+          class="cz-seg-btn"
+          :class="{ active: config.style.border === b.key }"
+          @click="config.style.border = b.key"
+        >
+          {{ b.label }}
+        </button>
       </div>
 
       <label class="cz-label">字体</label>
       <div class="cz-seg">
-        <button v-for="f in FONT_LIST" :key="f.key" class="cz-seg-btn" :class="{ active: config.style.font === f.key }" @click="config.style.font = f.key">{{ f.label }}</button>
+        <button
+          v-for="f in FONT_LIST"
+          :key="f.key"
+          class="cz-seg-btn"
+          :class="{ active: config.style.font === f.key }"
+          @click="config.style.font = f.key"
+        >
+          {{ f.label }}
+        </button>
       </div>
 
       <template v-if="config.style.theme === 'custom'">
         <label class="cz-label">自定义背景</label>
-        <UInput v-model="config.style.bg" placeholder="#ffffff 或 linear-gradient(…)" class="w-full" :ui="{ base: 'input-glass' }" />
+        <UInput
+          v-model="config.style.bg"
+          placeholder="#ffffff 或 linear-gradient(…)"
+          class="w-full"
+          :ui="{ base: 'input-glass' }"
+        />
       </template>
 
       <label class="cz-label">印章</label>
       <div class="cz-seg">
-        <button class="cz-seg-btn" :class="{ active: config.style.seal }" @click="config.style.seal = true">显示</button>
-        <button class="cz-seg-btn" :class="{ active: !config.style.seal }" @click="config.style.seal = false">隐藏</button>
+        <button
+          class="cz-seg-btn"
+          :class="{ active: config.style.seal }"
+          @click="config.style.seal = true"
+        >
+          显示
+        </button>
+        <button
+          class="cz-seg-btn"
+          :class="{ active: !config.style.seal }"
+          @click="config.style.seal = false"
+        >
+          隐藏
+        </button>
       </div>
     </section>
   </div>
@@ -161,7 +242,9 @@ const emit = defineEmits<{
 }>()
 
 const fillValue = ref<FillKind | undefined>(undefined)
-const fillItems = computed(() => fillOptionsFromData(props.standings || [], props.bestDebaters || []))
+const fillItems = computed(() =>
+  fillOptionsFromData(props.standings || [], props.bestDebaters || []),
+)
 
 watch(fillValue, (v) => {
   if (v) {
@@ -299,7 +382,9 @@ watch(fillValue, (v) => {
 }
 .cz-swatch.active {
   border-color: var(--color-text-primary);
-  box-shadow: 0 0 0 2px var(--color-bg-secondary), 0 0 0 4px var(--color-accent-primary);
+  box-shadow:
+    0 0 0 2px var(--color-bg-secondary),
+    0 0 0 4px var(--color-accent-primary);
 }
 .cz-swatch-check {
   position: absolute;

@@ -15,8 +15,13 @@ export const TeamMode = z.enum(['qq_bot', 'team'])
 export type TeamMode = z.infer<typeof TeamMode>
 
 export const TournamentFormat = z.enum([
-  'single_elimination', 'double_elimination', 'round_robin',
-  'page_playoff', 'swiss', 'group_knockout', 'manual',
+  'single_elimination',
+  'double_elimination',
+  'round_robin',
+  'page_playoff',
+  'swiss',
+  'group_knockout',
+  'manual',
 ])
 export type TournamentFormat = z.infer<typeof TournamentFormat>
 
@@ -49,28 +54,36 @@ export type BestDebaterMode = z.infer<typeof BestDebaterMode>
 
 // ── 通用响应 ──
 
-export const ApiResponse = <T extends z.ZodTypeAny>(data: T) => z.object({
-  code: z.number().optional(),
-  success: z.boolean().optional(),
-  message: z.string().optional(),
-  data: data.optional(),
-})
+export const ApiResponse = <T extends z.ZodTypeAny>(data: T) =>
+  z.object({
+    code: z.number().optional(),
+    success: z.boolean().optional(),
+    message: z.string().optional(),
+    data: data.optional(),
+  })
 export type ApiResponse<T> = { code?: number; success?: boolean; message?: string; data?: T }
 
-export const PaginatedResponse = <T extends z.ZodTypeAny>(item: T) => z.object({
-  items: z.array(item),
-  total: z.number(),
-  page: z.number(),
-  pageSize: z.number(),
-})
+export const PaginatedResponse = <T extends z.ZodTypeAny>(item: T) =>
+  z.object({
+    items: z.array(item),
+    total: z.number(),
+    page: z.number(),
+    pageSize: z.number(),
+  })
 export type PaginatedResponse<T> = { items: T[]; total: number; page: number; pageSize: number }
 
 // ── 计时器通用 ──
 
 export const StageType = z.enum([
-  'single_speech', 'single_question', 'summary',
-  'bilateral_debate', 'free_debate',
-  'single_timer', 'double_timer', 'no_timer', 'ppt_replace',
+  'single_speech',
+  'single_question',
+  'summary',
+  'bilateral_debate',
+  'free_debate',
+  'single_timer',
+  'double_timer',
+  'no_timer',
+  'ppt_replace',
 ])
 export type StageType = z.infer<typeof StageType>
 

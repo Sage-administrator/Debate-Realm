@@ -5,7 +5,11 @@
   不包含"快捷时间"div
 -->
 <template>
-  <div ref="rootRef" class="h-screen w-screen overflow-hidden relative timer-page-root" :style="backgroundStyle">
+  <div
+    ref="rootRef"
+    class="h-screen w-screen overflow-hidden relative timer-page-root"
+    :style="backgroundStyle"
+  >
     <!-- 缩放画布：固定 1280x720 设计基准，等比缩放填满屏幕（与 TimerPreview 预览一致） -->
     <div class="timer-scale-wrapper" :style="scaleWrapperStyle">
       <TimerDisplay
@@ -49,39 +53,87 @@
     </div>
 
     <!-- 进入前设置面板 -->
-    <div v-if="showSetup" class="fixed inset-0 z-40 flex items-center justify-center" @click="() => { showSetup = false }">
-      <div class="absolute inset-0 bg-black/50"></div>
-      <div class="relative bg-white text-gray-800 rounded-lg shadow-2xl w-[45rem] max-w-[90vw] border border-gray-200 p-4" @click.stop>
+    <div
+      v-if="showSetup"
+      class="fixed inset-0 z-40 flex items-center justify-center"
+      @click="
+        () => {
+          showSetup = false
+        }
+      "
+    >
+      <div class="absolute inset-0 bg-black/50" />
+      <div
+        class="relative bg-white text-gray-800 rounded-lg shadow-2xl w-[45rem] max-w-[90vw] border border-gray-200 p-4"
+        @click.stop
+      >
         <h3 class="font-bold text-lg mb-3">对阵双方和辩题设置</h3>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="text-xs text-gray-600 mb-1 block">正方队伍名</label>
-            <input v-model="setupTeamPositiveName" class="w-full px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-600" placeholder="例：重庆大学">
+            <input
+              v-model="setupTeamPositiveName"
+              class="w-full px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-600"
+              placeholder="例：重庆大学"
+            />
           </div>
           <div>
             <label class="text-xs text-gray-600 mb-1 block">反方队伍名</label>
-            <input v-model="setupTeamNegativeName" class="w-full px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-600" placeholder="例：中国科学院大学">
+            <input
+              v-model="setupTeamNegativeName"
+              class="w-full px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-600"
+              placeholder="例：中国科学院大学"
+            />
           </div>
           <div>
             <label class="text-xs text-gray-600 mb-1 block">正方辩题</label>
-            <input v-model="setupPositiveTopic" class="w-full px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-600" placeholder="请输入正方辩题">
+            <input
+              v-model="setupPositiveTopic"
+              class="w-full px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-600"
+              placeholder="请输入正方辩题"
+            />
           </div>
           <div>
             <label class="text-xs text-gray-600 mb-1 block">反方辩题</label>
-            <input v-model="setupNegativeTopic" class="w-full px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-600" placeholder="请输入反方辩题">
+            <input
+              v-model="setupNegativeTopic"
+              class="w-full px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:ring-1 focus:ring-blue-600"
+              placeholder="请输入反方辩题"
+            />
           </div>
         </div>
         <div class="flex items-center justify-between mt-4">
-          <button class="px-3 py-1 border border-blue-500 text-blue-600 rounded text-sm hover:bg-blue-50 transition-colors" @click="openMatchSelectModal">从赛程选择</button>
-          <button class="px-3 py-1 border border-green-600 bg-green-600 text-white rounded text-sm hover:bg-green-700" @click="applySetupAndStart">使用以上设置开始计时</button>
+          <button
+            class="px-3 py-1 border border-blue-500 text-blue-600 rounded text-sm hover:bg-blue-50 transition-colors"
+            @click="openMatchSelectModal"
+          >
+            从赛程选择
+          </button>
+          <button
+            class="px-3 py-1 border border-green-600 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+            @click="applySetupAndStart"
+          >
+            使用以上设置开始计时
+          </button>
         </div>
       </div>
     </div>
 
     <!-- 从赛程选择比赛弹窗 -->
-    <div v-if="showMatchSelectModal" class="fixed inset-0 z-50 flex items-center justify-center" @click="() => { showMatchSelectModal = false }">
-      <div class="absolute inset-0 bg-black/50"></div>
-      <div class="relative bg-white text-gray-800 rounded-lg shadow-2xl w-[35rem] max-w-[90vw] max-h-[70vh] border border-gray-200 p-4 overflow-hidden flex flex-col" @click.stop>
+    <div
+      v-if="showMatchSelectModal"
+      class="fixed inset-0 z-50 flex items-center justify-center"
+      @click="
+        () => {
+          showMatchSelectModal = false
+        }
+      "
+    >
+      <div class="absolute inset-0 bg-black/50" />
+      <div
+        class="relative bg-white text-gray-800 rounded-lg shadow-2xl w-[35rem] max-w-[90vw] max-h-[70vh] border border-gray-200 p-4 overflow-hidden flex flex-col"
+        @click.stop
+      >
         <h3 class="font-bold text-lg mb-3">从赛程选择比赛</h3>
         <div v-if="matchSelectLoading" class="flex-1 flex items-center justify-center py-8">
           <span class="text-gray-500 text-sm">加载中...</span>
@@ -97,24 +149,43 @@
             @click="selectMatch(match)"
           >
             <div class="flex items-center justify-between mb-1">
-              <span class="text-xs text-gray-500">第 {{ match.round }} 轮 · 第 {{ match.orderNum }} 场</span>
-              <span v-if="match.status" class="text-xs px-2 py-0.5 bg-gray-100 rounded">{{ match.status === 'completed' ? '已完成' : (match.status === 'in_progress' ? '进行中' : '待开始') }}</span>
+              <span class="text-xs text-gray-500"
+                >第 {{ match.round }} 轮 · 第 {{ match.orderNum }} 场</span
+              >
+              <span v-if="match.status" class="text-xs px-2 py-0.5 bg-gray-100 rounded">{{
+                match.status === 'completed'
+                  ? '已完成'
+                  : match.status === 'in_progress'
+                    ? '进行中'
+                    : '待开始'
+              }}</span>
             </div>
             <div class="font-bold text-sm text-gray-800 mb-1">
               {{ match.teamA || '队伍A' }} vs {{ match.teamB || '队伍B' }}
             </div>
             <div class="text-xs text-gray-600">
-              <span v-if="match.affirmativeSide === 'teamA'">正方: {{ match.teamA }} / 反方: {{ match.teamB }}</span>
-              <span v-else-if="match.affirmativeSide === 'teamB'">正方: {{ match.teamB }} / 反方: {{ match.teamA }}</span>
+              <span v-if="match.affirmativeSide === 'teamA'"
+                >正方: {{ match.teamA }} / 反方: {{ match.teamB }}</span
+              >
+              <span v-else-if="match.affirmativeSide === 'teamB'"
+                >正方: {{ match.teamB }} / 反方: {{ match.teamA }}</span
+              >
               <span v-else>未指定正反方</span>
             </div>
-            <div v-if="match.topic" class="text-xs text-gray-500 mt-1">
-              辩题: {{ match.topic }}
-            </div>
+            <div v-if="match.topic" class="text-xs text-gray-500 mt-1">辩题: {{ match.topic }}</div>
           </div>
         </div>
         <div class="mt-4 flex justify-end">
-          <button class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50" @click="() => { showMatchSelectModal = false }">取消</button>
+          <button
+            class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50"
+            @click="
+              () => {
+                showMatchSelectModal = false
+              }
+            "
+          >
+            取消
+          </button>
         </div>
       </div>
     </div>
@@ -124,9 +195,20 @@
       <!-- 双计时器控制 -->
       <div v-if="isDualTimerStage" class="flex items-center space-x-1 mb-1">
         <span class="text-white text-xs font-bold w-16">计时控制:</span>
-        <button v-if="!dualTimer.isRunning" class="control-btn" @click="startTimer" :disabled="currentStage === 0">{{ dualTimer.isPaused ? '继续计时(空格)' : '启动计时(空格)' }}</button>
-        <button v-if="dualTimer.isRunning" class="control-btn" @click="switchActiveTimer">{{ dualTimer.activeTimer === 'positive' ? '切换反方(空格)' : '切换正方(空格)' }}</button>
-        <button class="control-btn" @click="pauseTimer" :disabled="!dualTimer.isRunning">中断(P)</button>
+        <button
+          v-if="!dualTimer.isRunning"
+          class="control-btn"
+          :disabled="currentStage === 0"
+          @click="startTimer"
+        >
+          {{ dualTimer.isPaused ? '继续计时(空格)' : '启动计时(空格)' }}
+        </button>
+        <button v-if="dualTimer.isRunning" class="control-btn" @click="switchActiveTimer">
+          {{ dualTimer.activeTimer === 'positive' ? '切换反方(空格)' : '切换正方(空格)' }}
+        </button>
+        <button class="control-btn" :disabled="!dualTimer.isRunning" @click="pauseTimer">
+          中断(P)
+        </button>
       </div>
 
       <!-- 直接启动（双计时模式下显示在计时控制下方） -->
@@ -139,22 +221,43 @@
       <!-- 单计时器控制 -->
       <div v-else-if="!isNonTimerStage" class="flex items-center space-x-1 mb-1">
         <span class="text-white text-xs font-bold w-16">计时控制:</span>
-        <button class="control-btn" @click="isRunning ? pauseTimer() : startTimer()" :disabled="currentStage === 0">{{ isRunning ? '暂停计时(空格)' : (isPaused ? '继续计时(空格)' : '启动计时(空格)') }}</button>
-        <button class="control-btn" @click="pauseTimer" :disabled="!isRunning && !isPaused">中断(P)</button>
+        <button
+          class="control-btn"
+          :disabled="currentStage === 0"
+          @click="isRunning ? pauseTimer() : startTimer()"
+        >
+          {{ isRunning ? '暂停计时(空格)' : isPaused ? '继续计时(空格)' : '启动计时(空格)' }}
+        </button>
+        <button class="control-btn" :disabled="!isRunning && !isPaused" @click="pauseTimer">
+          中断(P)
+        </button>
       </div>
 
       <!-- 通用控制：环节切换 -->
       <div class="flex items-center space-x-1 mb-1">
         <span class="text-white text-xs font-bold w-16">环节切换:</span>
-        <button class="control-btn" @click="previousStage" :disabled="currentStage <= 1">上一个环节(←)</button>
-        <button class="control-btn" @click="nextStage" :disabled="currentStage >= stages.length">下一个环节(→)</button>
+        <button class="control-btn" :disabled="currentStage <= 1" @click="previousStage">
+          上一个环节(←)
+        </button>
+        <button class="control-btn" :disabled="currentStage >= stages.length" @click="nextStage">
+          下一个环节(→)
+        </button>
       </div>
 
       <!-- 试音环节 -->
       <div class="flex items-center space-x-1 mb-1">
         <span class="text-white text-xs font-bold w-16">试音环节:</span>
         <button class="control-btn" @click="playTestSound('30')">30秒(Q)</button>
-        <button class="control-btn" @click="playTestSound('5')" :disabled="debateStore.audioConfig?.scheme === 'formal'" :title="debateStore.audioConfig?.scheme === 'formal' ? '正式比赛提示音方案下 5 秒不响' : ''">5秒(W)</button>
+        <button
+          class="control-btn"
+          :disabled="debateStore.audioConfig?.scheme === 'formal'"
+          :title="
+            debateStore.audioConfig?.scheme === 'formal' ? '正式比赛提示音方案下 5 秒不响' : ''
+          "
+          @click="playTestSound('5')"
+        >
+          5秒(W)
+        </button>
         <button class="control-btn" @click="playTestSound('End')">时间到(E)</button>
       </div>
 
@@ -174,107 +277,260 @@
       </div>
     </div>
 
-
-
     <!-- 进度指示器 -->
-    <div v-if="showProgress" class="fixed inset-0 z-50" @click="() => { showProgress = false }">
-      <div class="absolute top-32 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 rounded-lg p-4 border border-gray-600" @click.stop>
-        <div class="text-center text-white text-base font-bold mb-3">辩论进度 (第{{ currentStage }}/{{ stages.length }}环节)</div>
+    <div
+      v-if="showProgress"
+      class="fixed inset-0 z-50"
+      @click="
+        () => {
+          showProgress = false
+        }
+      "
+    >
+      <div
+        class="absolute top-32 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 rounded-lg p-4 border border-gray-600"
+        @click.stop
+      >
+        <div class="text-center text-white text-base font-bold mb-3">
+          辩论进度 (第{{ currentStage }}/{{ stages.length }}环节)
+        </div>
         <div class="flex space-x-2 mb-2">
-          <button v-for="stage in firstChunk" :key="stage.id" @click="jumpTo(stage.id)" class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border transition-transform" :class="{
+          <button
+            v-for="stage in firstChunk"
+            :key="stage.id"
+            class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border transition-transform"
+            :class="{
               'bg-green-600 border-green-600 text-white': completedStages.includes(stage.id),
-              'bg-blue-600 border-blue-600 text-white cursor-not-allowed opacity-80': currentStage === stage.id,
-              'bg-gray-700 border-gray-600 text-gray-300 cursor-pointer hover:scale-[1.03]': !completedStages.includes(stage.id) && currentStage !== stage.id
-            }">{{ stage.id }}</button>
+              'bg-blue-600 border-blue-600 text-white cursor-not-allowed opacity-80':
+                currentStage === stage.id,
+              'bg-gray-700 border-gray-600 text-gray-300 cursor-pointer hover:scale-[1.03]':
+                !completedStages.includes(stage.id) && currentStage !== stage.id,
+            }"
+            @click="jumpTo(stage.id)"
+          >
+            {{ stage.id }}
+          </button>
         </div>
         <div class="flex space-x-2">
-          <button v-for="stage in secondChunk" :key="stage.id" @click="jumpTo(stage.id)" class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border transition-transform" :class="{
+          <button
+            v-for="stage in secondChunk"
+            :key="stage.id"
+            class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border transition-transform"
+            :class="{
               'bg-green-600 border-green-600 text-white': completedStages.includes(stage.id),
-              'bg-blue-600 border-blue-600 text-white cursor-not-allowed opacity-80': currentStage === stage.id,
-              'bg-gray-700 border-gray-600 text-gray-300 cursor-pointer hover:scale-[1.03]': !completedStages.includes(stage.id) && currentStage !== stage.id
-            }">{{ stage.id }}</button>
+              'bg-blue-600 border-blue-600 text-white cursor-not-allowed opacity-80':
+                currentStage === stage.id,
+              'bg-gray-700 border-gray-600 text-gray-300 cursor-pointer hover:scale-[1.03]':
+                !completedStages.includes(stage.id) && currentStage !== stage.id,
+            }"
+            @click="jumpTo(stage.id)"
+          >
+            {{ stage.id }}
+          </button>
         </div>
       </div>
     </div>
 
     <!-- 时间设置弹窗（集成重置按钮 + 内部toast+进度条） -->
-    <div v-if="showTimeModal" class="fixed bg-white rounded-lg p-3 w-64 shadow-2xl border border-gray-200 z-50" :style="{ top: timeModalPos.top + 'px', left: timeModalPos.left + 'px' }" @mouseenter="handleModalEnter" @mouseleave="handleModalLeave('time')">
+    <div
+      v-if="showTimeModal"
+      class="fixed bg-white rounded-lg p-3 w-64 shadow-2xl border border-gray-200 z-50"
+      :style="{ top: timeModalPos.top + 'px', left: timeModalPos.left + 'px' }"
+      @mouseenter="handleModalEnter"
+      @mouseleave="handleModalLeave('time')"
+    >
       <!-- 内部 toast：居中在弹窗顶部，带进度条 -->
-      <div v-if="showQuickTimeToast" class="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-2 bg-orange-500 text-white text-xs rounded shadow-lg whitespace-nowrap overflow-hidden z-10" style="min-width: 180px;">
+      <div
+        v-if="showQuickTimeToast"
+        class="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-2 bg-orange-500 text-white text-xs rounded shadow-lg whitespace-nowrap overflow-hidden z-10"
+        style="min-width: 180px"
+      >
         <div>请先点击输入框，再选择快捷时间</div>
         <div class="mt-1 h-1 bg-orange-300 rounded-full overflow-hidden">
-          <div class="h-full bg-white" :style="{ width: toastProgress + '%', transition: 'width 2s linear' }"></div>
+          <div
+            class="h-full bg-white"
+            :style="{ width: toastProgress + '%', transition: 'width 2s linear' }"
+          />
         </div>
       </div>
       <!-- 单计时器：标题 + 调整为 + 输入框 + 秒 同行 -->
       <div v-if="!isDualTimerStage" class="flex items-center mb-2">
-        <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xs mr-2">i</div>
+        <div
+          class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xs mr-2"
+        >
+          i
+        </div>
         <span class="text-gray-800 font-bold text-xs">调整时间</span>
         <span class="text-gray-800 text-xs ml-2">调整为</span>
-        <input v-model.number="customTime" type="number" min="0" max="3600" class="mx-1.5 px-1.5 py-0.5 border border-gray-300 rounded w-14 text-center text-gray-800 text-xs" @keyup.enter="setCustomTime">
+        <input
+          v-model.number="customTime"
+          type="number"
+          min="0"
+          max="3600"
+          class="mx-1.5 px-1.5 py-0.5 border border-gray-300 rounded w-14 text-center text-gray-800 text-xs"
+          @keyup.enter="setCustomTime"
+        />
         <span class="text-gray-800 text-xs">秒</span>
       </div>
       <!-- 双计时器：标题行 + 正方/反方同行 -->
       <div v-else>
         <div class="flex items-center mb-2">
-          <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xs mr-2">i</div>
+          <div
+            class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xs mr-2"
+          >
+            i
+          </div>
           <span class="text-gray-800 font-bold text-xs">调整时间</span>
         </div>
         <div class="flex items-center space-x-2 mb-2">
           <div class="flex items-center flex-1">
             <span class="text-gray-600 text-xs">正方:</span>
-            <input v-model.number="customPositiveTime" type="number" min="0" max="3600" class="ml-1 px-1.5 py-0.5 border border-gray-300 rounded w-14 text-center text-gray-800 text-xs" @keyup.enter="setCustomTime" @focus="lastFocusedInput = 'positive'">
+            <input
+              v-model.number="customPositiveTime"
+              type="number"
+              min="0"
+              max="3600"
+              class="ml-1 px-1.5 py-0.5 border border-gray-300 rounded w-14 text-center text-gray-800 text-xs"
+              @keyup.enter="setCustomTime"
+              @focus="lastFocusedInput = 'positive'"
+            />
           </div>
           <div class="flex items-center flex-1">
             <span class="text-gray-600 text-xs">反方:</span>
-            <input v-model.number="customNegativeTime" type="number" min="0" max="3600" class="ml-1 px-1.5 py-0.5 border border-gray-300 rounded w-14 text-center text-gray-800 text-xs" @keyup.enter="setCustomTime" @focus="lastFocusedInput = 'negative'">
+            <input
+              v-model.number="customNegativeTime"
+              type="number"
+              min="0"
+              max="3600"
+              class="ml-1 px-1.5 py-0.5 border border-gray-300 rounded w-14 text-center text-gray-800 text-xs"
+              @keyup.enter="setCustomTime"
+              @focus="lastFocusedInput = 'negative'"
+            />
           </div>
         </div>
       </div>
       <!-- 快捷时间按钮：-5s +5s +10s +15s -->
       <div class="flex items-center space-x-1.5 mb-2">
-        <button @click="addQuickTime(-5)" class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors">-5s</button>
-        <button @click="addQuickTime(5)" class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors">+5s</button>
-        <button @click="addQuickTime(10)" class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors">+10s</button>
-        <button @click="addQuickTime(15)" class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors">+15s</button>
+        <button
+          class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors"
+          @click="addQuickTime(-5)"
+        >
+          -5s
+        </button>
+        <button
+          class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors"
+          @click="addQuickTime(5)"
+        >
+          +5s
+        </button>
+        <button
+          class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors"
+          @click="addQuickTime(10)"
+        >
+          +10s
+        </button>
+        <button
+          class="flex-1 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors"
+          @click="addQuickTime(15)"
+        >
+          +15s
+        </button>
       </div>
       <!-- 底部按钮区：重置(红色) | 取消 | 确定 -->
       <div class="flex justify-between items-center mt-1">
-        <button @click="openResetFromTimeModal" class="px-2.5 py-0.5 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-colors">重置</button>
+        <button
+          class="px-2.5 py-0.5 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-colors"
+          @click="openResetFromTimeModal"
+        >
+          重置
+        </button>
         <div class="flex space-x-1.5">
-          <button @click="closeTimeModal" class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors">取消</button>
-          <button @click="setCustomTime" class="px-2.5 py-0.5 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors">确定</button>
+          <button
+            class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors"
+            @click="closeTimeModal"
+          >
+            取消
+          </button>
+          <button
+            class="px-2.5 py-0.5 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors"
+            @click="setCustomTime"
+          >
+            确定
+          </button>
         </div>
       </div>
     </div>
 
     <!-- 重置确认弹窗 -->
-    <div v-if="showResetModal" class="fixed bg-white rounded-lg p-3 w-64 shadow-2xl border border-gray-200 z-[60]" :style="{ top: resetModalPos.top + 'px', left: resetModalPos.left + 'px' }" @mouseenter="handleModalEnter" @mouseleave="handleModalLeave('reset')">
+    <div
+      v-if="showResetModal"
+      class="fixed bg-white rounded-lg p-3 w-64 shadow-2xl border border-gray-200 z-[60]"
+      :style="{ top: resetModalPos.top + 'px', left: resetModalPos.left + 'px' }"
+      @mouseenter="handleModalEnter"
+      @mouseleave="handleModalLeave('reset')"
+    >
       <div v-if="isDualTimerStage">
         <div class="flex items-center mb-2">
-          <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xs mr-2">i</div>
+          <div
+            class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xs mr-2"
+          >
+            i
+          </div>
           <span class="text-gray-800 font-bold text-xs">重置计时器</span>
         </div>
         <div class="space-y-1.5">
           <div class="flex items-center justify-between">
             <span class="text-gray-600 text-xs font-bold">正方</span>
-            <button @click="resetDualTimer('positive')" class="px-2.5 py-0.5 border border-green-500 text-green-600 rounded text-xs hover:bg-green-50 transition-colors">点击重置</button>
+            <button
+              class="px-2.5 py-0.5 border border-green-500 text-green-600 rounded text-xs hover:bg-green-50 transition-colors"
+              @click="resetDualTimer('positive')"
+            >
+              点击重置
+            </button>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-gray-600 text-xs font-bold">反方</span>
-            <button @click="resetDualTimer('negative')" class="px-2.5 py-0.5 border border-green-500 text-green-600 rounded text-xs hover:bg-green-50 transition-colors">点击重置</button>
+            <button
+              class="px-2.5 py-0.5 border border-green-500 text-green-600 rounded text-xs hover:bg-green-50 transition-colors"
+              @click="resetDualTimer('negative')"
+            >
+              点击重置
+            </button>
           </div>
         </div>
         <div class="flex justify-end mt-3">
-          <button @click="() => { showResetModal = false }" class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors">关闭</button>
+          <button
+            class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors"
+            @click="
+              () => {
+                showResetModal = false
+              }
+            "
+          >
+            关闭
+          </button>
         </div>
       </div>
       <div v-else>
         <h3 class="text-base font-bold mb-2 text-gray-800">重置确认</h3>
         <p class="text-gray-600 mb-3 text-xs">确定要重置当前环节的计时器吗？</p>
         <div class="flex justify-end space-x-1.5">
-          <button @click="() => { showResetModal = false }" class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors">取消</button>
-          <button @click="resetTimer" class="px-2.5 py-0.5 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-colors">确定重置</button>
+          <button
+            class="px-2.5 py-0.5 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors"
+            @click="
+              () => {
+                showResetModal = false
+              }
+            "
+          >
+            取消
+          </button>
+          <button
+            class="px-2.5 py-0.5 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition-colors"
+            @click="resetTimer"
+          >
+            确定重置
+          </button>
         </div>
       </div>
     </div>
@@ -286,17 +542,6 @@
 
 <script setup lang="ts">
 // ═══════════ 宿主参数（由 tournaments / standalone 两页薄适配器注入） ═══════════
-const props = withDefaults(defineProps<{
-  /** 宿主类型：决定数据来源端点与返回兜底层 */
-  hostType: 'tournament' | 'standalone'
-  /** 宿主 ID（取自路由 params.id） */
-  hostId: string
-  /** 是否显示赛前设置面板 + 从赛程选择（仅正式赛事页为 true，单场计时页为 false） */
-  showSetupPanel?: boolean
-}>(), {
-  showSetupPanel: true,
-})
-
 // ═══════════ 显式导入（帮助 IDE 类型检查与自动补全） ═══════════
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter, useToast } from '#imports'
@@ -304,6 +549,20 @@ import { useDebateStore } from '~/stores/debate'
 import TimerDisplay from '~/components/TimerDisplay.vue'
 import SpeechPermissionPanel from '~/components/SpeechPermissionPanel.vue'
 import { normalizeStageType, isPpt } from '~/utils/stageType'
+
+const props = withDefaults(
+  defineProps<{
+    /** 宿主类型：决定数据来源端点与返回兜底层 */
+    hostType: 'tournament' | 'standalone'
+    /** 宿主 ID（取自路由 params.id） */
+    hostId: string
+    /** 是否显示赛前设置面板 + 从赛程选择（仅正式赛事页为 true，单场计时页为 false） */
+    showSetupPanel?: boolean
+  }>(),
+  {
+    showSetupPanel: true,
+  },
+)
 
 // ═══════════ 全局组合式 ═══════════
 const debateStore = useDebateStore()
@@ -334,7 +593,9 @@ const { config: sharedConfig, loadConfig: loadSharedConfig } = useTimerConfig()
 const uiScale = ref(1)
 onMounted(() => {
   try {
-    const raw = Array.isArray(route.query?.scale) ? route.query.scale[0] : (route.query?.scale as string)
+    const raw = Array.isArray(route.query?.scale)
+      ? route.query.scale[0]
+      : (route.query?.scale as string)
     const s = parseFloat(raw || '1')
     if (Number.isFinite(s)) uiScale.value = Math.min(2, Math.max(0.5, s))
   } catch {}
@@ -354,12 +615,12 @@ onMounted(() => {
 
 // ═══════════ UI 配置（视觉自定义） ═══════════
 const uiConfig = ref({
-  bannerVisible: true,       /* 显示横幅/辩题（原生字段）*/
-  showBanner: true,          /* 显示横幅/辩题（details.vue 表单字段）*/
-  eventNameVisible: true,    /* 显示比赛标题（原生字段）*/
-  showTitle: true,           /* 显示比赛标题（details.vue 表单字段）*/
-  titleColor: '#FFFFFF',     /* 标题颜色（details.vue 表单字段）*/
-  teamNameColor: '#FFFFFF',  /* 队伍名称颜色（details.vue 表单字段）*/
+  bannerVisible: true /* 显示横幅/辩题（原生字段）*/,
+  showBanner: true /* 显示横幅/辩题（details.vue 表单字段）*/,
+  eventNameVisible: true /* 显示比赛标题（原生字段）*/,
+  showTitle: true /* 显示比赛标题（details.vue 表单字段）*/,
+  titleColor: '#FFFFFF' /* 标题颜色（details.vue 表单字段）*/,
+  teamNameColor: '#FFFFFF' /* 队伍名称颜色（details.vue 表单字段）*/,
   backgroundType: 'default' as 'default' | 'image',
   imageFileName: '',
   fontFamily: '',
@@ -424,7 +685,11 @@ const backgroundStyle = computed(() => {
   if (!background) {
     if (ui.backgroundType === 'image' && ui.imageFileName) {
       background = `url(${ui.imageFileName}) center/cover no-repeat`
-    } else if ((ui as any).backgroundType === 'gradient' && (ui as any).gradientStart && (ui as any).gradientEnd) {
+    } else if (
+      (ui as any).backgroundType === 'gradient' &&
+      (ui as any).gradientStart &&
+      (ui as any).gradientEnd
+    ) {
       background = `radial-gradient(ellipse at center bottom, ${(ui as any).gradientStart} 0%, ${(ui as any).gradientEnd} 100%)`
     } else if ((ui as any).backgroundType === 'solid' && (ui as any).solidColor) {
       background = (ui as any).solidColor
@@ -433,7 +698,8 @@ const backgroundStyle = computed(() => {
 
   // 最终回退：默认径向渐变（与预览组件一致）
   if (!background) {
-    background = 'radial-gradient(ellipse at center bottom, rgb(57, 76, 86) 0%, rgb(14, 17, 17) 100%)'
+    background =
+      'radial-gradient(ellipse at center bottom, rgb(57, 76, 86) 0%, rgb(14, 17, 17) 100%)'
   }
 
   return { background }
@@ -522,7 +788,7 @@ const resetModalPos = ref({ top: 0, left: 0 })
 const lastFocusedInput = ref<string | null>(null)
 // toast 进度条（100→0，2秒内完成
 const toastProgress = ref(100)
-let toastProgressTimer: ReturnType<typeof setInterval> | null = null
+const toastProgressTimer: ReturnType<typeof setInterval> | null = null
 // 快捷时间 toast 提示
 const showQuickTimeToast = ref(false)
 let quickTimeToastTimer: ReturnType<typeof setTimeout> | null = null
@@ -539,7 +805,9 @@ const isTimeCritical = computed(() => debateStore.isTimeCritical)
 // 按 order 排序的环节列表
 const stages = computed(() => {
   const list = debateStore.stages || []
-  return Array.isArray(list) ? [...list].sort((a: any, b: any) => (a?.order ?? 0) - (b?.order ?? 0)) : []
+  return Array.isArray(list)
+    ? [...list].sort((a: any, b: any) => (a?.order ?? 0) - (b?.order ?? 0))
+    : []
 })
 const half = computed(() => Math.ceil(stages.value.length / 2))
 const firstChunk = computed(() => stages.value.slice(0, half.value))
@@ -709,10 +977,10 @@ function openResetFromTimeModal() {
   // 将重置确认弹窗定位在时间弹窗的中心（两个弹窗宽度相同260px，左对齐；顶部略偏上）
   resetModalPos.value = {
     top: timeModalPos.value.top + 20,
-    left: timeModalPos.value.left
+    left: timeModalPos.value.left,
   }
-  showTimeModal.value = false  // 旧弹窗消失
-  showResetModal.value = true   // 新弹窗显示
+  showTimeModal.value = false // 旧弹窗消失
+  showResetModal.value = true // 新弹窗显示
 }
 // 快捷时间：单计时模式直接加；双计时模式需先选择输入框
 function addQuickTime(seconds: number) {
@@ -733,7 +1001,10 @@ function addQuickTime(seconds: number) {
 }
 function setCustomTime() {
   if (isDualTimerStage.value) {
-    debateStore.setCustomDualTime(Number(customPositiveTime.value), Number(customNegativeTime.value))
+    debateStore.setCustomDualTime(
+      Number(customPositiveTime.value),
+      Number(customNegativeTime.value),
+    )
   } else {
     debateStore.setCustomTime(Number(customTime.value))
   }
@@ -807,18 +1078,30 @@ function goBack() {
     router.back()
   } else {
     // 兜底：跳转到宿主详情页
-    router.push(props.hostType === 'tournament' ? `/tournaments/${hostId.value}` : `/standalone/${hostId.value}`)
+    router.push(
+      props.hostType === 'tournament'
+        ? `/tournaments/${hostId.value}`
+        : `/standalone/${hostId.value}`,
+    )
   }
 }
 
 // ═══════════ 键盘快捷键 ═══════════
 function handleKeyPress(event: KeyboardEvent) {
   const target = event.target as HTMLElement
-  if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return
+  if (
+    target &&
+    (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+  )
+    return
 
   const keyMap: Record<string, () => void> = {
-    'ArrowLeft': () => { if (currentStage.value > 1) previousStage() },
-    'ArrowRight': () => { if (currentStage.value < stages.value.length) nextStage() },
+    ArrowLeft: () => {
+      if (currentStage.value > 1) previousStage()
+    },
+    ArrowRight: () => {
+      if (currentStage.value < stages.value.length) nextStage()
+    },
     ' ': () => {
       if (isDualTimerStage.value) {
         isRunning.value ? switchActiveTimer() : startTimer()
@@ -826,26 +1109,44 @@ function handleKeyPress(event: KeyboardEvent) {
         isRunning.value ? pauseTimer() : startTimer()
       }
     },
-    'p': () => { if (isRunning.value) pauseTimer() },
-    'P': () => { if (isRunning.value) pauseTimer() },
-    '.': () => { if (isDualTimerStage.value) startPositiveTimer() },
-    '。': () => { if (isDualTimerStage.value) startPositiveTimer() },
-    ',': () => { if (isDualTimerStage.value) startNegativeTimer() },
-    '，': () => { if (isDualTimerStage.value) startNegativeTimer() },
-    'q': () => playTestSound('30'),
-    'Q': () => playTestSound('30'),
-    'w': () => playTestSound('5'),
-    'W': () => playTestSound('5'),
-    'e': () => playTestSound('End'),
-    'E': () => playTestSound('End'),
-    'f': toggleFullscreen,
-    'F': toggleFullscreen,
-    'b': goBack,
-    'B': goBack,
-    'Tab': () => { event.preventDefault(); showProgress.value = !showProgress.value },
+    p: () => {
+      if (isRunning.value) pauseTimer()
+    },
+    P: () => {
+      if (isRunning.value) pauseTimer()
+    },
+    '.': () => {
+      if (isDualTimerStage.value) startPositiveTimer()
+    },
+    '。': () => {
+      if (isDualTimerStage.value) startPositiveTimer()
+    },
+    ',': () => {
+      if (isDualTimerStage.value) startNegativeTimer()
+    },
+    '，': () => {
+      if (isDualTimerStage.value) startNegativeTimer()
+    },
+    q: () => playTestSound('30'),
+    Q: () => playTestSound('30'),
+    w: () => playTestSound('5'),
+    W: () => playTestSound('5'),
+    e: () => playTestSound('End'),
+    E: () => playTestSound('End'),
+    f: toggleFullscreen,
+    F: toggleFullscreen,
+    b: goBack,
+    B: goBack,
+    Tab: () => {
+      event.preventDefault()
+      showProgress.value = !showProgress.value
+    },
   }
   const handler = keyMap[event.key]
-  if (handler) { event.preventDefault(); handler() }
+  if (handler) {
+    event.preventDefault()
+    handler()
+  }
 }
 
 // ═══════════ 数据加载：从赛事信息和配置获取数据 ═══════════
@@ -910,7 +1211,8 @@ async function loadData() {
           // dual-timer 保留原值（store 内部多处 === 'dual-timer'），其余用规范化类型
           type: (() => {
             const nt = normalizeStageType(s.type)
-            if (nt === 'free_debate' || nt === 'bilateral_debate' || nt === 'double_timer') return 'dual-timer'
+            if (nt === 'free_debate' || nt === 'bilateral_debate' || nt === 'double_timer')
+              return 'dual-timer'
             if (nt === 'no_timer') return 'special'
             if (nt === 'ppt_replace') return 'ppt_replace'
             return nt // single_speech, single_question, summary, single_timer 等保留原类型
@@ -944,10 +1246,42 @@ async function loadData() {
     // 如果环节为空，使用默认模板
     if (!stages.value.length) {
       const defaultStages = [
-        { id: 1, name: '开篇立论', duration: 180, type: 'single_speech' as const, order: 1, positiveDuration: 180, negativeDuration: 180 },
-        { id: 2, name: '攻辩', duration: 120, type: 'single_speech' as const, order: 2, positiveDuration: 120, negativeDuration: 120 },
-        { id: 3, name: '自由辩论', duration: 240, type: 'free_debate' as const, order: 3, positiveDuration: 240, negativeDuration: 240 },
-        { id: 4, name: '总结陈词', duration: 180, type: 'single_speech' as const, order: 4, positiveDuration: 180, negativeDuration: 180 },
+        {
+          id: 1,
+          name: '开篇立论',
+          duration: 180,
+          type: 'single_speech' as const,
+          order: 1,
+          positiveDuration: 180,
+          negativeDuration: 180,
+        },
+        {
+          id: 2,
+          name: '攻辩',
+          duration: 120,
+          type: 'single_speech' as const,
+          order: 2,
+          positiveDuration: 120,
+          negativeDuration: 120,
+        },
+        {
+          id: 3,
+          name: '自由辩论',
+          duration: 240,
+          type: 'free_debate' as const,
+          order: 3,
+          positiveDuration: 240,
+          negativeDuration: 240,
+        },
+        {
+          id: 4,
+          name: '总结陈词',
+          duration: 180,
+          type: 'single_speech' as const,
+          order: 4,
+          positiveDuration: 180,
+          negativeDuration: 180,
+        },
       ]
       debateStore.setStages(defaultStages)
     }
@@ -977,7 +1311,10 @@ onMounted(async () => {
 
 onUnmounted(() => {
   debateStore.disposeTimer()
-  if (pageResizeObserver) { pageResizeObserver.disconnect(); pageResizeObserver = null }
+  if (pageResizeObserver) {
+    pageResizeObserver.disconnect()
+    pageResizeObserver = null
+  }
   if (modalHoverTimer.value) clearTimeout(modalHoverTimer.value)
   document.removeEventListener('keydown', handleKeyPress)
 })
@@ -990,7 +1327,10 @@ onUnmounted(() => {
   user-select: none;
   -webkit-user-select: none;
 }
-:deep(html), :deep(body) { overflow: hidden; }
+:deep(html),
+:deep(body) {
+  overflow: hidden;
+}
 
 /* 缩放画布：固定 1280x720 设计基准，等比缩放填满屏幕（与 TimerPreview 预览一致） */
 .timer-scale-wrapper {
@@ -1012,7 +1352,9 @@ onUnmounted(() => {
   transform: scale(0.8); /* 整体缩小面板，保持内部比例 */
   transform-origin: bottom left; /* 锚定左下角，缩放后仍贴左下 */
 }
-.control-panel:hover { opacity: 1; }
+.control-panel:hover {
+  opacity: 1;
+}
 
 /* 标签 span：响应式宽度，实现左对齐基准（禁止内部换行） */
 .control-panel span.text-xs {
@@ -1065,6 +1407,12 @@ onUnmounted(() => {
   font-family: 'AlibabaPuHuiTi', 'SimSun', '宋体', sans-serif !important;
   font-weight: 300;
 }
-.control-btn:hover { border-color: #718096; background: rgba(255, 255, 255, 0.05); }
-.control-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.control-btn:hover {
+  border-color: #718096;
+  background: rgba(255, 255, 255, 0.05);
+}
+.control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 </style>

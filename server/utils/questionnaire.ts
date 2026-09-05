@@ -20,7 +20,12 @@ const fromJson = <T>(value: string | null | undefined, fallback: T) =>
   safeJsonParse<T>(value, fallback)
 
 // 根据来源查找问卷。
-async function findQuestionnaire(client: PrismaLike, tournamentId: string, sourceType: string, sourceId: string) {
+async function findQuestionnaire(
+  client: PrismaLike,
+  tournamentId: string,
+  sourceType: string,
+  sourceId: string,
+) {
   return await client.questionnaire.findFirst({
     where: { tournamentId, sourceType, sourceId },
   })
@@ -206,8 +211,8 @@ export async function recordRegistrationQuestionnaireSubmission(
   members: any[],
 ) {
   const questionnaire =
-    (await findQuestionnaire(client, tournamentId, 'registration', tournamentId))
-    || (await syncRegistrationQuestionnaire(client, tournamentId))
+    (await findQuestionnaire(client, tournamentId, 'registration', tournamentId)) ||
+    (await syncRegistrationQuestionnaire(client, tournamentId))
 
   if (!questionnaire) return null
 
@@ -251,13 +256,15 @@ export async function recordTopicVoteQuestionnaireSubmission(
   selectedIndices: number[],
 ) {
   const questionnaire =
-    (await findQuestionnaire(client, tournamentId, 'topic_vote', vote.id))
-    || (await syncTopicVoteQuestionnaire(client, tournamentId, vote.id))
+    (await findQuestionnaire(client, tournamentId, 'topic_vote', vote.id)) ||
+    (await syncTopicVoteQuestionnaire(client, tournamentId, vote.id))
 
   if (!questionnaire) return null
 
   const topics = parseTopics(vote.topics)
-  const selectedTopics = selectedIndices.map((index) => topicDisplayText(topics[index])).filter(Boolean)
+  const selectedTopics = selectedIndices
+    .map((index) => topicDisplayText(topics[index]))
+    .filter(Boolean)
 
   return await client.questionnaireSubmission.create({
     data: {

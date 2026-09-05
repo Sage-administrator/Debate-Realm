@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, 'id')!
 
     // 读取请求体（含 currentVersion 和可选 deleteReason
-    const body = await readBody<{ currentVersion?: number; deleteReason?: string }>(event) || {}
+    const body = (await readBody<{ currentVersion?: number; deleteReason?: string }>(event)) || {}
 
     // 1. 查找比赛（含所属 tournament 信息，用于权限校验）
     // 修复：使用 findFirst + deletedAt: null 过滤软删除记录
@@ -33,17 +33,12 @@ export default defineEventHandler(async (event) => {
     const dependentMatches = await prisma.match.findMany({
       where: {
         deletedAt: null,
-        OR: [
-          { promotedFromA: id },
-          { promotedFromB: id },
-        ],
+        OR: [{ promotedFromA: id }, { promotedFromB: id }],
       },
     })
 
     if (dependentMatches.length > 0) {
-      const dependentInfo = dependentMatches
-        .map((m) => `第${m.orderNum}场`)
-        .join('、')
+      const dependentInfo = dependentMatches.map((m) => `第${m.orderNum}场`).join('、')
       throw createError({
         statusCode: 400,
         message: `40004需先撤销${dependentInfo}的晋级关系`,

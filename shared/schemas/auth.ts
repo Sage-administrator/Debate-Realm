@@ -24,12 +24,14 @@ export const ChangePasswordRequest = z.object({
 })
 export type ChangePasswordRequest = z.infer<typeof ChangePasswordRequest>
 
-export const UpdateProfileRequest = z.object({
-  username: z.string().min(1).optional(),
-  nickname: z.string().optional(),
-  email: z.string().email().optional(),
-  avatar: z.string().url().optional(),
-}).partial()
+export const UpdateProfileRequest = z
+  .object({
+    username: z.string().min(1).optional(),
+    nickname: z.string().optional(),
+    email: z.string().email().optional(),
+    avatar: z.string().url().optional(),
+  })
+  .partial()
 export type UpdateProfileRequest = z.infer<typeof UpdateProfileRequest>
 
 // ── 响应 ──
@@ -39,24 +41,41 @@ export const LoginResponse = z.discriminatedUnion('needConfirm', [
     needConfirm: z.literal(false),
     token: z.string(),
     user: z.object({
-      id: ID, username: z.string(), nickname: z.string().nullable(),
-      role: UserRole, mode: z.string(), teamId: z.string().nullable(),
+      id: ID,
+      username: z.string(),
+      nickname: z.string().nullable(),
+      role: UserRole,
+      mode: z.string(),
+      teamId: z.string().nullable(),
     }),
   }),
   z.object({
     needConfirm: z.literal(true),
     userId: z.string().optional(),
-    existingSessions: z.array(z.object({
-      id: z.string(),
-      deviceInfo: z.string(), ipAddress: z.string().nullable(), loggedInAt: z.string(),
-    })),
-    newDevice: z.object({
-      deviceInfo: z.string(), ipAddress: z.string().nullable(),
-    }).optional(),
-    user: z.object({
-      id: ID, username: z.string(), nickname: z.string().nullable(),
-      role: UserRole, mode: z.string(), teamId: z.string().nullable(),
-    }).optional(),
+    existingSessions: z.array(
+      z.object({
+        id: z.string(),
+        deviceInfo: z.string(),
+        ipAddress: z.string().nullable(),
+        loggedInAt: z.string(),
+      }),
+    ),
+    newDevice: z
+      .object({
+        deviceInfo: z.string(),
+        ipAddress: z.string().nullable(),
+      })
+      .optional(),
+    user: z
+      .object({
+        id: ID,
+        username: z.string(),
+        nickname: z.string().nullable(),
+        role: UserRole,
+        mode: z.string(),
+        teamId: z.string().nullable(),
+      })
+      .optional(),
   }),
 ])
 export type LoginResponse = z.infer<typeof LoginResponse>
@@ -75,7 +94,11 @@ export const UserInfo = z.object({
 export type UserInfo = z.infer<typeof UserInfo>
 
 export const LoginSession = z.object({
-  id: ID, deviceInfo: z.string(), ipAddress: z.string().nullable(),
-  isActive: z.boolean(), loggedInAt: z.string(), lastSeenAt: z.string(),
+  id: ID,
+  deviceInfo: z.string(),
+  ipAddress: z.string().nullable(),
+  isActive: z.boolean(),
+  loggedInAt: z.string(),
+  lastSeenAt: z.string(),
 })
 export type LoginSession = z.infer<typeof LoginSession>

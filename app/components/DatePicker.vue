@@ -31,20 +31,28 @@ function parseValue(val?: string): Date | null {
   return null
 }
 
-watch(() => props.modelValue, (v) => {
-  selected.value = parseValue(v)
-}, { immediate: true })
+watch(
+  () => props.modelValue,
+  (v) => {
+    selected.value = parseValue(v)
+  },
+  { immediate: true },
+)
 
 // 日历视图状态
 const viewYear = ref(new Date().getFullYear())
 const viewMonth = ref(new Date().getMonth()) // 0-based
 
-watch(selected, (d) => {
-  if (d) {
-    viewYear.value = d.getFullYear()
-    viewMonth.value = d.getMonth()
-  }
-}, { immediate: true })
+watch(
+  selected,
+  (d) => {
+    if (d) {
+      viewYear.value = d.getFullYear()
+      viewMonth.value = d.getMonth()
+    }
+  },
+  { immediate: true },
+)
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
 
@@ -72,7 +80,10 @@ function emitValue() {
   if (!selected.value) return
   const d = selected.value
   const pad = (n: number) => String(n).padStart(2, '0')
-  emit('update:modelValue', `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`)
+  emit(
+    'update:modelValue',
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`,
+  )
 }
 
 function updatePanelPosition() {
@@ -113,8 +124,10 @@ function closePanel() {
 
 function onClickOutside(e: MouseEvent) {
   if (
-    panelRef.value && !panelRef.value.contains(e.target as Node) &&
-    triggerRef.value && !triggerRef.value.contains(e.target as Node)
+    panelRef.value &&
+    !panelRef.value.contains(e.target as Node) &&
+    triggerRef.value &&
+    !triggerRef.value.contains(e.target as Node)
   ) {
     closePanel()
   }
@@ -128,12 +141,16 @@ onUnmounted(() => {
 })
 
 function prevMonth() {
-  if (viewMonth.value === 0) { viewMonth.value = 11; viewYear.value-- }
-  else viewMonth.value--
+  if (viewMonth.value === 0) {
+    viewMonth.value = 11
+    viewYear.value--
+  } else viewMonth.value--
 }
 function nextMonth() {
-  if (viewMonth.value === 11) { viewMonth.value = 0; viewYear.value++ }
-  else viewMonth.value++
+  if (viewMonth.value === 11) {
+    viewMonth.value = 0
+    viewYear.value++
+  } else viewMonth.value++
 }
 
 function isSelectedDay(d: number): boolean {
@@ -150,7 +167,13 @@ function pickDay(d: number) {
 
 function setHour(h: number) {
   const base = selected.value ?? new Date()
-  selected.value = new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, base.getMinutes())
+  selected.value = new Date(
+    base.getFullYear(),
+    base.getMonth(),
+    base.getDate(),
+    h,
+    base.getMinutes(),
+  )
   scrollTimeIntoView()
   emitValue()
 }
@@ -171,15 +194,20 @@ const minutes = Array.from({ length: 60 }, (_, i) => i)
     <div
       ref="triggerRef"
       class="flex items-center h-10 px-3 border rounded cursor-pointer select-none transition-colors"
-      :class="open ? 'border-blue-500' : 'border-[var(--color-border)] hover:border-[var(--color-border-accented)]'"
-      style="width: 100%;"
+      :class="
+        open
+          ? 'border-blue-500'
+          : 'border-[var(--color-border)] hover:border-[var(--color-border-accented)]'
+      "
+      style="width: 100%"
       @click.stop="togglePanel"
     >
       <UIcon name="i-lucide-calendar-clock" class="w-[18px] h-[18px] text-blue-500 mr-2 shrink-0" />
       <span
         class="flex-1 text-sm"
         :class="displayText ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'"
-      >{{ displayText || '请选择比赛时间' }}</span>
+        >{{ displayText || '请选择比赛时间' }}</span
+      >
     </div>
 
     <!-- 下拉面板（主题自适应） -->
@@ -201,7 +229,9 @@ const minutes = Array.from({ length: 60 }, (_, i) => i)
             >
               <UIcon name="i-lucide-chevron-left" class="w-3.5 h-3.5" />
             </button>
-            <span class="text-sm font-medium text-[var(--color-text-primary)]">{{ viewYear }}年 {{ viewMonth + 1 }}月</span>
+            <span class="text-sm font-medium text-[var(--color-text-primary)]"
+              >{{ viewYear }}年 {{ viewMonth + 1 }}月</span
+            >
             <button
               type="button"
               class="w-6 h-6 flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
@@ -212,21 +242,31 @@ const minutes = Array.from({ length: 60 }, (_, i) => i)
           </div>
           <!-- 星期 -->
           <div class="grid grid-cols-7 gap-1 mb-1">
-            <div v-for="w in WEEKDAYS" :key="w" class="text-center text-xs text-[var(--color-text-muted)] py-1">{{ w }}</div>
+            <div
+              v-for="w in WEEKDAYS"
+              :key="w"
+              class="text-center text-xs text-[var(--color-text-muted)] py-1"
+            >
+              {{ w }}
+            </div>
           </div>
           <!-- 日期网格 -->
           <div class="grid grid-cols-7 gap-1">
             <template v-for="(d, idx) in dayCells" :key="idx">
-              <div v-if="d === null"></div>
+              <div v-if="d === null" />
               <button
                 v-else
                 type="button"
                 class="h-8 text-sm rounded flex items-center justify-center transition-all duration-150"
-                :class="isSelectedDay(d)
-                  ? 'bg-blue-500 text-white font-medium'
-                  : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] cursor-pointer'"
+                :class="
+                  isSelectedDay(d)
+                    ? 'bg-blue-500 text-white font-medium'
+                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] cursor-pointer'
+                "
                 @click.stop="pickDay(d)"
-              >{{ d }}</button>
+              >
+                {{ d }}
+              </button>
             </template>
           </div>
         </div>
@@ -234,32 +274,46 @@ const minutes = Array.from({ length: 60 }, (_, i) => i)
         <!-- 右：时间 -->
         <div class="p-3 w-[132px]">
           <div class="text-xs text-[var(--color-text-muted)] mb-2 text-center">选择时间</div>
-          <div class="flex gap-2" style="height: 232px;">
+          <div class="flex gap-2" style="height: 232px">
             <!-- 小时 -->
-            <div ref="hourListRef" class="flex-1 overflow-y-auto rounded border border-[var(--color-border)] bg-[var(--color-bg-primary)]">
+            <div
+              ref="hourListRef"
+              class="flex-1 overflow-y-auto rounded border border-[var(--color-border)] bg-[var(--color-bg-primary)]"
+            >
               <button
                 v-for="h in hours"
                 :key="'h' + h"
                 type="button"
                 class="w-full py-1.5 text-sm rounded transition-colors"
-                :class="currentHour === h
-                  ? 't-sel bg-blue-500 text-white font-medium'
-                  : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'"
+                :class="
+                  currentHour === h
+                    ? 't-sel bg-blue-500 text-white font-medium'
+                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+                "
                 @click.stop="setHour(h)"
-              >{{ String(h).padStart(2, '0') }}</button>
+              >
+                {{ String(h).padStart(2, '0') }}
+              </button>
             </div>
             <!-- 分钟 -->
-            <div ref="minuteListRef" class="flex-1 overflow-y-auto rounded border border-[var(--color-border)] bg-[var(--color-bg-primary)]">
+            <div
+              ref="minuteListRef"
+              class="flex-1 overflow-y-auto rounded border border-[var(--color-border)] bg-[var(--color-bg-primary)]"
+            >
               <button
                 v-for="m in minutes"
                 :key="'m' + m"
                 type="button"
                 class="w-full py-1.5 text-sm rounded transition-colors"
-                :class="currentMinute === m
-                  ? 't-sel bg-blue-500 text-white font-medium'
-                  : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'"
+                :class="
+                  currentMinute === m
+                    ? 't-sel bg-blue-500 text-white font-medium'
+                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+                "
                 @click.stop="setMinute(m)"
-              >{{ String(m).padStart(2, '0') }}</button>
+              >
+                {{ String(m).padStart(2, '0') }}
+              </button>
             </div>
           </div>
         </div>

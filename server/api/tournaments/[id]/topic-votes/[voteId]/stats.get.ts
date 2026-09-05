@@ -47,7 +47,12 @@ export default defineEventHandler(async (event) => {
       deadline: vote.deadline,
       allowedVoterTypes: allowedVoters,
       match: vote.match
-        ? { id: vote.match.id, round: vote.match.round, teamA: vote.match.teamA, teamB: vote.match.teamB }
+        ? {
+            id: vote.match.id,
+            round: vote.match.round,
+            teamA: vote.match.teamA,
+            teamB: vote.match.teamB,
+          }
         : null,
       totalVotes: stats.total,
       results: stats.results,

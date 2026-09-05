@@ -5,7 +5,10 @@ import { buildVoterFingerprint } from '../../../../../utils/topic-vote'
 import { safeJsonStringify, safeJsonParse } from '../../../../../utils/common'
 import { getRequestIP, getHeader } from 'h3'
 
-function parseSettings(settingsRaw: string | null | undefined): { audience: string; allowMultiple: boolean } {
+function parseSettings(settingsRaw: string | null | undefined): {
+  audience: string
+  allowMultiple: boolean
+} {
   const s = safeJsonParse<any>(settingsRaw, {})
   return {
     audience: s?.audience || 'loggedIn',
@@ -70,7 +73,9 @@ export default defineEventHandler(async (event) => {
         include: { team: true },
       })
       // tournament 可能为 null，此时 isTournamentAdmin 为 false
-      const isTournamentAdmin = tournament ? canWriteTournament(user, tournament, tournament.team) : false
+      const isTournamentAdmin = tournament
+        ? canWriteTournament(user, tournament, tournament.team)
+        : false
       const match = await prisma.match.findFirst({
         where: { id: matchId, tournamentId: id },
         select: { judge: true },
@@ -79,9 +84,7 @@ export default defineEventHandler(async (event) => {
         .split(/[,，、;；]/)
         .map((s: string) => s.trim())
         .filter(Boolean)
-      const isAssignedJudge = judgeList.length > 0
-        ? judgeList.includes(user.username)
-        : true // 未指定评委时退化为任意登录用户可评
+      const isAssignedJudge = judgeList.length > 0 ? judgeList.includes(user.username) : true // 未指定评委时退化为任意登录用户可评
 
       if (!isTournamentAdmin && !isAssignedJudge) {
         throw createError({ statusCode: 403, message: '仅该场比赛的评委可评分' })
@@ -102,18 +105,17 @@ export default defineEventHandler(async (event) => {
         const max = typeof meta?.max === 'number' ? meta.max : 5
         const num = Number(val)
         if (!Number.isFinite(num) || num < min || num > max) {
-          throw createError({ statusCode: 400, message: `${q.title} 的分值需在 ${min}-${max} 之间` })
+          throw createError({
+            statusCode: 400,
+            message: `${q.title} 的分值需在 ${min}-${max} 之间`,
+          })
         }
       }
     }
 
     // ── 身份 key 与去重 ──
-    const baseKey = settings.audience === 'public'
-      ? `fp:${fingerprint}`
-      : `u:${user.userId}`
-    const uniqueKey = settings.allowMultiple
-      ? `${baseKey}:${crypto.randomUUID()}`
-      : baseKey
+    const baseKey = settings.audience === 'public' ? `fp:${fingerprint}` : `u:${user.userId}`
+    const uniqueKey = settings.allowMultiple ? `${baseKey}:${crypto.randomUUID()}` : baseKey
     const sourceId = `match:${matchId}:${uniqueKey}`
 
     const storedAnswers = safeJsonStringify(answers)

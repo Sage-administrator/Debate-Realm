@@ -17,28 +17,37 @@ export type BotStatus = z.infer<typeof BotStatus>
 
 // ── Bot 配置 ──
 
-export const BotConfigRequest = z.object({
-  botAppId: z.string().optional(),
-  botAppSecret: z.string().optional(),
-  botChannelId: z.string().optional(),
-  botIsPrivate: z.boolean().optional(),
-}).partial()
+export const BotConfigRequest = z
+  .object({
+    botAppId: z.string().optional(),
+    botAppSecret: z.string().optional(),
+    botChannelId: z.string().optional(),
+    botIsPrivate: z.boolean().optional(),
+  })
+  .partial()
 export type BotConfigRequest = z.infer<typeof BotConfigRequest>
 
 // ── 频道 ──
 
 export const ChannelInfo = z.object({
-  id: ID, name: z.string(), type: z.number(),
-  guildId: ID, parentId: z.string().nullable(),
+  id: ID,
+  name: z.string(),
+  type: z.number(),
+  guildId: ID,
+  parentId: z.string().nullable(),
 })
 export type ChannelInfo = z.infer<typeof ChannelInfo>
 
 // ── 赛场 ──
 
 export const ArenaInfo = z.object({
-  id: ID, name: z.string(), matchFormat: z.string(),
-  status: z.string(), channelId: z.string().nullable(),
-  guildId: z.string().nullable(), createdAt: z.string(),
+  id: ID,
+  name: z.string(),
+  matchFormat: z.string(),
+  status: z.string(),
+  channelId: z.string().nullable(),
+  guildId: z.string().nullable(),
+  createdAt: z.string(),
 })
 export type ArenaInfo = z.infer<typeof ArenaInfo>
 
@@ -70,10 +79,12 @@ export type RevokeSpeakRequest = z.infer<typeof RevokeSpeakRequest>
 
 // ── Bot 调度 ──
 
-export const BotScheduleRequest = z.object({
-  teamId: ID,
-  priority: z.number().int().optional(),
-  customDelayMs: z.number().int().optional(),
-  enabled: z.boolean().optional(),
-}).partial()
+export const BotScheduleRequest = z
+  .object({
+    teamId: ID,
+    priority: z.number().int().optional(),
+    customDelayMs: z.number().int().optional(),
+    enabled: z.boolean().optional(),
+  })
+  .partial()
 export type BotScheduleRequest = z.infer<typeof BotScheduleRequest>

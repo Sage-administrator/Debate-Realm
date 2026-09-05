@@ -30,12 +30,15 @@ interface BotWsState {
   authenticated: boolean
   status: BotStatus | null
   lastError: string
-  shouldReconnect: boolean  // 修复：控制是否自动重连
+  shouldReconnect: boolean // 修复：控制是否自动重连
   // 待处理请求的回调
-  pendingRequests: Map<string, {
-    resolve: (data: any) => void
-    reject: (err: Error) => void
-  }>
+  pendingRequests: Map<
+    string,
+    {
+      resolve: (data: any) => void
+      reject: (err: Error) => void
+    }
+  >
 }
 
 export function useBotWs() {
@@ -47,7 +50,7 @@ export function useBotWs() {
     authenticated: false,
     status: null,
     lastError: '',
-    shouldReconnect: true,  // 默认开启自动重连
+    shouldReconnect: true, // 默认开启自动重连
     pendingRequests: new Map(),
   })
 
@@ -82,7 +85,10 @@ export function useBotWs() {
 
   // 连接 WebSocket
   function connect() {
-    if (state.ws && (state.ws.readyState === WebSocket.OPEN || state.ws.readyState === WebSocket.CONNECTING)) {
+    if (
+      state.ws &&
+      (state.ws.readyState === WebSocket.OPEN || state.ws.readyState === WebSocket.CONNECTING)
+    ) {
       return // 已连接或正在连接
     }
 
@@ -130,13 +136,13 @@ export function useBotWs() {
       case 'auth_ok':
         state.authenticated = true
         state.lastError = ''
-        state.shouldReconnect = true  // 认证成功，开启自动重连
+        state.shouldReconnect = true // 认证成功，开启自动重连
         break
 
       case 'auth_error':
         state.authenticated = false
         state.lastError = data.message || '认证失败'
-        state.shouldReconnect = false  // 修复：认证失败时关闭自动重连，避免死循环
+        state.shouldReconnect = false // 修复：认证失败时关闭自动重连，避免死循环
         state.ws?.close()
         break
 
@@ -193,7 +199,7 @@ export function useBotWs() {
       clearTimeout(reconnectTimer)
       reconnectTimer = null
     }
-    state.shouldReconnect = false  // 修复：主动断开时关闭自动重连
+    state.shouldReconnect = false // 修复：主动断开时关闭自动重连
     state.ws?.close()
     state.ws = null
     state.connected = false

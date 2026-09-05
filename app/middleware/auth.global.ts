@@ -47,9 +47,10 @@ export default defineNuxtRouteMiddleware((to) => {
       try {
         // useCookie 会自动解析 JSON，所以 userCookie.value 可能已经是对象
         // 如果是字符串，再手动解析；如果已经是对象，直接使用
-        const user = typeof userCookie.value === 'string'
-          ? JSON.parse(userCookie.value) as UserInfo
-          : userCookie.value as UserInfo
+        const user =
+          typeof userCookie.value === 'string'
+            ? (JSON.parse(userCookie.value) as UserInfo)
+            : (userCookie.value as UserInfo)
         store.token = tokenCookie.value
         store.user = user
       } catch {

@@ -60,9 +60,9 @@ export default defineEventHandler(async (event) => {
         // 统一字段配置（系统字段 + 自定义字段，用于报名表单动态渲染）
         fields: tournament.regFields || [],
         // 参赛队伍（已通过的）
-        teams: tournament.teams.map(t => ({ name: t.name, groupLabel: t.groupLabel })),
+        teams: tournament.teams.map((t) => ({ name: t.name, groupLabel: t.groupLabel })),
         // 评委名单
-        judges: tournament.judges.map(j => j.name),
+        judges: tournament.judges.map((j) => j.name),
         // 统计数据
         stats: {
           registrationCount: tournament._count?.registrations || 0,

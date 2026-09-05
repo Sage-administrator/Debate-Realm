@@ -3,8 +3,8 @@
 // 左面板：开始月份 | 右面板：结束月份
 
 const props = defineProps<{
-  startDate?: string  // 'YYYY-MM'
-  endDate?: string    // 'YYYY-MM'
+  startDate?: string // 'YYYY-MM'
+  endDate?: string // 'YYYY-MM'
 }>()
 
 const emit = defineEmits<{
@@ -13,7 +13,20 @@ const emit = defineEmits<{
 }>()
 
 // ── 月份名称 ──
-const MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
+const MONTHS = [
+  '1月',
+  '2月',
+  '3月',
+  '4月',
+  '5月',
+  '6月',
+  '7月',
+  '8月',
+  '9月',
+  '10月',
+  '11月',
+  '12月',
+]
 
 // ── 面板状态 ──
 const open = ref(false)
@@ -23,7 +36,7 @@ const triggerRef = ref<HTMLElement | null>(null)
 // 左右面板年份
 const currentYear = new Date().getFullYear()
 const leftYear = ref(currentYear)
-const rightYear = ref(currentYear)  // 结束年份默认 = 开始年份
+const rightYear = ref(currentYear) // 结束年份默认 = 开始年份
 
 // 选中的月份 (0-based)
 const selectedStartMonth = ref<number | null>(null)
@@ -33,23 +46,31 @@ const selectedEndMonth = ref<number | null>(null)
 const pickingStep = ref<'start' | 'end'>('start')
 
 // ── 初始化已有值 ──
-watch(() => props.startDate, (val) => {
-  if (val && /^\d{4}-\d{2}$/.test(val)) {
-    const parts = val.split('-').map(Number)
-    if (parts.length < 2 || parts[0] == null || parts[1] == null) return
-    selectedStartMonth.value = parts[1] - 1
-    leftYear.value = parts[0]
-  }
-}, { immediate: true })
+watch(
+  () => props.startDate,
+  (val) => {
+    if (val && /^\d{4}-\d{2}$/.test(val)) {
+      const parts = val.split('-').map(Number)
+      if (parts.length < 2 || parts[0] == null || parts[1] == null) return
+      selectedStartMonth.value = parts[1] - 1
+      leftYear.value = parts[0]
+    }
+  },
+  { immediate: true },
+)
 
-watch(() => props.endDate, (val) => {
-  if (val && /^\d{4}-\d{2}$/.test(val)) {
-    const parts = val.split('-').map(Number)
-    if (parts.length < 2 || parts[0] == null || parts[1] == null) return
-    selectedEndMonth.value = parts[1] - 1
-    rightYear.value = parts[0]
-  }
-}, { immediate: true })
+watch(
+  () => props.endDate,
+  (val) => {
+    if (val && /^\d{4}-\d{2}$/.test(val)) {
+      const parts = val.split('-').map(Number)
+      if (parts.length < 2 || parts[0] == null || parts[1] == null) return
+      selectedEndMonth.value = parts[1] - 1
+      rightYear.value = parts[0]
+    }
+  },
+  { immediate: true },
+)
 
 // ── 显示文本 ──
 const displayStart = computed(() => {
@@ -93,8 +114,10 @@ onUnmounted(() => {
 // ── 点击外部关闭 ──
 function onClickOutside(e: MouseEvent) {
   if (
-    panelRef.value && !panelRef.value.contains(e.target as Node) &&
-    triggerRef.value && !triggerRef.value.contains(e.target as Node)
+    panelRef.value &&
+    !panelRef.value.contains(e.target as Node) &&
+    triggerRef.value &&
+    !triggerRef.value.contains(e.target as Node)
   ) {
     closePanel()
   }
@@ -194,10 +217,11 @@ function pickMonth(panel: 'left' | 'right', monthIdx: number) {
     // 第二阶段：选择结束月份
     // 验证：结束月份必须 >= 开始月份（同月允许）
     const startGlobal = toGlobalMonth(leftYear.value, selectedStartMonth.value!)
-    const thisGlobal = panel === 'left'
-      ? toGlobalMonth(leftYear.value, monthIdx)
-      : toGlobalMonth(rightYear.value, monthIdx)
-    if (thisGlobal < startGlobal) return  // 只排除早于开始的月份
+    const thisGlobal =
+      panel === 'left'
+        ? toGlobalMonth(leftYear.value, monthIdx)
+        : toGlobalMonth(rightYear.value, monthIdx)
+    if (thisGlobal < startGlobal) return // 只排除早于开始的月份
 
     if (panel === 'left') {
       selectedEndMonth.value = monthIdx
@@ -274,7 +298,7 @@ function selectYear(panel: 'left' | 'right', year: number) {
       ref="triggerRef"
       class="flex items-center h-10 border rounded cursor-pointer select-none transition-colors focus-within:outline-none"
       :class="open ? 'border-green-500' : 'border-[var(--color-border)] hover:border-white/25'"
-      style="width: 100%;"
+      style="width: 100%"
       @click.stop="togglePanel"
     >
       <span class="flex-1 pl-3 text-sm text-[var(--color-text-primary)]">
@@ -315,7 +339,10 @@ function selectYear(panel: 'left' | 'right', year: number) {
                 @click.stop="showYearSelect = showYearSelect === 'left' ? null : 'left'"
               >
                 {{ leftYear }}
-                <UIcon name="i-lucide-chevron-down" class="w-3 h-3 text-[var(--color-text-muted)]" />
+                <UIcon
+                  name="i-lucide-chevron-down"
+                  class="w-3 h-3 text-[var(--color-text-muted)]"
+                />
               </button>
               <!-- 年份下拉 -->
               <div
@@ -326,9 +353,15 @@ function selectYear(panel: 'left' | 'right', year: number) {
                   v-for="y in yearList"
                   :key="y"
                   class="px-2 py-1.5 text-xs cursor-pointer hover:bg-[var(--color-bg-tertiary)] text-center"
-                  :class="y === leftYear ? 'text-green-600 font-medium' : 'text-[var(--color-text-secondary)]'"
+                  :class="
+                    y === leftYear
+                      ? 'text-green-600 font-medium'
+                      : 'text-[var(--color-text-secondary)]'
+                  "
                   @click.stop="selectYear('left', y)"
-                >{{ y }}</div>
+                >
+                  {{ y }}
+                </div>
               </div>
             </div>
             <button
@@ -348,7 +381,7 @@ function selectYear(panel: 'left' | 'right', year: number) {
           <div class="grid grid-cols-3 gap-1.5">
             <button
               v-for="(m, idx) in MONTHS"
-              :key="'l'+idx"
+              :key="'l' + idx"
               type="button"
               :disabled="isDisabled('left', idx)"
               class="h-7 text-xs rounded flex items-center justify-center transition-all duration-150"
@@ -362,7 +395,9 @@ function selectYear(panel: 'left' | 'right', year: number) {
                       : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] cursor-pointer',
               ]"
               @click.stop="pickMonth('left', idx)"
-            >{{ m }}</button>
+            >
+              {{ m }}
+            </button>
           </div>
         </div>
 
@@ -382,7 +417,10 @@ function selectYear(panel: 'left' | 'right', year: number) {
                 @click.stop="showYearSelect = showYearSelect === 'right' ? null : 'right'"
               >
                 {{ rightYear }}
-                <UIcon name="i-lucide-chevron-down" class="w-3 h-3 text-[var(--color-text-muted)]" />
+                <UIcon
+                  name="i-lucide-chevron-down"
+                  class="w-3 h-3 text-[var(--color-text-muted)]"
+                />
               </button>
               <div
                 v-if="showYearSelect === 'right'"
@@ -392,9 +430,15 @@ function selectYear(panel: 'left' | 'right', year: number) {
                   v-for="y in yearList"
                   :key="y"
                   class="px-2 py-1.5 text-xs cursor-pointer hover:bg-[var(--color-bg-tertiary)] text-center"
-                  :class="y === rightYear ? 'text-green-600 font-medium' : 'text-[var(--color-text-secondary)]'"
+                  :class="
+                    y === rightYear
+                      ? 'text-green-600 font-medium'
+                      : 'text-[var(--color-text-secondary)]'
+                  "
                   @click.stop="selectYear('right', y)"
-                >{{ y }}</div>
+                >
+                  {{ y }}
+                </div>
               </div>
             </div>
             <button
@@ -407,11 +451,12 @@ function selectYear(panel: 'left' | 'right', year: number) {
 
           <!-- 结束提示 -->
           <div class="text-xs text-[var(--color-text-muted)] mb-2">
-            {{ pickingStep === 'start'
-              ? '请先选择开始月份'
-              : selectedEndMonth != null
-                ? '已选 ✓'
-                : '请选择结束月份'
+            {{
+              pickingStep === 'start'
+                ? '请先选择开始月份'
+                : selectedEndMonth != null
+                  ? '已选 ✓'
+                  : '请选择结束月份'
             }}
           </div>
 
@@ -419,7 +464,7 @@ function selectYear(panel: 'left' | 'right', year: number) {
           <div class="grid grid-cols-3 gap-1.5">
             <button
               v-for="(m, idx) in MONTHS"
-              :key="'r'+idx"
+              :key="'r' + idx"
               type="button"
               :disabled="isDisabled('right', idx) || pickingStep === 'start'"
               class="h-7 text-xs rounded flex items-center justify-center transition-all duration-150"
@@ -435,7 +480,9 @@ function selectYear(panel: 'left' | 'right', year: number) {
                         : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] cursor-pointer',
               ]"
               @click.stop="pickMonth('right', idx)"
-            >{{ m }}</button>
+            >
+              {{ m }}
+            </button>
           </div>
         </div>
       </div>

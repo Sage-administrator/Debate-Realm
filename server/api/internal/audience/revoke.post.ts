@@ -15,7 +15,10 @@ export default defineEventHandler(async (event) => {
     const { teamId, guildId, channelId, userId, username } = body
 
     if (!teamId || !guildId || !channelId || !userId) {
-      throw createError({ statusCode: 400, message: '缺少必要参数：teamId、guildId、channelId、userId' })
+      throw createError({
+        statusCode: 400,
+        message: '缺少必要参数：teamId、guildId、channelId、userId',
+      })
     }
 
     if (!username) {

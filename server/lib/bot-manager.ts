@@ -117,11 +117,11 @@ export async function startAllBotsWithSchedule(
 
   // 按优先级排序，同优先级按团队名排序
   const sorted = teams
-    .map(team => {
+    .map((team) => {
       const config = scheduleConfigs.get(team.id)!
       return { team, config }
     })
-    .filter(item => item.config.enabled)
+    .filter((item) => item.config.enabled)
     .sort((a, b) => {
       if (a.config.priority !== b.config.priority) {
         return a.config.priority - b.config.priority
@@ -141,7 +141,9 @@ export async function startAllBotsWithSchedule(
     const delayMs = config.customDelayMs ?? cumulativeDelay
 
     setTimeout(() => {
-      console.log(`[BotManager] 错峰启动「${team.name}」（优先级 ${config.priority}，延迟 ${delayMs}ms）`)
+      console.log(
+        `[BotManager] 错峰启动「${team.name}」（优先级 ${config.priority}，延迟 ${delayMs}ms）`,
+      )
       // 修复：原代码使用 require() 在 ESM 环境下会报错，改为顶部已 import 的 createBotInstance
       createBotInstance({
         appId: botAppId,
@@ -158,7 +160,9 @@ export async function startAllBotsWithSchedule(
     cumulativeDelay += defaultIntervalMs + Math.floor(Math.random() * 2000) // 3-5 秒随机抖动
   }
 
-  console.log(`[BotManager] 已调度 ${startedCount} 个 Bot 错峰启动（总延迟约 ${Math.round(cumulativeDelay / 1000)} 秒）`)
+  console.log(
+    `[BotManager] 已调度 ${startedCount} 个 Bot 错峰启动（总延迟约 ${Math.round(cumulativeDelay / 1000)} 秒）`,
+  )
 
   return {
     success: true,
@@ -229,7 +233,10 @@ export function getResourceSummary(): ResourceSummary {
 
   // 资源使用率：基于 Bot 数量估算（每 10 个 Bot 约 15MB 内存，阈值 100MB）
   const maxEstimatedMemoryKB = 100 * 1024 // 100MB
-  const resourceUsagePercent = Math.min(100, Math.round((totalMemoryKB / maxEstimatedMemoryKB) * 100))
+  const resourceUsagePercent = Math.min(
+    100,
+    Math.round((totalMemoryKB / maxEstimatedMemoryKB) * 100),
+  )
 
   return {
     totalBots,

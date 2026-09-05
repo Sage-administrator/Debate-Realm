@@ -4,8 +4,21 @@
 
 import type { PrismaClient } from './generated/client'
 import type { BotConfig } from './bot-ws'
-import { createArena, closeArena, claimRole, unclaimRole, getArenaStatus, getSupportedFormats } from './bot-roles'
-import { getTopicPool, getSchedule, getNextMatch, formatTopicsText, formatScheduleText } from './bot-data-sync'
+import {
+  createArena,
+  closeArena,
+  claimRole,
+  unclaimRole,
+  getArenaStatus,
+  getSupportedFormats,
+} from './bot-roles'
+import {
+  getTopicPool,
+  getSchedule,
+  getNextMatch,
+  formatTopicsText,
+  formatScheduleText,
+} from './bot-data-sync'
 import { getRankings, formatRankingsText } from './bot-scoring'
 
 export interface MessageContext {
@@ -53,7 +66,8 @@ export async function handleMessage(ctx: MessageContext): Promise<HandleResult> 
   if (trimmed === '帮助' || trimmed === 'help') {
     return {
       handled: true,
-      reply: `DebateRealm V3 Bot 命令列表\n` +
+      reply:
+        `DebateRealm V3 Bot 命令列表\n` +
         'ping - 测试 Bot 是否在线\n' +
         'help - 显示此帮助信息\n' +
         '状态 - 查看当前状态\n' +
@@ -137,7 +151,11 @@ export async function handleMessage(ctx: MessageContext): Promise<HandleResult> 
 // ---------- 异步命令处理函数 ----------
 
 /** 设置赛场 */
-async function handleSetArena(ctx: MessageContext, arenaName: string, format: string): Promise<HandleResult> {
+async function handleSetArena(
+  ctx: MessageContext,
+  arenaName: string,
+  format: string,
+): Promise<HandleResult> {
   if (!ctx.prisma || !ctx.botConfig || !ctx.teamId || !ctx.guildId) {
     return { handled: true, reply: '命令执行失败：缺少必要参数，请确认 Bot 已正确配置' }
   }
@@ -148,14 +166,25 @@ async function handleSetArena(ctx: MessageContext, arenaName: string, format: st
   }
   const finalName = arenaName.trim()
 
-  const result = await createArena(ctx.prisma, ctx.botConfig, ctx.teamId, format, ctx.guildId, finalName, ctx.channelId)
+  const result = await createArena(
+    ctx.prisma,
+    ctx.botConfig,
+    ctx.teamId,
+    format,
+    ctx.guildId,
+    finalName,
+    ctx.channelId,
+  )
   return { handled: true, reply: result.message }
 }
 
 /** 结束比赛 */
 async function handleEndArena(ctx: MessageContext): Promise<HandleResult> {
   if (!ctx.prisma || !ctx.botConfig || !ctx.channelId) {
-    return { handled: true, reply: '命令执行失败：缺少必要参数（channelId），请确认 Bot 已正确配置' }
+    return {
+      handled: true,
+      reply: '命令执行失败：缺少必要参数（channelId），请确认 Bot 已正确配置',
+    }
   }
 
   const result = await closeArena(ctx.prisma, ctx.botConfig, ctx.channelId, ctx.guildId, ctx.teamId)
@@ -187,14 +216,23 @@ async function handleUnclaimRole(ctx: MessageContext): Promise<HandleResult> {
     return { handled: true, reply: '命令执行失败：缺少必要参数，请确认 Bot 已正确配置' }
   }
 
-  const result = await unclaimRole(ctx.prisma, ctx.botConfig, ctx.channelId, ctx.guildId, ctx.userId)
+  const result = await unclaimRole(
+    ctx.prisma,
+    ctx.botConfig,
+    ctx.channelId,
+    ctx.guildId,
+    ctx.userId,
+  )
   return { handled: true, reply: result.message }
 }
 
 /** 赛场状态 */
 async function handleArenaStatus(ctx: MessageContext): Promise<HandleResult> {
   if (!ctx.prisma || !ctx.channelId) {
-    return { handled: true, reply: '命令执行失败：缺少必要参数（channelId），请确认 Bot 已正确配置' }
+    return {
+      handled: true,
+      reply: '命令执行失败：缺少必要参数（channelId），请确认 Bot 已正确配置',
+    }
   }
 
   const status = await getArenaStatus(ctx.prisma, ctx.channelId)

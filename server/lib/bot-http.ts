@@ -49,7 +49,9 @@ async function getAccessToken(credentials: BotCredentials): Promise<string> {
     })
   } catch (err) {
     if (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
-      throw new Error(`获取 Access Token 超时（>${QQ_API_TIMEOUT_MS / 1000}s），请检查网络或 Bot 凭证`)
+      throw new Error(
+        `获取 Access Token 超时（>${QQ_API_TIMEOUT_MS / 1000}s），请检查网络或 Bot 凭证`,
+      )
     }
     throw err
   }
@@ -92,7 +94,9 @@ async function callBotApi(
     })
   } catch (err) {
     if (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
-      throw new Error(`调用 QQ 接口超时（>${QQ_API_TIMEOUT_MS / 1000}s），请检查网络或 Bot 凭证：${path}`)
+      throw new Error(
+        `调用 QQ 接口超时（>${QQ_API_TIMEOUT_MS / 1000}s），请检查网络或 Bot 凭证：${path}`,
+      )
     }
     throw err
   }

@@ -42,9 +42,7 @@ export default defineEventHandler(async (event) => {
   }
   if (registrationDeadline !== undefined) {
     // 允许传入 ISO 字符串设置截止时间，或 null 清除截止时间
-    updateData.registrationDeadline = registrationDeadline
-      ? new Date(registrationDeadline)
-      : null
+    updateData.registrationDeadline = registrationDeadline ? new Date(registrationDeadline) : null
   }
   if (typeof isPublic === 'boolean') {
     updateData.isPublic = isPublic
@@ -61,8 +59,7 @@ export default defineEventHandler(async (event) => {
     updateData.teamSize = typeof teamSize === 'number' ? teamSize : null
   }
   if (registrationInfo !== undefined) {
-    updateData.registrationInfo =
-      typeof registrationInfo === 'string' ? registrationInfo : null
+    updateData.registrationInfo = typeof registrationInfo === 'string' ? registrationInfo : null
   }
 
   // 5. 执行更新（select 仅返回报名相关字段）

@@ -7,11 +7,11 @@
   - 配置修改实时同步到数据库（timer-config API）
 -->
 <script setup lang="ts">
-definePageMeta({ layout: 'tournament' })
-
 // ═══════════ 导入 ═══════════
 import { computed, ref, onMounted, watch } from 'vue'
 import TimerPreviewCard from '~/components/TimerPreviewCard.vue'
+
+definePageMeta({ layout: 'tournament' })
 
 // ═══════════ Nuxt 组合式 API ═══════════
 const route = useRoute()
@@ -28,35 +28,35 @@ const defaultUiConfig = {
   negativeLabel: '反方',
   teamNameColor: '#FFFFFF',
   // —— 字体族（空 = 默认宋体 / 计时器默认数码字体）——
-  fontFamily: '',             // 全局默认字体（各元素未单独设置时生效）
-  titleFontFamily: '',        // 比赛标题字体
-  stageTitleFontFamily: '',   // 环节名称字体
-  bannerFontFamily: '',       // 横幅（辩题 + 标签）字体
-  teamNameFontFamily: '',     // 队伍名称字体
-  timerFontFamily: '',        // 计时数字字体
+  fontFamily: '', // 全局默认字体（各元素未单独设置时生效）
+  titleFontFamily: '', // 比赛标题字体
+  stageTitleFontFamily: '', // 环节名称字体
+  bannerFontFamily: '', // 横幅（辩题 + 标签）字体
+  teamNameFontFamily: '', // 队伍名称字体
+  timerFontFamily: '', // 计时数字字体
   // —— 字号（px，基于 1280x720 设计基准）——
-  eventFontSize: 50,        // 比赛标题
-  bannerFontSize: 21,       // 横幅辩题文字
-  teamNameFontSize: 21,     // 队伍名称
-  stageTitleFontSize: 64,   // 环节名称
-  timerFontSize: 200,       // 计时数字
-  labelFontSize: 38,        // 正方/反方标签框
+  eventFontSize: 50, // 比赛标题
+  bannerFontSize: 21, // 横幅辩题文字
+  teamNameFontSize: 21, // 队伍名称
+  stageTitleFontSize: 64, // 环节名称
+  timerFontSize: 200, // 计时数字
+  labelFontSize: 38, // 正方/反方标签框
   // —— 颜色 ——
-  stageTitleColor: '#FFFFFF',   // 环节名颜色
-  timerColor: '#FFFFFF',        // 计时数字颜色（非告警态）
-  dualTimerColorPos: 'rgb(169, 35, 35)',   // 双计时器正方数字颜色（红）
-  dualTimerColorNeg: 'rgb(3, 105, 161)',   // 双计时器反方数字颜色（蓝）
-  bannerColorPos: '#A92323',    // 横幅颜色·正方（红）
-  bannerColorNeg: '#0369A1',    // 横幅颜色·反方（蓝）
-  bannerFontColorPos: '#FFFFFF',// 横幅文字颜色·正方
-  bannerFontColorNeg: '#FFFFFF',// 横幅文字颜色·反方
+  stageTitleColor: '#FFFFFF', // 环节名颜色
+  timerColor: '#FFFFFF', // 计时数字颜色（非告警态）
+  dualTimerColorPos: 'rgb(169, 35, 35)', // 双计时器正方数字颜色（红）
+  dualTimerColorNeg: 'rgb(3, 105, 161)', // 双计时器反方数字颜色（蓝）
+  bannerColorPos: '#A92323', // 横幅颜色·正方（红）
+  bannerColorNeg: '#0369A1', // 横幅颜色·反方（蓝）
+  bannerFontColorPos: '#FFFFFF', // 横幅文字颜色·正方
+  bannerFontColorNeg: '#FFFFFF', // 横幅文字颜色·反方
   // —— 横幅 ——
-  bannerHeight: 5,          // 横幅厚度（红蓝条垂直内边距）
-  bannerPos: 0,             // 横幅上下位置偏移（vh，负=上移）
+  bannerHeight: 5, // 横幅厚度（红蓝条垂直内边距）
+  bannerPos: 0, // 横幅上下位置偏移（vh，负=上移）
   // —— 元素位置（px）——
-  contentPaddingTop: 56,    // 主内容区顶部间距（标题/计时整体上下位置）
-  titleMarginBottom: 12,    // 标题与环节名间距
-  stageTimerGap: 10,        // 环节名与计时器间距
+  contentPaddingTop: 56, // 主内容区顶部间距（标题/计时整体上下位置）
+  titleMarginBottom: 12, // 标题与环节名间距
+  stageTimerGap: 10, // 环节名与计时器间距
 }
 
 // 字体族预设（value 为完整 CSS font-family）—— 用于 比赛标题 / 环节名称 / 横幅 / 队伍名称
@@ -76,7 +76,20 @@ const timerFontFamilyOptions = [
   { label: '系统无衬线', value: "system-ui, -apple-system, 'Segoe UI', sans-serif" },
 ]
 // 横幅颜色预设（含历史红蓝）
-const bannerColorPresets = ['#A92323', '#0369A1', '#DC2626', '#2563EB', '#DC2626', '#1D4ED8', '#FFFFFF', '#000000', '#F59E0B', '#10B981', '#8B5CF6', '#EC4899']
+const bannerColorPresets = [
+  '#A92323',
+  '#0369A1',
+  '#DC2626',
+  '#2563EB',
+  '#DC2626',
+  '#1D4ED8',
+  '#FFFFFF',
+  '#000000',
+  '#F59E0B',
+  '#10B981',
+  '#8B5CF6',
+  '#EC4899',
+]
 
 // ═══════════ 数据模型 ═══════════
 const tournament = inject<Ref<any>>('tournament')!
@@ -100,351 +113,629 @@ onMounted(async () => {
 // 配置变化时自动保存（防抖）
 let saveTimeout: ReturnType<typeof setTimeout> | null = null
 watch(
-  () => [config.value.uiConfig, config.value.title, config.value.positiveTopic, config.value.negativeTopic, config.value.teamPositiveName, config.value.teamNegativeName],
+  () => [
+    config.value.uiConfig,
+    config.value.title,
+    config.value.positiveTopic,
+    config.value.negativeTopic,
+    config.value.teamPositiveName,
+    config.value.teamNegativeName,
+  ],
   () => {
     if (saveTimeout) clearTimeout(saveTimeout)
     saveTimeout = setTimeout(() => {
       if (!loading.value) apiSave(tournamentId.value, 'tournament')
     }, 1500)
   },
-  { deep: true }
+  { deep: true },
 )
 </script>
 
 <template>
   <template v-if="tournament">
-  <!-- ═══ 主内容：左侧预览 + 右侧配置（左1/3 + 右2/3） ═══ -->
-  <div class="py-6 grid grid-cols-12 gap-6">
+    <!-- ═══ 主内容：左侧预览 + 右侧配置（左1/3 + 右2/3） ═══ -->
+    <div class="py-6 grid grid-cols-12 gap-6">
+      <!-- 左侧：实时预览（左4列，约1/3宽度） -->
+      <div class="col-span-4">
+        <TimerPreviewCard
+          v-model:stage-index="previewStageIndex"
+          :full-config="config"
+          :tournament-id="tournamentId"
+        />
+      </div>
 
-    <!-- 左侧：实时预览（左4列，约1/3宽度） -->
-    <div class="col-span-4">
-      <TimerPreviewCard
-        :full-config="config"
-        :tournament-id="tournamentId"
-        v-model:stage-index="previewStageIndex"
-      />
-    </div>
+      <!-- 右侧：界面配置区域（右8列，约2/3宽度） -->
+      <div class="col-span-8">
+        <UCard>
+          <template #header>
+            <div class="flex items-center gap-2">
+              <UIcon name="i-lucide-palette" class="w-4 h-4 text-[var(--color-text-muted)]" />
+              <h2 class="text-base font-semibold text-[var(--color-text-primary)]">界面元素设置</h2>
+            </div>
+          </template>
 
-    <!-- 右侧：界面配置区域（右8列，约2/3宽度） -->
-    <div class="col-span-8">
-      <UCard>
-        <template #header>
-          <div class="flex items-center gap-2">
-            <UIcon name="i-lucide-palette" class="w-4 h-4 text-[var(--color-text-muted)]" />
-            <h2 class="text-base font-semibold text-[var(--color-text-primary)]">界面元素设置</h2>
+          <!-- ════════ 1. 比赛标题 ════════ -->
+          <div class="mb-6">
+            <label
+              class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5 cursor-pointer"
+            >
+              <UIcon name="i-lucide-type" class="w-4 h-4 text-[var(--color-text-muted)]" />
+              <input
+                v-model="config.uiConfig.showTitle"
+                type="checkbox"
+                class="w-4 h-4 rounded border-[var(--color-border)] text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+              />
+              <span>比赛标题</span>
+            </label>
+            <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 space-y-4">
+              <input
+                v-model="config.title"
+                type="text"
+                class="input-glass w-full px-3 py-2.5 border border-[var(--color-border)] rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                placeholder="例如：2025年度校际辩论赛总决赛"
+              />
+              <div class="grid grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1">颜色</label>
+                  <div class="flex items-center gap-2">
+                    <ColorPicker v-model="config.uiConfig.titleColor" />
+                    <input
+                      v-model="config.uiConfig.titleColor"
+                      type="text"
+                      class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                      placeholder="#0369a1"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字体</label>
+                  <select
+                    v-model="config.uiConfig.titleFontFamily"
+                    class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  >
+                    <option v-for="opt in fontFamilyOptions" :key="opt.label" :value="opt.value">
+                      {{ opt.label }}
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                    >字号（px）</label
+                  >
+                  <div class="flex items-center gap-3">
+                    <input
+                      v-model.number="config.uiConfig.eventFontSize"
+                      type="range"
+                      min="10"
+                      max="200"
+                      class="range-bar flex-1"
+                    />
+                    <input
+                      v-model.number="config.uiConfig.eventFontSize"
+                      type="number"
+                      min="10"
+                      max="200"
+                      class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </template>
 
-        <!-- ════════ 1. 比赛标题 ════════ -->
-        <div class="mb-6">
-          <label class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5 cursor-pointer">
-            <UIcon name="i-lucide-type" class="w-4 h-4 text-[var(--color-text-muted)]" />
-            <input type="checkbox" v-model="config.uiConfig.showTitle" class="w-4 h-4 rounded border-[var(--color-border)] text-indigo-600 focus:ring-2 focus:ring-indigo-500" />
-            <span>比赛标题</span>
-          </label>
-          <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 space-y-4">
-            <input
-              v-model="config.title"
-              type="text"
-              class="input-glass w-full px-3 py-2.5 border border-[var(--color-border)] rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              placeholder="例如：2025年度校际辩论赛总决赛"
-            />
-            <div class="grid grid-cols-3 gap-3">
+          <!-- ════════ 2. 环节名称 ════════ -->
+          <div class="mb-6">
+            <label
+              class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5"
+            >
+              <UIcon name="i-lucide-heading" class="w-4 h-4 text-[var(--color-text-muted)]" />
+              环节名称
+            </label>
+            <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 grid grid-cols-3 gap-3">
               <div>
                 <label class="block text-xs text-[var(--color-text-secondary)] mb-1">颜色</label>
                 <div class="flex items-center gap-2">
-                  <ColorPicker v-model="config.uiConfig.titleColor" />
+                  <ColorPicker v-model="config.uiConfig.stageTitleColor" />
                   <input
+                    v-model="config.uiConfig.stageTitleColor"
                     type="text"
-                    v-model="config.uiConfig.titleColor"
                     class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    placeholder="#0369a1"
+                    placeholder="#FFFFFF"
                   />
                 </div>
               </div>
               <div>
                 <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字体</label>
                 <select
-                  v-model="config.uiConfig.titleFontFamily"
+                  v-model="config.uiConfig.stageTitleFontFamily"
                   class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 >
-                  <option v-for="opt in fontFamilyOptions" :key="opt.label" :value="opt.value">{{ opt.label }}</option>
+                  <option v-for="opt in fontFamilyOptions" :key="opt.label" :value="opt.value">
+                    {{ opt.label }}
+                  </option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字号（px）</label>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                  >字号（px）</label
+                >
                 <div class="flex items-center gap-3">
-                  <input type="range" min="10" max="200" v-model.number="config.uiConfig.eventFontSize" class="range-bar flex-1" />
-                  <input type="number" min="10" max="200" v-model.number="config.uiConfig.eventFontSize" class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
+                  <input
+                    v-model.number="config.uiConfig.stageTitleFontSize"
+                    type="range"
+                    min="10"
+                    max="300"
+                    class="range-bar flex-1"
+                  />
+                  <input
+                    v-model.number="config.uiConfig.stageTitleFontSize"
+                    type="number"
+                    min="10"
+                    max="300"
+                    class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  />
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- ════════ 2. 环节名称 ════════ -->
-        <div class="mb-6">
-          <label class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5">
-            <UIcon name="i-lucide-heading" class="w-4 h-4 text-[var(--color-text-muted)]" /> 环节名称
-          </label>
-          <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 grid grid-cols-3 gap-3">
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">颜色</label>
-              <div class="flex items-center gap-2">
-                <ColorPicker v-model="config.uiConfig.stageTitleColor" />
-                <input type="text" v-model="config.uiConfig.stageTitleColor" class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="#FFFFFF" />
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字体</label>
-              <select
-                v-model="config.uiConfig.stageTitleFontFamily"
-                class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              >
-                <option v-for="opt in fontFamilyOptions" :key="opt.label" :value="opt.value">{{ opt.label }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字号（px）</label>
-              <div class="flex items-center gap-3">
-                <input type="range" min="10" max="300" v-model.number="config.uiConfig.stageTitleFontSize" class="range-bar flex-1" />
-                <input type="number" min="10" max="300" v-model.number="config.uiConfig.stageTitleFontSize" class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ════════ 3. 横幅 / 辩题 ════════ -->
-        <div class="mb-6">
-          <label class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5 cursor-pointer">
-            <UIcon name="i-lucide-rectangle-horizontal" class="w-4 h-4 text-[var(--color-text-muted)]" />
-            <input type="checkbox" v-model="config.uiConfig.showBanner" class="w-4 h-4 rounded border-[var(--color-border)] text-indigo-600 focus:ring-2 focus:ring-indigo-500" />
-            <span>横幅 / 辩题</span>
-          </label>
-          <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 space-y-3">
-            <div class="grid grid-cols-2 gap-3">
-              <div class="col-span-2">
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字体（辩题 + 标签）</label>
-                <select
-                  v-model="config.uiConfig.bannerFontFamily"
-                  class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                >
-                  <option v-for="opt in fontFamilyOptions" :key="opt.label" :value="opt.value">{{ opt.label }}</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1">辩题文字字号（px）</label>
-                <div class="flex items-center gap-3">
-                  <input type="range" min="8" max="80" v-model.number="config.uiConfig.bannerFontSize" class="range-bar flex-1" />
-                  <input type="number" min="8" max="80" v-model.number="config.uiConfig.bannerFontSize" class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
-                </div>
-              </div>
-              <div>
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1">正方/反方标签字号（px）</label>
-                <div class="flex items-center gap-3">
-                  <input type="range" min="10" max="120" v-model.number="config.uiConfig.labelFontSize" class="range-bar flex-1" />
-                  <input type="number" min="10" max="120" v-model.number="config.uiConfig.labelFontSize" class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
-                </div>
-              </div>
-              <div>
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1">横幅厚度（宽窄）</label>
-                <div class="flex items-center gap-3">
-                  <input type="range" min="0" max="60" v-model.number="config.uiConfig.bannerHeight" class="range-bar flex-1" />
-                  <input type="number" min="0" max="60" v-model.number="config.uiConfig.bannerHeight" class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
-                </div>
-              </div>
-              <div>
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1">横幅上下位置（负=上移）</label>
-                <div class="flex items-center gap-3">
-                  <input type="range" min="-5" max="5" step="0.5" v-model.number="config.uiConfig.bannerPos" class="range-bar flex-1" />
-                  <input type="number" step="0.5" min="-5" max="5" v-model.number="config.uiConfig.bannerPos" class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
-                </div>
-              </div>
-            </div>
-
-            <!-- 颜色分组：正方/反方横幅色 + 文字色，整齐 2×2 排列 -->
-            <div class="pt-1">
+          <!-- ════════ 3. 横幅 / 辩题 ════════ -->
+          <div class="mb-6">
+            <label
+              class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5 cursor-pointer"
+            >
+              <UIcon
+                name="i-lucide-rectangle-horizontal"
+                class="w-4 h-4 text-[var(--color-text-muted)]"
+              />
+              <input
+                v-model="config.uiConfig.showBanner"
+                type="checkbox"
+                class="w-4 h-4 rounded border-[var(--color-border)] text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+              />
+              <span>横幅 / 辩题</span>
+            </label>
+            <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 space-y-3">
               <div class="grid grid-cols-2 gap-3">
+                <div class="col-span-2">
+                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                    >字体（辩题 + 标签）</label
+                  >
+                  <select
+                    v-model="config.uiConfig.bannerFontFamily"
+                    class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  >
+                    <option v-for="opt in fontFamilyOptions" :key="opt.label" :value="opt.value">
+                      {{ opt.label }}
+                    </option>
+                  </select>
+                </div>
                 <div>
-                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1">横幅颜色·正方</label>
-                  <div class="flex items-center gap-2">
-                    <ColorPicker v-model="config.uiConfig.bannerColorPos" :preset-colors="bannerColorPresets" />
-                    <input type="text" v-model="config.uiConfig.bannerColorPos" class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="#A92323" />
+                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                    >辩题文字字号（px）</label
+                  >
+                  <div class="flex items-center gap-3">
+                    <input
+                      v-model.number="config.uiConfig.bannerFontSize"
+                      type="range"
+                      min="8"
+                      max="80"
+                      class="range-bar flex-1"
+                    />
+                    <input
+                      v-model.number="config.uiConfig.bannerFontSize"
+                      type="number"
+                      min="8"
+                      max="80"
+                      class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
                   </div>
                 </div>
                 <div>
-                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1">横幅颜色·反方</label>
-                  <div class="flex items-center gap-2">
-                    <ColorPicker v-model="config.uiConfig.bannerColorNeg" :preset-colors="bannerColorPresets" />
-                    <input type="text" v-model="config.uiConfig.bannerColorNeg" class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="#0369A1" />
+                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                    >正方/反方标签字号（px）</label
+                  >
+                  <div class="flex items-center gap-3">
+                    <input
+                      v-model.number="config.uiConfig.labelFontSize"
+                      type="range"
+                      min="10"
+                      max="120"
+                      class="range-bar flex-1"
+                    />
+                    <input
+                      v-model.number="config.uiConfig.labelFontSize"
+                      type="number"
+                      min="10"
+                      max="120"
+                      class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
                   </div>
                 </div>
                 <div>
-                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1">横幅文字颜色·正方</label>
-                  <div class="flex items-center gap-2">
-                    <ColorPicker v-model="config.uiConfig.bannerFontColorPos" />
-                    <input type="text" v-model="config.uiConfig.bannerFontColorPos" class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="#FFFFFF" />
+                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                    >横幅厚度（宽窄）</label
+                  >
+                  <div class="flex items-center gap-3">
+                    <input
+                      v-model.number="config.uiConfig.bannerHeight"
+                      type="range"
+                      min="0"
+                      max="60"
+                      class="range-bar flex-1"
+                    />
+                    <input
+                      v-model.number="config.uiConfig.bannerHeight"
+                      type="number"
+                      min="0"
+                      max="60"
+                      class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
                   </div>
                 </div>
                 <div>
-                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1">横幅文字颜色·反方</label>
-                  <div class="flex items-center gap-2">
-                    <ColorPicker v-model="config.uiConfig.bannerFontColorNeg" />
-                    <input type="text" v-model="config.uiConfig.bannerFontColorNeg" class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="#FFFFFF" />
+                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                    >横幅上下位置（负=上移）</label
+                  >
+                  <div class="flex items-center gap-3">
+                    <input
+                      v-model.number="config.uiConfig.bannerPos"
+                      type="range"
+                      min="-5"
+                      max="5"
+                      step="0.5"
+                      class="range-bar flex-1"
+                    />
+                    <input
+                      v-model.number="config.uiConfig.bannerPos"
+                      type="number"
+                      step="0.5"
+                      min="-5"
+                      max="5"
+                      class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 颜色分组：正方/反方横幅色 + 文字色，整齐 2×2 排列 -->
+              <div class="pt-1">
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                      >横幅颜色·正方</label
+                    >
+                    <div class="flex items-center gap-2">
+                      <ColorPicker
+                        v-model="config.uiConfig.bannerColorPos"
+                        :preset-colors="bannerColorPresets"
+                      />
+                      <input
+                        v-model="config.uiConfig.bannerColorPos"
+                        type="text"
+                        class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                        placeholder="#A92323"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                      >横幅颜色·反方</label
+                    >
+                    <div class="flex items-center gap-2">
+                      <ColorPicker
+                        v-model="config.uiConfig.bannerColorNeg"
+                        :preset-colors="bannerColorPresets"
+                      />
+                      <input
+                        v-model="config.uiConfig.bannerColorNeg"
+                        type="text"
+                        class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                        placeholder="#0369A1"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                      >横幅文字颜色·正方</label
+                    >
+                    <div class="flex items-center gap-2">
+                      <ColorPicker v-model="config.uiConfig.bannerFontColorPos" />
+                      <input
+                        v-model="config.uiConfig.bannerFontColorPos"
+                        type="text"
+                        class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                        placeholder="#FFFFFF"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                      >横幅文字颜色·反方</label
+                    >
+                    <div class="flex items-center gap-2">
+                      <ColorPicker v-model="config.uiConfig.bannerFontColorNeg" />
+                      <input
+                        v-model="config.uiConfig.bannerFontColorNeg"
+                        type="text"
+                        class="input-glass h-11 w-28 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                        placeholder="#FFFFFF"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- ════════ 4. 队伍名称 ════════ -->
-        <div class="mb-6">
-          <label class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5">
-            <UIcon name="i-lucide-users" class="w-4 h-4 text-[var(--color-text-muted)]" /> 队伍名称
-          </label>
-          <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 grid grid-cols-2 gap-3">
-            <div class="col-span-2">
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">颜色</label>
-              <div class="flex items-stretch gap-2">
-                <ColorPicker v-model="config.uiConfig.teamNameColor" />
+          <!-- ════════ 4. 队伍名称 ════════ -->
+          <div class="mb-6">
+            <label
+              class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5"
+            >
+              <UIcon name="i-lucide-users" class="w-4 h-4 text-[var(--color-text-muted)]" />
+              队伍名称
+            </label>
+            <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 grid grid-cols-2 gap-3">
+              <div class="col-span-2">
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1">颜色</label>
+                <div class="flex items-stretch gap-2">
+                  <ColorPicker v-model="config.uiConfig.teamNameColor" />
+                  <input
+                    v-model="config.uiConfig.teamNameColor"
+                    type="text"
+                    class="input-glass w-28 h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    placeholder="#FFFFFF"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字体</label>
+                <select
+                  v-model="config.uiConfig.teamNameFontFamily"
+                  class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                >
+                  <option v-for="opt in fontFamilyOptions" :key="opt.label" :value="opt.value">
+                    {{ opt.label }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                  >字号（px）</label
+                >
+                <div class="flex items-center gap-3">
+                  <input
+                    v-model.number="config.uiConfig.teamNameFontSize"
+                    type="range"
+                    min="8"
+                    max="80"
+                    class="range-bar flex-1"
+                  />
+                  <input
+                    v-model.number="config.uiConfig.teamNameFontSize"
+                    type="number"
+                    min="8"
+                    max="80"
+                    class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                  >正方标签</label
+                >
                 <input
+                  v-model="config.uiConfig.positiveLabel"
                   type="text"
-                  v-model="config.uiConfig.teamNameColor"
-                  class="input-glass w-28 h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                  placeholder="#FFFFFF"
+                  class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  placeholder="正方"
+                />
+              </div>
+              <div>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                  >反方标签</label
+                >
+                <input
+                  v-model="config.uiConfig.negativeLabel"
+                  type="text"
+                  class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  placeholder="反方"
                 />
               </div>
             </div>
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字体</label>
-              <select
-                v-model="config.uiConfig.teamNameFontFamily"
-                class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              >
-                <option v-for="opt in fontFamilyOptions" :key="opt.label" :value="opt.value">{{ opt.label }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字号（px）</label>
-              <div class="flex items-center gap-3">
-                <input type="range" min="8" max="80" v-model.number="config.uiConfig.teamNameFontSize" class="range-bar flex-1" />
-                <input type="number" min="8" max="80" v-model.number="config.uiConfig.teamNameFontSize" class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
+          </div>
+
+          <!-- ════════ 5. 计时器 ════════ -->
+          <div class="mb-6">
+            <label
+              class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5"
+            >
+              <UIcon name="i-lucide-timer" class="w-4 h-4 text-[var(--color-text-muted)]" /> 计时器
+            </label>
+            <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 grid grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                  >单计时器颜色（非告警态）</label
+                >
+                <div class="flex items-center gap-2">
+                  <ColorPicker v-model="config.uiConfig.timerColor" />
+                  <input
+                    v-model="config.uiConfig.timerColor"
+                    type="text"
+                    class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    placeholder="#FFFFFF"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                  >双计时器正方数字</label
+                >
+                <div class="flex items-center gap-2">
+                  <ColorPicker
+                    v-model="config.uiConfig.dualTimerColorPos"
+                    :preset-colors="bannerColorPresets"
+                  />
+                  <input
+                    v-model="config.uiConfig.dualTimerColorPos"
+                    type="text"
+                    class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    placeholder="rgb(169, 35, 35)"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                  >双计时器反方数字</label
+                >
+                <div class="flex items-center gap-2">
+                  <ColorPicker
+                    v-model="config.uiConfig.dualTimerColorNeg"
+                    :preset-colors="bannerColorPresets"
+                  />
+                  <input
+                    v-model="config.uiConfig.dualTimerColorNeg"
+                    type="text"
+                    class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    placeholder="rgb(3, 105, 161)"
+                  />
+                </div>
               </div>
             </div>
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">正方标签</label>
-              <input
-                v-model="config.uiConfig.positiveLabel"
-                type="text"
-                class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                placeholder="正方"
+            <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 grid grid-cols-2 gap-3 mt-3">
+              <div>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                  >字体（留空=数码字体）</label
+                >
+                <select
+                  v-model="config.uiConfig.timerFontFamily"
+                  class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                >
+                  <option v-for="opt in timerFontFamilyOptions" :key="opt.label" :value="opt.value">
+                    {{ opt.label }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                  >字号（px）</label
+                >
+                <div class="flex items-center gap-3">
+                  <input
+                    v-model.number="config.uiConfig.timerFontSize"
+                    type="range"
+                    min="40"
+                    max="400"
+                    class="range-bar flex-1"
+                  />
+                  <input
+                    v-model.number="config.uiConfig.timerFontSize"
+                    type="number"
+                    min="40"
+                    max="400"
+                    class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ════════ 6. 总体设置（默认字体 + 元素位置） ════════ -->
+          <div class="mb-6">
+            <label
+              class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5"
+            >
+              <UIcon
+                name="i-lucide-align-vertical-space-around"
+                class="w-4 h-4 text-[var(--color-text-muted)]"
               />
-            </div>
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">反方标签</label>
-              <input
-                v-model="config.uiConfig.negativeLabel"
-                type="text"
-                class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                placeholder="反方"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- ════════ 5. 计时器 ════════ -->
-        <div class="mb-6">
-          <label class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5">
-            <UIcon name="i-lucide-timer" class="w-4 h-4 text-[var(--color-text-muted)]" /> 计时器
-          </label>
-          <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 grid grid-cols-3 gap-3">
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">单计时器颜色（非告警态）</label>
-              <div class="flex items-center gap-2">
-                <ColorPicker v-model="config.uiConfig.timerColor" />
-                <input type="text" v-model="config.uiConfig.timerColor" class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="#FFFFFF" />
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">双计时器正方数字</label>
-              <div class="flex items-center gap-2">
-                <ColorPicker v-model="config.uiConfig.dualTimerColorPos" :preset-colors="bannerColorPresets" />
-                <input type="text" v-model="config.uiConfig.dualTimerColorPos" class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="rgb(169, 35, 35)" />
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">双计时器反方数字</label>
-              <div class="flex items-center gap-2">
-                <ColorPicker v-model="config.uiConfig.dualTimerColorNeg" :preset-colors="bannerColorPresets" />
-                <input type="text" v-model="config.uiConfig.dualTimerColorNeg" class="input-glass h-11 flex-1 min-w-0 px-2 border border-[var(--color-border)] rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" placeholder="rgb(3, 105, 161)" />
-              </div>
-            </div>
-          </div>
-          <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 grid grid-cols-2 gap-3 mt-3">
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字体（留空=数码字体）</label>
-              <select
-                v-model="config.uiConfig.timerFontFamily"
-                class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              >
-                <option v-for="opt in timerFontFamilyOptions" :key="opt.label" :value="opt.value">{{ opt.label }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">字号（px）</label>
-              <div class="flex items-center gap-3">
-                <input type="range" min="40" max="400" v-model.number="config.uiConfig.timerFontSize" class="range-bar flex-1" />
-                <input type="number" min="40" max="400" v-model.number="config.uiConfig.timerFontSize" class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ════════ 6. 总体设置（默认字体 + 元素位置） ════════ -->
-        <div class="mb-6">
-          <label class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5">
-            <UIcon name="i-lucide-align-vertical-space-around" class="w-4 h-4 text-[var(--color-text-muted)]" /> 总体设置
-          </label>
-          <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 space-y-3">
-            <div>
-              <label class="block text-xs text-[var(--color-text-secondary)] mb-1">默认字体（各元素未单独设置时生效）</label>
-              <select
-                v-model="config.uiConfig.fontFamily"
-                class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              >
-                <option v-for="opt in fontFamilyOptions" :key="opt.label" :value="opt.value">{{ opt.label }}</option>
-              </select>
-            </div>
-            <div class="grid grid-cols-1 gap-3 border-t border-[var(--color-border)] pt-3">
+              总体设置
+            </label>
+            <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4 space-y-3">
               <div>
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1">主内容顶部间距（标题/计时整体上下位置）</label>
-                <div class="flex items-center gap-3">
-                  <input type="range" min="0" max="300" v-model.number="config.uiConfig.contentPaddingTop" class="range-bar flex-1" />
-                  <input type="number" min="0" max="300" v-model.number="config.uiConfig.contentPaddingTop" class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                  >默认字体（各元素未单独设置时生效）</label
+                >
+                <select
+                  v-model="config.uiConfig.fontFamily"
+                  class="input-glass w-full h-11 px-3 border border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                >
+                  <option v-for="opt in fontFamilyOptions" :key="opt.label" :value="opt.value">
+                    {{ opt.label }}
+                  </option>
+                </select>
+              </div>
+              <div class="grid grid-cols-1 gap-3 border-t border-[var(--color-border)] pt-3">
+                <div>
+                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                    >主内容顶部间距（标题/计时整体上下位置）</label
+                  >
+                  <div class="flex items-center gap-3">
+                    <input
+                      v-model.number="config.uiConfig.contentPaddingTop"
+                      type="range"
+                      min="0"
+                      max="300"
+                      class="range-bar flex-1"
+                    />
+                    <input
+                      v-model.number="config.uiConfig.contentPaddingTop"
+                      type="number"
+                      min="0"
+                      max="300"
+                      class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1">标题与环节名间距</label>
-                <div class="flex items-center gap-3">
-                  <input type="range" min="0" max="200" v-model.number="config.uiConfig.titleMarginBottom" class="range-bar flex-1" />
-                  <input type="number" min="0" max="200" v-model.number="config.uiConfig.titleMarginBottom" class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
+                <div>
+                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                    >标题与环节名间距</label
+                  >
+                  <div class="flex items-center gap-3">
+                    <input
+                      v-model.number="config.uiConfig.titleMarginBottom"
+                      type="range"
+                      min="0"
+                      max="200"
+                      class="range-bar flex-1"
+                    />
+                    <input
+                      v-model.number="config.uiConfig.titleMarginBottom"
+                      type="number"
+                      min="0"
+                      max="200"
+                      class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1">环节名与计时器间距</label>
-                <div class="flex items-center gap-3">
-                  <input type="range" min="0" max="200" v-model.number="config.uiConfig.stageTimerGap" class="range-bar flex-1" />
-                  <input type="number" min="0" max="200" v-model.number="config.uiConfig.stageTimerGap" class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
+                <div>
+                  <label class="block text-xs text-[var(--color-text-secondary)] mb-1"
+                    >环节名与计时器间距</label
+                  >
+                  <div class="flex items-center gap-3">
+                    <input
+                      v-model.number="config.uiConfig.stageTimerGap"
+                      type="range"
+                      min="0"
+                      max="200"
+                      class="range-bar flex-1"
+                    />
+                    <input
+                      v-model.number="config.uiConfig.stageTimerGap"
+                      type="number"
+                      min="0"
+                      max="200"
+                      class="input-glass h-9 w-16 px-2 text-center border border-[var(--color-border)] rounded-md text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-
-      </UCard>
+        </UCard>
+      </div>
     </div>
-  </div>
   </template>
 </template>
 

@@ -33,34 +33,36 @@ export default defineEventHandler(async (event) => {
     })
 
     // 5. 为每条投票附加统计摘要
-    return votes.map((v) => {
-      const topics = parseTopics(v.topics)
-      const stats = computeVoteStats(topics, v.records)
-      // 过滤掉 matchId=none 的情况（在 JS 层处理 null 筛选）
-      return {
-        id: v.id,
-        tournamentId: v.tournamentId,
-        matchId: v.matchId,
-        match: v.match
-          ? { id: v.match.id, round: v.match.round, teamA: v.match.teamA, teamB: v.match.teamB }
-          : null,
-        title: v.title,
-        description: v.description,
-        topics,
-        status: v.status,
-        allowedVoters: v.allowedVoters,
-        multipleChoice: v.multipleChoice,
-        deadline: v.deadline,
-        showResults: v.showResults,
-        createdAt: v.createdAt,
-        updatedAt: v.updatedAt,
-        totalVotes: stats.total,
-      }
-    }).filter((v) => {
-      // JS 层过滤赛事级投票（matchId === none 时仅返回 matchId 为 null 的）
-      if (matchId === 'none') return v.matchId === null
-      return true
-    })
+    return votes
+      .map((v) => {
+        const topics = parseTopics(v.topics)
+        const stats = computeVoteStats(topics, v.records)
+        // 过滤掉 matchId=none 的情况（在 JS 层处理 null 筛选）
+        return {
+          id: v.id,
+          tournamentId: v.tournamentId,
+          matchId: v.matchId,
+          match: v.match
+            ? { id: v.match.id, round: v.match.round, teamA: v.match.teamA, teamB: v.match.teamB }
+            : null,
+          title: v.title,
+          description: v.description,
+          topics,
+          status: v.status,
+          allowedVoters: v.allowedVoters,
+          multipleChoice: v.multipleChoice,
+          deadline: v.deadline,
+          showResults: v.showResults,
+          createdAt: v.createdAt,
+          updatedAt: v.updatedAt,
+          totalVotes: stats.total,
+        }
+      })
+      .filter((v) => {
+        // JS 层过滤赛事级投票（matchId === none 时仅返回 matchId 为 null 的）
+        if (matchId === 'none') return v.matchId === null
+        return true
+      })
   } catch (error: any) {
     if (error.statusCode) throw error
     console.error('List topic votes error:', error)

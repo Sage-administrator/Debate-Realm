@@ -16,7 +16,12 @@
   </div>
 
   <!-- 主界面 -->
-  <div v-else ref="rootRef" class="h-screen w-screen overflow-hidden relative timer-page-root" :style="backgroundStyle">
+  <div
+    v-else
+    ref="rootRef"
+    class="h-screen w-screen overflow-hidden relative timer-page-root"
+    :style="backgroundStyle"
+  >
     <!-- 缩放画布：固定 1280x720 设计基准，等比缩放填满屏幕（与 TimerDisplay 一致） -->
     <div class="timer-scale-wrapper" :style="scaleWrapperStyle">
       <TimerDisplay
@@ -41,11 +46,7 @@
     </div>
 
     <!-- 全屏宽红蓝横幅覆盖层：与画布内横幅同一槽位，但左右延伸至屏幕边缘 -->
-    <div
-      v-if="pageViewport.h > 0"
-      class="full-bleed-banner"
-      :style="fullBleedBannerStyle"
-    >
+    <div v-if="pageViewport.h > 0" class="full-bleed-banner" :style="fullBleedBannerStyle">
       <div :style="fullBleedScalerStyle">
         <TimerBanner
           :positive-label="'正方'"
@@ -58,14 +59,18 @@
 
     <!-- 控制面板（左下角） -->
     <div class="fixed bottom-4 left-4 flex flex-col items-start timing-panel">
-
       <div>
         <span class="label-text text-gray-400">环节:</span>
         <div class="button-group">
           <button
             class="timing-btn"
             :disabled="currentStage <= 1"
-            @click="() => { pauseTimer(); debateStore.previousStage() }"
+            @click="
+              () => {
+                pauseTimer()
+                debateStore.previousStage()
+              }
+            "
           >
             ← 上一环节
           </button>
@@ -75,7 +80,12 @@
           <button
             class="timing-btn"
             :disabled="currentStage >= debateStore.stages.length"
-            @click="() => { pauseTimer(); debateStore.nextStage() }"
+            @click="
+              () => {
+                pauseTimer()
+                debateStore.nextStage()
+              }
+            "
           >
             下一环节 →
           </button>
@@ -93,18 +103,8 @@
           >
             {{ isRunning ? '暂停' : '启动' }}
           </button>
-          <button
-            class="timing-btn"
-            @click="resetTimer"
-          >
-            重置
-          </button>
-          <button
-            class="timing-btn"
-            @click="openTimeModal"
-          >
-            设置时间
-          </button>
+          <button class="timing-btn" @click="resetTimer">重置</button>
+          <button class="timing-btn" @click="openTimeModal">设置时间</button>
         </div>
       </div>
 
@@ -115,45 +115,24 @@
           <div class="button-group">
             <button
               class="timing-btn"
-              @click="() => { isRunning ? pauseTimer() : startTimer() }"
+              @click="
+                () => {
+                  isRunning ? pauseTimer() : startTimer()
+                }
+              "
             >
               {{ isRunning ? '暂停' : '启动' }}
             </button>
-            <button
-              class="timing-btn"
-              @click="switchActiveTimer"
-            >
-              切换方
-            </button>
-            <button
-              class="timing-btn"
-              @click="resetTimer"
-            >
-              重置
-            </button>
-            <button
-              class="timing-btn"
-              @click="openTimeModal"
-            >
-              设时
-            </button>
+            <button class="timing-btn" @click="switchActiveTimer">切换方</button>
+            <button class="timing-btn" @click="resetTimer">重置</button>
+            <button class="timing-btn" @click="openTimeModal">设时</button>
           </div>
         </div>
         <div>
           <span class="label-text text-gray-400">直接启动:</span>
           <div class="button-group">
-            <button
-              class="timing-btn timing-btn-red"
-              @click="startPositiveTimer"
-            >
-              正方
-            </button>
-            <button
-              class="timing-btn timing-btn-blue"
-              @click="startNegativeTimer"
-            >
-              反方
-            </button>
+            <button class="timing-btn timing-btn-red" @click="startPositiveTimer">正方</button>
+            <button class="timing-btn timing-btn-blue" @click="startNegativeTimer">反方</button>
           </div>
         </div>
       </div>
@@ -162,26 +141,18 @@
       <div>
         <span class="label-text text-gray-400">试音:</span>
         <div class="button-group">
+          <button class="timing-btn" @click="() => debateStore.playTestSound('30')">30秒</button>
           <button
             class="timing-btn"
-            @click="() => debateStore.playTestSound('30')"
-          >
-            30秒
-          </button>
-          <button
-            class="timing-btn"
-            @click="() => debateStore.playTestSound('5')"
             :disabled="debateStore.audioConfig?.scheme === 'formal'"
-            :title="debateStore.audioConfig?.scheme === 'formal' ? '正式比赛提示音方案下 5 秒不响' : ''"
+            :title="
+              debateStore.audioConfig?.scheme === 'formal' ? '正式比赛提示音方案下 5 秒不响' : ''
+            "
+            @click="() => debateStore.playTestSound('5')"
           >
             5秒
           </button>
-          <button
-            class="timing-btn"
-            @click="() => debateStore.playTestSound('End')"
-          >
-            时间到
-          </button>
+          <button class="timing-btn" @click="() => debateStore.playTestSound('End')">时间到</button>
         </div>
       </div>
 
@@ -189,26 +160,28 @@
       <div>
         <span class="label-text text-gray-400">其他:</span>
         <div class="button-group">
+          <button class="timing-btn">登记赛果</button>
           <button
             class="timing-btn"
-          >
-            登记赛果
-          </button>
-          <button
-            class="timing-btn"
-            @click="() => { showSetupModal = true }"
+            @click="
+              () => {
+                showSetupModal = true
+              }
+            "
           >
             设置
           </button>
           <button
             class="timing-btn"
-            @click="() => { showProgress = true }"
+            @click="
+              () => {
+                showProgress = true
+              }
+            "
           >
             进度
           </button>
-          <NuxtLink :to="'/timer/projects'" class="timing-btn">
-            返回
-          </NuxtLink>
+          <NuxtLink :to="'/timer/projects'" class="timing-btn"> 返回 </NuxtLink>
         </div>
         <NUseHead>
           <title>
@@ -223,9 +196,19 @@
       <div class="font-bold text-gray-300 mb-1">快捷键</div>
       <div class="space-y-0.5 text-gray-400">
         <div><kbd class="px-1 bg-gray-700 rounded">空格</kbd> 启动/暂停/切换</div>
-        <div><kbd class="px-1 bg-gray-700 rounded">←</kbd> <kbd class="px-1 bg-gray-700 rounded">→</kbd> 切换环节</div>
-        <div><kbd class="px-1 bg-gray-700 rounded">,</kbd> 反方 <kbd class="px-1 bg-gray-700 rounded">.</kbd> 正方</div>
-        <div><kbd class="px-1 bg-gray-700 rounded">Q</kbd> 30秒 <kbd class="px-1 bg-gray-700 rounded">W</kbd> 5秒 <kbd class="px-1 bg-gray-700 rounded">E</kbd> 时间到</div>
+        <div>
+          <kbd class="px-1 bg-gray-700 rounded">←</kbd>
+          <kbd class="px-1 bg-gray-700 rounded">→</kbd> 切换环节
+        </div>
+        <div>
+          <kbd class="px-1 bg-gray-700 rounded">,</kbd> 反方
+          <kbd class="px-1 bg-gray-700 rounded">.</kbd> 正方
+        </div>
+        <div>
+          <kbd class="px-1 bg-gray-700 rounded">Q</kbd> 30秒
+          <kbd class="px-1 bg-gray-700 rounded">W</kbd> 5秒
+          <kbd class="px-1 bg-gray-700 rounded">E</kbd> 时间到
+        </div>
         <div><kbd class="px-1 bg-gray-700 rounded">Tab</kbd> 进度</div>
       </div>
     </div>
@@ -234,50 +217,61 @@
     <UModal v-model="showSetupModal" :class="'max-w-lg'">
       <template #content>
         <div class="p-6 max-w-lg space-y-4 text-gray-800">
-        <h3 class="text-lg font-bold">比赛设置</h3>
-        <div>
-          <label class="block text-sm font-medium mb-1 text-gray-700">正方队伍名称</label>
-          <input
-            v-model="setupForm.teamPositiveName"
-            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none"
-            placeholder="例：北京大学辩论队"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1 text-gray-700">反方队伍名称</label>
-          <input
-            v-model="setupForm.teamNegativeName"
-            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none"
-            placeholder="例：清华大学辩论队"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1 text-gray-700">正方辩题</label>
-          <input
-            v-model="setupForm.positiveTopic"
-            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none"
-            placeholder="例：顺境更有利于人的成长"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1 text-gray-700">反方辩题</label>
-          <input
-            v-model="setupForm.negativeTopic"
-            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none"
-            placeholder="例：逆境更有利于人的成长"
-          />
-        </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" @click="() => { showSetupModal = false }">
-            关闭
-          </button>
-          <button
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            @click="() => { showSetupModal = false }"
-          >
-            应用
-          </button>
-        </div>
+          <h3 class="text-lg font-bold">比赛设置</h3>
+          <div>
+            <label class="block text-sm font-medium mb-1 text-gray-700">正方队伍名称</label>
+            <input
+              v-model="setupForm.teamPositiveName"
+              class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none"
+              placeholder="例：北京大学辩论队"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1 text-gray-700">反方队伍名称</label>
+            <input
+              v-model="setupForm.teamNegativeName"
+              class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none"
+              placeholder="例：清华大学辩论队"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1 text-gray-700">正方辩题</label>
+            <input
+              v-model="setupForm.positiveTopic"
+              class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none"
+              placeholder="例：顺境更有利于人的成长"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1 text-gray-700">反方辩题</label>
+            <input
+              v-model="setupForm.negativeTopic"
+              class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none"
+              placeholder="例：逆境更有利于人的成长"
+            />
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button
+              class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+              @click="
+                () => {
+                  showSetupModal = false
+                }
+              "
+            >
+              关闭
+            </button>
+            <button
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              @click="
+                () => {
+                  showSetupModal = false
+                }
+              "
+            >
+              应用
+            </button>
+          </div>
         </div>
       </template>
     </UModal>
@@ -286,53 +280,60 @@
     <UModal v-model="showTimeModal" :class="'max-w-sm'">
       <template #content>
         <div class="p-6 max-w-sm space-y-4 text-gray-800">
-        <h3 class="text-lg font-bold">设置时间</h3>
+          <h3 class="text-lg font-bold">设置时间</h3>
 
-        <div v-if="isDualTimer" class="space-y-3">
-          <div class="flex items-center justify-between">
-            <label class="text-sm text-gray-700">正方时间(秒):</label>
+          <div v-if="isDualTimer" class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-700">正方时间(秒):</label>
+              <input
+                v-model.number="customPositiveTime"
+                type="number"
+                class="w-20 px-2 py-1 border border-gray-300 rounded text-right"
+                min="0"
+                max="3600"
+              />
+            </div>
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-700">反方时间(秒):</label>
+              <input
+                v-model.number="customNegativeTime"
+                type="number"
+                class="w-20 px-2 py-1 border border-gray-300 rounded text-right"
+                min="0"
+                max="3600"
+              />
+            </div>
+          </div>
+
+          <div v-else>
+            <label class="block text-sm font-medium mb-1">时间(秒):</label>
             <input
+              v-model.number="customTime"
               type="number"
-              v-model.number="customPositiveTime"
-              class="w-20 px-2 py-1 border border-gray-300 rounded text-right"
+              class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none"
               min="0"
               max="3600"
             />
           </div>
-          <div class="flex items-center justify-between">
-            <label class="text-sm text-gray-700">反方时间(秒):</label>
-            <input
-              type="number"
-              v-model.number="customNegativeTime"
-              class="w-20 px-2 py-1 border border-gray-300 rounded text-right"
-              min="0"
-              max="3600"
-            />
+
+          <div class="flex justify-end gap-2 pt-2">
+            <button
+              class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+              @click="
+                () => {
+                  showTimeModal = false
+                }
+              "
+            >
+              取消
+            </button>
+            <button
+              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              @click="applyCustomTime"
+            >
+              应用
+            </button>
           </div>
-        </div>
-
-        <div v-else>
-          <label class="block text-sm font-medium mb-1">时间(秒):</label>
-          <input
-            type="number"
-            v-model.number="customTime"
-            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-600 focus:outline-none"
-            min="0"
-            max="3600"
-          />
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2">
-          <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" @click="() => { showTimeModal = false }">
-            取消
-          </button>
-          <button
-            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            @click="applyCustomTime"
-          >
-            应用
-          </button>
-        </div>
         </div>
       </template>
     </UModal>
@@ -341,43 +342,52 @@
     <UModal v-model="showProgress" :class="'max-w-3xl'">
       <template #content>
         <div class="p-6 max-w-3xl space-y-4 text-gray-800">
-        <h3 class="text-lg font-bold">环节进度</h3>
+          <h3 class="text-lg font-bold">环节进度</h3>
 
-        <div v-if="!debateStore.stages.length" class="text-center text-gray-500 py-8">
-          暂无环节数据
-        </div>
+          <div v-if="!debateStore.stages.length" class="text-center text-gray-500 py-8">
+            暂无环节数据
+          </div>
 
-        <div v-else class="grid grid-cols-3 gap-2">
-          <button
-            v-for="(stage, idx) in debateStore.stages"
-            :key="stage.id"
-            class="text-left px-4 py-3 border rounded transition"
-            :class="{
-              'bg-blue-600 text-white border-blue-600': currentStage === idx + 1,
-              'bg-gray-100 border-gray-300 hover:bg-gray-200': currentStage !== idx + 1,
-            }"
-            @click="() => { goToStage(idx); showProgress = false }"
-          >
-            <div class="font-bold text-sm">{{ idx + 1 }}. {{ stage.name }}</div>
-            <div class="text-xs opacity-80 mt-1">
-              <span v-if="stage.type === 'dual-timer'">
-                双计时 {{ stage.positiveDuration || stage.duration }}s / {{ stage.negativeDuration || stage.duration }}s
-              </span>
-              <span v-else-if="stage.type === 'special'">
-                无计时
-              </span>
-              <span v-else>
-                单计时 {{ stage.duration }}s
-              </span>
-            </div>
-          </button>
-        </div>
+          <div v-else class="grid grid-cols-3 gap-2">
+            <button
+              v-for="(stage, idx) in debateStore.stages"
+              :key="stage.id"
+              class="text-left px-4 py-3 border rounded transition"
+              :class="{
+                'bg-blue-600 text-white border-blue-600': currentStage === idx + 1,
+                'bg-gray-100 border-gray-300 hover:bg-gray-200': currentStage !== idx + 1,
+              }"
+              @click="
+                () => {
+                  goToStage(idx)
+                  showProgress = false
+                }
+              "
+            >
+              <div class="font-bold text-sm">{{ idx + 1 }}. {{ stage.name }}</div>
+              <div class="text-xs opacity-80 mt-1">
+                <span v-if="stage.type === 'dual-timer'">
+                  双计时 {{ stage.positiveDuration || stage.duration }}s /
+                  {{ stage.negativeDuration || stage.duration }}s
+                </span>
+                <span v-else-if="stage.type === 'special'"> 无计时 </span>
+                <span v-else> 单计时 {{ stage.duration }}s </span>
+              </div>
+            </button>
+          </div>
 
-        <div class="flex justify-end pt-2">
-          <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" @click="() => { showProgress = false }">
-            关闭
-          </button>
-        </div>
+          <div class="flex justify-end pt-2">
+            <button
+              class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+              @click="
+                () => {
+                  showProgress = false
+                }
+              "
+            >
+              关闭
+            </button>
+          </div>
         </div>
       </template>
     </UModal>
@@ -385,13 +395,13 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ ssr: false, layout: false })
-
 import { ref, reactive, computed, shallowRef, onMounted, onUnmounted } from 'vue'
 import { useRoute, useToast, navigateTo } from '#imports'
 import { normalizeStageType, isPpt } from '~/utils/stageType'
 import TimerDisplay from '~/components/TimerDisplay.vue'
 import TimerBanner from '~/components/TimerBanner.vue'
+
+definePageMeta({ ssr: false, layout: false })
 
 const authStore = useAuthStore()
 const debateStore = useDebateStore()
@@ -405,8 +415,8 @@ const loading = ref(true)
 // project 加载后通常不再修改内部字段，使用 shallowRef 避免深度响应式开销
 const project = shallowRef<any>(null)
 const showSetupModal = ref(false) // 赛前设置弹窗（队伍名称、辩题）
-const showTimeModal = ref(false)  // 临时设置时间弹窗
-const showProgress = ref(false)   // 环节进度指示
+const showTimeModal = ref(false) // 临时设置时间弹窗
+const showProgress = ref(false) // 环节进度指示
 
 // 赛前设置（临时覆盖，可编辑）
 const setupForm = reactive({
@@ -610,9 +620,7 @@ function handleKeyPress(event: KeyboardEvent) {
   const target = event.target as HTMLElement
   if (
     target &&
-    (target.tagName === 'INPUT' ||
-      target.tagName === 'TEXTAREA' ||
-      target.isContentEditable)
+    (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
   ) {
     return
   }
@@ -743,7 +751,10 @@ onMounted(async () => {
 onUnmounted(() => {
   debateStore.disposeTimer()
   window.removeEventListener('keydown', handleKeyPress)
-  if (pageResizeObserver) { pageResizeObserver.disconnect(); pageResizeObserver = null }
+  if (pageResizeObserver) {
+    pageResizeObserver.disconnect()
+    pageResizeObserver = null
+  }
 })
 
 // 计算属性：当前环节信息
@@ -754,7 +765,9 @@ const isDualTimer = computed(() => {
   const type = currentStageInfo.value?.type
   return type === 'dual-timer' || type === 'bilateral_debate' || type === 'free_debate'
 })
-const isSpecial = computed(() => currentStageInfo.value?.type === 'special' || currentStageInfo.value?.type === 'no_timer')
+const isSpecial = computed(
+  () => currentStageInfo.value?.type === 'special' || currentStageInfo.value?.type === 'no_timer',
+)
 // PPT/图片展示环节（纯播报不计时），使用 isPpt 工具函数兼容 normalizeStageType 后的 'ppt_replace'
 const isPptStage = computed(() => isPpt(currentStageInfo.value?.type))
 
@@ -794,7 +807,10 @@ const isTimeCritical = computed(() => debateStore.isTimeCritical)
   user-select: none;
   -webkit-user-select: none;
 }
-:deep(html), :deep(body) { overflow: hidden; }
+:deep(html),
+:deep(body) {
+  overflow: hidden;
+}
 
 /* 缩放画布：固定 1280x720 设计基准，等比缩放填满屏幕 */
 .timer-scale-wrapper {
@@ -818,7 +834,9 @@ const isTimeCritical = computed(() => debateStore.isTimeCritical)
   transition: opacity 0.3s ease-in-out;
   min-width: 12vw;
 }
-.timing-panel:hover { opacity: 1; }
+.timing-panel:hover {
+  opacity: 1;
+}
 
 /* 每一行：flex + 全宽 + 居中对齐 */
 .timing-panel > div {

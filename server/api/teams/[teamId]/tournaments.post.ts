@@ -10,8 +10,13 @@ export default defineEventHandler(async (event) => {
     const user = await getUserFromEventWithSession(event, prisma)
     const teamId = getRouterParam(event, 'teamId')!
     const { name, description, format, scheduledAt, venue, teams, judges } = await readBody<{
-      name: string; description?: string; format?: string  // format 非必填：赛程页可选择
-      scheduledAt?: string; venue?: string; teams?: string[]; judges?: string[]
+      name: string
+      description?: string
+      format?: string // format 非必填：赛程页可选择
+      scheduledAt?: string
+      venue?: string
+      teams?: string[]
+      judges?: string[]
     }>(event)
 
     if (!name) throw createError({ statusCode: 400, message: '赛事名称不能为空' })
@@ -19,11 +24,17 @@ export default defineEventHandler(async (event) => {
     const validFormats = [
       '',
       'manual',
-      'knockout', 'knockout:single', 'knockout:double',
-      'round_robin', 'round_robin:single', 'round_robin:double',
-      'page', 'swiss', 'group_knockout',
+      'knockout',
+      'knockout:single',
+      'knockout:double',
+      'round_robin',
+      'round_robin:single',
+      'round_robin:double',
+      'page',
+      'swiss',
+      'group_knockout',
     ]
-    const formatToSave = validFormats.includes(format || '') ? (format || '') : ''
+    const formatToSave = validFormats.includes(format || '') ? format || '' : ''
 
     const team = await prisma.team.findUnique({ where: { id: teamId } })
     if (!team) throw createError({ statusCode: 404, message: '团队不存在' })
@@ -41,7 +52,8 @@ export default defineEventHandler(async (event) => {
     const tournament = await prisma.tournament.create({
       data: {
         id: shortId,
-        teamId, name,
+        teamId,
+        name,
         description: description || null,
         format: formatToSave,
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
@@ -51,22 +63,31 @@ export default defineEventHandler(async (event) => {
     })
 
     if (teams && Array.isArray(teams)) {
-      await prisma.tournamentTeam.createMany({ data: teams.map((n: string) => ({ tournamentId: tournament.id, name: n })) })
+      await prisma.tournamentTeam.createMany({
+        data: teams.map((n: string) => ({ tournamentId: tournament.id, name: n })),
+      })
     }
     if (judges && Array.isArray(judges)) {
-      await prisma.tournamentJudge.createMany({ data: judges.map((n: string) => ({ tournamentId: tournament.id, name: n })) })
+      await prisma.tournamentJudge.createMany({
+        data: judges.map((n: string) => ({ tournamentId: tournament.id, name: n })),
+      })
     }
 
     // 通过 Bot 发送赛事创建通知（异步，不阻塞响应）
-    notifyTournamentCreate(prisma, tournament.id).catch(err => {
+    notifyTournamentCreate(prisma, tournament.id).catch((err) => {
       console.error('[Tournament Create] Bot 通知发送失败:', err)
     })
 
     setResponseStatus(event, 201)
     return {
-      id: tournament.id, name: tournament.name, description: tournament.description,
-      format: tournament.format, status: tournament.status,
-      scheduledAt: tournament.scheduledAt, venue: tournament.venue, createdAt: tournament.createdAt,
+      id: tournament.id,
+      name: tournament.name,
+      description: tournament.description,
+      format: tournament.format,
+      status: tournament.status,
+      scheduledAt: tournament.scheduledAt,
+      venue: tournament.venue,
+      createdAt: tournament.createdAt,
     }
   } catch (error: any) {
     if (error.statusCode) throw error

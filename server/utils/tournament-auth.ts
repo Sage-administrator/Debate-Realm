@@ -14,7 +14,10 @@ import type { PrismaClient, Tournament, Team } from '../lib/generated/client'
  * 注意：当前 Tournament 表没有 isPublic 字段，所以没有“公开赛事可读”分支；
  *       如后续新增 isPublic，可在此统一扩展。
  */
-export function canReadTournament(user: JWTPayload | null, tournament: { teamId: string }): boolean {
+export function canReadTournament(
+  user: JWTPayload | null,
+  tournament: { teamId: string },
+): boolean {
   if (!user) return false
   if (user.role === 'system_admin') return true
   if (user.role === 'admin' || user.role === 'subaccount' || user.role === 'debater') {

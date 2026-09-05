@@ -14,12 +14,12 @@ interface StageFormData {
   duration: number
   protectionTime: number
   speaker?: string
-  speakerMode?: number       // 0=正常 1=反向
+  speakerMode?: number // 0=正常 1=反向
   questioner?: string
   questionerMode?: number
-  responders?: string[]      // 单方发问接受人（多选）
+  responders?: string[] // 单方发问接受人（多选）
   respondersMode?: number
-  responder?: string         // [已废弃] 旧数据的单值接受人；新数据用 responders（数组）。读模板/DB 旧字段用
+  responder?: string // [已废弃] 旧数据的单值接受人；新数据用 responders（数组）。读模板/DB 旧字段用
   firstSpeaker?: string
   // 对辩双方参与辩手（多选）
   positiveSpeakers?: string[]
@@ -84,9 +84,23 @@ function stageDataEqual(
 ): boolean {
   if (!a || !b) return a === b
   const keys: (keyof StageFormData)[] = [
-    'type', 'name', 'duration', 'protectionTime', 'speaker', 'speakerMode', 'questioner', 'questionerMode',
-    'responders', 'respondersMode', 'firstSpeaker', 'positiveSpeakers', 'negativeSpeakers',
-    'questionDuration', 'answerDuration', 'pptImage', 'speakers',
+    'type',
+    'name',
+    'duration',
+    'protectionTime',
+    'speaker',
+    'speakerMode',
+    'questioner',
+    'questionerMode',
+    'responders',
+    'respondersMode',
+    'firstSpeaker',
+    'positiveSpeakers',
+    'negativeSpeakers',
+    'questionDuration',
+    'answerDuration',
+    'pptImage',
+    'speakers',
   ]
   for (const k of keys) {
     if (JSON.stringify(a[k]) !== JSON.stringify(b[k])) return false
@@ -173,7 +187,6 @@ function clearPptImage() {
 <template>
   <div class="stage-form">
     <div class="form-content">
-
       <!-- 环节类型 -->
       <div class="form-field">
         <label class="form-label">环节类型</label>
@@ -194,21 +207,48 @@ function clearPptImage() {
       <!-- ==== 单方发言：发言方 ==== -->
       <div v-if="isSpeech(localData.type)" class="form-field">
         <label class="form-label">发言方</label>
-        <RolePicker v-model="localData.speaker" v-model:mode="localData.speakerMode" multiple reverse placeholder="请选择发言方（可多选，或排除某辩手）" />
-        <p class="form-hint">用下拉顶部的「正常 / 排除」切换：正常模式可勾选多位辩手（如"正方 · 一/二辩"）；排除模式下勾选要排除的辩手，其余同方辩手均可发言（获得发言权限）。</p>
+        <RolePicker
+          v-model="localData.speaker"
+          v-model:mode="localData.speakerMode"
+          multiple
+          reverse
+          placeholder="请选择发言方（可多选，或排除某辩手）"
+        />
+        <p class="form-hint">
+          用下拉顶部的「正常 / 排除」切换：正常模式可勾选多位辩手（如"正方 ·
+          一/二辩"）；排除模式下勾选要排除的辩手，其余同方辩手均可发言（获得发言权限）。
+        </p>
       </div>
 
       <!-- ==== 单方发问：发问人 + 接受人（可多选正常 / 排除模式） ==== -->
       <div v-if="isQuestion(localData.type)" class="form-row-2col">
         <div class="form-field">
           <label class="form-label">发问人</label>
-          <RolePicker v-model="localData.questioner" v-model:mode="localData.questionerMode" multiple reverse placeholder="请选择发问人（可多选，或排除某辩手）" />
-          <p class="form-hint">下拉顶部「正常 / 排除」切换：正常可勾选多位辩手；排除模式勾选要排除的辩手，其余同方辩手均可发问。</p>
+          <RolePicker
+            v-model="localData.questioner"
+            v-model:mode="localData.questionerMode"
+            multiple
+            reverse
+            placeholder="请选择发问人（可多选，或排除某辩手）"
+          />
+          <p class="form-hint">
+            下拉顶部「正常 /
+            排除」切换：正常可勾选多位辩手；排除模式勾选要排除的辩手，其余同方辩手均可发问。
+          </p>
         </div>
         <div class="form-field">
           <label class="form-label">接受人</label>
-          <RolePicker v-model="localData.responders" v-model:mode="localData.respondersMode" multiple reverse placeholder="请选择接受人（可多选，或排除某辩手）" />
-          <p class="form-hint">下拉顶部「正常 / 排除」切换：正常可勾选多位辩手；排除模式勾选要排除的辩手，其余同方辩手均可接受发问。</p>
+          <RolePicker
+            v-model="localData.responders"
+            v-model:mode="localData.respondersMode"
+            multiple
+            reverse
+            placeholder="请选择接受人（可多选，或排除某辩手）"
+          />
+          <p class="form-hint">
+            下拉顶部「正常 /
+            排除」切换：正常可勾选多位辩手；排除模式勾选要排除的辩手，其余同方辩手均可接受发问。
+          </p>
         </div>
       </div>
 
@@ -216,7 +256,12 @@ function clearPptImage() {
       <div v-if="isQuestion(localData.type)" class="form-field">
         <label class="form-label">提问时长</label>
         <div class="input-with-suffix">
-          <input v-model.number="localData.questionDuration" type="number" min="0" class="form-input" />
+          <input
+            v-model.number="localData.questionDuration"
+            type="number"
+            min="0"
+            class="form-input"
+          />
           <span class="input-suffix">秒</span>
         </div>
       </div>
@@ -225,11 +270,21 @@ function clearPptImage() {
       <div v-if="isBilateral(localData.type)" class="form-row-2col">
         <div class="form-field">
           <label class="form-label">正方参与辩手</label>
-          <RolePicker v-model="localData.positiveSpeakers" multiple side="positive" placeholder="选择正方辩手" />
+          <RolePicker
+            v-model="localData.positiveSpeakers"
+            multiple
+            side="positive"
+            placeholder="选择正方辩手"
+          />
         </div>
         <div class="form-field">
           <label class="form-label">反方参与辩手</label>
-          <RolePicker v-model="localData.negativeSpeakers" multiple side="negative" placeholder="选择反方辩手" />
+          <RolePicker
+            v-model="localData.negativeSpeakers"
+            multiple
+            side="negative"
+            placeholder="选择反方辩手"
+          />
         </div>
       </div>
 
@@ -242,7 +297,9 @@ function clearPptImage() {
 
       <!-- ==== 通用：环节时长（单方发言/单计时器/双计时器） ==== -->
       <div v-if="isTimerType(localData.type) && !isQuestion(localData.type)" class="form-field">
-        <label class="form-label">{{ isDualTimer(localData.type) ? '每方时长' : '环节时长' }}</label>
+        <label class="form-label">{{
+          isDualTimer(localData.type) ? '每方时长' : '环节时长'
+        }}</label>
         <div class="input-with-suffix">
           <input v-model.number="localData.duration" type="number" min="0" class="form-input" />
           <span class="input-suffix">秒</span>
@@ -253,20 +310,30 @@ function clearPptImage() {
       <div v-if="isQuestion(localData.type) || isBilateral(localData.type)" class="form-field">
         <label class="form-label">保护时间</label>
         <div class="input-with-suffix">
-          <input v-model.number="localData.protectionTime" type="number" min="0" class="form-input" />
+          <input
+            v-model.number="localData.protectionTime"
+            type="number"
+            min="0"
+            class="form-input"
+          />
           <span class="input-suffix">秒</span>
         </div>
-        <p class="form-hint">{{ isQuestion(localData.type) ? '接受人开头 N 秒内不可被打断，0 表示不启用' : '发言方开头 N 秒内不可被打断，0 表示不启用' }}</p>
+        <p class="form-hint">
+          {{
+            isQuestion(localData.type)
+              ? '接受人开头 N 秒内不可被打断，0 表示不启用'
+              : '发言方开头 N 秒内不可被打断，0 表示不启用'
+          }}
+        </p>
       </div>
 
       <!-- ==== 无计时器：发言方（可多选，用于发言权限联动） ==== -->
       <div v-if="isNoTimer(localData.type)" class="form-field">
         <label class="form-label">发言方</label>
-        <SpeechRolePicker
-          v-model="localData.speakers"
-          placeholder="选择可发言的角色（可多选）"
-        />
-        <p class="form-hint">选择本环节由哪些角色发言（可多选）。计时器运行时将自动套用对应发言权限：被选中的角色可发言（绿），其余不可发言（红）。</p>
+        <SpeechRolePicker v-model="localData.speakers" placeholder="选择可发言的角色（可多选）" />
+        <p class="form-hint">
+          选择本环节由哪些角色发言（可多选）。计时器运行时将自动套用对应发言权限：被选中的角色可发言（绿），其余不可发言（红）。
+        </p>
       </div>
 
       <!-- ==== 无计时器/PPT 提示 ==== -->
@@ -283,7 +350,10 @@ function clearPptImage() {
           v-model="localData.speakers"
           placeholder="选择本环节可发言的角色（可多选）"
         />
-        <p class="form-hint">选择本环节由哪些角色发言（可多选）。QQ 频道模式下将自动套用对应发言权限：被选中的角色可发言（绿），其余不可发言（红）。</p>
+        <p class="form-hint">
+          选择本环节由哪些角色发言（可多选）。QQ
+          频道模式下将自动套用对应发言权限：被选中的角色可发言（绿），其余不可发言（红）。
+        </p>
       </div>
 
       <div v-if="isPpt(localData.type)" class="form-field">
@@ -296,11 +366,20 @@ function clearPptImage() {
             class="hidden"
             @change="onPptFileChange"
           />
-          <button type="button" class="upload-btn" :disabled="pptUploading" @click="pptFileInput?.click()">
+          <button
+            type="button"
+            class="upload-btn"
+            :disabled="pptUploading"
+            @click="pptFileInput?.click()"
+          >
             {{ pptUploading ? '上传中…' : '选择图片' }}
           </button>
-          <span v-if="localData.pptImage && !pptUploading" class="upload-status success">已上传 ✓</span>
-          <button v-if="localData.pptImage" type="button" class="clear-btn" @click="clearPptImage">移除</button>
+          <span v-if="localData.pptImage && !pptUploading" class="upload-status success"
+            >已上传 ✓</span
+          >
+          <button v-if="localData.pptImage" type="button" class="clear-btn" @click="clearPptImage">
+            移除
+          </button>
         </div>
         <div v-if="localData.pptImage" class="ppt-preview">
           <img :src="localData.pptImage" alt="PPT预览" />
@@ -353,7 +432,9 @@ function clearPptImage() {
   outline: none;
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   box-sizing: border-box;
 }
 
@@ -381,7 +462,9 @@ function clearPptImage() {
   border-radius: 6px;
   overflow: hidden;
   background: var(--color-bg-secondary);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .input-with-suffix:focus-within {
@@ -444,10 +527,17 @@ function clearPptImage() {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s, opacity 0.2s;
+  transition:
+    background-color 0.2s,
+    opacity 0.2s;
 }
-.upload-btn:hover { opacity: 0.9; }
-.upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.upload-btn:hover {
+  opacity: 0.9;
+}
+.upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .upload-status {
   font-size: 13px;
@@ -465,7 +555,9 @@ function clearPptImage() {
   border: 1px solid var(--color-border);
   border-radius: 6px;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
 }
 .clear-btn:hover {
   border-color: var(--color-danger, #e53e3e);
@@ -489,5 +581,4 @@ function clearPptImage() {
   max-height: 220px;
   object-fit: contain;
 }
-
 </style>

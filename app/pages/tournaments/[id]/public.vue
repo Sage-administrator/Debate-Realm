@@ -127,15 +127,28 @@ onMounted(() => {
 
     <!-- ═══════════ 加载中 ═══════════ -->
     <div v-if="loading" class="text-center py-20">
-      <div class="inline-block animate-spin w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
+      <div
+        class="inline-block animate-spin w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full"
+      />
       <p class="text-[var(--color-text-muted)] mt-4">加载中...</p>
     </div>
 
     <!-- ═══════════ 加载失败 ═══════════ -->
     <div v-else-if="loadError" class="text-center py-20">
-      <UIcon name="i-lucide-alert-circle" class="w-16 h-16 text-red-500/40 dark:text-red-400/50 mx-auto mb-4" />
+      <UIcon
+        name="i-lucide-alert-circle"
+        class="w-16 h-16 text-red-500/40 dark:text-red-400/50 mx-auto mb-4"
+      />
       <p class="text-[var(--color-text-secondary)] mb-4">赛事不存在或未公开</p>
-      <UButton color="neutral" variant="ghost" @click="() => { navigateTo('/tournaments') }">
+      <UButton
+        color="neutral"
+        variant="ghost"
+        @click="
+          () => {
+            navigateTo('/tournaments')
+          }
+        "
+      >
         返回赛事列表
       </UButton>
     </div>
@@ -143,27 +156,41 @@ onMounted(() => {
     <!-- ═══════════ 赛事详情 ═══════════ -->
     <main v-else-if="tournament" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-10">
       <!-- ── 赛事头部 ── -->
-      <div class="bg-[var(--color-bg-secondary)] backdrop-blur rounded-2xl border border-[var(--color-border)] overflow-hidden mb-8">
+      <div
+        class="bg-[var(--color-bg-secondary)] backdrop-blur rounded-2xl border border-[var(--color-border)] overflow-hidden mb-8"
+      >
         <!-- 顶部渐变条 -->
-        <div class="h-3 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+        <div class="h-3 bg-gradient-to-r from-indigo-500 to-purple-600" />
 
         <div class="p-8">
           <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
             <div class="flex-1">
               <!-- 状态标签 -->
               <div class="flex items-center gap-3 mb-3">
-                <span :class="['px-3 py-1 rounded-full text-xs font-medium', statusColors[tournament.status] || 'bg-gray-500/20 text-gray-400']">
+                <span
+                  :class="[
+                    'px-3 py-1 rounded-full text-xs font-medium',
+                    statusColors[tournament.status] || 'bg-gray-500/20 text-gray-400',
+                  ]"
+                >
                   {{ statusLabels[tournament.status] || tournament.status }}
                 </span>
-                <span class="px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]">
+                <span
+                  class="px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
+                >
                   {{ formatLabels[tournament.format] || tournament.format || '赛制待定' }}
                 </span>
-                <span v-if="tournament.registrationType" class="px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]">
+                <span
+                  v-if="tournament.registrationType"
+                  class="px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
+                >
                   {{ regTypeLabels[tournament.registrationType] || tournament.registrationType }}
                 </span>
               </div>
               <!-- 赛事名称 -->
-              <h1 class="text-3xl font-bold text-[var(--color-text-primary)] mb-3">{{ tournament.name }}</h1>
+              <h1 class="text-3xl font-bold text-[var(--color-text-primary)] mb-3">
+                {{ tournament.name }}
+              </h1>
               <!-- 主办方 -->
               <div class="flex items-center gap-2 text-[var(--color-text-muted)]">
                 <UIcon name="i-lucide-building" class="w-4 h-4" />
@@ -186,9 +213,16 @@ onMounted(() => {
                 class="px-8 py-3 bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] rounded-xl font-medium cursor-not-allowed"
                 disabled
               >
-                {{ tournament.registrationDeadline && isRegistrationClosed ? '报名已截止' : '报名未开放' }}
+                {{
+                  tournament.registrationDeadline && isRegistrationClosed
+                    ? '报名已截止'
+                    : '报名未开放'
+                }}
               </button>
-              <span v-if="tournament.registrationDeadline" class="text-xs text-[var(--color-text-muted)]">
+              <span
+                v-if="tournament.registrationDeadline"
+                class="text-xs text-[var(--color-text-muted)]"
+              >
                 截止：{{ formatDate(tournament.registrationDeadline) }}
               </span>
               <!-- 积分榜入口 -->
@@ -205,19 +239,27 @@ onMounted(() => {
           <!-- 数据统计卡片 -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="bg-[var(--color-bg-secondary)] rounded-xl p-4 text-center">
-              <div class="text-2xl font-bold text-[var(--color-text-primary)]">{{ tournament.stats.registrationCount }}</div>
+              <div class="text-2xl font-bold text-[var(--color-text-primary)]">
+                {{ tournament.stats.registrationCount }}
+              </div>
               <div class="text-xs text-[var(--color-text-muted)] mt-1">已报名</div>
             </div>
             <div class="bg-[var(--color-bg-secondary)] rounded-xl p-4 text-center">
-              <div class="text-2xl font-bold text-[var(--color-text-primary)]">{{ tournament.teams.length }}</div>
+              <div class="text-2xl font-bold text-[var(--color-text-primary)]">
+                {{ tournament.teams.length }}
+              </div>
               <div class="text-xs text-[var(--color-text-muted)] mt-1">参赛队伍</div>
             </div>
             <div class="bg-[var(--color-bg-secondary)] rounded-xl p-4 text-center">
-              <div class="text-2xl font-bold text-[var(--color-text-primary)]">{{ tournament.stats.judgeCount }}</div>
+              <div class="text-2xl font-bold text-[var(--color-text-primary)]">
+                {{ tournament.stats.judgeCount }}
+              </div>
               <div class="text-xs text-[var(--color-text-muted)] mt-1">评委</div>
             </div>
             <div class="bg-[var(--color-bg-secondary)] rounded-xl p-4 text-center">
-              <div class="text-2xl font-bold text-[var(--color-text-primary)]">{{ tournament.stats.matchCount }}</div>
+              <div class="text-2xl font-bold text-[var(--color-text-primary)]">
+                {{ tournament.stats.matchCount }}
+              </div>
               <div class="text-xs text-[var(--color-text-muted)] mt-1">比赛场次</div>
             </div>
           </div>
@@ -240,7 +282,11 @@ onMounted(() => {
               ? 'text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
               : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text-primary)]',
           ]"
-          @click="() => { activeTab = tab.key as any }"
+          @click="
+            () => {
+              activeTab = tab.key as any
+            }
+          "
         >
           <div class="flex items-center gap-2">
             <UIcon :name="tab.icon" class="w-4 h-4" />
@@ -250,38 +296,60 @@ onMounted(() => {
       </div>
 
       <!-- ── Tab 内容 ── -->
-      <div class="bg-[var(--color-bg-secondary)] backdrop-blur rounded-2xl border border-[var(--color-border)] p-6">
+      <div
+        class="bg-[var(--color-bg-secondary)] backdrop-blur rounded-2xl border border-[var(--color-border)] p-6"
+      >
         <!-- 赛事介绍 -->
         <div v-if="activeTab === 'intro'">
           <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4">赛事信息</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <div class="flex items-start gap-3">
-              <UIcon name="i-lucide-calendar" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5" />
+              <UIcon
+                name="i-lucide-calendar"
+                class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5"
+              />
               <div>
                 <div class="text-xs text-[var(--color-text-muted)]">比赛时间</div>
-                <div class="text-[var(--color-text-primary)]">{{ formatDateShort(tournament.scheduledAt) }}</div>
+                <div class="text-[var(--color-text-primary)]">
+                  {{ formatDateShort(tournament.scheduledAt) }}
+                </div>
               </div>
             </div>
             <div class="flex items-start gap-3">
-              <UIcon name="i-lucide-map-pin" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5" />
+              <UIcon
+                name="i-lucide-map-pin"
+                class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5"
+              />
               <div>
                 <div class="text-xs text-[var(--color-text-muted)]">比赛地点</div>
                 <div class="text-[var(--color-text-primary)]">{{ tournament.venue || '待定' }}</div>
               </div>
             </div>
             <div class="flex items-start gap-3">
-              <UIcon name="i-lucide-swords" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5" />
+              <UIcon
+                name="i-lucide-swords"
+                class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5"
+              />
               <div>
                 <div class="text-xs text-[var(--color-text-muted)]">比赛赛制</div>
-                <div class="text-[var(--color-text-primary)]">{{ formatLabels[tournament.format] || tournament.format || '待定' }}</div>
+                <div class="text-[var(--color-text-primary)]">
+                  {{ formatLabels[tournament.format] || tournament.format || '待定' }}
+                </div>
               </div>
             </div>
             <div class="flex items-start gap-3">
-              <UIcon name="i-lucide-users" class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5" />
+              <UIcon
+                name="i-lucide-users"
+                class="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5"
+              />
               <div>
                 <div class="text-xs text-[var(--color-text-muted)]">队伍人数要求</div>
                 <div class="text-[var(--color-text-primary)]">
-                  {{ tournament.teamSize ? (tournament.teamSize + 'v' + tournament.teamSize + ' 制') : '不限' }}
+                  {{
+                    tournament.teamSize
+                      ? tournament.teamSize + 'v' + tournament.teamSize + ' 制'
+                      : '不限'
+                  }}
                 </div>
               </div>
             </div>
@@ -290,14 +358,20 @@ onMounted(() => {
           <!-- 赛事介绍 -->
           <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-3">赛事介绍</h3>
           <div class="prose prose-invert max-w-none">
-            <p v-if="tournament.description" class="text-[var(--color-text-secondary)] whitespace-pre-wrap leading-relaxed">
+            <p
+              v-if="tournament.description"
+              class="text-[var(--color-text-secondary)] whitespace-pre-wrap leading-relaxed"
+            >
               {{ tournament.description }}
             </p>
             <p v-else class="text-[var(--color-text-muted)] italic">暂无赛事介绍</p>
           </div>
 
           <!-- 报名须知 -->
-          <div v-if="tournament.registrationInfo" class="mt-6 pt-6 border-t border-[var(--color-border)]">
+          <div
+            v-if="tournament.registrationInfo"
+            class="mt-6 pt-6 border-t border-[var(--color-border)]"
+          >
             <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-3">
               <span class="flex items-center gap-2">
                 <UIcon name="i-lucide-info" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
@@ -314,10 +388,15 @@ onMounted(() => {
         <div v-if="activeTab === 'teams'">
           <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4">
             参赛队伍
-            <span class="text-sm font-normal text-[var(--color-text-muted)] ml-2">共 {{ tournament.teams.length }} 支</span>
+            <span class="text-sm font-normal text-[var(--color-text-muted)] ml-2"
+              >共 {{ tournament.teams.length }} 支</span
+            >
           </h3>
           <div v-if="tournament.teams.length === 0" class="text-center py-12">
-            <UIcon name="i-lucide-users" class="w-12 h-12 text-indigo-600 dark:text-indigo-400 mx-auto mb-3" />
+            <UIcon
+              name="i-lucide-users"
+              class="w-12 h-12 text-indigo-600 dark:text-indigo-400 mx-auto mb-3"
+            />
             <p class="text-[var(--color-text-muted)]">暂无参赛队伍</p>
           </div>
           <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -326,12 +405,18 @@ onMounted(() => {
               :key="idx"
               class="flex items-center gap-3 bg-[var(--color-bg-secondary)] rounded-xl p-4"
             >
-              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+              <div
+                class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm"
+              >
                 {{ Number(idx) + 1 }}
               </div>
               <div class="flex-1 min-w-0">
-                <div class="text-[var(--color-text-primary)] font-medium truncate">{{ team.name }}</div>
-                <div v-if="team.groupLabel" class="text-xs text-[var(--color-text-muted)]">{{ team.groupLabel }}</div>
+                <div class="text-[var(--color-text-primary)] font-medium truncate">
+                  {{ team.name }}
+                </div>
+                <div v-if="team.groupLabel" class="text-xs text-[var(--color-text-muted)]">
+                  {{ team.groupLabel }}
+                </div>
               </div>
             </div>
           </div>
@@ -341,10 +426,15 @@ onMounted(() => {
         <div v-if="activeTab === 'judges'">
           <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4">
             评委阵容
-            <span class="text-sm font-normal text-[var(--color-text-muted)] ml-2">共 {{ tournament.judges.length }} 位</span>
+            <span class="text-sm font-normal text-[var(--color-text-muted)] ml-2"
+              >共 {{ tournament.judges.length }} 位</span
+            >
           </h3>
           <div v-if="tournament.judges.length === 0" class="text-center py-12">
-            <UIcon name="i-lucide-gavel" class="w-12 h-12 text-indigo-600 dark:text-indigo-400 mx-auto mb-3" />
+            <UIcon
+              name="i-lucide-gavel"
+              class="w-12 h-12 text-indigo-600 dark:text-indigo-400 mx-auto mb-3"
+            />
             <p class="text-[var(--color-text-muted)]">暂无评委信息</p>
           </div>
           <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -353,7 +443,9 @@ onMounted(() => {
               :key="idx"
               class="flex items-center gap-3 bg-[var(--color-bg-secondary)] rounded-xl p-4"
             >
-              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-400 flex items-center justify-center text-[var(--color-text-primary)] font-bold text-sm">
+              <div
+                class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-400 flex items-center justify-center text-[var(--color-text-primary)] font-bold text-sm"
+              >
                 {{ judge.charAt(0) }}
               </div>
               <div class="flex-1 min-w-0">
@@ -368,7 +460,10 @@ onMounted(() => {
         <div v-if="activeTab === 'schedule'">
           <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4">赛程安排</h3>
           <div class="text-center py-12">
-            <UIcon name="i-lucide-calendar-clock" class="w-12 h-12 text-indigo-600 dark:text-indigo-400 mx-auto mb-3" />
+            <UIcon
+              name="i-lucide-calendar-clock"
+              class="w-12 h-12 text-indigo-600 dark:text-indigo-400 mx-auto mb-3"
+            />
             <p class="text-[var(--color-text-muted)] mb-2">赛程即将公布</p>
             <p class="text-[var(--color-text-muted)] text-sm">请关注赛事主办方后续通知</p>
           </div>
@@ -376,7 +471,10 @@ onMounted(() => {
       </div>
 
       <!-- ── 底部报名 CTA ── -->
-      <div v-if="tournament.registrationOpen && !isRegistrationClosed" class="mt-8 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl border border-indigo-500/30 p-8 text-center">
+      <div
+        v-if="tournament.registrationOpen && !isRegistrationClosed"
+        class="mt-8 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl border border-indigo-500/30 p-8 text-center"
+      >
         <h3 class="text-xl font-bold text-[var(--color-text-primary)] mb-2">心动不如行动</h3>
         <p class="text-[var(--color-text-secondary)] mb-6">立即报名，展现你的辩论风采！</p>
         <button

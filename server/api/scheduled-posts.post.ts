@@ -64,9 +64,10 @@ export default defineEventHandler(async (event) => {
 
     if (!nextRunAt) throw createError({ statusCode: 400, message: '无法计算下次触发时间' })
 
-    const pollOptions = Array.isArray(body.pollOptions) && body.pollOptions.length
-      ? JSON.stringify(body.pollOptions)
-      : null
+    const pollOptions =
+      Array.isArray(body.pollOptions) && body.pollOptions.length
+        ? JSON.stringify(body.pollOptions)
+        : null
 
     const created = await prisma.scheduledPost.create({
       data: {

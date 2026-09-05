@@ -8,15 +8,15 @@
 
 ## 0. 现有实现事实摘要（设计依据）
 
-| 来源 | 关键事实 |
-| --- | --- |
-| `server/lib/scheduler.ts` | `computeNextRun` 仅支持 `once`/`daily`/`weekly`，**无 cron**；`scanDueTasks(prisma)` 扫描 `status='pending' && nextRunAt<=now` → 调 `triggerTask` 发帖 → 写 `ScheduledPostRun`；失败时置 `failed`+`sendChannelMessage` 推到 `Team.botChannelId`；`startScheduler/stopScheduler` 为 **in-process 30s 扫描**，与 Bot 保活同生命周期（serverless scale-to-zero 下需外部 ping 唤醒）。 |
-| `server/lib/bot-ws.ts` | `BotConfig` 类型；`postForumThread(config,channelId,title,content,format)`（**仅私域**）；`sendChannelMessage(config,channelId,content)`（公域/私域均可用）；`PRIVATE_INTENTS`/`PUBLIC_INTENTS`、`resolveIntents(isPrivate)` 严格域隔离。 |
-| `prisma/schema.prisma` | `ScheduledPost`（teamId,title,content,type,channelId,tags,pollOptions,scheduleType,runAt,timeHHMM,weekday,timezone,status,lastRunAt,lastResult,nextRunAt…）；`ScheduledPostRun`（scheduledPostId,runAt,status,message,postTaskId）；`Team`（含 `botAppId`/`botAppSecret`/`botChannelId`/`botIsPrivate`）。**无内容池模型**。 |
-| `server/api/scheduled-posts*.ts` | 6 条路由：GET/POST 列表与创建、PUT/DELETE `[id]`、POST `[id]/toggle`、GET `[id]/runs`。鉴权：`getUserFromEventWithSession`（admin/system_admin 可写，token 在 `Authorization: Bearer`）。 |
-| `app/pages/bot/scheduled.vue` | 管理页：类型(辩论题目/讨论话题)、标题、正文(MD)、目标论坛子频道 ID、标签、时区、投票选项、调度(单次/每天/每周)、星期；状态徽章 pending/published/paused/failed；启停/编辑/删除/历史。 |
-| `server/plugins/bot.ts` | 启动即从 DB `loadBotsFromDatabase`；每 5 分钟 `resyncConfiguredBots` 保活；`startScheduler(prismaInstance)` 启动调度；`close` 钩子清理。 |
-| WorkBuddy 平台 | `automation_update` 管理自动化（存 `~/.workbuddy/workbuddy.db`）；`scheduleType`=`once`/`recurring`；`rrule`（RFC 5545，DAILY/HOURLY/WEEKLY/MONTHLY/YEARLY，可表达每 2 周、每月 15 号等自定义周期）；`scheduledAt`（仅 once）；`cwds`（逗号分隔工作目录）；`status`=ACTIVE/PAUSED；`validFrom/validUntil`；`prompt` 为 LLM 任务描述。Skill 为目录 + `SKILL.md`（frontmatter：name/description/触发词），分用户级与项目级。 |
+| 来源                             | 关键事实                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `server/lib/scheduler.ts`        | `computeNextRun` 仅支持 `once`/`daily`/`weekly`，**无 cron**；`scanDueTasks(prisma)` 扫描 `status='pending' && nextRunAt<=now` → 调 `triggerTask` 发帖 → 写 `ScheduledPostRun`；失败时置 `failed`+`sendChannelMessage` 推到 `Team.botChannelId`；`startScheduler/stopScheduler` 为 **in-process 30s 扫描**，与 Bot 保活同生命周期（serverless scale-to-zero 下需外部 ping 唤醒）。                                         |
+| `server/lib/bot-ws.ts`           | `BotConfig` 类型；`postForumThread(config,channelId,title,content,format)`（**仅私域**）；`sendChannelMessage(config,channelId,content)`（公域/私域均可用）；`PRIVATE_INTENTS`/`PUBLIC_INTENTS`、`resolveIntents(isPrivate)` 严格域隔离。                                                                                                                                                                                  |
+| `prisma/schema.prisma`           | `ScheduledPost`（teamId,title,content,type,channelId,tags,pollOptions,scheduleType,runAt,timeHHMM,weekday,timezone,status,lastRunAt,lastResult,nextRunAt…）；`ScheduledPostRun`（scheduledPostId,runAt,status,message,postTaskId）；`Team`（含 `botAppId`/`botAppSecret`/`botChannelId`/`botIsPrivate`）。**无内容池模型**。                                                                                               |
+| `server/api/scheduled-posts*.ts` | 6 条路由：GET/POST 列表与创建、PUT/DELETE `[id]`、POST `[id]/toggle`、GET `[id]/runs`。鉴权：`getUserFromEventWithSession`（admin/system_admin 可写，token 在 `Authorization: Bearer`）。                                                                                                                                                                                                                                  |
+| `app/pages/bot/scheduled.vue`    | 管理页：类型(辩论题目/讨论话题)、标题、正文(MD)、目标论坛子频道 ID、标签、时区、投票选项、调度(单次/每天/每周)、星期；状态徽章 pending/published/paused/failed；启停/编辑/删除/历史。                                                                                                                                                                                                                                      |
+| `server/plugins/bot.ts`          | 启动即从 DB `loadBotsFromDatabase`；每 5 分钟 `resyncConfiguredBots` 保活；`startScheduler(prismaInstance)` 启动调度；`close` 钩子清理。                                                                                                                                                                                                                                                                                   |
+| WorkBuddy 平台                   | `automation_update` 管理自动化（存 `~/.workbuddy/workbuddy.db`）；`scheduleType`=`once`/`recurring`；`rrule`（RFC 5545，DAILY/HOURLY/WEEKLY/MONTHLY/YEARLY，可表达每 2 周、每月 15 号等自定义周期）；`scheduledAt`（仅 once）；`cwds`（逗号分隔工作目录）；`status`=ACTIVE/PAUSED；`validFrom/validUntil`；`prompt` 为 LLM 任务描述。Skill 为目录 + `SKILL.md`（frontmatter：name/description/触发词），分用户级与项目级。 |
 
 ---
 
@@ -105,13 +105,13 @@ flowchart TB
 name: debate-scheduled-publish
 description: 管理辩论赛「定时发布」——创建/编辑辩论题目与讨论帖的定时 QQ 论坛发帖、维护内容池模板、配置 WorkBuddy 自动化周期触发与多渠道通知。
 triggers:
-  - "定时发布"
-  - "定时发帖"
-  - "设置辩论题定时"
-  - "每周自动发辩论题"
-  - "内容池"
-  - "自动发布辩论话题"
-  - "scheduled publish"
+  - '定时发布'
+  - '定时发帖'
+  - '设置辩论题定时'
+  - '每周自动发辩论题'
+  - '内容池'
+  - '自动发布辩论话题'
+  - 'scheduled publish'
 ---
 
 # 定时发布 Skill
@@ -119,6 +119,7 @@ triggers:
 你是 DebateTimer 定时发布助手。基于模块 REST API 工作（契约见 references/api-contract.md）。
 
 ## 能力
+
 1. 内容池：列出/新建/编辑辩论题与讨论帖模板（含分类、标签、优先级）。
 2. 定时任务：基于模板或自定义内容创建 ScheduledPost；支持 once/daily/weekly。
 3. 自动化：当用户要求「每 N 周 / 每月 X 号」等**自定义周期**时，
@@ -127,6 +128,7 @@ triggers:
 4. 通知：配置 NotificationConfig（成功/失败都通知，指定频道或用户或 webhook）。
 
 ## 调用约定（必须）
+
 - 所有写操作需管理员鉴权：请求头 `Authorization: Bearer <token>`。
 - 自动化触发模块 API 使用**服务令牌**（非用户会话），见 api-contract.md 的「服务令牌」。
 - 论坛发帖仅私域机器人可用；公域机器人创建任务时须提示用户改用消息频道或私域 Bot。
@@ -134,12 +136,12 @@ triggers:
 
 **调用约定（结构化）**：
 
-| 项目 | 约定 |
-| --- | --- |
-| 触发方式 | 用户消息命中 `triggers` 关键词 → WorkBuddy 加载本 Skill → LLM 读取 SKILL.md → 选择能力 |
-| 与模块通信 | 经 §2.5 的 REST API；Skill 本身**不实现**发帖逻辑，只编排 |
+| 项目       | 约定                                                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------- |
+| 触发方式   | 用户消息命中 `triggers` 关键词 → WorkBuddy 加载本 Skill → LLM 读取 SKILL.md → 选择能力                   |
+| 与模块通信 | 经 §2.5 的 REST API；Skill 本身**不实现**发帖逻辑，只编排                                                |
 | 创建自动化 | 调 `scripts/create-automation.mjs`（封装 `automation_update`），传 `rrule`/`scheduledAt` + `prompt` 模板 |
-| 鉴权 | 用户会话 `Bearer <sessionToken>`（管理页同款）；自动化触发用 `Bearer <serviceToken>`（见 §2.5 服务令牌） |
+| 鉴权       | 用户会话 `Bearer <sessionToken>`（管理页同款）；自动化触发用 `Bearer <serviceToken>`（见 §2.5 服务令牌） |
 
 ### 2.2 (b) ContentTemplate 内容池接口（新增模型）
 
@@ -183,7 +185,7 @@ type ContentTemplateDTO = {
   body: string
   type: 'debate' | 'discussion'
   tags: string | null
-  pollOptions: string[] | null   // 反序列化后
+  pollOptions: string[] | null // 反序列化后
   priority: number
   usageCount: number
   lastUsedAt: string | null
@@ -221,14 +223,14 @@ customRrule String?  // RFC 5545，如 "FREQ=WEEKLY;INTERVAL=2"、"FREQ=MONTHLY;
 
 **自定义周期 rrule ↔ WorkBuddy 自动化 对照**：
 
-| 用户意图 | rrule | WorkBuddy scheduleType |
-| --- | --- | --- |
-| 每天 09:00 | `FREQ=DAILY` | recurring + rrule |
-| 每周一 09:00 | `FREQ=WEEKLY;BYDAY=MO` | recurring + rrule |
-| 每 2 周 | `FREQ=WEEKLY;INTERVAL=2` | recurring + rrule |
-| 每月 15 号 | `FREQ=MONTHLY;BYMONTHDAY=15` | recurring + rrule |
-| 每月最后一天 | `FREQ=MONTHLY;BYMONTHDAY=-1` | recurring + rrule |
-| 单次 2026-08-01 20:00 | —（不用 rrule） | once + scheduledAt |
+| 用户意图              | rrule                        | WorkBuddy scheduleType |
+| --------------------- | ---------------------------- | ---------------------- |
+| 每天 09:00            | `FREQ=DAILY`                 | recurring + rrule      |
+| 每周一 09:00          | `FREQ=WEEKLY;BYDAY=MO`       | recurring + rrule      |
+| 每 2 周               | `FREQ=WEEKLY;INTERVAL=2`     | recurring + rrule      |
+| 每月 15 号            | `FREQ=MONTHLY;BYMONTHDAY=15` | recurring + rrule      |
+| 每月最后一天          | `FREQ=MONTHLY;BYMONTHDAY=-1` | recurring + rrule      |
+| 单次 2026-08-01 20:00 | —（不用 rrule）              | once + scheduledAt     |
 
 > 注：模块自身 `computeNextRun` **不解析 rrule**（避免引入 cron 库，延续 ponytail 取舍）。rrule 的"下次触发计算"完全由 WorkBuddy 自动化的调度引擎承担，模块只接收"现在请发布这条任务"的 dispatch 指令。这正是最佳分工：**周期计算交给擅长它的 WorkBuddy，发帖与重试交给擅长它的模块**。
 
@@ -260,21 +262,21 @@ model NotificationConfig {
 ```ts
 type NotificationChannel =
   | {
-      type: 'qq_channel_message'      // QQ 消息子频道（公域/私域均可，复用 sendChannelMessage）
-      channelId: string               // 可不同于 botChannelId，实现"多频道"
+      type: 'qq_channel_message' // QQ 消息子频道（公域/私域均可，复用 sendChannelMessage）
+      channelId: string // 可不同于 botChannelId，实现"多频道"
     }
   | {
-      type: 'qq_forum_thread'        // 论坛帖子（仅私域）；用于"成功也发一条摘要帖"
+      type: 'qq_forum_thread' // 论坛帖子（仅私域）；用于"成功也发一条摘要帖"
       channelId: string
       title?: string
     }
   | {
-      type: 'webhook'                // 通用回调（执行结果回调给外部系统/WorkBuddy 之外的服务）
+      type: 'webhook' // 通用回调（执行结果回调给外部系统/WorkBuddy 之外的服务）
       url: string
-      secret?: string                // 可选签名
+      secret?: string // 可选签名
     }
   | {
-      type: 'email'                  // 邮件（需项目已有邮件能力；否则标记待实现）
+      type: 'email' // 邮件（需项目已有邮件能力；否则标记待实现）
       to: string[]
     }
 
@@ -291,7 +293,9 @@ type NotificationConfigDTO = {
 ```ts
 // 在 scanDueTasks 成功/失败分支调用
 export async function dispatchNotification(
-  prisma, teamId: string, event: 'success' | 'failure',
+  prisma,
+  teamId: string,
+  event: 'success' | 'failure',
   payload: { taskTitle: string; message: string; runAt: string },
 ) {
   const cfg = await prisma.notificationConfig.findUnique({ where: { teamId } })
@@ -300,8 +304,10 @@ export async function dispatchNotification(
   if (event === 'failure' && !cfg.onFailure) return
   const channels: NotificationChannel[] = JSON.parse(cfg.channels || '[]')
   for (const ch of channels) {
-    if (ch.type === 'qq_channel_message') await sendChannelMessage(cfg_as_botconfig, ch.channelId, buildText(payload))
-    else if (ch.type === 'webhook') await fetch(ch.url, { method: 'POST', body: JSON.stringify(payload) })
+    if (ch.type === 'qq_channel_message')
+      await sendChannelMessage(cfg_as_botconfig, ch.channelId, buildText(payload))
+    else if (ch.type === 'webhook')
+      await fetch(ch.url, { method: 'POST', body: JSON.stringify(payload) })
     // ...
   }
 }
@@ -313,30 +319,31 @@ export async function dispatchNotification(
 
 **现有 6 条（归纳，均带 `Authorization: Bearer <sessionToken>`，写操作限 admin/system_admin）**：
 
-| 方法 | 路径 | 作用 | 关键入参 |
-| --- | --- | --- | --- |
-| GET | `/api/scheduled-posts` | 列本团队任务 | — |
-| POST | `/api/scheduled-posts` | 创建任务 | title,content,type,channelId,tags?,pollOptions?[],scheduleType,runAt?/timeHHMM?/weekday?/timezone? |
-| PUT | `/api/scheduled-posts/[id]` | 编辑任务 | 同上可选；调度变更重算 nextRunAt |
-| DELETE | `/api/scheduled-posts/[id]` | 删除任务 | — |
-| POST | `/api/scheduled-posts/[id]/toggle` | 暂停/恢复 | `{ paused: boolean }` |
-| GET | `/api/scheduled-posts/[id]/runs` | 发布历史 | — |
+| 方法   | 路径                               | 作用         | 关键入参                                                                                           |
+| ------ | ---------------------------------- | ------------ | -------------------------------------------------------------------------------------------------- |
+| GET    | `/api/scheduled-posts`             | 列本团队任务 | —                                                                                                  |
+| POST   | `/api/scheduled-posts`             | 创建任务     | title,content,type,channelId,tags?,pollOptions?[],scheduleType,runAt?/timeHHMM?/weekday?/timezone? |
+| PUT    | `/api/scheduled-posts/[id]`        | 编辑任务     | 同上可选；调度变更重算 nextRunAt                                                                   |
+| DELETE | `/api/scheduled-posts/[id]`        | 删除任务     | —                                                                                                  |
+| POST   | `/api/scheduled-posts/[id]/toggle` | 暂停/恢复    | `{ paused: boolean }`                                                                              |
+| GET    | `/api/scheduled-posts/[id]/runs`   | 发布历史     | —                                                                                                  |
 
 **新增路由（支撑内容池 / 通知 / WorkBuddy 集成）**：
 
-| 方法 | 路径 | 作用 | 鉴权 | 关键入参/返回 |
-| --- | --- | --- | --- | --- |
-| GET | `/api/content-templates` | 列模板（按 priority 排序） | session(本团队) | 返回 `ContentTemplateDTO[]` |
-| POST | `/api/content-templates` | 新建模板 | session(admin) | `ContentTemplateInput` |
-| PUT | `/api/content-templates/[id]` | 编辑模板 | session(admin) | `ContentTemplateInput`(可选) |
-| DELETE | `/api/content-templates/[id]` | 删除模板 | session(admin) | — |
-| POST | `/api/content-templates/[id]/instantiate` | 模板→任务 | session(admin) | `{ scheduleType, runAt?/timeHHMM?/weekday?/timezone?, channelId }` → 返回新建 `ScheduledPost` |
-| GET | `/api/notification-configs` | 读取通知配置 | session(admin) | 返回 `NotificationConfigDTO` |
-| PUT | `/api/notification-configs` |  upsert 通知配置 | session(admin) | `NotificationConfigDTO` |
-| POST | `/api/scheduled-posts/[id]/dispatch` | **立即发布（WorkBuddy 触发入口）** | **服务令牌** | 返回 `{ success, run: ScheduledPostRun }` |
-| POST | `/api/scheduled-posts/dispatch-due` | 扫描并发布所有到期（外部 cron/自动化保活入口） | **服务令牌** | 返回 `{ triggered: number }` |
+| 方法   | 路径                                      | 作用                                           | 鉴权            | 关键入参/返回                                                                                 |
+| ------ | ----------------------------------------- | ---------------------------------------------- | --------------- | --------------------------------------------------------------------------------------------- |
+| GET    | `/api/content-templates`                  | 列模板（按 priority 排序）                     | session(本团队) | 返回 `ContentTemplateDTO[]`                                                                   |
+| POST   | `/api/content-templates`                  | 新建模板                                       | session(admin)  | `ContentTemplateInput`                                                                        |
+| PUT    | `/api/content-templates/[id]`             | 编辑模板                                       | session(admin)  | `ContentTemplateInput`(可选)                                                                  |
+| DELETE | `/api/content-templates/[id]`             | 删除模板                                       | session(admin)  | —                                                                                             |
+| POST   | `/api/content-templates/[id]/instantiate` | 模板→任务                                      | session(admin)  | `{ scheduleType, runAt?/timeHHMM?/weekday?/timezone?, channelId }` → 返回新建 `ScheduledPost` |
+| GET    | `/api/notification-configs`               | 读取通知配置                                   | session(admin)  | 返回 `NotificationConfigDTO`                                                                  |
+| PUT    | `/api/notification-configs`               | upsert 通知配置                                | session(admin)  | `NotificationConfigDTO`                                                                       |
+| POST   | `/api/scheduled-posts/[id]/dispatch`      | **立即发布（WorkBuddy 触发入口）**             | **服务令牌**    | 返回 `{ success, run: ScheduledPostRun }`                                                     |
+| POST   | `/api/scheduled-posts/dispatch-due`       | 扫描并发布所有到期（外部 cron/自动化保活入口） | **服务令牌**    | 返回 `{ triggered: number }`                                                                  |
 
 **服务令牌（关键安全设计）**：
+
 - 自动化 prompt 无法持有用户会话，因此新增一种**服务令牌**：团队级 `Team.apiToken`（新增字段，启动时 `crypto.randomUUID()` 生成或管理员在页面配置），随请求 `Authorization: Bearer <apiToken>`。
 - 新增守卫 `requireServiceToken(event, prisma)`：仅对 `/dispatch`、`/dispatch-due` 生效；校验 `apiToken` 归属且团队 `mode='qq_bot'`。用户会话令牌**不**能调用这两个端点（最小权限）。
 - 风险与缓解见 §5。
@@ -364,13 +371,26 @@ export async function dispatchNotification(
 **场景 B：每月 15 号 20:00**
 
 ```json
-{ "name": "DebateTimer-每月15号发讨论帖", "scheduleType": "recurring", "rrule": "FREQ=MONTHLY;BYMONTHDAY=15", "status": "ACTIVE", "cwds": "D:/Code/DebateTimer/DebateTimerV3", "prompt": "POST /api/scheduled-posts/<任务ID>/dispatch （Bearer 服务令牌），发布失败则记录。" }
+{
+  "name": "DebateTimer-每月15号发讨论帖",
+  "scheduleType": "recurring",
+  "rrule": "FREQ=MONTHLY;BYMONTHDAY=15",
+  "status": "ACTIVE",
+  "cwds": "D:/Code/DebateTimer/DebateTimerV3",
+  "prompt": "POST /api/scheduled-posts/<任务ID>/dispatch （Bearer 服务令牌），发布失败则记录。"
+}
 ```
 
 **场景 C：单次（once + scheduledAt）**
 
 ```json
-{ "name": "DebateTimer-单次发布", "scheduleType": "once", "scheduledAt": "2026-08-01T20:00:00+08:00", "status": "ACTIVE", "prompt": "POST /api/scheduled-posts/<任务ID>/dispatch （Bearer 服务令牌）。" }
+{
+  "name": "DebateTimer-单次发布",
+  "scheduleType": "once",
+  "scheduledAt": "2026-08-01T20:00:00+08:00",
+  "status": "ACTIVE",
+  "prompt": "POST /api/scheduled-posts/<任务ID>/dispatch （Bearer 服务令牌）。"
+}
 ```
 
 > 每日/每周**也可**用自动化表达（`FREQ=DAILY` / `FREQ=WEEKLY;BYDAY=MO`），但**推荐**此类简单周期仍走模块原生 `daily/weekly` 调度（更准时、失败重试已在模块内闭环，不依赖 LLM 调度）。**自动化专攻 rrule 能表达、原生调度器算不了的周期**。
@@ -392,11 +412,11 @@ export async function dispatchNotification(
 
 ### 3.3 状态同步机制（谁读谁、以什么为真相源）
 
-| 维度 | 真相源（Source of Truth） | 同步方向 |
-| --- | --- | --- |
-| 任务是否发布成功 | 模块 `ScheduledPostRun`（SQLite） | WorkBuddy **读取**模块（被动/主动拉取） |
-| 任务下次触发时间 | 模块 `ScheduledPost.nextRunAt`（once/daily/weekly）或 WorkBuddy 自动化 `rrule`（自定义周期） | 各自计算；自定义周期以 WorkBuddy 为准 |
-| 通知结果 | 模块 `NotificationConfig` + `ScheduledPostRun.message` | 模块**主动推送**（qq_channel/webhook） |
+| 维度             | 真相源（Source of Truth）                                                                    | 同步方向                                |
+| ---------------- | -------------------------------------------------------------------------------------------- | --------------------------------------- |
+| 任务是否发布成功 | 模块 `ScheduledPostRun`（SQLite）                                                            | WorkBuddy **读取**模块（被动/主动拉取） |
+| 任务下次触发时间 | 模块 `ScheduledPost.nextRunAt`（once/daily/weekly）或 WorkBuddy 自动化 `rrule`（自定义周期） | 各自计算；自定义周期以 WorkBuddy 为准   |
+| 通知结果         | 模块 `NotificationConfig` + `ScheduledPostRun.message`                                       | 模块**主动推送**（qq_channel/webhook）  |
 
 - **状态同步**（WorkBuddy → 模块读）：自动化在 prompt 中可 `GET /api/scheduled-posts/[id]/runs` 拉取最新执行状态，用于日志/决定是否重试。**模块是真相源，WorkBuddy 只消费**。
 - **执行结果回调**（模块 → 外部推）：模块 `dispatchNotification` 在成功/失败时，经 `webhook` 渠道把 `payload`（taskTitle/message/runAt）POST 给外部系统。这是"回调"的落点——**模块推，不是 WorkBuddy 拉**。
@@ -436,6 +456,7 @@ sequenceDiagram
 ```
 
 **闭环要点**：
+
 1. **触发**（WorkBuddy → 模块）：rrule 到点，自动化调 `/dispatch`。
 2. **执行**（模块内）：`triggerTask` → QQ 发帖 → 写 `ScheduledPostRun` 历史。
 3. **状态回写**（模块 → DB）：任务状态、上次结果、下次触发时间全部落在模块，WorkBuddy 不持有状态。
@@ -448,21 +469,21 @@ sequenceDiagram
 
 > 仅列出**新增/修改**，按依赖顺序；标注 [新] 为全新文件，[改] 为改动现有文件。
 
-| 序 | 文件 | 类型 | 依赖 | 说明 |
-| --- | --- | --- | --- | --- |
-| 1 | `prisma/schema.prisma` | [改] | — | 新增 `ContentTemplate`、`NotificationConfig`；`ScheduledPost` 加 `customRrule?`；`Team` 加 `apiToken?` |
-| 2 | `prisma/migrations/*` | [新] | 1 | `prisma migrate dev` 生成迁移（SQLite 加列/新表） |
-| 3 | `server/lib/notify.ts` | [新] | 1 | 通知分发器 `dispatchNotification`（多渠道/多接收对象）；供 scheduler 调用 |
-| 4 | `server/lib/scheduler.ts` | [改] | 3 | 在成功/失败分支调用 `dispatchNotification`；保持 `scanDueTasks` 兜底逻辑不变 |
-| 5 | `server/lib/auth.ts`（或现有 `utils/auth.ts`） | [改] | 1 | 新增 `requireServiceToken(event, prisma)` 守卫（校验 `Team.apiToken`） |
-| 6 | `server/api/content-templates.get.ts` `...post.ts` `...[id].put.ts` `...[id].delete.ts` `...[id]/instantiate.post.ts` | [新] | 1 | 内容池 CRUD + 实例化 |
-| 7 | `server/api/notification-configs.get.ts` `...put.ts` | [新] | 1,3 | 通知配置读取/upsert |
-| 8 | `server/api/scheduled-posts/[id]/dispatch.post.ts` `.../dispatch-due.post.ts` | [新] | 5 | WorkBuddy 触发入口（服务令牌鉴权，返回结果） |
-| 9 | `app/pages/bot/scheduled.vue` | [改] | 6,7 | 增加"内容池"Tab、"通知设置"入口、模板→任务实例化按钮 |
-| 10 | `app/pages/bot/notification.vue` 或并入 `scheduled.vue` | [新] | 7 | 通知配置 UI（onSuccess/onFailure + 渠道列表编辑） |
-| 11 | `.workbuddy/skills/debate-scheduled-publish/SKILL.md` | [新] | 2-8 | Skill 主入口（§2.1） |
-| 12 | `.workbuddy/skills/debate-scheduled-publish/scripts/create-automation.mjs` | [新] | — | 封装 `automation_update` 一键建自动化（传 rrule + prompt 模板） |
-| 13 | `.workbuddy/skills/debate-scheduled-publish/references/api-contract.md` | [新] | 2-8 | 指向本设计 §2.5 的 API 契约简版 |
+| 序  | 文件                                                                                                                  | 类型 | 依赖 | 说明                                                                                                   |
+| --- | --------------------------------------------------------------------------------------------------------------------- | ---- | ---- | ------------------------------------------------------------------------------------------------------ |
+| 1   | `prisma/schema.prisma`                                                                                                | [改] | —    | 新增 `ContentTemplate`、`NotificationConfig`；`ScheduledPost` 加 `customRrule?`；`Team` 加 `apiToken?` |
+| 2   | `prisma/migrations/*`                                                                                                 | [新] | 1    | `prisma migrate dev` 生成迁移（SQLite 加列/新表）                                                      |
+| 3   | `server/lib/notify.ts`                                                                                                | [新] | 1    | 通知分发器 `dispatchNotification`（多渠道/多接收对象）；供 scheduler 调用                              |
+| 4   | `server/lib/scheduler.ts`                                                                                             | [改] | 3    | 在成功/失败分支调用 `dispatchNotification`；保持 `scanDueTasks` 兜底逻辑不变                           |
+| 5   | `server/lib/auth.ts`（或现有 `utils/auth.ts`）                                                                        | [改] | 1    | 新增 `requireServiceToken(event, prisma)` 守卫（校验 `Team.apiToken`）                                 |
+| 6   | `server/api/content-templates.get.ts` `...post.ts` `...[id].put.ts` `...[id].delete.ts` `...[id]/instantiate.post.ts` | [新] | 1    | 内容池 CRUD + 实例化                                                                                   |
+| 7   | `server/api/notification-configs.get.ts` `...put.ts`                                                                  | [新] | 1,3  | 通知配置读取/upsert                                                                                    |
+| 8   | `server/api/scheduled-posts/[id]/dispatch.post.ts` `.../dispatch-due.post.ts`                                         | [新] | 5    | WorkBuddy 触发入口（服务令牌鉴权，返回结果）                                                           |
+| 9   | `app/pages/bot/scheduled.vue`                                                                                         | [改] | 6,7  | 增加"内容池"Tab、"通知设置"入口、模板→任务实例化按钮                                                   |
+| 10  | `app/pages/bot/notification.vue` 或并入 `scheduled.vue`                                                               | [新] | 7    | 通知配置 UI（onSuccess/onFailure + 渠道列表编辑）                                                      |
+| 11  | `.workbuddy/skills/debate-scheduled-publish/SKILL.md`                                                                 | [新] | 2-8  | Skill 主入口（§2.1）                                                                                   |
+| 12  | `.workbuddy/skills/debate-scheduled-publish/scripts/create-automation.mjs`                                            | [新] | —    | 封装 `automation_update` 一键建自动化（传 rrule + prompt 模板）                                        |
+| 13  | `.workbuddy/skills/debate-scheduled-publish/references/api-contract.md`                                               | [新] | 2-8  | 指向本设计 §2.5 的 API 契约简版                                                                        |
 
 **实现顺序逻辑**：先数据模型(1-2) → 通知基础(3-4) → 鉴权(5) → 内容池/通知 API(6-7) → 自动化触发入口(8) → 前端(9-10) → Skill 封装(11-13)。前置不完成，后置无法联调。
 
@@ -470,16 +491,16 @@ sequenceDiagram
 
 ## 5. 待明确事项 / 风险
 
-| # | 风险 / 待明确 | 影响 | 建议 / 缓解 |
-| --- | --- | --- | --- |
-| R1 | **serverless 缩容导致 in-process 调度器失效**：`startScheduler` 是进程内 setInterval，`scanDueTasks` 在 scale-to-zero 下不运行，once/daily/weekly 任务会漏发。 | 高 | 用外部定时器（WorkBuddy 自动化 `dispatch-due` / 平台 cron / uptime ping）按 30-60s 唤醒；或把调度器迁到外部 cron 服务。WorkBuddy 自动化本身也是"外部唤醒"的一种。 |
-| R2 | **服务令牌鉴权**：自动化 prompt 无法持有用户会话，必须引入 `Team.apiToken`。令牌如何安全下发、轮换、撤销未定义。 | 高 | 在通知设置页提供"生成/重置服务令牌"；令牌哈希存储（非明文）；限定仅 `/dispatch*` 端点可用；可设 `validFrom/validUntil`。 |
-| R3 | **WorkBuddy 自动化 prompt 调用私有 API 的可靠性**：prompt 是 LLM 任务，可能因模型行为偏差"忘记"调用、或调错参数（任务 ID、令牌）。 | 中 | prompt 模板必须**极简、步骤化、禁发挥**；关键参数（TASK_ID/SERVICE_TOKEN）由 `scripts/create-automation.mjs` 注入而非让模型填；依赖模块自身的失败重试兜底。 |
-| R4 | **rrule 与 nextRunAt 双真相源冲突**：自定义周期任务既有模块 `nextRunAt`（模块算）又有 WorkBuddy `rrule`（自动化算），二者可能不一致。 | 中 | 约定：`customRrule` 非空时，**调度以 WorkBuddy 为准**，模块 `scanDueTasks` 仅作兜底（迟到也补发一次），不反向覆盖 rrule。 |
-| R5 | **论坛发帖仅私域**：公域 Bot 调 `postForumThread` 必失败。自动化若对公域团队建任务会反复失败。 | 中 | Skill/UI 在建任务时检测 `Team.botIsPrivate`，公域则提示改用"消息频道通知"或切私域；自动化创建前做前置校验。 |
-| R6 | **webhook 回调的循环/超时**：`dispatchNotification` 同步 `fetch` 外部 webhook，若目标慢/宕机会拖慢发帖主流程。 | 中 | 通知分发改为**异步**（`.catch` 吞错，不阻塞主流程，延续现有告警"失败不影响主流程"取舍）；webhook 加超时与重试上限。 |
-| R7 | **多接收对象/邮件渠道**：`email` 渠道依赖项目是否已有邮件发送能力，当前代码未见。 | 低 | 本期 `email` 标记为"待实现"（接口预留），先落地 `qq_channel_message` + `webhook` 两类；`qq_forum_thread` 复用 `postForumThread`。 |
-| R8 | **内容池与现有 Tournament.topicPool 关系**：`Tournament` 已有 `topicPool`（辩题库 JSON）。新 `ContentTemplate` 与之是否统一？ | 低 | 本期**不合并**：`topicPool` 服务于赛事抽签辩题，`ContentTemplate` 服务于定时论坛发帖，语义不同；后续可单向引用（模板来源含赛事辩题库）。 |
+| #   | 风险 / 待明确                                                                                                                                                  | 影响 | 建议 / 缓解                                                                                                                                                       |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | **serverless 缩容导致 in-process 调度器失效**：`startScheduler` 是进程内 setInterval，`scanDueTasks` 在 scale-to-zero 下不运行，once/daily/weekly 任务会漏发。 | 高   | 用外部定时器（WorkBuddy 自动化 `dispatch-due` / 平台 cron / uptime ping）按 30-60s 唤醒；或把调度器迁到外部 cron 服务。WorkBuddy 自动化本身也是"外部唤醒"的一种。 |
+| R2  | **服务令牌鉴权**：自动化 prompt 无法持有用户会话，必须引入 `Team.apiToken`。令牌如何安全下发、轮换、撤销未定义。                                               | 高   | 在通知设置页提供"生成/重置服务令牌"；令牌哈希存储（非明文）；限定仅 `/dispatch*` 端点可用；可设 `validFrom/validUntil`。                                          |
+| R3  | **WorkBuddy 自动化 prompt 调用私有 API 的可靠性**：prompt 是 LLM 任务，可能因模型行为偏差"忘记"调用、或调错参数（任务 ID、令牌）。                             | 中   | prompt 模板必须**极简、步骤化、禁发挥**；关键参数（TASK_ID/SERVICE_TOKEN）由 `scripts/create-automation.mjs` 注入而非让模型填；依赖模块自身的失败重试兜底。       |
+| R4  | **rrule 与 nextRunAt 双真相源冲突**：自定义周期任务既有模块 `nextRunAt`（模块算）又有 WorkBuddy `rrule`（自动化算），二者可能不一致。                          | 中   | 约定：`customRrule` 非空时，**调度以 WorkBuddy 为准**，模块 `scanDueTasks` 仅作兜底（迟到也补发一次），不反向覆盖 rrule。                                         |
+| R5  | **论坛发帖仅私域**：公域 Bot 调 `postForumThread` 必失败。自动化若对公域团队建任务会反复失败。                                                                 | 中   | Skill/UI 在建任务时检测 `Team.botIsPrivate`，公域则提示改用"消息频道通知"或切私域；自动化创建前做前置校验。                                                       |
+| R6  | **webhook 回调的循环/超时**：`dispatchNotification` 同步 `fetch` 外部 webhook，若目标慢/宕机会拖慢发帖主流程。                                                 | 中   | 通知分发改为**异步**（`.catch` 吞错，不阻塞主流程，延续现有告警"失败不影响主流程"取舍）；webhook 加超时与重试上限。                                               |
+| R7  | **多接收对象/邮件渠道**：`email` 渠道依赖项目是否已有邮件发送能力，当前代码未见。                                                                              | 低   | 本期 `email` 标记为"待实现"（接口预留），先落地 `qq_channel_message` + `webhook` 两类；`qq_forum_thread` 复用 `postForumThread`。                                 |
+| R8  | **内容池与现有 Tournament.topicPool 关系**：`Tournament` 已有 `topicPool`（辩题库 JSON）。新 `ContentTemplate` 与之是否统一？                                  | 低   | 本期**不合并**：`topicPool` 服务于赛事抽签辩题，`ContentTemplate` 服务于定时论坛发帖，语义不同；后续可单向引用（模板来源含赛事辩题库）。                          |
 
 ---
 

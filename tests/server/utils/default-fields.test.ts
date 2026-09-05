@@ -21,10 +21,10 @@ describe('parseDefaultFieldsConfig', () => {
       contactPhone: { required: false },
     })
     const result = parseDefaultFieldsConfig(config)
-    const nameField = result.find(f => f.fieldKey === 'submitterName')!
+    const nameField = result.find((f) => f.fieldKey === 'submitterName')!
     expect(nameField.appliesTo).toBe('individual')
     expect(nameField.required).toBe(false)
-    const phoneField = result.find(f => f.fieldKey === 'contactPhone')!
+    const phoneField = result.find((f) => f.fieldKey === 'contactPhone')!
     expect(phoneField.required).toBe(false)
     expect(phoneField.appliesTo).toBe('both') // not overridden
   })
@@ -32,7 +32,7 @@ describe('parseDefaultFieldsConfig', () => {
   it('should handle partial overrides', () => {
     const config = JSON.stringify({ teamName: { appliesTo: 'team' } })
     const result = parseDefaultFieldsConfig(config)
-    const teamField = result.find(f => f.fieldKey === 'teamName')!
+    const teamField = result.find((f) => f.fieldKey === 'teamName')!
     expect(teamField.appliesTo).toBe('team')
     expect(teamField.required).toBe(true) // from default
   })

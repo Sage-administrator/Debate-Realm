@@ -20,7 +20,9 @@
           title="刷新"
           :disabled="loadingArenas || loadingRoles"
           @click="refresh"
-        >↻</button>
+        >
+          ↻
+        </button>
       </div>
     </div>
 
@@ -35,9 +37,16 @@
         <svg
           class="w-3 h-3 shrink-0 opacity-70 transition-transform"
           :class="open ? 'rotate-180' : ''"
-          viewBox="0 0 20 20" fill="none"
+          viewBox="0 0 20 20"
+          fill="none"
         >
-          <path d="M5.5 7.5 10 12l4.5-4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          <path
+            d="M5.5 7.5 10 12l4.5-4.5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
         </svg>
       </button>
 
@@ -46,16 +55,19 @@
         v-if="open"
         class="absolute bottom-full left-0 right-0 mb-1 z-50 rounded-md border border-white/15 bg-gray-900/90 backdrop-blur-md shadow-2xl max-h-60 overflow-auto py-1"
       >
-        <div
-          v-if="arenas.length === 0 && !loadingArenas"
-          class="px-2 py-1.5 text-xs text-gray-400"
-        >暂无赛场</div>
+        <div v-if="arenas.length === 0 && !loadingArenas" class="px-2 py-1.5 text-xs text-gray-400">
+          暂无赛场
+        </div>
         <button
           v-for="a in arenas"
           :key="a.channelId"
           type="button"
           class="w-full flex items-center justify-between gap-2 text-left px-2 py-1.5 text-xs transition-colors"
-          :class="a.channelId === selectedChannelId ? 'bg-sky-500/15 text-white' : 'text-gray-100 hover:bg-sky-500/20 hover:text-white'"
+          :class="
+            a.channelId === selectedChannelId
+              ? 'bg-sky-500/15 text-white'
+              : 'text-gray-100 hover:bg-sky-500/20 hover:text-white'
+          "
           @click="selectArena(a)"
         >
           <span class="truncate">{{ a.name }}（{{ a.matchFormat }}）</span>
@@ -65,14 +77,21 @@
     </div>
 
     <!-- 联动状态条：当前环节发言方 + 手动应用按钮 -->
-    <div v-if="activePlan" class="mt-1.5 flex items-center justify-between text-[10px] text-gray-300">
-      <span>联动 · 当前环节：<b class="text-gray-100">{{ speakerPlanText(activePlan) }}</b></span>
+    <div
+      v-if="activePlan"
+      class="mt-1.5 flex items-center justify-between text-[10px] text-gray-300"
+    >
+      <span
+        >联动 · 当前环节：<b class="text-gray-100">{{ speakerPlanText(activePlan) }}</b></span
+      >
       <button
         class="px-1.5 py-0.5 rounded border border-white/15 hover:bg-white/10 transition-colors disabled:opacity-50"
         :disabled="applying || loadingRoles"
         title="按当前环节发言方重新套用发言权限"
         @click="applyCurrentStage"
-      >应用当前环节</button>
+      >
+        应用当前环节
+      </button>
     </div>
 
     <!-- 角色按钮区 -->
@@ -92,7 +111,10 @@
           :title="role.qqRoleId ? '点击切换发言权限' : '该角色未绑定 QQ 身份组'"
           @click="toggleRole(role)"
         >
-          <span class="h-1.5 w-1.5 rounded-full shrink-0" :style="{ background: sideDot(role.side) }"></span>
+          <span
+            class="h-1.5 w-1.5 rounded-full shrink-0"
+            :style="{ background: sideDot(role.side) }"
+          />
           <span class="flex-1 text-left truncate">{{ role.label }}</span>
           <span class="text-[10px] opacity-80 shrink-0">{{ permGlyph(role.permission) }}</span>
         </button>
@@ -101,9 +123,15 @@
 
     <!-- 图例 -->
     <div v-if="roles.length" class="mt-2 flex items-center gap-3 text-[10px] text-gray-300">
-      <span class="flex items-center gap-1"><i class="inline-block h-2 w-2 rounded-full bg-green-500"></i>可发言</span>
-      <span class="flex items-center gap-1"><i class="inline-block h-2 w-2 rounded-full bg-red-500"></i>不可发言</span>
-      <span class="flex items-center gap-1"><i class="inline-block h-2 w-2 rounded-full bg-gray-500"></i>更新中</span>
+      <span class="flex items-center gap-1"
+        ><i class="inline-block h-2 w-2 rounded-full bg-green-500" />可发言</span
+      >
+      <span class="flex items-center gap-1"
+        ><i class="inline-block h-2 w-2 rounded-full bg-red-500" />不可发言</span
+      >
+      <span class="flex items-center gap-1"
+        ><i class="inline-block h-2 w-2 rounded-full bg-gray-500" />更新中</span
+      >
     </div>
   </div>
 </template>
@@ -166,7 +194,7 @@ const applying = ref(false)
 const error = ref('')
 
 const selectedArena = computed(
-  () => arenas.value.find(a => a.channelId === selectedChannelId.value) || null,
+  () => arenas.value.find((a) => a.channelId === selectedChannelId.value) || null,
 )
 
 // 当前环节的发言方案（发言权限联动的驱动源）
@@ -185,19 +213,26 @@ function defaultPermission(side: RoleSide): PermState {
 // 阵营小圆点颜色（刻意避开绿/红，避免与权限态混淆）
 function sideDot(side: RoleSide): string {
   switch (side) {
-    case 'affirmative': return '#38bdf8' // 正方-天蓝
-    case 'negative': return '#c084fc'     // 反方-紫
-    case 'judge': return '#fbbf24'        // 评委-琥珀
-    case 'audience': return '#94a3b8'     // 观众-灰
+    case 'affirmative':
+      return '#38bdf8' // 正方-天蓝
+    case 'negative':
+      return '#c084fc' // 反方-紫
+    case 'judge':
+      return '#fbbf24' // 评委-琥珀
+    case 'audience':
+      return '#94a3b8' // 观众-灰
   }
 }
 
 // 按钮配色：颜色严格反映发言权限状态
 function permClass(state: PermState): string {
   switch (state) {
-    case 'allowed': return 'border-green-500 bg-green-600/25 text-green-100 hover:bg-green-600/40'
-    case 'denied': return 'border-red-500 bg-red-600/25 text-red-100 hover:bg-red-600/40'
-    case 'updating': return 'border-gray-500 bg-gray-500/25 text-gray-300 cursor-wait'
+    case 'allowed':
+      return 'border-green-500 bg-green-600/25 text-green-100 hover:bg-green-600/40'
+    case 'denied':
+      return 'border-red-500 bg-red-600/25 text-red-100 hover:bg-red-600/40'
+    case 'updating':
+      return 'border-gray-500 bg-gray-500/25 text-gray-300 cursor-wait'
   }
 }
 
@@ -213,7 +248,7 @@ async function loadArenas() {
     const res = await $fetch<{ arenas?: any[] }>('/api/bot/arena/list', {
       headers: { Authorization: `Bearer ${auth.token}` },
     })
-    arenas.value = (res.arenas || []).map(a => ({
+    arenas.value = (res.arenas || []).map((a) => ({
       id: a.id,
       name: a.name,
       channelId: a.channelId,
@@ -243,7 +278,7 @@ async function loadRoles() {
       query: { channelId: selectedChannelId.value },
       headers: { Authorization: `Bearer ${auth.token}` },
     })
-    const arena = (res.arenas || []).find(a => a.channelId === selectedChannelId.value)
+    const arena = (res.arenas || []).find((a) => a.channelId === selectedChannelId.value)
     if (arena && arena.roles) {
       roles.value = arena.roles
         .slice()
@@ -295,27 +330,35 @@ async function applyCurrentStage() {
     targetRoles = plan.roles
   } else if (plan.mode === 'both') {
     targetRoles = roles.value
-      .filter(r => r.side === 'affirmative' || r.side === 'negative')
-      .map(r => r.label)
+      .filter((r) => r.side === 'affirmative' || r.side === 'negative')
+      .map((r) => r.label)
   }
   applying.value = true
   // 乐观：已绑定身份组的角色先置灰（更新中）
-  roles.value.forEach(r => { if (r.qqRoleId) r.permission = 'updating' })
+  roles.value.forEach((r) => {
+    if (r.qqRoleId) r.permission = 'updating'
+  })
   try {
-    const res = await $fetch<{ allowed?: string[]; denied?: string[] }>('/api/bot/permissions/apply-stage', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${auth.token}` },
-      body: { channelId: selectedChannelId.value, targetRoles },
-    })
+    const res = await $fetch<{ allowed?: string[]; denied?: string[] }>(
+      '/api/bot/permissions/apply-stage',
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${auth.token}` },
+        body: { channelId: selectedChannelId.value, targetRoles },
+      },
+    )
     const allowed = new Set((res.allowed || []).map(normRoleName))
     const denied = new Set((res.denied || []).map(normRoleName))
-    roles.value.forEach(r => {
+    roles.value.forEach((r) => {
       const lbl = normRoleName(r.label)
       if (allowed.has(lbl)) r.permission = 'allowed'
       else if (denied.has(lbl)) r.permission = 'denied'
     })
   } catch (e: any) {
-    toast.add({ title: e?.data?.statusMessage || e?.data?.message || '套用环节发言权限失败', color: 'error' })
+    toast.add({
+      title: e?.data?.statusMessage || e?.data?.message || '套用环节发言权限失败',
+      color: 'error',
+    })
     // 失败回滚：重新按默认态刷新
     await loadRoles()
   } finally {

@@ -74,7 +74,10 @@ export async function submitScore(
   // 校验总分
   const expectedTotal = params.dimensions.reduce((sum, d) => sum + d.score, 0)
   if (expectedTotal !== params.scoreTeamA + params.scoreTeamB) {
-    return { success: false, message: `维度总分(${expectedTotal})与队伍总分(${params.scoreTeamA + params.scoreTeamB})不匹配` }
+    return {
+      success: false,
+      message: `维度总分(${expectedTotal})与队伍总分(${params.scoreTeamA + params.scoreTeamB})不匹配`,
+    }
   }
 
   // 校验胜方
@@ -186,7 +189,17 @@ export async function recalculateRankings(
   })
 
   // 计算每队数据
-  const stats: Record<string, { points: number; wins: number; draws: number; losses: number; scoreFor: number; scoreAgainst: number }> = {}
+  const stats: Record<
+    string,
+    {
+      points: number
+      wins: number
+      draws: number
+      losses: number
+      scoreFor: number
+      scoreAgainst: number
+    }
+  > = {}
 
   for (const team of teams) {
     stats[team.name] = { points: 0, wins: 0, draws: 0, losses: 0, scoreFor: 0, scoreAgainst: 0 }
@@ -278,10 +291,7 @@ export async function getRankings(
 
   const teams = await prisma.tournamentTeam.findMany({
     where: { tournamentId },
-    orderBy: [
-      { points: 'desc' },
-      { scoreFor: 'desc' },
-    ],
+    orderBy: [{ points: 'desc' }, { scoreFor: 'desc' }],
   })
 
   // 排序：积分 > 净胜分 > 得分
@@ -347,7 +357,7 @@ export async function getMatchScores(
 
   return {
     match: match || { teamA: null, teamB: null, winner: null },
-    scores: scores.map(s => ({
+    scores: scores.map((s) => ({
       judgeName: s.judgeName,
       dimensions: JSON.parse(s.dimensions) as ScoreDimension[],
       reason: s.reason,
@@ -383,7 +393,7 @@ export async function getTournamentScoreStats(
 
   const totalA = scores.reduce((sum, s) => sum + s.scoreTeamA, 0)
   const totalB = scores.reduce((sum, s) => sum + s.scoreTeamB, 0)
-  const uniqueJudges = new Set(scores.map(s => s.judgeName)).size
+  const uniqueJudges = new Set(scores.map((s) => s.judgeName)).size
 
   return {
     totalMatches,
@@ -421,7 +431,9 @@ export function formatRankingsText(
 
   for (const r of rankings) {
     const rankIcon = r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : ` ${r.rank} `
-    lines.push(`${rankIcon}  ${r.name.padEnd(10)} ${String(r.points).padStart(3)}  ${String(r.wins).padStart(2)}  ${String(r.draws).padStart(2)}  ${String(r.losses).padStart(2)}  ${String(r.scoreDiff >= 0 ? '+' + r.scoreDiff : r.scoreDiff).padStart(4)}`)
+    lines.push(
+      `${rankIcon}  ${r.name.padEnd(10)} ${String(r.points).padStart(3)}  ${String(r.wins).padStart(2)}  ${String(r.draws).padStart(2)}  ${String(r.losses).padStart(2)}  ${String(r.scoreDiff >= 0 ? '+' + r.scoreDiff : r.scoreDiff).padStart(4)}`,
+    )
   }
 
   lines.push('━━━━━━━━━━━━━━━━━━━━━━━━')

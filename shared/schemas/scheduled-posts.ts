@@ -20,9 +20,11 @@ export const CreateScheduledPostRequest = z.object({
 export type CreateScheduledPostRequest = z.infer<typeof CreateScheduledPostRequest>
 
 /** Update a scheduled post */
-export const UpdateScheduledPostRequest = CreateScheduledPostRequest.partial().omit({ scheduleType: true }).extend({
-  scheduleType: z.enum(['once', 'daily', 'weekly']).optional(),
-})
+export const UpdateScheduledPostRequest = CreateScheduledPostRequest.partial()
+  .omit({ scheduleType: true })
+  .extend({
+    scheduleType: z.enum(['once', 'daily', 'weekly']).optional(),
+  })
 export type UpdateScheduledPostRequest = z.infer<typeof UpdateScheduledPostRequest>
 
 /** Toggle (pause/resume) a scheduled post */

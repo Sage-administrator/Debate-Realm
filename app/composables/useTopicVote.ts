@@ -12,9 +12,15 @@ export function useTopicVote() {
     getTopicVote: (tournamentId: string, voteId: string) =>
       api.tournaments.votes.get(tournamentId, voteId),
 
-    castVote: (tournamentId: string, voteId: string, data: {
-      topicIndices: number[]; voterName?: string; voterType?: string
-    }) => api.tournaments.votes.cast(tournamentId, voteId, data),
+    castVote: (
+      tournamentId: string,
+      voteId: string,
+      data: {
+        topicIndices: number[]
+        voterName?: string
+        voterType?: string
+      },
+    ) => api.tournaments.votes.cast(tournamentId, voteId, data),
 
     getMyVoteRecord: (tournamentId: string, voteId: string) =>
       api.tournaments.votes.myRecord(tournamentId, voteId),

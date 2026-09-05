@@ -10,14 +10,7 @@
     <!-- 顶部横向缩放工具条（与工作台标题栏同语言，替代原悬浮竖条） -->
     <div class="cert-canvas-bar">
       <button class="cz-btn" title="缩小" @click="zoomBy(-0.1)">−</button>
-      <input
-        class="cz-range"
-        type="range"
-        min="0.5"
-        max="2"
-        step="0.05"
-        v-model.number="zoom"
-      />
+      <input v-model.number="zoom" class="cz-range" type="range" min="0.5" max="2" step="0.05" />
       <span class="cz-pct">{{ Math.round(scale * 100) }}%</span>
       <span class="cz-sep" />
       <button class="cz-btn cz-text" @click="fit">适应</button>
@@ -78,10 +71,13 @@ onMounted(() => {
 })
 onBeforeUnmount(() => ro?.disconnect())
 
-watch(() => props.config.size, () => {
-  zoom.value = 1
-  recalc()
-})
+watch(
+  () => props.config.size,
+  () => {
+    zoom.value = 1
+    recalc()
+  },
+)
 
 function fit() {
   zoom.value = 1

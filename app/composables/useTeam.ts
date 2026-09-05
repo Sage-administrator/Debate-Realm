@@ -9,15 +9,15 @@ export function useTeam() {
     getTeams: () => api.teams.list(),
     getTeam: (id: string) => api.teams.get(id),
     createTeam: (data: Parameters<typeof api.teams.create>[0]) => api.teams.create(data),
-    updateTeam: (id: string, data: Parameters<typeof api.teams.update>[1]) => api.teams.update(id, data),
+    updateTeam: (id: string, data: Parameters<typeof api.teams.update>[1]) =>
+      api.teams.update(id, data),
     deleteTeam: (id: string) => api.teams.delete(id),
 
     // 成员管理
     getMembers: (teamId: string) => api.teams.members.list(teamId),
     createMember: (teamId: string, data: { username: string; password: string }) =>
       api.teams.members.create(teamId, data),
-    deleteMember: (teamId: string, userId: string) =>
-      api.teams.members.delete(teamId, userId),
+    deleteMember: (teamId: string, userId: string) => api.teams.members.delete(teamId, userId),
     updateMember: (teamId: string, userId: string, data: any) =>
       api.teams.members.update(teamId, userId, data),
     resetMemberPassword: (teamId: string, userId: string, newPassword: string) =>

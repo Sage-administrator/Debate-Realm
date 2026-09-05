@@ -46,7 +46,12 @@ const statusColors: Record<string, string> = {
 const teamId = computed(() => store.user?.team?.id ?? '')
 
 // ── SSR 数据预取：使用 useAsyncData 在服务端预加载赛事列表 ──
-const { data: tournaments, pending: loading, refresh: loadTournaments, error } = useAsyncData(
+const {
+  data: tournaments,
+  pending: loading,
+  refresh: loadTournaments,
+  error,
+} = useAsyncData(
   'tournaments-manage',
   async () => {
     if (!teamId.value) return []
@@ -95,18 +100,13 @@ function fmtDate(s: string | null) {
 <template>
   <div class="min-h-screen">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
       <!-- ── 页头 ── -->
       <div class="flex flex-wrap items-start justify-between gap-4 mb-8">
         <div>
           <h1 class="text-2xl font-bold text-[var(--color-text-primary)]">赛事管理</h1>
           <p class="text-[var(--color-text-secondary)] mt-1 text-sm">管理本团队的所有赛事</p>
         </div>
-        <UButton
-          icon="i-lucide-plus-circle"
-          color="primary"
-          to="/tournaments/create"
-        >
+        <UButton icon="i-lucide-plus-circle" color="primary" to="/tournaments/create">
           创建赛事
         </UButton>
       </div>
@@ -154,11 +154,17 @@ function fmtDate(s: string | null) {
         <!-- ── 列表 ── -->
         <div class="glass-card p-6">
           <div v-if="loading" class="text-center py-12">
-            <UIcon name="i-lucide-loader" class="w-6 h-6 animate-spin mx-auto text-indigo-600 dark:text-indigo-400" />
+            <UIcon
+              name="i-lucide-loader"
+              class="w-6 h-6 animate-spin mx-auto text-indigo-600 dark:text-indigo-400"
+            />
             <p class="text-[var(--color-text-muted)] mt-3 text-sm">加载中...</p>
           </div>
 
-          <div v-else-if="filtered.length === 0" class="text-center py-12 text-[var(--color-text-muted)]">
+          <div
+            v-else-if="filtered.length === 0"
+            class="text-center py-12 text-[var(--color-text-muted)]"
+          >
             <UIcon name="i-lucide-inbox" class="w-10 h-10 mx-auto mb-3 opacity-60" />
             <p v-if="tournaments.length === 0">暂无赛事，点击右上角「创建赛事」开始</p>
             <p v-else>没有符合条件的赛事</p>
@@ -221,7 +227,6 @@ function fmtDate(s: string | null) {
           </div>
         </div>
       </template>
-
     </div>
   </div>
 </template>

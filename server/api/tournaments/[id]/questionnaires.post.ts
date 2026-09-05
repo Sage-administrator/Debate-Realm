@@ -4,8 +4,19 @@ import { safeJsonStringify } from '../../../utils/common'
 
 // 支持的题型白名单（沿用通用问卷底座，新增 scale 量表题）。
 const QUESTION_TYPES = new Set([
-  'text', 'textarea', 'radio', 'checkbox', 'select', 'number', 'date',
-  'phone', 'email', 'members', 'heading', 'divider', 'scale',
+  'text',
+  'textarea',
+  'radio',
+  'checkbox',
+  'select',
+  'number',
+  'date',
+  'phone',
+  'email',
+  'members',
+  'heading',
+  'divider',
+  'scale',
 ])
 
 // 安全序列化：对象/数组 → JSON 字符串；已为字符串则原样存储；null/undefined → null。
@@ -31,15 +42,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: '请求体无效' })
     }
 
-    const {
-      sourceType,
-      sourceId,
-      title,
-      description,
-      status,
-      settings,
-      questions,
-    } = body as any
+    const { sourceType, sourceId, title, description, status, settings, questions } = body as any
 
     if (!sourceType || !sourceId) {
       throw createError({ statusCode: 400, message: 'sourceType 与 sourceId 必填' })

@@ -15,13 +15,10 @@ export default defineEventHandler(async (event) => {
     const activeSessions = sessions.filter((s) => s.isActive)
 
     // 当前会话（与 JWT 中的 sessionId 匹配的会话）
-    const currentSession =
-      activeSessions.find((s) => s.id === payload.sessionId) || null
+    const currentSession = activeSessions.find((s) => s.id === payload.sessionId) || null
 
     // 其他活跃会话（可能是其他设备同时在线）
-    const otherSessions = activeSessions.filter(
-      (s) => s.id !== payload.sessionId,
-    )
+    const otherSessions = activeSessions.filter((s) => s.id !== payload.sessionId)
 
     return {
       currentTokenVersion: payload.tokenVersion,

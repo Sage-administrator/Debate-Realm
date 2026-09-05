@@ -117,7 +117,7 @@ function generateSeedingBracket(bracketSize: number): number[] {
 // ─────────────────────────────────────────────────────────────
 export function generateSingleElimination(
   teams: TeamInput[],
-  opts?: { seedMethod?: SeedMethod }
+  opts?: { seedMethod?: SeedMethod },
 ): MatchInput[] {
   const sorted = sortTeamsBySeed(teams, opts?.seedMethod ?? 'rating')
   const teamCount = sorted.length
@@ -139,7 +139,7 @@ export function generateSingleElimination(
     const teamB = seedB <= teamCount ? sorted[seedB - 1]!.name : null
     const isBye = teamA === null || teamB === null // 只要有一方为空就是 BYE
     matches.push({
-      round: totalRounds === 1 ? '决赛' : '第1轮',  // 修复：2队时唯一一场应为决赛
+      round: totalRounds === 1 ? '决赛' : '第1轮', // 修复：2队时唯一一场应为决赛
       orderNum: i + 1,
       teamA,
       teamB,
@@ -151,11 +151,8 @@ export function generateSingleElimination(
   // 后续轮次：所有对阵位置先留空，由录入结果后自动晋级填充
   for (let round = 2; round <= totalRounds; round++) {
     const roundMatchCount = bracketSize / Math.pow(2, round)
-    const roundLabel = round === totalRounds
-      ? '决赛'
-      : round === totalRounds - 1
-      ? '半决赛'
-      : `第${round}轮`
+    const roundLabel =
+      round === totalRounds ? '决赛' : round === totalRounds - 1 ? '半决赛' : `第${round}轮`
     for (let i = 0; i < roundMatchCount; i++) {
       matches.push({
         round: roundLabel,
@@ -178,7 +175,7 @@ export function generateSingleElimination(
 // ─────────────────────────────────────────────────────────────
 export function generateDoubleElimination(
   teams: TeamInput[],
-  opts?: { seedMethod?: SeedMethod; enableRevivalFinal?: boolean }
+  opts?: { seedMethod?: SeedMethod; enableRevivalFinal?: boolean },
 ): MatchInput[] {
   const sorted = sortTeamsBySeed(teams, opts?.seedMethod ?? 'rating')
   const teamCount = sorted.length
@@ -199,14 +196,23 @@ export function generateDoubleElimination(
     matches.push({
       round: 'W-第1轮',
       orderNum: i + 1,
-      teamA, teamB, isBye, stage: 'winner',
+      teamA,
+      teamB,
+      isBye,
+      stage: 'winner',
     })
   }
   for (let round = 2; round <= totalRounds; round++) {
     const roundMatchCount = bracketSize / Math.pow(2, round)
     const roundLabel = round === totalRounds ? 'W-决赛' : `W-第${round}轮`
     for (let i = 0; i < roundMatchCount; i++) {
-      matches.push({ round: roundLabel, orderNum: i + 1, teamA: null, teamB: null, stage: 'winner' })
+      matches.push({
+        round: roundLabel,
+        orderNum: i + 1,
+        teamA: null,
+        teamB: null,
+        stage: 'winner',
+      })
     }
   }
 
@@ -226,7 +232,9 @@ export function generateDoubleElimination(
   matches.push({
     round: '总决赛',
     orderNum: 1,
-    teamA: null, teamB: null, stage: 'grand_final',
+    teamA: null,
+    teamB: null,
+    stage: 'grand_final',
   })
 
   // 复活赛决赛（如果败者组冠军在总决赛中击败胜者组冠军，则再赛一场）
@@ -234,7 +242,9 @@ export function generateDoubleElimination(
     matches.push({
       round: '复活赛决赛',
       orderNum: 1,
-      teamA: null, teamB: null, stage: 'revival',
+      teamA: null,
+      teamB: null,
+      stage: 'revival',
     })
   }
 
@@ -249,9 +259,9 @@ export function generateDoubleElimination(
 // ─────────────────────────────────────────────────────────────
 export function generateRoundRobin(
   teams: TeamInput[],
-  opts?: { mode?: 'single' | 'double' }
+  opts?: { mode?: 'single' | 'double' },
 ): MatchInput[] {
-  let teamList = teams.map((t, i) => ({ name: t.name, index: i }))
+  const teamList = teams.map((t, i) => ({ name: t.name, index: i }))
   const mode = opts?.mode ?? 'single'
   const hasOddTeams = teamList.length % 2 === 1
 
@@ -280,7 +290,8 @@ export function generateRoundRobin(
       matches.push({
         round: `第${round + 1}轮`,
         orderNum: 1,
-        teamA: fixed.name, teamB: rotated[0]!.name,
+        teamA: fixed.name,
+        teamB: rotated[0]!.name,
       })
     }
 
@@ -293,7 +304,8 @@ export function generateRoundRobin(
         matches.push({
           round: `第${round + 1}轮`,
           orderNum: m + 1,
-          teamA: teamA.name, teamB: teamB.name,
+          teamA: teamA.name,
+          teamB: teamB.name,
         })
       }
     }
@@ -322,7 +334,7 @@ export function generateRoundRobin(
 // ─────────────────────────────────────────────────────────────
 export function generatePagePlayoff(
   teams: TeamInput[],
-  opts?: { seedMethod?: SeedMethod }
+  opts?: { seedMethod?: SeedMethod },
 ): MatchInput[] {
   const sorted = sortTeamsBySeed(teams, opts?.seedMethod ?? 'rating')
 
@@ -360,7 +372,7 @@ export function generatePagePlayoff(
 // ─────────────────────────────────────────────────────────────
 export function generateSwiss(
   teams: TeamInput[],
-  opts?: { rounds?: number; pairingAlgo?: 'standard' | 'simplified'; seedMethod?: SeedMethod }
+  opts?: { rounds?: number; pairingAlgo?: 'standard' | 'simplified'; seedMethod?: SeedMethod },
 ): MatchInput[] {
   const sorted = sortTeamsBySeed(teams, opts?.seedMethod ?? 'rating')
   const totalRounds = opts?.rounds ?? Math.ceil(Math.log2(Math.max(2, sorted.length)))
@@ -401,7 +413,10 @@ export function generateSwiss(
 }
 
 // 瑞士制首轮配对（种子保护：1 vs last, 2 vs last-1 ...）
-function generateSwissFirstRound(sorted: TeamInput[], algo: 'standard' | 'simplified'): [string, string][] {
+function generateSwissFirstRound(
+  sorted: TeamInput[],
+  algo: 'standard' | 'simplified',
+): [string, string][] {
   const pairs: [string, string][] = []
   const n = sorted.length
   if (algo === 'standard') {
@@ -428,7 +443,12 @@ function generateSwissFirstRound(sorted: TeamInput[], algo: 'standard' | 'simpli
 // ─────────────────────────────────────────────────────────────
 export function generateGroupKnockout(
   teams: TeamInput[],
-  opts?: { groupSize?: number; promotePerGroup?: number; knockoutFormat?: 'single_elimination'; seedMethod?: SeedMethod }
+  opts?: {
+    groupSize?: number
+    promotePerGroup?: number
+    knockoutFormat?: 'single_elimination'
+    seedMethod?: SeedMethod
+  },
 ): { groupMatches: MatchInput[]; knockoutMatches: MatchInput[] } {
   const seedMethod = opts?.seedMethod ?? 'rating'
   const groupSize = opts?.groupSize ?? 4
@@ -493,9 +513,13 @@ export function generateGroupKnockout(
 // ─────────────────────────────────────────────────────────────
 // 主入口：根据赛制生成完整赛程
 // ─────────────────────────────────────────────────────────────
-export function generateBracket(
-  options: GenerateOptions
-): { matches: MatchInput[]; format: TournamentFormat; totalMatches: number; roundCount: number; formatLabel: string } {
+export function generateBracket(options: GenerateOptions): {
+  matches: MatchInput[]
+  format: TournamentFormat
+  totalMatches: number
+  roundCount: number
+  formatLabel: string
+} {
   let matchInputs: MatchInput[] = []
   let formatLabel = ''
 
@@ -505,7 +529,10 @@ export function generateBracket(
       formatLabel = '单败淘汰赛'
       break
     case 'double_elimination':
-      matchInputs = generateDoubleElimination(options.teams, { seedMethod: options.seedMethod, enableRevivalFinal: options.enableRevivalFinal })
+      matchInputs = generateDoubleElimination(options.teams, {
+        seedMethod: options.seedMethod,
+        enableRevivalFinal: options.enableRevivalFinal,
+      })
       formatLabel = '双败淘汰赛'
       break
     case 'round_robin':
@@ -555,8 +582,8 @@ export function generateBracket(
 //   - 瑞士制：返回 null 由外部专用逻辑重新配对
 // ─────────────────────────────────────────────────────────────
 export interface AdvanceTarget {
-  round: string      // 目标轮次
-  orderNum: number   // 目标场次
+  round: string // 目标轮次
+  orderNum: number // 目标场次
   slot: 'teamA' | 'teamB' // 填入哪一边
 }
 
@@ -568,7 +595,9 @@ function extractRoundNumber(round: string): number | null {
 }
 
 // 判断轮次类型（用于决定晋级方向）
-function detectRoundType(round: string): 'winner' | 'loser' | 'group' | 'knockout' | 'page' | 'unknown' {
+function detectRoundType(
+  round: string,
+): 'winner' | 'loser' | 'group' | 'knockout' | 'page' | 'unknown' {
   if (round.startsWith('W-') || round === '决赛') return 'winner'
   if (round.startsWith('L-')) return 'loser'
   if (round.startsWith('R') && !round.startsWith('淘汰赛')) return 'page'
@@ -578,7 +607,10 @@ function detectRoundType(round: string): 'winner' | 'loser' | 'group' | 'knockou
 }
 
 // 计算胜者晋级目标（仅支持结构化赛制，不支持纯循环赛/瑞士制内部晋级）
-export function computeAdvanceTarget(match: { round: string; orderNum: number }): AdvanceTarget | null {
+export function computeAdvanceTarget(match: {
+  round: string
+  orderNum: number
+}): AdvanceTarget | null {
   const roundType = detectRoundType(match.round)
   const roundNum = extractRoundNumber(match.round)
   if (roundNum === null) return null
@@ -594,10 +626,14 @@ export function computeAdvanceTarget(match: { round: string; orderNum: number })
     const nextRoundNum = roundNum + 1
     // 判断下一轮是否是半决赛或决赛（例如 bracketSize=8：round=2 是半决赛，round=3 是决赛）
     // 这里简化为统一 "第X轮"，实际需要总轮数信息；但在保存时已用显式标签，这里只做近似
-    let nextRoundLabel = `第${nextRoundNum}轮`
+    const nextRoundLabel = `第${nextRoundNum}轮`
     // 简化：直接用下一轮号匹配已保存的比赛标签
     // 实际匹配在 advanceWinnerToNextRound 中使用 roundSet 精确查找
-    return { round: nextRoundLabel, orderNum: nextOrderNum, slot: match.orderNum % 2 === 1 ? 'teamA' : 'teamB' }
+    return {
+      round: nextRoundLabel,
+      orderNum: nextOrderNum,
+      slot: match.orderNum % 2 === 1 ? 'teamA' : 'teamB',
+    }
   }
 
   // 双败淘汰赛 - 胜者组
@@ -606,13 +642,21 @@ export function computeAdvanceTarget(match: { round: string; orderNum: number })
     const nextOrderNum = Math.ceil(match.orderNum / 2)
     // 胜者组最后一轮 → 去"总决赛"
     const roundNumInBracket = roundNum
-    return { round: `W-第${roundNumInBracket + 1}轮`, orderNum: nextOrderNum, slot: match.orderNum % 2 === 1 ? 'teamA' : 'teamB' }
+    return {
+      round: `W-第${roundNumInBracket + 1}轮`,
+      orderNum: nextOrderNum,
+      slot: match.orderNum % 2 === 1 ? 'teamA' : 'teamB',
+    }
   }
 
   // 双败淘汰赛 - 败者组
   if (roundType === 'loser') {
     const nextOrderNum = Math.ceil(match.orderNum / 2)
-    return { round: `L-第${roundNum + 1}轮`, orderNum: nextOrderNum, slot: match.orderNum % 2 === 1 ? 'teamA' : 'teamB' }
+    return {
+      round: `L-第${roundNum + 1}轮`,
+      orderNum: nextOrderNum,
+      slot: match.orderNum % 2 === 1 ? 'teamA' : 'teamB',
+    }
   }
 
   // 佩寄制
@@ -632,7 +676,11 @@ export function computeAdvanceTarget(match: { round: string; orderNum: number })
     if (match.round.includes('决赛') && extractRoundNumber(match.round) === null) return null
     const nextOrderNum = Math.ceil(match.orderNum / 2)
     const nextRoundNum = roundNum + 1
-    return { round: `淘汰赛-第${nextRoundNum}轮`, orderNum: nextOrderNum, slot: match.orderNum % 2 === 1 ? 'teamA' : 'teamB' }
+    return {
+      round: `淘汰赛-第${nextRoundNum}轮`,
+      orderNum: nextOrderNum,
+      slot: match.orderNum % 2 === 1 ? 'teamA' : 'teamB',
+    }
   }
 
   return null
@@ -651,14 +699,14 @@ export function computeAdvanceTarget(match: { round: string; orderNum: number })
 // =====================================================================
 
 export interface AdvanceResult {
-  advanced: boolean                  // 是否成功晋级
-  targetMatchId?: string             // 被更新的下一场比赛 ID
-  targetRound?: string               // 目标轮次
-  targetOrder?: number               // 目标场次序号
-  targetSlot?: 'teamA' | 'teamB'    // 填入的位置
-  promotedTeam?: string             // 晋级的队伍名
-  error?: string                    // 错误信息（失败时）
-  info?: string                     // 额外信息（例如瑞士制整轮重配）
+  advanced: boolean // 是否成功晋级
+  targetMatchId?: string // 被更新的下一场比赛 ID
+  targetRound?: string // 目标轮次
+  targetOrder?: number // 目标场次序号
+  targetSlot?: 'teamA' | 'teamB' // 填入的位置
+  promotedTeam?: string // 晋级的队伍名
+  error?: string // 错误信息（失败时）
+  info?: string // 额外信息（例如瑞士制整轮重配）
 }
 
 /**
@@ -673,7 +721,7 @@ export async function advanceWinnerToNextRound(
     winner: string | null
     teamA: string | null
     teamB: string | null
-  }
+  },
 ): Promise<AdvanceResult> {
   // 平局：不晋级
   if (!finishedMatch.winner) {
@@ -693,7 +741,7 @@ export async function advanceWinnerToNextRound(
         tournamentId,
         target.round,
         target.orderNum,
-        finishedMatch.round
+        finishedMatch.round,
       )
 
       if (!candidate) {
@@ -753,10 +801,10 @@ async function findTargetMatch(
   tournamentId: string,
   preferredRound: string,
   orderNum: number,
-  currentRound: string
+  currentRound: string,
 ) {
   // 1) 精确查找
-  let m = await prisma.match.findFirst({
+  const m = await prisma.match.findFirst({
     where: { tournamentId, round: preferredRound, orderNum },
   })
   if (m) return m
@@ -790,9 +838,7 @@ async function findTargetMatch(
 
     if (candidateRounds.length > 0) {
       const nextRoundLabels = new Set(roundsByNumber.get(candidateRounds[0]!)!)
-      const found = allMatches.find(m =>
-        nextRoundLabels.has(m.round) && m.orderNum === orderNum
-      )
+      const found = allMatches.find((m) => nextRoundLabels.has(m.round) && m.orderNum === orderNum)
       if (found) return found
     }
 
@@ -818,7 +864,9 @@ async function findTargetMatch(
  * 瑞士制：当某一轮的所有比赛都结束后，
  * 根据积分榜动态生成下一轮的对阵（按积分排名从高到低两两配对）。
  */
-export async function autoPairNextSwissRound(tournamentId: string): Promise<{ paired: number; info: string }> {
+export async function autoPairNextSwissRound(
+  tournamentId: string,
+): Promise<{ paired: number; info: string }> {
   const matches = await prisma.match.findMany({
     where: { tournamentId, round: { startsWith: '第' } },
     orderBy: [{ round: 'asc' }, { orderNum: 'asc' }],
@@ -881,11 +929,16 @@ export async function autoPairNextSwissRound(tournamentId: string): Promise<{ pa
   // 批量更新
   if (updates.length > 0) {
     await prisma.$transaction(
-      updates.map((u) => prisma.match.update({ where: { id: u.id }, data: { teamA: u.teamA, teamB: u.teamB } }))
+      updates.map((u) =>
+        prisma.match.update({ where: { id: u.id }, data: { teamA: u.teamA, teamB: u.teamB } }),
+      ),
     )
   }
 
-  return { paired: filled, info: `已根据积分自动配对 "${nextRoundLabel}"（共 ${Math.ceil(teams.length / 2)} 场）` }
+  return {
+    paired: filled,
+    info: `已根据积分自动配对 "${nextRoundLabel}"（共 ${Math.ceil(teams.length / 2)} 场）`,
+  }
 }
 
 /**
@@ -894,7 +947,7 @@ export async function autoPairNextSwissRound(tournamentId: string): Promise<{ pa
  */
 export async function autoPromoteFromGroupsToKnockout(
   tournamentId: string,
-  promotePerGroup: number
+  promotePerGroup: number,
 ): Promise<{ promoted: string[]; info: string }> {
   // 找出所有小组赛比赛（round 以 A组- / B组- 等开头）
   const allMatches = await prisma.match.findMany({
@@ -936,9 +989,7 @@ export async function autoPromoteFromGroupsToKnockout(
   }
 
   // 把晋级队伍按顺序填入淘汰赛阶段
-  const koMatches = allMatches.filter((m: any) =>
-    (m.round as string).includes('淘汰赛')
-  )
+  const koMatches = allMatches.filter((m: any) => (m.round as string).includes('淘汰赛'))
   if (koMatches.length === 0) {
     return { promoted, info: `已收集 ${promoted.length} 支晋级队伍；但未找到淘汰赛阶段的比赛记录` }
   }
@@ -965,15 +1016,30 @@ export async function autoPromoteFromGroupsToKnockout(
   // 批量更新
   if (updates.length > 0) {
     await prisma.$transaction(
-      updates.map((u) => prisma.match.update({ where: { id: u.id }, data: { teamA: u.teamA, teamB: u.teamB } }))
+      updates.map((u) =>
+        prisma.match.update({ where: { id: u.id }, data: { teamA: u.teamA, teamB: u.teamB } }),
+      ),
     )
   }
 
-  return { promoted, info: `共 ${promoted.length} 支队伍晋级淘汰赛（每组前 ${promotePerGroup} 名）` }
+  return {
+    promoted,
+    info: `共 ${promoted.length} 支队伍晋级淘汰赛（每组前 ${promotePerGroup} 名）`,
+  }
 }
 
 // 工具：计算积分榜（同 StandingsTable 逻辑）
-function computeStandings(matches: any[]): { team: string; played: number; wins: number; draws: number; losses: number; scored: number; conceded: number; diff: number; points: number }[] {
+function computeStandings(matches: any[]): {
+  team: string
+  played: number
+  wins: number
+  draws: number
+  losses: number
+  scored: number
+  conceded: number
+  diff: number
+  points: number
+}[] {
   const finished = matches.filter((m) => m.status === 'finished')
   const teamMap = new Map<string, any>()
 
@@ -981,8 +1047,15 @@ function computeStandings(matches: any[]): { team: string; played: number; wins:
     ;[m.teamA, m.teamB].forEach((name) => {
       if (name && !teamMap.has(name)) {
         teamMap.set(name, {
-          team: name, played: 0, wins: 0, draws: 0, losses: 0,
-          scored: 0, conceded: 0, diff: 0, points: 0,
+          team: name,
+          played: 0,
+          wins: 0,
+          draws: 0,
+          losses: 0,
+          scored: 0,
+          conceded: 0,
+          diff: 0,
+          points: 0,
         })
       }
     })
@@ -992,16 +1065,32 @@ function computeStandings(matches: any[]): { team: string; played: number; wins:
     if (!m.teamA || !m.teamB) continue
     const a = teamMap.get(m.teamA)!
     const b = teamMap.get(m.teamB)!
-    a.played++; b.played++
-    a.scored += m.scoreA ?? 0; a.conceded += m.scoreB ?? 0
-    b.scored += m.scoreB ?? 0; b.conceded += m.scoreA ?? 0
-    if (m.winner === m.teamA) { a.wins++; a.points += 3; b.losses++ }
-    else if (m.winner === m.teamB) { b.wins++; b.points += 3; a.losses++ }
-    else { a.draws++; b.draws++; a.points += 1; b.points += 1 }
+    a.played++
+    b.played++
+    a.scored += m.scoreA ?? 0
+    a.conceded += m.scoreB ?? 0
+    b.scored += m.scoreB ?? 0
+    b.conceded += m.scoreA ?? 0
+    if (m.winner === m.teamA) {
+      a.wins++
+      a.points += 3
+      b.losses++
+    } else if (m.winner === m.teamB) {
+      b.wins++
+      b.points += 3
+      a.losses++
+    } else {
+      a.draws++
+      b.draws++
+      a.points += 1
+      b.points += 1
+    }
   }
 
   const result = Array.from(teamMap.values())
-  result.forEach((t) => { t.diff = t.scored - t.conceded })
+  result.forEach((t) => {
+    t.diff = t.scored - t.conceded
+  })
   result.sort((a, b) => b.points - a.points || b.diff - a.diff || b.scored - a.scored)
   return result
 }
@@ -1018,7 +1107,7 @@ function computeStandings(matches: any[]): { team: string; played: number; wins:
  */
 export function drawGroups(
   teams: string[],
-  groupCount: number
+  groupCount: number,
 ): { team: string; group: string; seed: number }[] {
   // 洗牌
   const shuffled = [...teams].sort(() => Math.random() - 0.5)
@@ -1052,9 +1141,9 @@ export function drawAffirmativeSide(): 'teamA' | 'teamB' {
  * @param usedTopics 已被其他比赛使用的辩题索引（避免重复）
  */
 export function drawTopic(
-  topicPool: { pro: string, con: string }[],
-  usedTopics: number[] = []
-): { pro: string, con: string } | null {
+  topicPool: { pro: string; con: string }[],
+  usedTopics: number[] = [],
+): { pro: string; con: string } | null {
   const remainingIdx = topicPool.map((_, i) => i).filter((i) => !usedTopics.includes(i))
   if (remainingIdx.length === 0) {
     // 若全部用完，允许重复使用
@@ -1077,9 +1166,9 @@ export interface DrawLotsResult {
 
 export function runDrawLots(options: {
   teams: string[]
-  topicPool: { pro: string, con: string }[]
+  topicPool: { pro: string; con: string }[]
   matches: { id: string; teamA: string | null; teamB: string | null; round: string }[]
-  groupCount?: number  // >1 时才进行分组
+  groupCount?: number // >1 时才进行分组
   drawType: 'groups' | 'topics_sides' | 'all'
 }): DrawLotsResult {
   const result: DrawLotsResult = {
@@ -1089,8 +1178,11 @@ export function runDrawLots(options: {
   }
 
   // —— 1. 分组抽签 ——
-  if ((options.drawType === 'groups' || options.drawType === 'all') &&
-      options.groupCount && options.groupCount > 1) {
+  if (
+    (options.drawType === 'groups' || options.drawType === 'all') &&
+    options.groupCount &&
+    options.groupCount > 1
+  ) {
     result.groupAssignments = drawGroups(options.teams, options.groupCount)
     result.info += `完成分组抽签：${options.teams.length} 支队伍 → ${options.groupCount} 个组。 `
   }
@@ -1114,7 +1206,7 @@ export function runDrawLots(options: {
 
       result.matchAssignments.push({
         matchId: match.id,
-        topic: topic ? JSON.stringify(topic) : '',  // 存为 JSON 字符串
+        topic: topic ? JSON.stringify(topic) : '', // 存为 JSON 字符串
         affirmativeSide: side,
       })
     }

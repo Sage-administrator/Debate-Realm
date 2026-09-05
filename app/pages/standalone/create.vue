@@ -118,7 +118,9 @@ async function handleCreate() {
     await navigateTo(`/standalone/${matchId}`)
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || '创建失败', color: 'error' })
-  } finally { loading.value = false }
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -129,7 +131,9 @@ async function handleCreate() {
       <!-- 页面标题区 -->
       <div class="mb-6">
         <h1 class="text-2xl font-bold text-[var(--color-text-primary)] mb-2">创建独立赛事</h1>
-        <p class="text-[var(--color-text-secondary)] text-sm">快速创建一场独立比赛，填写以下信息完成创建</p>
+        <p class="text-[var(--color-text-secondary)] text-sm">
+          快速创建一场独立比赛，填写以下信息完成创建
+        </p>
       </div>
 
       <!-- 玻璃拟态卡片 -->
@@ -149,7 +153,9 @@ async function handleCreate() {
               @input="validateName"
               @blur="validateName"
             />
-            <p v-if="errors.name" class="text-red-500 dark:text-red-400 text-xs mt-1.5">{{ errors.name }}</p>
+            <p v-if="errors.name" class="text-red-500 dark:text-red-400 text-xs mt-1.5">
+              {{ errors.name }}
+            </p>
           </div>
 
           <!-- 2. 比赛时间 + 3. 赛事地区（同一行，两列） -->
@@ -159,10 +165,7 @@ async function handleCreate() {
               <label class="block text-[var(--color-text-secondary)] text-sm font-medium mb-1.5">
                 比赛时间
               </label>
-              <DatetimePicker
-                v-model="form.scheduledAt"
-                placeholder="请选择比赛时间"
-              />
+              <DatetimePicker v-model="form.scheduledAt" placeholder="请选择比赛时间" />
             </div>
 
             <!-- 右：赛事地区 - 省市二级级联 -->
@@ -174,11 +177,23 @@ async function handleCreate() {
                 <RegionCascader
                   :province="form.regionProvince"
                   :city="form.regionCity"
-                  @update:province="form.regionProvince = $event; clearError('region')"
-                  @update:city="form.regionCity = $event; clearError('region')"
+                  @update:province="
+                    (v: string) => {
+                      form.regionProvince = v
+                      clearError('region')
+                    }
+                  "
+                  @update:city="
+                    (v: string) => {
+                      form.regionCity = v
+                      clearError('region')
+                    }
+                  "
                 />
               </div>
-              <p v-if="errors.region" class="text-red-500 dark:text-red-400 text-xs mt-1.5">{{ errors.region }}</p>
+              <p v-if="errors.region" class="text-red-500 dark:text-red-400 text-xs mt-1.5">
+                {{ errors.region }}
+              </p>
             </div>
           </div>
 
@@ -202,7 +217,9 @@ async function handleCreate() {
             </label>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-[var(--color-text-secondary)] text-xs mb-1.5">正方队伍名</label>
+                <label class="block text-[var(--color-text-secondary)] text-xs mb-1.5"
+                  >正方队伍名</label
+                >
                 <input
                   v-model="form.teamPositiveName"
                   type="text"
@@ -211,7 +228,9 @@ async function handleCreate() {
                 />
               </div>
               <div>
-                <label class="block text-[var(--color-text-secondary)] text-xs mb-1.5">反方队伍名</label>
+                <label class="block text-[var(--color-text-secondary)] text-xs mb-1.5"
+                  >反方队伍名</label
+                >
                 <input
                   v-model="form.teamNegativeName"
                   type="text"
@@ -220,7 +239,9 @@ async function handleCreate() {
                 />
               </div>
               <div>
-                <label class="block text-[var(--color-text-secondary)] text-xs mb-1.5">正方辩题</label>
+                <label class="block text-[var(--color-text-secondary)] text-xs mb-1.5"
+                  >正方辩题</label
+                >
                 <input
                   v-model="form.positiveTopic"
                   type="text"
@@ -229,7 +250,9 @@ async function handleCreate() {
                 />
               </div>
               <div>
-                <label class="block text-[var(--color-text-secondary)] text-xs mb-1.5">反方辩题</label>
+                <label class="block text-[var(--color-text-secondary)] text-xs mb-1.5"
+                  >反方辩题</label
+                >
                 <input
                   v-model="form.negativeTopic"
                   type="text"

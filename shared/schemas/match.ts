@@ -44,23 +44,27 @@ export type CreateMatchRequest = z.infer<typeof CreateMatchRequest>
 
 // ── 更新比赛 ──
 
-export const UpdateMatchRequest = z.object({
-  round: z.string().optional(),
-  orderNum: z.number().int().optional(),
-  teamA: z.string().nullable().optional(),
-  teamB: z.string().nullable().optional(),
-  scheduledAt: z.string().nullable().optional(),
-  status: MatchStatus.optional(),
-  currentVersion: z.number().int().optional(),
-}).partial()
+export const UpdateMatchRequest = z
+  .object({
+    round: z.string().optional(),
+    orderNum: z.number().int().optional(),
+    teamA: z.string().nullable().optional(),
+    teamB: z.string().nullable().optional(),
+    scheduledAt: z.string().nullable().optional(),
+    status: MatchStatus.optional(),
+    currentVersion: z.number().int().optional(),
+  })
+  .partial()
 export type UpdateMatchRequest = z.infer<typeof UpdateMatchRequest>
 
 // ── 删除比赛 ──
 
-export const DeleteMatchRequest = z.object({
-  currentVersion: z.number().int().optional(),
-  deleteReason: z.string().optional(),
-}).partial()
+export const DeleteMatchRequest = z
+  .object({
+    currentVersion: z.number().int().optional(),
+    deleteReason: z.string().optional(),
+  })
+  .partial()
 export type DeleteMatchRequest = z.infer<typeof DeleteMatchRequest>
 
 // ── 提交赛果 ──
@@ -89,7 +93,13 @@ export type MatchResultSubmitResult = {
     scoreB: number
     status: string
     version: number
-    advanced: { advanced: boolean; targetMatchId?: string; error?: string; info?: string; [key: string]: any }
+    advanced: {
+      advanced: boolean
+      targetMatchId?: string
+      error?: string
+      info?: string
+      [key: string]: any
+    }
     format?: string
   }
 }
@@ -99,10 +109,12 @@ export type MatchResultSubmitResult = {
 export const SubmitScoreRequest = z.object({
   matchId: ID,
   judgeName: z.string().min(1),
-  dimensions: z.array(z.object({
-    name: z.string(),
-    score: z.number().int().min(0),
-  })),
+  dimensions: z.array(
+    z.object({
+      name: z.string(),
+      score: z.number().int().min(0),
+    }),
+  ),
   reason: z.string().optional(),
   scoreTeamA: z.number().int(),
   scoreTeamB: z.number().int(),

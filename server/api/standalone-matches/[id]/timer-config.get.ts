@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // 1. 查找关联的计时器项目（通过 standaloneMatchId）
-  let project = await prisma.debateTimerProject.findUnique({
+  const project = await prisma.debateTimerProject.findUnique({
     where: { standaloneMatchId: id },
     include: { stages: { orderBy: { orderIndex: 'asc' } } },
   })
@@ -40,10 +40,10 @@ export default defineEventHandler(async (event) => {
       negativeTopic: null,
       teamPositiveName: null,
       teamNegativeName: null,
-      uiConfig: null,     // 界面元素配置
-      skinConfig: null,    // 背景配置
-      audioConfig: null,   // 提示音配置
-      teamLogoConfig: null,// 队徽配置
+      uiConfig: null, // 界面元素配置
+      skinConfig: null, // 背景配置
+      audioConfig: null, // 提示音配置
+      teamLogoConfig: null, // 队徽配置
       stages: [],
       createdAt: null,
       updatedAt: null,

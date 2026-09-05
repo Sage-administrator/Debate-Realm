@@ -99,7 +99,9 @@ export default defineEventHandler(async (event) => {
       uiConfig: updatedProject.uiConfig ? JSON.parse(updatedProject.uiConfig) : null,
       skinConfig: updatedProject.skinConfig ? JSON.parse(updatedProject.skinConfig) : null,
       audioConfig: updatedProject.audioConfig ? JSON.parse(updatedProject.audioConfig) : null,
-      teamLogoConfig: updatedProject.teamLogoConfig ? JSON.parse(updatedProject.teamLogoConfig) : null,
+      teamLogoConfig: updatedProject.teamLogoConfig
+        ? JSON.parse(updatedProject.teamLogoConfig)
+        : null,
       stages: result.returnedStages.map(serializeStage),
       createdAt: updatedProject.createdAt,
       updatedAt: updatedProject.updatedAt,

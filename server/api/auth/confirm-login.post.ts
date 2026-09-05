@@ -35,7 +35,8 @@ function formatDeviceInfo(userAgent: string | null | undefined): string {
 export default defineEventHandler(async (event) => {
   try {
     const { username, password } = await readBody<{
-      username: string; password: string
+      username: string
+      password: string
     }>(event)
 
     // 1. 参数校验
@@ -111,9 +112,7 @@ export default defineEventHandler(async (event) => {
       avatar: user.avatar,
       role: user.role,
       mode: user.mode,
-      team: user.team
-        ? { id: user.team.id, name: user.team.name, mode: user.team.mode }
-        : null,
+      team: user.team ? { id: user.team.id, name: user.team.name, mode: user.team.mode } : null,
     }
 
     // 通过 Set-Cookie 头设置认证 Cookie，确保 SSR 阶段能读取到登录状态

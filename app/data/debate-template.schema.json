@@ -43,9 +43,17 @@
       "additionalProperties": false,
       "properties": {
         "name": { "type": "string", "minLength": 1, "description": "环节名称" },
-        "duration": { "type": "integer", "minimum": 0, "description": "主时长（秒）。单方发问环节 = questionDuration + answerDuration" },
+        "duration": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "主时长（秒）。单方发问环节 = questionDuration + answerDuration"
+        },
         "type": { "$ref": "#/definitions/StageType" },
-        "orderIndex": { "type": "integer", "minimum": 1, "description": "排序顺序（1-based）。对应 DebateTimerStage.orderIndex，正式字段名（非 order）" },
+        "orderIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "排序顺序（1-based）。对应 DebateTimerStage.orderIndex，正式字段名（非 order）"
+        },
         "description": { "type": ["string", "null"], "description": "管理员笔记，不显示给辩手" },
         "positiveDuration": { "type": ["integer", "null"], "description": "双计时器：正方时长" },
         "negativeDuration": { "type": ["integer", "null"], "description": "双计时器：反方时长" },
@@ -54,16 +62,31 @@
           "description": "允许发言的角色 label 列表（如 [\"正方一辩\",\"反方二辩\"]）。JSON 存储，对应 DebateTimerStage.allowedRoles",
           "items": { "type": "string" }
         },
-        "speaker": { "type": ["string", "null"], "description": "单方发言/小结/总结陈词的发言方，如 \"正方 · 一辩\"" },
-        "questioner": { "type": ["string", "null"], "description": "单方发问的发问人，如 \"反方 · 四辩\"" },
-        "responder": { "type": ["string", "null"], "description": "[已废弃] 单方发问的接受人（单值；多接盘请用 responders）" },
+        "speaker": {
+          "type": ["string", "null"],
+          "description": "单方发言/小结/总结陈词的发言方，如 \"正方 · 一辩\""
+        },
+        "questioner": {
+          "type": ["string", "null"],
+          "description": "单方发问的发问人，如 \"反方 · 四辩\""
+        },
+        "responder": {
+          "type": ["string", "null"],
+          "description": "[已废弃] 单方发问的接受人（单值；多接盘请用 responders）"
+        },
         "responders": {
           "type": ["array", "null"],
           "description": "单方发问的接受人（多选），如 [\"正方 · 一辩\",\"反方 · 二辩\"]",
           "items": { "type": "string" }
         },
-        "firstSpeaker": { "type": ["string", "null"], "description": "双边对辩/自由辩论的率先发言方，如 \"正方 · 一辩\"" },
-        "protectionTime": { "type": ["integer", "null"], "description": "保护时间（秒）。0/null 表示不启用。单方发问：接受人开头 N 秒不可被打断" },
+        "firstSpeaker": {
+          "type": ["string", "null"],
+          "description": "双边对辩/自由辩论的率先发言方，如 \"正方 · 一辩\""
+        },
+        "protectionTime": {
+          "type": ["integer", "null"],
+          "description": "保护时间（秒）。0/null 表示不启用。单方发问：接受人开头 N 秒不可被打断"
+        },
         "positiveSpeakers": {
           "type": ["array", "null"],
           "description": "双边对辩/自由辩论：正方参与辩手（多选），如 [\"正方 · 一辩\",\"正方 · 二辩\"]",
@@ -74,15 +97,28 @@
           "description": "双边对辩/自由辩论：反方参与辩手（多选）",
           "items": { "type": "string" }
         },
-        "questionDuration": { "type": ["integer", "null"], "description": "单方发问：提问时长（秒）" },
-        "answerDuration": { "type": ["integer", "null"], "description": "单方发问：回答时长（秒）" },
-        "enabled": { "type": "boolean", "description": "环节启用开关，默认 true。false 时该环节在计时流程中被跳过", "default": true },
+        "questionDuration": {
+          "type": ["integer", "null"],
+          "description": "单方发问：提问时长（秒）"
+        },
+        "answerDuration": {
+          "type": ["integer", "null"],
+          "description": "单方发问：回答时长（秒）"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "环节启用开关，默认 true。false 时该环节在计时流程中被跳过",
+          "default": true
+        },
         "speakers": {
           "type": ["array", "null"],
           "description": "无计时器环节的可发言角色（多选，角色 label）。如 [\"正方一辩\",\"反方二辩\"]",
           "items": { "type": "string" }
         },
-        "pptImage": { "type": ["string", "null"], "description": "PPT/图片展示环节的图片路径（/uploads/images/...），纯播报不计时" }
+        "pptImage": {
+          "type": ["string", "null"],
+          "description": "PPT/图片展示环节的图片路径（/uploads/images/...），纯播报不计时"
+        }
       }
     }
   }

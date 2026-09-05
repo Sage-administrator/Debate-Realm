@@ -23,9 +23,14 @@ type ScheduleTask = {
 // 返回某时刻在指定时区下的「墙钟偏移」(ms)：墙钟当成 UTC 的毫秒数 - 实际 UTC 毫秒数
 function tzOffsetMs(date: Date, tz: string): number {
   const dtf = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz, hour12: false,
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    timeZone: tz,
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
   })
   const m: Record<string, string> = {}
   for (const p of dtf.formatToParts(date)) if (p.type !== 'literal') m[p.type] = p.value
@@ -35,11 +40,20 @@ function tzOffsetMs(date: Date, tz: string): number {
 }
 
 // 取某时刻在指定时区的墙钟年月日与星期（0=周日）
-function wallParts(date: Date, tz: string): { year: number; month: number; day: number; weekday: number } {
+function wallParts(
+  date: Date,
+  tz: string,
+): { year: number; month: number; day: number; weekday: number } {
   const dtf = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz, hour12: false, weekday: 'short',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    timeZone: tz,
+    hour12: false,
+    weekday: 'short',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
   })
   const m: Record<string, string> = {}
   for (const p of dtf.formatToParts(date)) if (p.type !== 'literal') m[p.type] = p.value
@@ -49,7 +63,15 @@ function wallParts(date: Date, tz: string): { year: number; month: number; day: 
 }
 
 // 将「某时区的墙钟 Y-M-D H:M」还原为真实 UTC 瞬间（refDate 用于取该时刻附近的偏移，DST 近似）
-function wallToUtc(year: number, month: number, day: number, hh: number, mm: number, tz: string, refDate?: Date): Date {
+function wallToUtc(
+  year: number,
+  month: number,
+  day: number,
+  hh: number,
+  mm: number,
+  tz: string,
+  refDate?: Date,
+): Date {
   const ref = refDate || new Date(Date.UTC(year, month - 1, day, hh, mm, 0))
   const offset = tzOffsetMs(ref, tz)
   return new Date(Date.UTC(year, month - 1, day, hh, mm, 0) - offset)
@@ -108,7 +130,9 @@ export function buildForumContent(task: {
     try {
       const opts = JSON.parse(task.pollOptions)
       if (Array.isArray(opts) && opts.length) {
-        parts.push('\n投票选项：\n' + opts.map((o: string, i: number) => `${i + 1}. ${o}`).join('\n'))
+        parts.push(
+          '\n投票选项：\n' + opts.map((o: string, i: number) => `${i + 1}. ${o}`).join('\n'),
+        )
       }
     } catch {
       // 非法 JSON 忽略，不阻断发布
@@ -118,10 +142,18 @@ export function buildForumContent(task: {
 }
 
 // 触发单次发布：取团队 Bot 凭证 → 调论坛发帖
-export async function triggerTask(prisma: PrismaClient, task: {
-  id: string; teamId: string; channelId: string; title: string
-  content?: string; tags?: string | null; pollOptions?: string | null
-}): Promise<any> {
+export async function triggerTask(
+  prisma: PrismaClient,
+  task: {
+    id: string
+    teamId: string
+    channelId: string
+    title: string
+    content?: string
+    tags?: string | null
+    pollOptions?: string | null
+  },
+): Promise<any> {
   const team = await prisma.team.findUnique({
     where: { id: task.teamId },
     select: { botAppId: true, botAppSecret: true, name: true, botIsPrivate: true },
@@ -188,7 +220,13 @@ export async function scanDueTasks(prisma: PrismaClient): Promise<number> {
       try {
         const team = await prisma.team.findUnique({
           where: { id: task.teamId },
-          select: { botAppId: true, botAppSecret: true, name: true, botIsPrivate: true, botChannelId: true },
+          select: {
+            botAppId: true,
+            botAppSecret: true,
+            name: true,
+            botIsPrivate: true,
+            botChannelId: true,
+          },
         })
         if (team?.botChannelId && team.botAppId && team.botAppSecret) {
           const cfg: BotConfig = {
@@ -276,7 +314,13 @@ export async function dispatchPostById(
     try {
       const team = await prisma.team.findUnique({
         where: { id: task.teamId },
-        select: { botAppId: true, botAppSecret: true, name: true, botIsPrivate: true, botChannelId: true },
+        select: {
+          botAppId: true,
+          botAppSecret: true,
+          name: true,
+          botIsPrivate: true,
+          botChannelId: true,
+        },
       })
       if (team?.botChannelId && team.botAppId && team.botAppSecret) {
         const cfg: BotConfig = {

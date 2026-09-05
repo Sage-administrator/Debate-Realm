@@ -31,9 +31,10 @@ const cwd = process.cwd()
 // 与 nuxt.config.ts 的 buildRoot 一致：
 //   BUILD_IN_PLACE=true → 项目内 .build/ 目录
 //   否则 → 系统临时目录（Windows WorkBuddy 兼容）
-const buildRoot = process.env.BUILD_IN_PLACE === 'true'
-  ? join(cwd, '.build')
-  : join(os.tmpdir(), 'debate-timer-build')
+const buildRoot =
+  process.env.BUILD_IN_PLACE === 'true'
+    ? join(cwd, '.build')
+    : join(os.tmpdir(), 'debate-timer-build')
 const prodOutput = join(buildRoot, 'output')
 const projOutput = join(cwd, '.output')
 
@@ -80,7 +81,7 @@ if (existsSync(libsqlSrc)) {
   }
 } else {
   console.warn(
-    `[fix-nitro-output] ⚠️ 源原生模块缺失: ${libsqlSrc}（当前平台 ${platformTarget} 依赖未安装？跳过）`
+    `[fix-nitro-output] ⚠️ 源原生模块缺失: ${libsqlSrc}（当前平台 ${platformTarget} 依赖未安装？跳过）`,
   )
 }
 

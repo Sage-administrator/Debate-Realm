@@ -10,7 +10,12 @@
 import { readBody } from 'h3'
 import { prisma } from '../../../../lib/prisma'
 import { requireWriteTournament } from '../../../../utils/tournament-auth'
-import { generateBracket, type TournamentFormat, type GenerateOptions, type MatchInput } from '../../../../utils/bracket-generator'
+import {
+  generateBracket,
+  type TournamentFormat,
+  type GenerateOptions,
+  type MatchInput,
+} from '../../../../utils/bracket-generator'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -90,7 +95,10 @@ export default defineEventHandler(async (event) => {
     if (format === 'group_knockout') {
       const minNeed = Math.max(groupSize * 2, 4)
       if (teams.length < minNeed) {
-        throw createError({ statusCode: 400, message: `小组+淘汰赛至少需要 ${minNeed} 支队伍（每组 ${groupSize} 支，至少 2 组）` })
+        throw createError({
+          statusCode: 400,
+          message: `小组+淘汰赛至少需要 ${minNeed} 支队伍（每组 ${groupSize} 支，至少 2 组）`,
+        })
       }
     }
     if (format === 'swiss' && rounds && (rounds < 1 || rounds > 20)) {

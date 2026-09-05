@@ -13,9 +13,7 @@ const router = useRouter()
 const store = useAuthStore()
 
 // 「创建赛事」按钮：已登录跳转创建页，未登录先去登录
-const createTo = computed(() =>
-  store.isAuthenticated ? '/tournaments/create' : '/login',
-)
+const createTo = computed(() => (store.isAuthenticated ? '/tournaments/create' : '/login'))
 
 // ── 数据状态 ──
 const tournaments = ref<any[]>([])
@@ -147,14 +145,20 @@ onMounted(() => {
     <!-- ═══════════ Hero 区域 ═══════════ -->
     <section class="py-16 sm:py-24 text-center">
       <div class="max-w-4xl mx-auto px-4">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6">
+        <div
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6"
+        >
           <UIcon name="i-lucide-sparkles" class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
           <span class="text-sm font-medium text-indigo-600">专业辩论赛管理平台</span>
         </div>
-        <h1 class="text-4xl sm:text-6xl font-bold text-[var(--color-text-primary)] mb-6 leading-tight">
+        <h1
+          class="text-4xl sm:text-6xl font-bold text-[var(--color-text-primary)] mb-6 leading-tight"
+        >
           发现精彩赛事
           <br />
-          <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <span
+            class="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+          >
             一键报名参与
           </span>
         </h1>
@@ -164,7 +168,9 @@ onMounted(() => {
         </p>
         <!-- 搜索框 -->
         <div class="max-w-2xl mx-auto">
-          <div class="flex gap-3 bg-[var(--color-bg-secondary)] backdrop-blur rounded-2xl p-2 border border-[var(--color-border)]">
+          <div
+            class="flex gap-3 bg-[var(--color-bg-secondary)] backdrop-blur rounded-2xl p-2 border border-[var(--color-border)]"
+          >
             <div class="flex-1 flex items-center gap-3 px-4">
               <UIcon name="i-lucide-search" class="w-5 h-5 text-[var(--color-text-muted)]" />
               <input
@@ -213,19 +219,22 @@ onMounted(() => {
             </button>
           </div>
         </div>
-        <div class="text-sm text-[var(--color-text-muted)]">
-          共 {{ total }} 场赛事
-        </div>
+        <div class="text-sm text-[var(--color-text-muted)]">共 {{ total }} 场赛事</div>
       </div>
 
       <!-- 赛事卡片列表 -->
       <div v-if="loading" class="text-center py-20">
-        <div class="inline-block animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
+        <div
+          class="inline-block animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full"
+        />
         <p class="text-[var(--color-text-muted)] mt-4">加载中...</p>
       </div>
 
       <div v-else-if="tournaments.length === 0" class="text-center py-20">
-        <UIcon name="i-lucide-calendar-off" class="w-16 h-16 text-[var(--color-border-muted)] mx-auto mb-4" />
+        <UIcon
+          name="i-lucide-calendar-off"
+          class="w-16 h-16 text-[var(--color-border-muted)] mx-auto mb-4"
+        />
         <p class="text-[var(--color-text-muted)]">暂无公开赛事</p>
         <p class="text-[var(--color-text-muted)] text-sm mt-2">尝试调整筛选条件或稍后再来查看</p>
       </div>
@@ -238,19 +247,28 @@ onMounted(() => {
           @click="goDetail(t.id)"
         >
           <!-- 卡片顶部装饰条 -->
-          <div class="h-2 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+          <div class="h-2 bg-gradient-to-r from-indigo-500 to-purple-600" />
 
           <div class="p-6">
             <!-- 状态标签 -->
             <div class="flex items-center justify-between mb-3">
-              <span :class="['px-2.5 py-1 rounded-md text-xs font-medium', statusColors[t.status] || 'bg-gray-500/20 text-gray-400']">
+              <span
+                :class="[
+                  'px-2.5 py-1 rounded-md text-xs font-medium',
+                  statusColors[t.status] || 'bg-gray-500/20 text-gray-400',
+                ]"
+              >
                 {{ statusLabels[t.status] || t.status }}
               </span>
-              <span class="text-xs text-[var(--color-text-muted)]">{{ formatLabels[t.format] || t.format }}</span>
+              <span class="text-xs text-[var(--color-text-muted)]">{{
+                formatLabels[t.format] || t.format
+              }}</span>
             </div>
 
             <!-- 赛事名称 -->
-            <h3 class="text-lg font-semibold text-[var(--color-text-primary)] mb-2 group-hover:text-[var(--color-accent-primary)] transition-colors line-clamp-2">
+            <h3
+              class="text-lg font-semibold text-[var(--color-text-primary)] mb-2 group-hover:text-[var(--color-accent-primary)] transition-colors line-clamp-2"
+            >
               {{ t.name }}
             </h3>
 
@@ -276,7 +294,9 @@ onMounted(() => {
             </div>
 
             <!-- 底部统计 -->
-            <div class="flex items-center justify-between pt-4 border-t border-[var(--color-border)]">
+            <div
+              class="flex items-center justify-between pt-4 border-t border-[var(--color-border)]"
+            >
               <div class="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
                 <span class="flex items-center gap-1">
                   <UIcon name="i-lucide-users" class="w-3.5 h-3.5" />
@@ -287,7 +307,10 @@ onMounted(() => {
                   {{ t.judgeCount }} 评委
                 </span>
               </div>
-              <UIcon name="i-lucide-arrow-right" class="w-4 h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-accent-primary)] group-hover:translate-x-1 transition-all" />
+              <UIcon
+                name="i-lucide-arrow-right"
+                class="w-4 h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-accent-primary)] group-hover:translate-x-1 transition-all"
+              />
             </div>
           </div>
         </div>

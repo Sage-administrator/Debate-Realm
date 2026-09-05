@@ -13,54 +13,68 @@ import TimerPreview from '~/components/TimerPreview.vue'
 // 配置对象类型定义（与 5 个配置页面的 fullConfig 结构一致）
 // 单个环节信息
 interface StageInfo {
-  id: number | string       // 环节唯一标识
-  name: string              // 环节名称
-  duration: number          // 环节时长（秒）
-  type: 'speech' | 'question' | 'summary' | 'special' | 'dual-timer'
-        | 'single_speech' | 'single_question' | 'bilateral_debate' | 'free_debate'
-        | 'no_timer' | 'single_timer' | 'double_timer' | 'ppt_replace' | string
+  id: number | string // 环节唯一标识
+  name: string // 环节名称
+  duration: number // 环节时长（秒）
+  type:
+    | 'speech'
+    | 'question'
+    | 'summary'
+    | 'special'
+    | 'dual-timer'
+    | 'single_speech'
+    | 'single_question'
+    | 'bilateral_debate'
+    | 'free_debate'
+    | 'no_timer'
+    | 'single_timer'
+    | 'double_timer'
+    | 'ppt_replace'
+    | string
   [key: string]: any
 }
 // UI 配置（横幅/标题/背景等显示项）
 interface UIConfig {
-  bannerVisible?: boolean           // 是否显示横幅
-  eventNameVisible?: boolean        // 是否显示赛事标题
-  bannerPos?: number                // 横幅垂直位置偏移
-  positiveLabel?: string            // 正方标签
-  negativeLabel?: string            // 反方标签
+  bannerVisible?: boolean // 是否显示横幅
+  eventNameVisible?: boolean // 是否显示赛事标题
+  bannerPos?: number // 横幅垂直位置偏移
+  positiveLabel?: string // 正方标签
+  negativeLabel?: string // 反方标签
   backgroundType?: 'default' | 'image' | 'custom' | 'gradient' | 'solid'
-  solidColor?: string               // 纯色背景色
-  gradientStart?: string            // 渐变起始色
-  gradientEnd?: string              // 渐变结束色
-  imageFileName?: string            // 背景图地址
+  solidColor?: string // 纯色背景色
+  gradientStart?: string // 渐变起始色
+  gradientEnd?: string // 渐变结束色
+  imageFileName?: string // 背景图地址
   [key: string]: any
 }
 // 皮肤/背景配置
 interface SkinConfig {
-  backgroundType?: string         // 'default' | 'gradient' | 'image' | 'solid'；放开为 string 以兼容 useTimerConfig 推断的宽类型
+  backgroundType?: string // 'default' | 'gradient' | 'image' | 'solid'；放开为 string 以兼容 useTimerConfig 推断的宽类型
   solidColor?: string
   gradientStart?: string
   gradientEnd?: string
-  imageUrl?: string                 // 背景图 URL
+  imageUrl?: string // 背景图 URL
   [key: string]: any
 }
 // 提示音配置
-interface AudioConfig { [key: string]: any }
+interface AudioConfig {
+  [key: string]: any
+}
 // 队徽配置
 interface TeamLogoConfig {
-  positiveLogoUrl?: string          // 正方队徽 URL
-  negativeLogoUrl?: string          // 反方队徽 URL
-  showTeamLogo?: boolean            // 是否显示队徽
+  positiveLogoUrl?: string // 正方队徽 URL
+  negativeLogoUrl?: string // 反方队徽 URL
+  showTeamLogo?: boolean // 是否显示队徽
   [key: string]: any
 }
 // 完整计时器配置（聚合以上所有子配置）
 interface FullConfig {
-  title: string                     // 赛事标题
-  positiveTopic: string             // 正方辩题
-  negativeTopic: string             // 反方辩题
-  teamPositiveName: string          // 正方队名
-  teamNegativeName: string          // 反方队名
-  stages: StageInfo[]               // 环节列表
+  title: string // 赛事标题
+  positiveTopic: string // 正方辩题
+  negativeTopic: string // 反方辩题
+  teamPositiveName: string // 正方队名
+  teamNegativeName: string // 反方队名
+  stages: StageInfo[] // 环节列表
   uiConfig: UIConfig
   skinConfig?: SkinConfig
   audioConfig?: AudioConfig
@@ -140,9 +154,8 @@ onUnmounted(() => {
 <template>
   <!-- ═══ 左侧：实时预览卡片 ═══ -->
   <div class="bg-white/8 rounded-lg overflow-hidden border border-[var(--color-border)]">
-
     <!-- 16:9 黑色预览区域 -->
-    <div class="bg-black" style="aspect-ratio: 16/9;">
+    <div class="bg-black" style="aspect-ratio: 16/9">
       <TimerPreview
         :contest-title="fullConfig.title"
         :positive-topic="fullConfig.positiveTopic"

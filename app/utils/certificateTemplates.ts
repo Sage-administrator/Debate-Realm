@@ -17,9 +17,27 @@ export interface SizePreset {
 }
 
 export const SIZE_PRESETS: Record<CertificateSizeKey, SizePreset> = {
-  'a4-landscape': { key: 'a4-landscape', label: 'A4 横向', width: 1754, height: 1240, printSize: '297mm 210mm' },
-  'a4-portrait': { key: 'a4-portrait', label: 'A4 纵向', width: 1240, height: 1754, printSize: '210mm 297mm' },
-  'square': { key: 'square', label: '方形 1:1', width: 1400, height: 1400, printSize: '1400px 1400px' },
+  'a4-landscape': {
+    key: 'a4-landscape',
+    label: 'A4 横向',
+    width: 1754,
+    height: 1240,
+    printSize: '297mm 210mm',
+  },
+  'a4-portrait': {
+    key: 'a4-portrait',
+    label: 'A4 纵向',
+    width: 1240,
+    height: 1754,
+    printSize: '210mm 297mm',
+  },
+  square: {
+    key: 'square',
+    label: '方形 1:1',
+    width: 1400,
+    height: 1400,
+    printSize: '1400px 1400px',
+  },
   '16:9': { key: '16:9', label: '宽屏 16:9', width: 1600, height: 900, printSize: '1600px 900px' },
 }
 
@@ -34,8 +52,7 @@ export const CONFIG_VERSION = 1
 
 // ════════════ 样式枚举 ════════════
 export type ThemeKey =
-  | 'gold' | 'blue' | 'red' | 'green' | 'purple'
-  | 'teal' | 'orange' | 'rose' | 'slate' | 'custom'
+  'gold' | 'blue' | 'red' | 'green' | 'purple' | 'teal' | 'orange' | 'rose' | 'slate' | 'custom'
 export type BorderKey = 'classic' | 'modern' | 'none'
 export type FontKey = 'serif' | 'sans' | 'kai'
 export type RecipientType = 'team' | 'person'
@@ -153,14 +170,22 @@ export const BORDER_LIST: { key: BorderKey; label: string }[] = [
 ]
 
 export const FONT_LIST: { key: FontKey; label: string; stack: string }[] = [
-  { key: 'serif', label: '宋体（思源宋体）', stack: "'SourceHanSerifCN-Heavy', 'SimSun', 'STSong', serif" },
-  { key: 'sans', label: '黑体（阿里普惠）', stack: "'AlibabaPuHuiTi', 'Microsoft YaHei', 'PingFang SC', sans-serif" },
+  {
+    key: 'serif',
+    label: '宋体（思源宋体）',
+    stack: "'SourceHanSerifCN-Heavy', 'SimSun', 'STSong', serif",
+  },
+  {
+    key: 'sans',
+    label: '黑体（阿里普惠）',
+    stack: "'AlibabaPuHuiTi', 'Microsoft YaHei', 'PingFang SC', sans-serif",
+  },
   { key: 'kai', label: '楷体', stack: "'KaiTi', 'STKaiti', 'Kaiti SC', 'SimSun', serif" },
 ]
 
 export function fontStack(key: FontKey): string {
   // find 可能返回 undefined，但 FONT_LIST[0] 作为兜底，确保非空
-  return (FONT_LIST.find(f => f.key === key) ?? FONT_LIST[0])!.stack
+  return (FONT_LIST.find((f) => f.key === key) ?? FONT_LIST[0])!.stack
 }
 
 // ════════════ 配置模型 ════════════
@@ -292,7 +317,7 @@ export const TEMPLATES: CertificateTemplate[] = [
 
 // 将模板套用到现有 config（保留赛事名/日期/落款等自动字段）
 export function applyTemplate(config: CertificateConfig, key: string) {
-  const tpl = TEMPLATES.find(t => t.key === key)
+  const tpl = TEMPLATES.find((t) => t.key === key)
   if (!tpl) return
   config.template = key
   const a = tpl.apply
@@ -312,7 +337,8 @@ export function fillOptionsFromData(standings: any[], bestDebaters: any[]) {
   if (standings[0]) opts.push({ label: `冠军：${standings[0].name}`, value: 'champion' })
   if (standings[1]) opts.push({ label: `亚军：${standings[1].name}`, value: 'runnerup' })
   if (standings[2]) opts.push({ label: `季军：${standings[2].name}`, value: 'third' })
-  if (bestDebaters[0]) opts.push({ label: `最佳辩手：${bestDebaters[0].name}`, value: 'best-debater' })
+  if (bestDebaters[0])
+    opts.push({ label: `最佳辩手：${bestDebaters[0].name}`, value: 'best-debater' })
   if (standings.length) opts.push({ label: `参赛队伍：${standings[0].name}`, value: 'participant' })
   return opts
 }

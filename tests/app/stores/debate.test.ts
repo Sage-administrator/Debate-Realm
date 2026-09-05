@@ -36,7 +36,9 @@ afterEach(() => {
 })
 
 /** 构造一个最小环节定义 */
-function makeStage(p: Partial<DebateStage> & { id: number; type: string; duration: number }): DebateStage {
+function makeStage(
+  p: Partial<DebateStage> & { id: number; type: string; duration: number },
+): DebateStage {
   return { name: `S${p.id}`, ...p } as DebateStage
 }
 
@@ -55,7 +57,15 @@ describe('setStages', () => {
 
   it('为 bilateral 环节生成双计时器初始状态（取独立时长）', () => {
     const s = useDebateStore()
-    s.setStages([makeStage({ id: 2, type: 'bilateral_debate', duration: 300, positiveDuration: 240, negativeDuration: 240 })])
+    s.setStages([
+      makeStage({
+        id: 2,
+        type: 'bilateral_debate',
+        duration: 300,
+        positiveDuration: 240,
+        negativeDuration: 240,
+      }),
+    ])
     const st = s.stageStates[2] as any
     expect(st.type).toBe('dual-timer')
     expect(st.positiveTime).toBe(240)
@@ -142,7 +152,15 @@ describe('单计时器控制', () => {
 describe('双计时器控制', () => {
   it('startDualTimer 激活正方并锚定', () => {
     const s = useDebateStore()
-    s.setStages([makeStage({ id: 1, type: 'bilateral_debate', duration: 10, positiveDuration: 10, negativeDuration: 10 })])
+    s.setStages([
+      makeStage({
+        id: 1,
+        type: 'bilateral_debate',
+        duration: 10,
+        positiveDuration: 10,
+        negativeDuration: 10,
+      }),
+    ])
     s.startDualTimer()
     const st = s.stageStates[1] as any
     expect(st.activeTimer).toBe('positive')
@@ -151,7 +169,15 @@ describe('双计时器控制', () => {
 
   it('switchDualTimer 冻结当前侧、激活另一侧并重新锚定', () => {
     const s = useDebateStore()
-    s.setStages([makeStage({ id: 1, type: 'bilateral_debate', duration: 10, positiveDuration: 10, negativeDuration: 10 })])
+    s.setStages([
+      makeStage({
+        id: 1,
+        type: 'bilateral_debate',
+        duration: 10,
+        positiveDuration: 10,
+        negativeDuration: 10,
+      }),
+    ])
     s.startDualTimer()
     vi.advanceTimersByTime(4000) // 正方剩 6
     s.switchDualTimer()
@@ -165,7 +191,15 @@ describe('双计时器控制', () => {
 
   it('resetDualTimer(both) 两侧归位并停表', () => {
     const s = useDebateStore()
-    s.setStages([makeStage({ id: 1, type: 'bilateral_debate', duration: 10, positiveDuration: 10, negativeDuration: 10 })])
+    s.setStages([
+      makeStage({
+        id: 1,
+        type: 'bilateral_debate',
+        duration: 10,
+        positiveDuration: 10,
+        negativeDuration: 10,
+      }),
+    ])
     s.startDualTimer()
     vi.advanceTimersByTime(4000)
     s.switchDualTimer()
@@ -262,7 +296,13 @@ describe('resolveSoundFile', () => {
 
   it('自定义音路径优先', () => {
     const s = useDebateStore()
-    s.setAudioConfig({ enabled: true, scheme: 'default', warningSound: '/a.mp3', finalWarningSound: '/b.mp3', timeUpSound: '/c.mp3' })
+    s.setAudioConfig({
+      enabled: true,
+      scheme: 'default',
+      warningSound: '/a.mp3',
+      finalWarningSound: '/b.mp3',
+      timeUpSound: '/c.mp3',
+    })
     expect(s.resolveSoundFile(30)).toBe('/a.mp3')
     expect(s.resolveSoundFile(5)).toBe('/b.mp3')
     expect(s.resolveSoundFile(0)).toBe('/c.mp3')

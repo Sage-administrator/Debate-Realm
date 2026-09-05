@@ -13,7 +13,10 @@ export default defineEventHandler(async (event) => {
     // 分页参数：page 从 1 开始，pageSize 默认 50，最大 200
     const query = getQuery(event)
     const page = Math.max(1, parseInt((query.page as string) || '1', 10) || 1)
-    const pageSize = Math.min(200, Math.max(1, parseInt((query.pageSize as string) || '50', 10) || 50))
+    const pageSize = Math.min(
+      200,
+      Math.max(1, parseInt((query.pageSize as string) || '50', 10) || 50),
+    )
 
     // 修复：使用 select 替代 include，避免拉取 team 的敏感字段（botAppSecret 等）
     // 同时加分页限制，避免用户量大时一次性返回所有数据

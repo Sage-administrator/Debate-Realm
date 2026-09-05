@@ -9,7 +9,11 @@ export default defineEventHandler(async (event) => {
   try {
     const currentUser = await getUserFromEventWithSession(event, prisma)
 
-    if (currentUser.role !== 'admin' && currentUser.role !== 'system_admin' && currentUser.role !== 'member') {
+    if (
+      currentUser.role !== 'admin' &&
+      currentUser.role !== 'system_admin' &&
+      currentUser.role !== 'member'
+    ) {
       throw createError({ statusCode: 403, message: '权限不足' })
     }
 
@@ -53,10 +57,13 @@ export default defineEventHandler(async (event) => {
     let originalChannelName: string | null = null
     try {
       const rows: any = await prisma.$queryRawUnsafe(
-        'SELECT "originalChannelName" FROM "BotArena" WHERE "id" = ?', arena.id,
+        'SELECT "originalChannelName" FROM "BotArena" WHERE "id" = ?',
+        arena.id,
       )
       originalChannelName = rows?.[0]?.originalChannelName || null
-    } catch { /* 列不存在时忽略 */ }
+    } catch {
+      /* 列不存在时忽略 */
+    }
 
     return {
       success: true,
@@ -65,17 +72,17 @@ export default defineEventHandler(async (event) => {
         name: arena.name,
         matchFormat: arena.matchFormat,
         status: arena.status,
-        channelId: arena.channelId,  // 子频道ID（赛场主阵地）
-        guildId: arena.guildId,      // 频道ID（容器）
-        originalChannelName,        // 语音子频道原名（赛场期间被改名，结束后还原）
+        channelId: arena.channelId, // 子频道ID（赛场主阵地）
+        guildId: arena.guildId, // 频道ID（容器）
+        originalChannelName, // 语音子频道原名（赛场期间被改名，结束后还原）
         createdAt: arena.createdAt,
-        roles: arena.roles.map(role => ({
+        roles: arena.roles.map((role) => ({
           id: role.id,
           label: role.label,
           side: role.side,
           qqRoleId: role.qqRoleId,
           maxClaims: role.maxCount,
-          claims: role.claims.map(claim => ({
+          claims: role.claims.map((claim) => ({
             id: claim.id,
             userId: claim.userId,
             username: claim.username,

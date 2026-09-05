@@ -26,10 +26,7 @@ function makeUser(overrides: Partial<JWTPayload> = {}): JWTPayload {
 }
 
 // Helper: create minimal TopicVoteRecord-like objects
-function makeRecord(opts: {
-  topicIndices: number[]
-  voterType: string
-}): TopicVoteRecord {
+function makeRecord(opts: { topicIndices: number[]; voterType: string }): TopicVoteRecord {
   return {
     topicIndices: JSON.stringify(opts.topicIndices),
     voterType: opts.voterType,
@@ -93,18 +90,17 @@ describe('normalizeTopicItem', () => {
 
 describe('topicDisplayText', () => {
   it('should show both sides when both exist', () => {
-    expect(topicDisplayText({ text: '', affirmative: '正方观点', negative: '反方观点' }))
-      .toBe('正方：正方观点 ｜ 反方：反方观点')
+    expect(topicDisplayText({ text: '', affirmative: '正方观点', negative: '反方观点' })).toBe(
+      '正方：正方观点 ｜ 反方：反方观点',
+    )
   })
 
   it('should show only affirmative when negative missing', () => {
-    expect(topicDisplayText({ text: '', affirmative: '正方观点' }))
-      .toBe('正方：正方观点')
+    expect(topicDisplayText({ text: '', affirmative: '正方观点' })).toBe('正方：正方观点')
   })
 
   it('should show only negative when affirmative missing', () => {
-    expect(topicDisplayText({ text: '', negative: '反方观点' }))
-      .toBe('反方：反方观点')
+    expect(topicDisplayText({ text: '', negative: '反方观点' })).toBe('反方：反方观点')
   })
 
   it('should fallback to text when no sides', () => {
@@ -121,8 +117,9 @@ describe('topicDisplayText', () => {
   })
 
   it('should trim whitespace', () => {
-    expect(topicDisplayText({ text: '', affirmative: '  正方  ', negative: '  反方  ' }))
-      .toBe('正方：正方 ｜ 反方：反方')
+    expect(topicDisplayText({ text: '', affirmative: '  正方  ', negative: '  反方  ' })).toBe(
+      '正方：正方 ｜ 反方：反方',
+    )
   })
 })
 
@@ -202,11 +199,7 @@ describe('determineLoginVoterType', () => {
 // ===================== computeVoteStats =====================
 
 describe('computeVoteStats', () => {
-  const topics = [
-    { text: '辩题A' },
-    { text: '辩题B' },
-    { text: '辩题C' },
-  ]
+  const topics = [{ text: '辩题A' }, { text: '辩题B' }, { text: '辩题C' }]
 
   it('should return zero counts for empty records', () => {
     const result = computeVoteStats(topics, [])

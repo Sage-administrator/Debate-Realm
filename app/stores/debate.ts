@@ -42,11 +42,11 @@ type StageState = SingleTimerState | DualTimerState
 export interface DebateStage {
   id: number
   name: string
-  duration: number        // 主时长（秒）
-  type: string            // 环节类型，统一用新枚举值（normalizeStageType 映射后）
+  duration: number // 主时长（秒）
+  type: string // 环节类型，统一用新枚举值（normalizeStageType 映射后）
   description?: string
   allowedRoles?: string[]
-  order?: number          // 排序顺序
+  order?: number // 排序顺序
   // 双计时器可选的独立时长
   positiveDuration?: number
   negativeDuration?: number
@@ -75,7 +75,7 @@ export interface DebateStage {
 export interface DebateProject {
   id: number
   name: string
-  title: string          // 比赛标题（如"三社联合辩论赛"）
+  title: string // 比赛标题（如"三社联合辩论赛"）
   positiveTopic?: string // 正方辩题
   negativeTopic?: string // 反方辩题
   teamPositiveName?: string
@@ -117,11 +117,11 @@ export interface TimerAudioConfig {
 
 /** Store 的完整状态 */
 interface DebateState {
-  currentStage: number                 // 当前环节（从1开始）
-  stages: DebateStage[]                // 所有环节定义
+  currentStage: number // 当前环节（从1开始）
+  stages: DebateStage[] // 所有环节定义
   stageStates: Record<number, StageState> // 各环节的运行状态
-  completedStages: number[]            // 已完成的环节
-  project: DebateProject | null        // 当前项目
+  completedStages: number[] // 已完成的环节
+  project: DebateProject | null // 当前项目
   audioConfig: TimerAudioConfig | null // 当前提示音配置（含声音方案）
 }
 
@@ -133,7 +133,7 @@ const audioCache: Record<string, HTMLAudioElement> = {}
 /** 获取（或创建）缓存的 Audio 对象，复用已加载的音频资源 */
 function getCachedAudio(file: string): HTMLAudioElement {
   if (!audioCache[file]) {
-    audioCache[file] = typeof Audio !== 'undefined' ? new Audio(file) : null as any
+    audioCache[file] = typeof Audio !== 'undefined' ? new Audio(file) : (null as any)
   }
   // ponytail: 上面 if 已保证缓存中存在，非空断言
   return audioCache[file]!
@@ -343,10 +343,7 @@ export const useDebateStore = defineStore('debate', {
     isTimeWarning(): boolean {
       const info = this.currentStageInfo
       if (!info || isDualTimer(info.type)) return false
-      return (
-        this.timeRemaining <= info.duration * 0.2 &&
-        this.timeRemaining > info.duration * 0.1
-      )
+      return this.timeRemaining <= info.duration * 0.2 && this.timeRemaining > info.duration * 0.1
     },
 
     /** 是否为时间危急阶段（剩余10%以内） */
@@ -370,9 +367,7 @@ export const useDebateStore = defineStore('debate', {
     setStages(newStages: DebateStage[]) {
       if (!Array.isArray(newStages) || newStages.length === 0) return
       // 按 order 排序，若无 order 则按 id 排序
-      const sorted = [...newStages].sort(
-        (a, b) => (a.order ?? a.id) - (b.order ?? b.id),
-      )
+      const sorted = [...newStages].sort((a, b) => (a.order ?? a.id) - (b.order ?? b.id))
       this.stages = sorted
 
       // ponytail: 直接赋值，StageState 都是纯数据对象无引用共享风险
@@ -386,9 +381,7 @@ export const useDebateStore = defineStore('debate', {
         const id = Number(k)
         if (!sorted.some((s) => s.id === id)) delete this.stageStates[id]
       })
-      this.completedStages = this.completedStages.filter((id) =>
-        sorted.some((s) => s.id === id),
-      )
+      this.completedStages = this.completedStages.filter((id) => sorted.some((s) => s.id === id))
 
       // 校正当前环节
       if (this.currentStage > sorted.length) this.currentStage = sorted.length
@@ -488,9 +481,7 @@ export const useDebateStore = defineStore('debate', {
           }
         }
         // 从完成列表中移除该环节
-        this.completedStages = this.completedStages.filter(
-          (id) => id !== currentStageInfo?.id,
-        )
+        this.completedStages = this.completedStages.filter((id) => id !== currentStageInfo?.id)
       }
     },
 
@@ -529,7 +520,7 @@ export const useDebateStore = defineStore('debate', {
           if (st.activeTimer === 'positive') st.positiveTime = remaining
           else st.negativeTime = remaining
         } else {
-          (s as SingleTimerState).timeRemaining = remaining
+          ;(s as SingleTimerState).timeRemaining = remaining
         }
       }
       s.isRunning = false
@@ -779,7 +770,7 @@ export const useDebateStore = defineStore('debate', {
           // 复用缓存的 Audio 对象，避免重复创建和加载
           const audio = getCachedAudio(audioFile)
           if (audio) {
-            audio.currentTime = 0  // 从头播放
+            audio.currentTime = 0 // 从头播放
             audio.play().catch(() => {
               /* 浏览器自动播放策略可能阻止，忽略 */
             })
@@ -793,7 +784,7 @@ export const useDebateStore = defineStore('debate', {
     /** 手动播放测试音效（复用方案解析，使测试与实际播放一致） */
     playTestSound(type: '30' | '5' | 'End') {
       try {
-        const map: Record<'30' | '5' | 'End', number> = { '30': 30, '5': 5, 'End': 0 }
+        const map: Record<'30' | '5' | 'End', number> = { '30': 30, '5': 5, End: 0 }
         const audioFile = this.resolveSoundFile(map[type])
         if (audioFile) {
           const audio = getCachedAudio(audioFile)

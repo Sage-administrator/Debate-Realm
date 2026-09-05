@@ -27,7 +27,10 @@ export default defineEventHandler(async (event) => {
 
     const validSides = ['affirmative', 'negative', 'judge', 'audience']
     if (!targetSide || !validSides.includes(targetSide)) {
-      throw createError({ statusCode: 400, message: `targetSide 无效，可选：${validSides.join('、')}` })
+      throw createError({
+        statusCode: 400,
+        message: `targetSide 无效，可选：${validSides.join('、')}`,
+      })
     }
 
     if (!channelId) {

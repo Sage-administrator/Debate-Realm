@@ -16,7 +16,14 @@ function makeUser(overrides: Partial<JWTPayload> = {}): JWTPayload {
 }
 
 const tourney = { teamId: 'team1' }
-const team: Team = { id: 'team1', name: '测试团队', adminId: 'u1', mode: 'qq_bot', createdAt: new Date(), updatedAt: new Date() } as Team
+const team: Team = {
+  id: 'team1',
+  name: '测试团队',
+  adminId: 'u1',
+  mode: 'qq_bot',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+} as Team
 
 // ===================== canReadTournament =====================
 
@@ -72,20 +79,28 @@ describe('canWriteTournament', () => {
   })
 
   it('should allow admin who is team admin', () => {
-    expect(canWriteTournament(makeUser({ role: 'admin', teamId: 'team1' }), tourney, team)).toBe(true)
+    expect(canWriteTournament(makeUser({ role: 'admin', teamId: 'team1' }), tourney, team)).toBe(
+      true,
+    )
   })
 
   it('should deny admin not matching team adminId', () => {
     const otherTeam = { ...team, adminId: 'u2' }
-    expect(canWriteTournament(makeUser({ role: 'admin', teamId: 'team1' }), tourney, otherTeam)).toBe(false)
+    expect(
+      canWriteTournament(makeUser({ role: 'admin', teamId: 'team1' }), tourney, otherTeam),
+    ).toBe(false)
   })
 
   it('should deny subaccount (no write permission)', () => {
-    expect(canWriteTournament(makeUser({ role: 'subaccount', teamId: 'team1' }), tourney, team)).toBe(false)
+    expect(
+      canWriteTournament(makeUser({ role: 'subaccount', teamId: 'team1' }), tourney, team),
+    ).toBe(false)
   })
 
   it('should deny debater (no write permission)', () => {
-    expect(canWriteTournament(makeUser({ role: 'debater', teamId: 'team1' }), tourney, team)).toBe(false)
+    expect(canWriteTournament(makeUser({ role: 'debater', teamId: 'team1' }), tourney, team)).toBe(
+      false,
+    )
   })
 
   it('should deny individual', () => {
@@ -93,7 +108,9 @@ describe('canWriteTournament', () => {
   })
 
   it('should return false when team is null', () => {
-    expect(canWriteTournament(makeUser({ role: 'admin', teamId: 'team1' }), tourney, null)).toBe(false)
+    expect(canWriteTournament(makeUser({ role: 'admin', teamId: 'team1' }), tourney, null)).toBe(
+      false,
+    )
   })
 
   it('should deny admin with teamId mismatch on tournament', () => {
@@ -102,7 +119,13 @@ describe('canWriteTournament', () => {
     // Actually canWriteTournament only checks team.adminId === user.userId
     // The tournament.teamId check isn't in canWriteTournament - let's test what it DOES check
     const otherTeamWithCorrectAdmin: Team = { ...team, id: 'other', adminId: 'u1' } as Team
-    expect(canWriteTournament(makeUser({ role: 'admin', teamId: 'team1' }), otherTourney, otherTeamWithCorrectAdmin)).toBe(true)
+    expect(
+      canWriteTournament(
+        makeUser({ role: 'admin', teamId: 'team1' }),
+        otherTourney,
+        otherTeamWithCorrectAdmin,
+      ),
+    ).toBe(true)
     // Note: tournament.teamId is not checked in canWriteTournament, the caller should check it
   })
 })

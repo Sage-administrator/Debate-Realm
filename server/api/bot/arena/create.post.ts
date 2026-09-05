@@ -35,15 +35,21 @@ export default defineEventHandler(async (event) => {
     const arenaName = (body.name || '').trim()
     const matchFormat = body.matchFormat || '4v4'
     const channelId = body.channelId || '' // 子频道 ID（赛场主阵地，必填）
-    const guildId = body.guildId || ''      // 频道 ID（仅用于 QQ API）
+    const guildId = body.guildId || '' // 频道 ID（仅用于 QQ API）
 
     // 赛场名必填（自定义），不再自动生成「赛场A」
     if (!arenaName) {
-      throw createError({ statusCode: 400, message: '请提供赛场名（name），如：/设置赛场 赛场名 4v4（赛场名不多于 8 个字）' })
+      throw createError({
+        statusCode: 400,
+        message: '请提供赛场名（name），如：/设置赛场 赛场名 4v4（赛场名不多于 8 个字）',
+      })
     }
 
     if (!channelId) {
-      throw createError({ statusCode: 400, message: '请提供子频道 ID（channelId），子频道是赛场主阵地' })
+      throw createError({
+        statusCode: 400,
+        message: '请提供子频道 ID（channelId），子频道是赛场主阵地',
+      })
     }
 
     if (!['4v4', '3v3', '2v2'].includes(matchFormat)) {
@@ -56,7 +62,15 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: 'Bot 未启动，请先连接 Bot' })
     }
 
-    const result = await createArena(prisma, botInstance.config, teamId, matchFormat, guildId, arenaName, channelId)
+    const result = await createArena(
+      prisma,
+      botInstance.config,
+      teamId,
+      matchFormat,
+      guildId,
+      arenaName,
+      channelId,
+    )
 
     if (!result.success) {
       throw createError({ statusCode: 400, message: result.message })

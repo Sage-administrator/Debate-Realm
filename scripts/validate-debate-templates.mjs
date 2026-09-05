@@ -48,15 +48,11 @@ if (!valid) {
   console.error('✗ debateTemplates 不符合 schema：')
   for (const e of validate.errors || []) {
     const extra =
-      e.params && e.params.additionalProperty
-        ? ` (多余字段: ${e.params.additionalProperty})`
-        : ''
+      e.params && e.params.additionalProperty ? ` (多余字段: ${e.params.additionalProperty})` : ''
     console.error(`  - ${e.instancePath || '/'} ${e.message}${extra}`)
   }
   process.exit(1)
 }
 
 const stageCount = debateTemplates.reduce((n, t) => n + (t.stages?.length || 0), 0)
-console.log(
-  `✓ debateTemplates 校验通过（${debateTemplates.length} 个模板，${stageCount} 个环节）`
-)
+console.log(`✓ debateTemplates 校验通过（${debateTemplates.length} 个模板，${stageCount} 个环节）`)

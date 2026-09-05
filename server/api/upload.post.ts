@@ -28,8 +28,22 @@ export default defineEventHandler(async (event) => {
     }
 
     // 验证文件类型和大小
-    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
-    const validAudioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/x-wav']
+    const validImageTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml',
+    ]
+    const validAudioTypes = [
+      'audio/mpeg',
+      'audio/mp3',
+      'audio/wav',
+      'audio/ogg',
+      'audio/webm',
+      'audio/x-wav',
+    ]
     const maxSize = 10 * 1024 * 1024 // 10MB 限制
 
     if (file.size > maxSize) {

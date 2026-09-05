@@ -47,8 +47,8 @@ export const useTimerConfig = () => {
     loadedKey.value = ''
     loading.value = true
     try {
-      const res
-        = type === 'tournament'
+      const res =
+        type === 'tournament'
           ? await api.tournaments.timer.config(id)
           : await api.standalone.timer.config(id)
 

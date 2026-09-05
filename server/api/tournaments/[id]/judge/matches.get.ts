@@ -81,22 +81,24 @@ export default defineEventHandler(async (event) => {
         winner: m.winner,
         // 评委评分状态
         scored: !!myScore,
-        myScore: myScore ? {
-          scoreTeamA: myScore.scoreTeamA,
-          scoreTeamB: myScore.scoreTeamB,
-          winner: myScore.winner,
-          dimensions: myScore.dimensions,
-          reason: myScore.reason,
-          bestDebaterA: myScore.bestDebaterA,
-          bestDebaterB: myScore.bestDebaterB,
-          submittedAt: myScore.createdAt,
-        } : null,
+        myScore: myScore
+          ? {
+              scoreTeamA: myScore.scoreTeamA,
+              scoreTeamB: myScore.scoreTeamB,
+              winner: myScore.winner,
+              dimensions: myScore.dimensions,
+              reason: myScore.reason,
+              bestDebaterA: myScore.bestDebaterA,
+              bestDebaterB: myScore.bestDebaterB,
+              submittedAt: myScore.createdAt,
+            }
+          : null,
       }
     })
 
     // 统计
     const total = matchList.length
-    const scored = matchList.filter(m => m.scored).length
+    const scored = matchList.filter((m) => m.scored).length
 
     return {
       success: true,

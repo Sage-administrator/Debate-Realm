@@ -11,9 +11,7 @@ import { getHeader, type H3Event, type EventHandlerRequest } from 'h3'
  */
 export function dedupeTrimmedStrings(items: string[]): string[] {
   const seen = new Set<string>()
-  return items
-    .map(s => (s || '').trim())
-    .filter(s => s && !seen.has(s) && seen.add(s))
+  return items.map((s) => (s || '').trim()).filter((s) => s && !seen.has(s) && seen.add(s))
 }
 
 /**
@@ -92,7 +90,10 @@ export function requireEnvVar(name: string, defaultValue: string, errorMessage?:
   if (!value) {
     if (process.env.NODE_ENV === 'production') {
       console.error('[Security] 生产环境必须设置', name, '环境变量')
-      console.error('[Security]', errorMessage || `请在 .env 文件或系统环境变量中配置：${name}=<值>`)
+      console.error(
+        '[Security]',
+        errorMessage || `请在 .env 文件或系统环境变量中配置：${name}=<值>`,
+      )
       process.exit(1)
     } else {
       console.warn('[Security] ⚠️', name, '未设置，使用开发环境默认值。生产环境部署时务必配置！')

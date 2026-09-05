@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: '权限不足' })
   }
 
-  let template = await prisma.timerTemplate.findUnique({
+  const template = await prisma.timerTemplate.findUnique({
     where: { standaloneMatchId: id },
   })
 

@@ -6,11 +6,11 @@ import { formatSpeakerDisplay, formatReverseDisplay } from '~/utils/speakerSide'
 
 interface Props {
   modelValue?: string | string[]
-  modelMode?: number       // 0=正常 1=反向
+  modelMode?: number // 0=正常 1=反向
   placeholder?: string
   multiple?: boolean
   debaters?: { label: string; value: string }[]
-  reverse?: boolean        // 能力开关：下拉提供「正常/反向」切换
+  reverse?: boolean // 能力开关：下拉提供「正常/反向」切换
   side?: 'positive' | 'negative'
 }
 
@@ -63,9 +63,9 @@ const hasModelValue = computed(() => {
 // 阵营锁定：设定后仅显示该阵营，左侧阵营栏隐藏，选中阵营固定为该值
 const isSideLocked = computed(() => !!props.side)
 const effectiveSides = computed(() =>
-  isSideLocked.value ? sides.filter(s => s.value === props.side) : sides,
+  isSideLocked.value ? sides.filter((s) => s.value === props.side) : sides,
 )
-const lockedSideLabel = computed(() => sides.find(s => s.value === props.side)?.label || '')
+const lockedSideLabel = computed(() => sides.find((s) => s.value === props.side)?.label || '')
 
 // 当前选中的阵营
 const selectedSide = ref<string>('positive')
@@ -110,16 +110,16 @@ function formatMultiDisplay(arr: string[]): string {
   for (const v of arr) {
     const p = parseValue(v)
     if (!p) continue
-    const sideLabel = sides.find(s => s.value === p.side)?.label || ''
-    const debaterLabel = props.debaters.find(d => d.value === p.debater)?.label || ''
+    const sideLabel = sides.find((s) => s.value === p.side)?.label || ''
+    const debaterLabel = props.debaters.find((d) => d.value === p.debater)?.label || ''
     if (!bySide[sideLabel]) bySide[sideLabel] = []
     if (debaterLabel) bySide[sideLabel].push(debaterLabel)
   }
-  const allDebaters = props.debaters.filter(d => d.value !== 'all').map(d => d.label)
+  const allDebaters = props.debaters.filter((d) => d.value !== 'all').map((d) => d.label)
   const parts: string[] = []
   for (const sideLabel of Object.keys(bySide)) {
     const labels = bySide[sideLabel] || []
-    const isAll = allDebaters.length > 0 && allDebaters.every(l => labels.includes(l))
+    const isAll = allDebaters.length > 0 && allDebaters.every((l) => labels.includes(l))
     const text = isAll ? '全体' : labels.join('/')
     parts.push(`${sideLabel} · ${text}`)
   }
@@ -145,7 +145,12 @@ function getDisplayText(): string {
   if (typeof v === 'string') {
     if (!v) return props.placeholder
     if (/[、，/]/.test(v)) {
-      return formatMultiDisplay(v.split(/[、，/]/).map(s => s.trim()).filter(Boolean))
+      return formatMultiDisplay(
+        v
+          .split(/[、，/]/)
+          .map((s) => s.trim())
+          .filter(Boolean),
+      )
     }
     return formatSpeakerDisplay(v, 0)
   }
@@ -156,15 +161,15 @@ function getDisplayText(): string {
 function formatSingle(value: string): string {
   const parsed = parseValue(value)
   if (!parsed) return value
-  const sideLabel = sides.find(s => s.value === parsed.side)?.label || ''
-  const debaterLabel = props.debaters.find(d => d.value === parsed.debater)?.label || ''
+  const sideLabel = sides.find((s) => s.value === parsed.side)?.label || ''
+  const debaterLabel = props.debaters.find((d) => d.value === parsed.debater)?.label || ''
   return `${sideLabel} · ${debaterLabel}`
 }
 
 // 组装单条值
 function buildValue(side: string, debater: string, reverse = false): string {
-  const sideLabel = sides.find(s => s.value === side)?.label || ''
-  const debaterLabel = props.debaters.find(d => d.value === debater)?.label || ''
+  const sideLabel = sides.find((s) => s.value === side)?.label || ''
+  const debaterLabel = props.debaters.find((d) => d.value === debater)?.label || ''
   return reverse ? `${sideLabel}·除${debaterLabel}外` : `${sideLabel}·${debaterLabel}`
 }
 
@@ -211,7 +216,14 @@ function syncFromModel() {
   // 反向模式：选中的是被排除的辩手
   if (mode === 1) {
     isReverse.value = true
-    const items = Array.isArray(raw) ? raw : typeof raw === 'string' ? raw.split(/[、，/]/).map(s => s.trim()).filter(Boolean) : []
+    const items = Array.isArray(raw)
+      ? raw
+      : typeof raw === 'string'
+        ? raw
+            .split(/[、，/]/)
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : []
     fillMultiFromArray(items)
     return
   }
@@ -219,7 +231,12 @@ function syncFromModel() {
   isReverse.value = false
   if (isMultiple.value) {
     if (typeof raw === 'string' && raw) {
-      fillMultiFromArray(raw.split(/[、，/]/).map(s => s.trim()).filter(Boolean))
+      fillMultiFromArray(
+        raw
+          .split(/[、，/]/)
+          .map((s) => s.trim())
+          .filter(Boolean),
+      )
       return
     }
     fillMultiFromArray(Array.isArray(raw) ? raw : [])
@@ -241,9 +258,9 @@ function syncFromModel() {
 function setMode(reverse: boolean) {
   // 反向与全体互斥：开启反向时若选中了全体则切回正常
   if (reverse) {
-    const allDebaters = props.debaters.filter(d => d.value !== 'all').map(d => d.value)
+    const allDebaters = props.debaters.filter((d) => d.value !== 'all').map((d) => d.value)
     const list = multiSelected.value[selectedSide.value] || []
-    if (allDebaters.every(d => list.includes(d))) return
+    if (allDebaters.every((d) => list.includes(d))) return
   }
   isReverse.value = reverse
 }
@@ -275,8 +292,8 @@ function toggleDebaterMulti(value: string) {
   const list = multiSelected.value[selectedSide.value] || []
   if (value === 'all') {
     // "全体"：切换全部具体辩手，同时关闭反向模式（互斥）
-    const allDebaters = props.debaters.filter(d => d.value !== 'all').map(d => d.value)
-    const allSelected = allDebaters.every(d => list.includes(d))
+    const allDebaters = props.debaters.filter((d) => d.value !== 'all').map((d) => d.value)
+    const allSelected = allDebaters.every((d) => list.includes(d))
     multiSelected.value = {
       ...multiSelected.value,
       [selectedSide.value]: allSelected ? [] : allDebaters,
@@ -298,8 +315,8 @@ function isDebaterSelected(value: string): boolean {
   if (!useCheckUI.value) return selectedDebater.value === value
   const list = multiSelected.value[selectedSide.value] || []
   if (value === 'all') {
-    const allDebaters = props.debaters.filter(d => d.value !== 'all').map(d => d.value)
-    return allDebaters.every(d => list.includes(d))
+    const allDebaters = props.debaters.filter((d) => d.value !== 'all').map((d) => d.value)
+    return allDebaters.every((d) => list.includes(d))
   }
   return list.includes(value)
 }
@@ -311,8 +328,8 @@ function confirmMulti() {
     const excluded = multiSelected.value[selectedSide.value] || []
     const side = selectedSide.value as 'positive' | 'negative'
     const sideLabel = side === 'positive' ? '正方' : '反方'
-    const values = excluded.map(v => {
-      const label = props.debaters.find(d => d.value === v)?.label || ''
+    const values = excluded.map((v) => {
+      const label = props.debaters.find((d) => d.value === v)?.label || ''
       return `${sideLabel}·${label}`
     })
     emit('update:modelValue', values.join('、'))
@@ -343,8 +360,8 @@ function confirmMulti() {
     <div
       ref="triggerRef"
       class="role-picker-trigger"
-      @click="onTriggerClick"
       :class="{ 'role-picker-trigger--open': isOpen }"
+      @click="onTriggerClick"
     >
       <span :class="hasModelValue ? 'role-picker-value' : 'role-picker-placeholder'">
         {{ getDisplayText() }}
@@ -365,7 +382,6 @@ function confirmMulti() {
           :style="dropdownStyle"
           @click.stop
         >
-
           <div class="role-picker-cols">
             <!-- 左栏：阵营（阵营锁定模式隐藏） -->
             <div v-if="!isSideLocked" class="role-picker-left">
@@ -401,8 +417,15 @@ function confirmMulti() {
               >
                 <!-- 多选 / 反向排除：显示勾选框 -->
                 <template v-if="useCheckUI">
-                  <span class="role-picker-check" :class="{ 'role-picker-check--checked': isDebaterSelected(d.value) }">
-                    <UIcon v-if="isDebaterSelected(d.value)" name="i-lucide-check" class="w-3 h-3" />
+                  <span
+                    class="role-picker-check"
+                    :class="{ 'role-picker-check--checked': isDebaterSelected(d.value) }"
+                  >
+                    <UIcon
+                      v-if="isDebaterSelected(d.value)"
+                      name="i-lucide-check"
+                      class="w-3 h-3"
+                    />
                   </span>
                   <span>{{ d.label }}</span>
                 </template>
@@ -413,13 +436,15 @@ function confirmMulti() {
 
               <!-- 多选：反向勾选框 + 确定按钮 -->
               <div v-if="useCheckUI" class="role-picker-confirm-bar">
-                <label v-if="reverseCapable" class="role-picker-reverse-check" title="仅改变展示方式。例：选中一辩、二辩、四辩 → 展示为「除三辩外任意辩手」，但实际发言方仍是一辩、二辩、四辩。">
+                <label
+                  v-if="reverseCapable"
+                  class="role-picker-reverse-check"
+                  title="仅改变展示方式。例：选中一辩、二辩、四辩 → 展示为「除三辩外任意辩手」，但实际发言方仍是一辩、二辩、四辩。"
+                >
                   <input type="checkbox" :checked="isReverse" @change="setMode(!isReverse)" />
                   <span>反向显示</span>
                 </label>
-                <button class="role-picker-confirm-btn" @click.stop="confirmMulti">
-                  确定
-                </button>
+                <button class="role-picker-confirm-btn" @click.stop="confirmMulti">确定</button>
               </div>
             </div>
           </div>
@@ -448,15 +473,17 @@ function confirmMulti() {
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .role-picker-trigger:hover {
-  border-color: #07C160;
+  border-color: #07c160;
 }
 
 .role-picker-trigger--open {
-  border-color: #07C160;
+  border-color: #07c160;
   box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.2);
 }
 
@@ -495,7 +522,7 @@ function confirmMulti() {
   --rp-item: var(--color-text-secondary);
   --rp-item-desc: var(--color-text-muted);
   --rp-hover-bg: var(--color-bg-tertiary);
-  --rp-active-text: #07C160;
+  --rp-active-text: #07c160;
   --rp-active-bg: rgba(7, 193, 96, 0.12);
 }
 .dark {
@@ -511,7 +538,7 @@ function confirmMulti() {
   --rp-item: rgba(255, 255, 255, 0.7);
   --rp-item-desc: rgba(255, 255, 255, 0.4);
   --rp-hover-bg: rgba(255, 255, 255, 0.05);
-  --rp-active-text: #07C160;
+  --rp-active-text: #07c160;
   --rp-active-bg: rgba(7, 193, 96, 0.15);
 }
 
@@ -576,7 +603,7 @@ function confirmMulti() {
 .role-picker-chevron-right {
   width: 14px;
   height: 14px;
-  color: #07C160;
+  color: #07c160;
 }
 
 .role-picker-right {
@@ -623,7 +650,6 @@ function confirmMulti() {
   color: var(--rp-active-text);
 }
 
-
 .role-picker-item--active {
   color: var(--rp-active-text);
   background-color: var(--rp-active-bg);
@@ -644,8 +670,8 @@ function confirmMulti() {
 }
 
 .role-picker-check--checked {
-  background-color: #07C160;
-  border-color: #07C160;
+  background-color: #07c160;
+  border-color: #07c160;
   color: #fff;
 }
 
@@ -664,7 +690,7 @@ function confirmMulti() {
   font-size: 13px;
   font-weight: 500;
   color: #fff;
-  background: #07C160;
+  background: #07c160;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -688,7 +714,7 @@ function confirmMulti() {
 .role-picker-reverse-check input {
   width: 14px;
   height: 14px;
-  accent-color: #07C160;
+  accent-color: #07c160;
   cursor: pointer;
 }
 </style>

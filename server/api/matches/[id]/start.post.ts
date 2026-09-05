@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
     })
 
     // 通过 Bot 发送比赛开始通知（异步）
-    notifyMatchStart(prisma, matchId).catch(err => {
+    notifyMatchStart(prisma, matchId).catch((err) => {
       console.error('[Match Start] Bot 通知发送失败:', err)
     })
 

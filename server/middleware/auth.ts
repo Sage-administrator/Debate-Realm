@@ -38,10 +38,13 @@ const PUBLIC_PREFIXES = [
 function isPublicPath(path: string): boolean {
   // 精确匹配 /api/tournaments/*/public 和 /api/tournaments/*/registration-config
   if (/^\/api\/tournaments\/[^/]+\/(public|registration-config)/.test(path)) return true
-  return PUBLIC_PREFIXES.some(p => path.startsWith(p))
+  return PUBLIC_PREFIXES.some((p) => path.startsWith(p))
 }
 
-function extractToken(headers: Headers, cookies: Record<string, string> | undefined): string | null {
+function extractToken(
+  headers: Headers,
+  cookies: Record<string, string> | undefined,
+): string | null {
   const authHeader = headers.get('authorization')
   if (authHeader?.startsWith('Bearer ')) return authHeader.substring(7)
   if (cookies?.[TOKEN_COOKIE]) return cookies[TOKEN_COOKIE]

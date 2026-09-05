@@ -9,7 +9,7 @@ import { requireEnvVar } from './common'
 const effectiveKey = requireEnvVar(
   'INTERNAL_API_KEY',
   'debate-timer-dev-internal-key',
-  '请在 .env 文件或系统环境变量中配置：INTERNAL_API_KEY=<随机字符串>'
+  '请在 .env 文件或系统环境变量中配置：INTERNAL_API_KEY=<随机字符串>',
 )
 
 /**

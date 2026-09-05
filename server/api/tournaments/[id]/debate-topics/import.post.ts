@@ -22,7 +22,12 @@ export default defineEventHandler(async (event) => {
     }
 
     // 规范化并过滤有效行：正方/反方 均非空
-    const rows: { affirmative: string; negative: string; category: string | null; note: string | null }[] = []
+    const rows: {
+      affirmative: string
+      negative: string
+      category: string | null
+      note: string | null
+    }[] = []
     for (const t of body.topics) {
       const aff = (t?.affirmative || '').toString().trim()
       const neg = (t?.negative || '').toString().trim()
@@ -36,7 +41,10 @@ export default defineEventHandler(async (event) => {
     }
 
     if (rows.length === 0) {
-      throw createError({ statusCode: 400, message: '有效的辩题行为 0（每行的正方立场与反方立场均不能为空）' })
+      throw createError({
+        statusCode: 400,
+        message: '有效的辩题行为 0（每行的正方立场与反方立场均不能为空）',
+      })
     }
 
     // 批内去重（按 正方|反方 小写）
@@ -54,8 +62,12 @@ export default defineEventHandler(async (event) => {
       where: { tournamentId: id },
       select: { affirmative: true, negative: true },
     })
-    const existKeys = new Set(existing.map((e) => `${e.affirmative.toLowerCase()}|||${e.negative.toLowerCase()}`))
-    const toCreate = unique.filter((r) => !existKeys.has(`${r.affirmative.toLowerCase()}|||${r.negative.toLowerCase()}`))
+    const existKeys = new Set(
+      existing.map((e) => `${e.affirmative.toLowerCase()}|||${e.negative.toLowerCase()}`),
+    )
+    const toCreate = unique.filter(
+      (r) => !existKeys.has(`${r.affirmative.toLowerCase()}|||${r.negative.toLowerCase()}`),
+    )
 
     const skipped = unique.length - toCreate.length
 

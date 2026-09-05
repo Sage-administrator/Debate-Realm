@@ -45,11 +45,7 @@ function buildStageData(stage: any, projectId: string, orderIndex: number) {
 
 // 同步环节：diff + update + create + delete
 // 必须在 prisma.$transaction 内调用，tx 是事务客户端
-export async function syncStages(
-  tx: any,
-  projectId: string,
-  incoming: any[]
-): Promise<any[]> {
+export async function syncStages(tx: any, projectId: string, incoming: any[]): Promise<any[]> {
   // 1. 查询现有环节
   const existing = await tx.debateTimerStage.findMany({
     where: { projectId },
@@ -58,9 +54,7 @@ export async function syncStages(
 
   // 2. 区分 incoming 中的持久 id（DB 已有）和临时 id（新建）
   const incomingPersistentIds = new Set(
-    incoming
-      .filter((s: any) => s.id && !String(s.id).startsWith('tmp_'))
-      .map((s: any) => s.id)
+    incoming.filter((s: any) => s.id && !String(s.id).startsWith('tmp_')).map((s: any) => s.id),
   )
 
   // 3. 删除被移除的环节（existing 中不在 incomingPersistentIds 里的）
@@ -78,22 +72,17 @@ export async function syncStages(
   for (let i = 0; i < incoming.length; i++) {
     const s = incoming[i]
     const data = buildStageData(s, projectId, i)
-    const isPersistent =
-      s.id &&
-      !String(s.id).startsWith('tmp_') &&
-      existingIds.has(s.id)
+    const isPersistent = s.id && !String(s.id).startsWith('tmp_') && existingIds.has(s.id)
 
     if (isPersistent) {
       returnedStages.push(
         await tx.debateTimerStage.update({
           where: { id: s.id },
           data,
-        })
+        }),
       )
     } else {
-      returnedStages.push(
-        await tx.debateTimerStage.create({ data })
-      )
+      returnedStages.push(await tx.debateTimerStage.create({ data }))
     }
   }
 
