@@ -53,25 +53,30 @@ function buildHeaders(token: string | null, extra?: Record<string, string>): Rec
   return h
 }
 
+// Nuxt 4 的 `$fetch<T>` 在能被静态匹配到的 Nitro 内部路由上，会把返回推断成
+// `TypedInternalResponse<...>` 而非 `T`（泛型 T 被当成请求体类型），导致 `Promise<T>`
+// 与返回不兼容。保留 `$fetch<T>`（去掉泛型会触发对字面量 URL 的路由匹配递归，报
+// TS2321 excessive stack depth），仅在唯一汇聚点对最终结果做一次窄化展开，
+// 避免把 `as any` 散落到 25+ 个调用方。运行时会按 JSON 解析返回 `T`，行为不变。
 async function get<T>(url: string, token: string | null, params?: Record<string, unknown>): Promise<T> {
   const query = params
     ? '?' + new URLSearchParams(
         Object.entries(params).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)])
       ).toString()
     : ''
-  return $fetch<T>(url + query, { headers: buildHeaders(token) })
+  return (await $fetch<T>(url + query, { headers: buildHeaders(token) })) as T
 }
 
 async function post<T>(url: string, token: string | null, body?: unknown): Promise<T> {
-  return $fetch<T>(url, { method: 'POST', body: body as BodyInit | undefined, headers: buildHeaders(token) })
+  return (await $fetch<T>(url, { method: 'POST', body: body as BodyInit | undefined, headers: buildHeaders(token) })) as T
 }
 
 async function put<T>(url: string, token: string | null, body?: unknown): Promise<T> {
-  return $fetch<T>(url, { method: 'PUT', body: body as BodyInit | undefined, headers: buildHeaders(token) })
+  return (await $fetch<T>(url, { method: 'PUT', body: body as BodyInit | undefined, headers: buildHeaders(token) })) as T
 }
 
 async function del<T>(url: string, token: string | null, body?: unknown): Promise<T> {
-  return $fetch<T>(url, { method: 'DELETE', body: body as BodyInit | undefined, headers: buildHeaders(token) })
+  return (await $fetch<T>(url, { method: 'DELETE', body: body as BodyInit | undefined, headers: buildHeaders(token) })) as T
 }
 
 // ── API 客户端 ──

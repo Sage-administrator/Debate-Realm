@@ -19,6 +19,7 @@ interface StageFormData {
   questionerMode?: number
   responders?: string[]      // 单方发问接受人（多选）
   respondersMode?: number
+  responder?: string         // [已废弃] 旧数据的单值接受人；新数据用 responders（数组）。读模板/DB 旧字段用
   firstSpeaker?: string
   // 对辩双方参与辩手（多选）
   positiveSpeakers?: string[]

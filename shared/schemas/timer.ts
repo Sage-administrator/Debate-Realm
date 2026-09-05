@@ -39,10 +39,10 @@ export const TimerConfig = z.object({
   negativeTopic: z.string().nullable().optional(),
   teamPositiveName: z.string().nullable().optional(),
   teamNegativeName: z.string().nullable().optional(),
-  uiConfig: z.record(z.any()).nullable().optional(),
-  skinConfig: z.record(z.any()).nullable().optional(),
-  audioConfig: z.record(z.any()).nullable().optional(),
-  teamLogoConfig: z.record(z.any()).nullable().optional(),
+  uiConfig: z.record(z.string(), z.any()).nullable().optional(),
+  skinConfig: z.record(z.string(), z.any()).nullable().optional(),
+  audioConfig: z.record(z.string(), z.any()).nullable().optional(),
+  teamLogoConfig: z.record(z.string(), z.any()).nullable().optional(),
   stages: z.array(TimerStage).optional(),
 })
 export type TimerConfig = z.infer<typeof TimerConfig>
@@ -72,7 +72,7 @@ export const CreateTimerProjectRequest = z.object({
   negativeTopic: z.string().nullable().optional(),
   teamPositiveName: z.string().nullable().optional(),
   teamNegativeName: z.string().nullable().optional(),
-  uiConfig: z.record(z.any()).nullable().optional(),
+  uiConfig: z.record(z.string(), z.any()).nullable().optional(),
 })
 export type CreateTimerProjectRequest = z.infer<typeof CreateTimerProjectRequest>
 
@@ -83,7 +83,7 @@ export const UpdateTimerProjectRequest = z.object({
   negativeTopic: z.string().nullable().optional(),
   teamPositiveName: z.string().nullable().optional(),
   teamNegativeName: z.string().nullable().optional(),
-  uiConfig: z.record(z.any()).nullable().optional(),
+  uiConfig: z.record(z.string(), z.any()).nullable().optional(),
   stages: z.array(TimerStage).optional(),
 }).partial()
 export type UpdateTimerProjectRequest = z.infer<typeof UpdateTimerProjectRequest>

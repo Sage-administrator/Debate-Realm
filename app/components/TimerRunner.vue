@@ -885,7 +885,7 @@ async function loadData() {
     if (sharedConfig.value.name || sharedConfig.value.title) {
       const cfg = sharedConfig.value
       // 优先使用配置中的 title 或 name，其次使用赛事名称
-      contestTitle.value = cfg.title || cfg.name || tournamentName
+      contestTitle.value = cfg.title || cfg.name || hostName
       // 同步其他配置（队伍名称、辩题等）
       if (cfg.teamPositiveName) teamPositiveName.value = cfg.teamPositiveName
       if (cfg.teamNegativeName) teamNegativeName.value = cfg.teamNegativeName
