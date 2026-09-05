@@ -15,7 +15,7 @@ import type {
   ChangePasswordRequest, UpdateProfileRequest, LoginSession,
 } from '#shared/schemas/auth'
 import type {
-  TeamInfo, CreateTeamRequest, UpdateTeamRequest,
+  TeamInfo, TeamDetail, CreateTeamRequest, UpdateTeamRequest,
   TeamMember, CreateMemberRequest, UpdateMemberRequest, ResetMemberPasswordRequest,
 } from '#shared/schemas/team'
 import type {
@@ -106,7 +106,7 @@ export function useApi() {
   const teams = {
     list:           () => get<TeamInfo[]>('/api/teams', t()),
     create:         (body: CreateTeamRequest)   => post<TeamInfo>('/api/teams', t(), body),
-    get:            (id: string)                => get<TeamInfo>(`/api/teams/${id}`, t()),
+    get:            (id: string)                => get<TeamDetail>(`/api/teams/${id}`, t()),
     update:         (id: string, body: UpdateTeamRequest) => put(`/api/teams/${id}`, t(), body),
     delete:         (id: string)                => del(`/api/teams/${id}`, t()),
     members: {
@@ -116,8 +116,8 @@ export function useApi() {
       update: (teamId: string, userId: string, body: UpdateMemberRequest) =>
         put(`/api/teams/${teamId}/members/${userId}`, t(), body),
       resetPassword: (teamId: string, userId: string, body: ResetMemberPasswordRequest) =>
-        put(`/api/teams/${teamId}/members/${userId}/reset-password`, t(), body),
-      cleanup: (teamId: string) => del(`/api/teams/${teamId}/members/cleanup`, t()),
+        put<{ message: string }>(`/api/teams/${teamId}/members/${userId}/reset-password`, t(), body),
+      cleanup: (teamId: string) => del<{ deleted: number; message: string }>(`/api/teams/${teamId}/members/cleanup`, t()),
     },
     tournaments: {
       list:   (teamId: string) => get<TournamentListItem[]>(`/api/teams/${teamId}/tournaments`, t()),

@@ -3,7 +3,6 @@
  */
 import { z } from 'zod'
 import { ID, TeamMode } from './common'
-import type { TournamentListItem } from './tournament'
 
 // ── 团队信息 ──
 
@@ -22,6 +21,27 @@ export const TeamInfo = z.object({
   createdAt: z.string(),
 })
 export type TeamInfo = z.infer<typeof TeamInfo>
+
+// ── 团队详情（GET /api/teams/:id，含嵌套 botConfig/members/tournaments） ──
+// 注意与 TeamInfo（列表/通用扁平结构）不同：详情端点把 bot 配置包在 botConfig 下。
+export const TeamDetail = z.object({
+  id: ID,
+  name: z.string(),
+  mode: TeamMode,
+  botConfig: z.object({
+    botAppId: z.string().nullable(),
+    botChannelId: z.string().nullable(),
+  }),
+  members: z.array(z.object({
+    id: z.string(), userId: z.string(), username: z.string(),
+    nickname: z.string().nullable(), email: z.string().nullable(),
+    avatar: z.string().nullable(), role: z.string().nullable(),
+  })),
+  memberCount: z.number(),
+  tournaments: z.array(z.any()).optional(),
+  createdAt: z.string(),
+})
+export type TeamDetail = z.infer<typeof TeamDetail>
 
 // ── 创建团队 ──
 

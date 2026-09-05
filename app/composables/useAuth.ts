@@ -2,6 +2,7 @@
  * useAuth — 认证
  */
 export interface ExistingSessionInfo {
+  id: string
   deviceInfo: string
   ipAddress: string | null
   loggedInAt: string

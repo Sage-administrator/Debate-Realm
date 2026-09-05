@@ -101,7 +101,7 @@ const newPassword = ref('')
 // 创建团队表单
 const teamForm = reactive({
   name: '',
-  mode: 'team',
+  mode: 'team' as 'team' | 'qq_bot',
   adminUsername: '',
   adminPassword: '',
 })
@@ -215,7 +215,9 @@ async function loadAdminData() {
       getTeams(),
       getUsers(),
     ])
-    const individualCount = usersData.filter((u: any) => u.role === 'individual').length
+    // admin/users 返回 { users, pagination }，取 users 数组（此前误当数组导致 .filter 崩溃）
+    const userList = (usersData as any)?.users ?? []
+    const individualCount = userList.filter((u: any) => u.role === 'individual').length
     const personalTeam = {
       id: '__individual__',
       name: '个人团队',
@@ -225,7 +227,7 @@ async function loadAdminData() {
       isVirtual: true,
     }
     teams.value = [personalTeam, ...teamsData]
-    users.value = usersData
+    users.value = userList
   } catch (e: any) {
     toast.add({ title: e.statusMessage || '加载数据失败', color: 'error' })
   } finally {
