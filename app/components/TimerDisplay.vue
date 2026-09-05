@@ -9,7 +9,6 @@
 <template>
   <!-- 根容器：填满外层 1280x720 缩放画布；背景由 rootStyle 计算 -->
   <div class="timer-display-root text-white overflow-hidden" :style="rootStyleWithFont">
-
     <!-- 顶部辩题展示区（横幅）：抽成独立 TimerBanner 组件，供预览/正式页复用 -->
     <!-- bannerShouldShow=false 时不渲染；hideBanner=true 时渲染但 visibility:hidden 以保留画布内布局占位 -->
     <TimerBanner
@@ -28,34 +27,76 @@
         <!-- 正方队徽 -->
         <div v-if="positiveLogoUrl && showTeamLogo" class="team-logo-wrapper" :style="logoStyle">
           <!-- 队徽图片：懒加载 + 异步解码，避免阻塞主渲染线程 -->
-          <img :src="positiveLogoUrl" class="team-logo-img" alt="正方队徽" loading="lazy" decoding="async" />
+          <img
+            :src="positiveLogoUrl"
+            class="team-logo-img"
+            alt="正方队徽"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
-        <div v-if="teamPositiveName" class="debate-topic-text" :style="{ color: uiConfig.teamNameColor || 'white', fontSize: uiConfig.teamNameFontSize ? `${uiConfig.teamNameFontSize}px` : '', fontFamily: uiConfig.teamNameFontFamily || uiConfig.fontFamily || '' }">
+        <div
+          v-if="teamPositiveName"
+          class="debate-topic-text"
+          :style="{
+            color: uiConfig.teamNameColor || 'white',
+            fontSize: uiConfig.teamNameFontSize ? `${uiConfig.teamNameFontSize}px` : '',
+            fontFamily: uiConfig.teamNameFontFamily || uiConfig.fontFamily || '',
+          }"
+        >
           {{ teamPositiveName }}
         </div>
       </div>
       <div class="flex items-center gap-2" v-if="teamNegativeName || negativeLogoUrl">
-        <div v-if="teamNegativeName" class="debate-topic-text debate-topic-right" :style="{ color: uiConfig.teamNameColor || 'white', fontSize: uiConfig.teamNameFontSize ? `${uiConfig.teamNameFontSize}px` : '', textAlign: 'right', fontFamily: uiConfig.teamNameFontFamily || uiConfig.fontFamily || '' }">
+        <div
+          v-if="teamNegativeName"
+          class="debate-topic-text debate-topic-right"
+          :style="{
+            color: uiConfig.teamNameColor || 'white',
+            fontSize: uiConfig.teamNameFontSize ? `${uiConfig.teamNameFontSize}px` : '',
+            textAlign: 'right',
+            fontFamily: uiConfig.teamNameFontFamily || uiConfig.fontFamily || '',
+          }"
+        >
           {{ teamNegativeName }}
         </div>
         <!-- 反方队徽 -->
         <div v-if="negativeLogoUrl && showTeamLogo" class="team-logo-wrapper" :style="logoStyle">
           <!-- 队徽图片：懒加载 + 异步解码，避免阻塞主渲染线程 -->
-          <img :src="negativeLogoUrl" class="team-logo-img" alt="反方队徽" loading="lazy" decoding="async" />
+          <img
+            :src="negativeLogoUrl"
+            class="team-logo-img"
+            alt="反方队徽"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       </div>
     </div>
 
     <!-- 主内容区 -->
-    <div class="main-content" :style="{ paddingTop: typeof uiConfig.contentPaddingTop === 'number' ? `${uiConfig.contentPaddingTop}px` : '' }">
+    <div
+      class="main-content"
+      :style="{
+        paddingTop:
+          typeof uiConfig.contentPaddingTop === 'number' ? `${uiConfig.contentPaddingTop}px` : '',
+      }"
+    >
       <!-- 赛事名称（eventNameVisible/showTitle 任一为 true 即显示，默认显示）-->
-      <div class="text-center contest-title" v-if="(uiConfig.eventNameVisible !== false && uiConfig.showTitle !== false)" :style="{ marginBottom: typeof uiConfig.titleMarginBottom === 'number' ? `${uiConfig.titleMarginBottom}px` : '' }">
+      <div
+        class="text-center contest-title"
+        v-if="uiConfig.eventNameVisible !== false && uiConfig.showTitle !== false"
+        :style="{
+          marginBottom:
+            typeof uiConfig.titleMarginBottom === 'number' ? `${uiConfig.titleMarginBottom}px` : '',
+        }"
+      >
         <h1
           class="font-bold contest-title-text contest-title-color"
           :style="{
-            color: (uiConfig.titleColor || uiConfig.eventColor) || 'rgb(3, 105, 161)',
+            color: uiConfig.titleColor || uiConfig.eventColor || 'rgb(3, 105, 161)',
             fontSize: uiConfig.eventFontSize ? `${uiConfig.eventFontSize}px` : '',
-            fontFamily: uiConfig.titleFontFamily || uiConfig.fontFamily || ''
+            fontFamily: uiConfig.titleFontFamily || uiConfig.fontFamily || '',
           }"
         >
           {{ contestTitle }}
@@ -64,10 +105,37 @@
 
       <!-- 计时器区域 -->
       <!-- v-memo: 只在环节信息/时间变化时才重渲染，避免每250ms整个区域重绘 -->
-      <div class="stage-timer-container" :style="{ gap: typeof uiConfig.stageTimerGap === 'number' ? `${uiConfig.stageTimerGap}px` : '' }">
+      <div
+        class="stage-timer-container"
+        :style="{
+          gap: typeof uiConfig.stageTimerGap === 'number' ? `${uiConfig.stageTimerGap}px` : '',
+        }"
+      >
         <!-- 当前环节名称（v-memo：只在环节类型/标题/UI配置变化时重渲染） -->
-        <div v-memo="[isSpecialStage, currentStageFullTitle, uiConfig.stageTitleColor, uiConfig.stageTitleFontSize, uiConfig.stageTitleFontFamily, uiConfig.fontFamily]" class="text-center stage-title">
-          <h2 class="font-bold" :class="isSpecialStage ? 'special-stage-text' : 'stage-title-text'" :style="{ color: uiConfig.stageTitleColor || 'white', fontSize: isSpecialStage ? '' : (typeof uiConfig.stageTitleFontSize === 'number' ? `${uiConfig.stageTitleFontSize}px` : ''), fontFamily: uiConfig.stageTitleFontFamily || uiConfig.fontFamily || '' }">
+        <div
+          v-memo="[
+            isSpecialStage,
+            currentStageFullTitle,
+            uiConfig.stageTitleColor,
+            uiConfig.stageTitleFontSize,
+            uiConfig.stageTitleFontFamily,
+            uiConfig.fontFamily,
+          ]"
+          class="text-center stage-title"
+        >
+          <h2
+            class="font-bold"
+            :class="isSpecialStage ? 'special-stage-text' : 'stage-title-text'"
+            :style="{
+              color: uiConfig.stageTitleColor || 'white',
+              fontSize: isSpecialStage
+                ? ''
+                : typeof uiConfig.stageTitleFontSize === 'number'
+                  ? `${uiConfig.stageTitleFontSize}px`
+                  : '',
+              fontFamily: uiConfig.stageTitleFontFamily || uiConfig.fontFamily || '',
+            }"
+          >
             {{ currentStageFullTitle }}
           </h2>
         </div>
@@ -79,39 +147,94 @@
         </div>
 
         <!-- 双计时器显示（v-memo：只在时间/颜色/字号/字体变化时重渲染，约从4次/秒降到1次/秒） -->
-        <div v-memo="[dualPositiveTime, dualNegativeTime, positiveLabel, negativeLabel, uiConfig.dualTimerColorPos, uiConfig.dualTimerColorNeg, uiConfig.bannerFontColorPos, uiConfig.bannerFontColorNeg, uiConfig.timerFontSize, uiConfig.timerFontFamily]" v-else-if="isDualTimerStage" class="dual-timer-container">
+        <div
+          v-memo="[
+            dualPositiveTime,
+            dualNegativeTime,
+            positiveLabel,
+            negativeLabel,
+            uiConfig.dualTimerColorPos,
+            uiConfig.dualTimerColorNeg,
+            uiConfig.bannerFontColorPos,
+            uiConfig.bannerFontColorNeg,
+            uiConfig.timerFontSize,
+            uiConfig.timerFontFamily,
+          ]"
+          v-else-if="isDualTimerStage"
+          class="dual-timer-container"
+        >
           <div class="dual-timer-display">
             <div class="timer-side positive-side">
               <div
                 class="digital-display digital-text"
-                :style="{ color: uiConfig.dualTimerColorPos || uiConfig.bannerFontColorPos || 'rgb(169, 35, 35)', fontSize: uiConfig.timerFontSize ? `${uiConfig.timerFontSize}px` : '', fontFamily: uiConfig.timerFontFamily || 'Digiface, monospace' }"
-              >{{ dualPositiveTime }}</div>
-              <div class="timer-label positive-label" :style="{ fontFamily: uiConfig.timerFontFamily || '' }">{{ positiveLabel }}</div>
+                :style="{
+                  color:
+                    uiConfig.dualTimerColorPos || uiConfig.bannerFontColorPos || 'rgb(169, 35, 35)',
+                  fontSize: uiConfig.timerFontSize ? `${uiConfig.timerFontSize}px` : '',
+                  fontFamily: uiConfig.timerFontFamily || 'Digiface, monospace',
+                }"
+              >
+                {{ dualPositiveTime }}
+              </div>
+              <div
+                class="timer-label positive-label"
+                :style="{ fontFamily: uiConfig.timerFontFamily || '' }"
+              >
+                {{ positiveLabel }}
+              </div>
             </div>
             <div class="timer-side negative-side">
               <div
                 class="digital-display digital-text"
-                :style="{ color: uiConfig.dualTimerColorNeg || uiConfig.bannerFontColorNeg || 'rgb(3, 105, 161)', fontSize: uiConfig.timerFontSize ? `${uiConfig.timerFontSize}px` : '', fontFamily: uiConfig.timerFontFamily || 'Digiface, monospace' }"
-              >{{ dualNegativeTime }}</div>
-              <div class="timer-label negative-label" :style="{ fontFamily: uiConfig.timerFontFamily || '' }">{{ negativeLabel }}</div>
+                :style="{
+                  color:
+                    uiConfig.dualTimerColorNeg || uiConfig.bannerFontColorNeg || 'rgb(3, 105, 161)',
+                  fontSize: uiConfig.timerFontSize ? `${uiConfig.timerFontSize}px` : '',
+                  fontFamily: uiConfig.timerFontFamily || 'Digiface, monospace',
+                }"
+              >
+                {{ dualNegativeTime }}
+              </div>
+              <div
+                class="timer-label negative-label"
+                :style="{ fontFamily: uiConfig.timerFontFamily || '' }"
+              >
+                {{ negativeLabel }}
+              </div>
             </div>
           </div>
         </div>
 
         <!-- 单计时器显示（v-memo：只在时间/警告状态/颜色/字号/字体变化时重渲染） -->
-        <div v-memo="[displayTime, isTimeWarning, isTimeCritical, uiConfig.timerColor, uiConfig.timerFontSize, uiConfig.timerFontFamily]" v-else-if="!isSpecialStage && !isPptStage" class="text-center timer-display-section">
+        <div
+          v-memo="[
+            displayTime,
+            isTimeWarning,
+            isTimeCritical,
+            uiConfig.timerColor,
+            uiConfig.timerFontSize,
+            uiConfig.timerFontFamily,
+          ]"
+          v-else-if="!isSpecialStage && !isPptStage"
+          class="text-center timer-display-section"
+        >
           <div
             class="digital-display digital-text"
             :class="{
               'text-orange-400': isTimeWarning,
               'text-red-400': isTimeCritical,
             }"
-            :style="{ color: (!isTimeWarning && !isTimeCritical) ? (uiConfig.timerColor || 'white') : '', fontSize: uiConfig.timerFontSize ? `${uiConfig.timerFontSize}px` : '', fontFamily: uiConfig.timerFontFamily || 'Digiface, monospace' }"
-          >{{ displayTime }}</div>
+            :style="{
+              color: !isTimeWarning && !isTimeCritical ? uiConfig.timerColor || 'white' : '',
+              fontSize: uiConfig.timerFontSize ? `${uiConfig.timerFontSize}px` : '',
+              fontFamily: uiConfig.timerFontFamily || 'Digiface, monospace',
+            }"
+          >
+            {{ displayTime }}
+          </div>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -154,20 +277,20 @@ const props = defineProps<{
     positiveLogoUrl?: string
     negativeLogoUrl?: string
     showTeamLogo?: boolean
-    logoSize?: number          // 队徽大小（px），默认 57.6
-    logoOffsetX?: number       // 水平位置（px），正=右 负=左
-    logoOffsetY?: number       // 垂直位置（px），正=下 负=上
+    logoSize?: number // 队徽大小（px），默认 57.6
+    logoOffsetX?: number // 水平位置（px），正=右 负=左
+    logoOffsetY?: number // 垂直位置（px），正=下 负=上
     [key: string]: any
   }
 
   // 计时器状态
   isDualTimerStage?: boolean
   isSpecialStage?: boolean
-  displayTime?: string                 // 单计时器文本（已格式化，如 "03:00"）
+  displayTime?: string // 单计时器文本（已格式化，如 "03:00"）
   isTimeWarning?: boolean
   isTimeCritical?: boolean
-  dualPositiveTime?: string           // 双计时器正方文本
-  dualNegativeTime?: string           // 双计时器反方文本
+  dualPositiveTime?: string // 双计时器正方文本
+  dualNegativeTime?: string // 双计时器反方文本
 }>()
 
 // ═══════════ 默认值 ═══════════
@@ -182,15 +305,15 @@ const showTeamLogo = computed(() => props.teamLogoConfig?.showTeamLogo !== false
 const DEFAULT_LOGO_SIZE = 57.6
 const logoSize = computed<number>(() => {
   const s = props.teamLogoConfig?.logoSize
-  return (typeof s === 'number' && !Number.isNaN(s) && s > 0) ? s : DEFAULT_LOGO_SIZE
+  return typeof s === 'number' && !Number.isNaN(s) && s > 0 ? s : DEFAULT_LOGO_SIZE
 })
 const logoOffsetX = computed<number>(() => {
   const v = props.teamLogoConfig?.logoOffsetX
-  return (typeof v === 'number' && !Number.isNaN(v)) ? v : 0
+  return typeof v === 'number' && !Number.isNaN(v) ? v : 0
 })
 const logoOffsetY = computed<number>(() => {
   const v = props.teamLogoConfig?.logoOffsetY
-  return (typeof v === 'number' && !Number.isNaN(v)) ? v : 0
+  return typeof v === 'number' && !Number.isNaN(v) ? v : 0
 })
 const logoStyle = computed<Record<string, string>>(() => ({
   width: `${logoSize.value}px`,
@@ -216,9 +339,10 @@ const currentStageFullTitle = computed(() => {
     return `${stripSep(info.speaker || '正方·一辩')} · ${name}`
   }
   if (isQuestion(type)) {
-    const rList = (info.responders && info.responders.length)
-      ? info.responders.map((r: string) => stripSep(r))
-      : [stripSep(info.responder || '正方·一辩')]
+    const rList =
+      info.responders && info.responders.length
+        ? info.responders.map((r: string) => stripSep(r))
+        : [stripSep(info.responder || '正方·一辩')]
     return `${stripSep(info.questioner || '反方·二辩')} · ${name} · ${rList.join('、')}`
   }
   // 自由辩论 / 对辩：无需发言方在前，仅保留环节名称
@@ -262,7 +386,8 @@ const rootStyle = computed<Record<string, string>>(() => {
   }
 
   if (!background) {
-    background = 'radial-gradient(ellipse at center bottom, rgb(57, 76, 86) 0%, rgb(14, 17, 17) 100%)'
+    background =
+      'radial-gradient(ellipse at center bottom, rgb(57, 76, 86) 0%, rgb(14, 17, 17) 100%)'
   }
 
   return { background }
@@ -312,11 +437,11 @@ const rootStyleWithFont = computed(() => ({ ...rootStyle.value }))
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 56px;  /* 整体上移：原为 12vh(86.4px)，现约 7.8vh */
-  padding-bottom: 270px;  /* 对应 37.5vh（37.5 * 7.2 = 270px） */
+  padding-top: 56px; /* 整体上移：原为 12vh(86.4px)，现约 7.8vh */
+  padding-bottom: 270px; /* 对应 37.5vh（37.5 * 7.2 = 270px） */
 }
 .contest-title {
-  margin-bottom: 12px;  /* h1 到 h2 间距缩小，h2 上靠 */
+  margin-bottom: 12px; /* h1 到 h2 间距缩小，h2 上靠 */
 }
 .contest-title-text {
   font-size: 50px;
@@ -330,8 +455,8 @@ const rootStyleWithFont = computed(() => ({ ...rootStyle.value }))
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;  /* h2 到计时器间距缩小 */
-  min-height: 432px;  /* 对应 60vh（60 * 7.2 = 432px） */
+  gap: 10px; /* h2 到计时器间距缩小 */
+  min-height: 432px; /* 对应 60vh（60 * 7.2 = 432px） */
 }
 .stage-title-text {
   font-size: 64px;
@@ -387,7 +512,7 @@ const rootStyleWithFont = computed(() => ({ ...rootStyle.value }))
 
 /* ═══════════ 单计时器显示容器 ═══════════ */
 .timer-display-section {
-  min-height: 176px;  /* 对应 13.75vw 数字高度（1280px基准） */
+  min-height: 176px; /* 对应 13.75vw 数字高度（1280px基准） */
   display: flex;
   align-items: flex-start;
   justify-content: center;

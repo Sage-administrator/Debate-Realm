@@ -5,8 +5,8 @@ import type { CityGroup } from '~~/app/data/cities'
 
 // ── 外部传入/回写 ──
 const props = defineProps<{
-  province: string   // 选中的省份名称
-  city: string       // 选中的城市名称（无二级时为空）
+  province: string // 选中的省份名称
+  city: string // 选中的城市名称（无二级时为空）
 }>()
 
 const emit = defineEmits<{
@@ -141,7 +141,10 @@ onBeforeUnmount(() => {
       @click.stop="openDropdown"
       :class="{ 'is-active': open, 'has-value': hasValue }"
     >
-      <span class="cascader-text" :class="hasValue ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'">
+      <span
+        class="cascader-text"
+        :class="hasValue ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'"
+      >
         {{ displayText }}
       </span>
       <UIcon name="i-lucide-chevron-down" class="cascader-icon" :class="{ 'is-open': open }" />
@@ -149,12 +152,7 @@ onBeforeUnmount(() => {
 
     <!-- 下拉面板（使用 teleport + getBoundingClientRect 动态定位） -->
     <Teleport to="body">
-      <div
-        v-if="open"
-        class="cascader-panel"
-        :style="panelStyle"
-        @click.stop
-      >
+      <div v-if="open" class="cascader-panel" :style="panelStyle" @click.stop>
         <!-- 选项列表 -->
         <div class="cascader-list">
           <!-- 省份列表 -->
@@ -176,10 +174,7 @@ onBeforeUnmount(() => {
           </div>
           <!-- 城市列表 -->
           <div v-else class="cascader-list-inner">
-            <div
-              class="cascader-option cascader-option-back"
-              @click.stop="backToProvince"
-            >
+            <div class="cascader-option cascader-option-back" @click.stop="backToProvince">
               <UIcon name="i-lucide-chevron-left" class="cascader-arrow" />
               <span>返回 {{ province }}</span>
             </div>
@@ -262,7 +257,9 @@ onBeforeUnmount(() => {
   border-radius: 6px;
   background: var(--rc-trigger-bg);
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
   min-width: 220px;
 }
 
@@ -321,8 +318,14 @@ onBeforeUnmount(() => {
 }
 
 @keyframes cascader-fade-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── 面包屑 ── */
@@ -341,7 +344,9 @@ onBeforeUnmount(() => {
   cursor: pointer;
   padding: 2px 4px;
   border-radius: 4px;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
   color: var(--rc-text-muted);
 }
 
@@ -401,7 +406,9 @@ onBeforeUnmount(() => {
   color: var(--rc-option);
   border-radius: 4px;
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
 }
 
 .cascader-option:hover {

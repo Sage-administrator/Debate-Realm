@@ -53,11 +53,7 @@ async function handleLogin() {
     }
   } catch (e: any) {
     const statusMessage =
-      e?.data?.statusMessage ||
-      e?.data?.message ||
-      e?.statusMessage ||
-      e?.message ||
-      ''
+      e?.data?.statusMessage || e?.data?.message || e?.statusMessage || e?.message || ''
     error.value = statusMessage || '登录失败，请检查用户名和密码'
   } finally {
     loading.value = false
@@ -74,11 +70,7 @@ async function handleForceLogin() {
     showMultiDeviceDialog.value = false
   } catch (e: any) {
     const statusMessage =
-      e?.data?.statusMessage ||
-      e?.data?.message ||
-      e?.statusMessage ||
-      e?.message ||
-      ''
+      e?.data?.statusMessage || e?.data?.message || e?.statusMessage || e?.message || ''
     error.value = statusMessage || '确认登录失败，请重试'
     showMultiDeviceDialog.value = false
   } finally {
@@ -119,28 +111,27 @@ function formatTime(iso: string): string {
   <!-- ponytail: 使用全局hero-padding类，删除自定义px-4 -->
   <!-- Agency级Macro-Whitespace：hero-padding（py-40 pt-32 pb-24） -->
   <div class="min-h-screen flex items-center justify-center hero-padding">
-
     <!-- 登录卡片区域 -->
     <div class="w-full max-w-md">
-
       <!-- 玻璃拟态登录卡片（使用全局glass-card-strong，删除scoped定义） -->
       <div class="glass-card-strong p-6 sm:p-8">
-
         <!-- 顶部 Logo 与标题 -->
         <div class="text-center mb-6">
           <!-- 渐变圆角方块 Logo -->
           <div class="logo-icon mx-auto mb-4">
             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
             </svg>
           </div>
-          
+
           <!-- Agency级Eyebrow Tag：microscopic badge -->
-          <div class="eyebrow-tag mx-auto">
-            DebateRealm
-          </div>
-          
+          <div class="eyebrow-tag mx-auto">DebateRealm</div>
+
           <h1 class="text-heading-2 text-[var(--color-text-primary)]">辩境</h1>
           <p class="text-caption text-[var(--color-text-muted)] mt-1">辩论赛管理系统</p>
         </div>
@@ -150,24 +141,30 @@ function formatTime(iso: string): string {
 
         <!-- 登录表单 -->
         <form @submit.prevent="handleLogin" class="space-y-4">
-
           <!-- 被踢下线警告：黄色半透明背景 -->
           <div
             v-if="kickedMessage"
             class="p-3 rounded-lg bg-amber-500/15 border border-amber-400/20 text-sm text-amber-700 dark:text-amber-300 flex items-start gap-2"
           >
-            <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg
+              class="w-4 h-4 mt-0.5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
             <span>{{ kickedMessage }}</span>
           </div>
 
           <!-- 用户名输入框（使用全局input-glass和dark-label，删除scoped定义） -->
           <div>
-            <label class="dark-label">
-              用户名
-            </label>
+            <label class="dark-label"> 用户名 </label>
             <input
               v-model="username"
               type="text"
@@ -180,9 +177,7 @@ function formatTime(iso: string): string {
 
           <!-- 密码输入框 -->
           <div>
-            <label class="dark-label">
-              密码
-            </label>
+            <label class="dark-label"> 密码 </label>
             <div class="relative">
               <input
                 v-model="password"
@@ -196,18 +191,36 @@ function formatTime(iso: string): string {
               <button
                 type="button"
                 class="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] p-1 transition-colors"
-                @click="() => { showPassword = !showPassword }"
+                @click="
+                  () => {
+                    showPassword = !showPassword
+                  }
+                "
                 aria-label="切换密码显示"
               >
                 <!-- 眼睛打开图标 -->
-                <svg v-if="!showPassword" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <svg
+                  v-if="!showPassword"
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
                 </svg>
                 <!-- 眼睛关闭图标 -->
                 <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                  />
                 </svg>
               </button>
             </div>
@@ -228,9 +241,19 @@ function formatTime(iso: string): string {
             class="btn-primary w-full py-3 px-6 text-sm font-medium rounded-xl flex items-center justify-center gap-2"
           >
             <svg v-if="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-              <path class="opacity-75" fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
             </svg>
             {{ loading ? '登录中...' : '登录' }}
           </button>
@@ -279,18 +302,37 @@ function formatTime(iso: string): string {
                 aria-label="关闭"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
 
               <!-- 弹窗头部 -->
-              <div class="px-6 py-4 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]">
+              <div
+                class="px-6 py-4 border-b border-[var(--color-border)] bg-[var(--color-bg-tertiary)]"
+              >
                 <div class="flex items-center gap-2">
-                  <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  <svg
+                    class="w-5 h-5 text-amber-600 dark:text-amber-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
                   </svg>
-                  <h2 id="multi-device-title" class="text-lg font-bold text-[var(--color-text-primary)]">
+                  <h2
+                    id="multi-device-title"
+                    class="text-lg font-bold text-[var(--color-text-primary)]"
+                  >
                     不允许多端登录
                   </h2>
                 </div>
@@ -308,15 +350,32 @@ function formatTime(iso: string): string {
                   class="mt-3 p-3 rounded-lg bg-blue-500/15 border border-blue-400/20"
                 >
                   <div class="flex items-center gap-2 mb-2">
-                    <svg class="w-4 h-4 text-[var(--device-blue)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    <svg
+                      class="w-4 h-4 text-[var(--device-blue)]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
                     </svg>
-                    <span class="text-sm font-medium text-[var(--device-blue)]">当前设备（此浏览器）</span>
+                    <span class="text-sm font-medium text-[var(--device-blue)]"
+                      >当前设备（此浏览器）</span
+                    >
                   </div>
                   <div class="text-sm text-[var(--color-text-secondary)] pl-6 space-y-0.5">
-                    <p><span class="text-[var(--color-text-muted)]">设备：</span>{{ newDevice.deviceInfo }}</p>
-                    <p v-if="newDevice.ipAddress"><span class="text-[var(--color-text-muted)]">IP：</span>{{ newDevice.ipAddress }}</p>
+                    <p>
+                      <span class="text-[var(--color-text-muted)]">设备：</span
+                      >{{ newDevice.deviceInfo }}
+                    </p>
+                    <p v-if="newDevice.ipAddress">
+                      <span class="text-[var(--color-text-muted)]">IP：</span
+                      >{{ newDevice.ipAddress }}
+                    </p>
                   </div>
                 </div>
 
@@ -327,24 +386,44 @@ function formatTime(iso: string): string {
                   class="mt-3 p-3 rounded-lg bg-amber-500/15 border border-amber-400/20"
                 >
                   <div class="flex items-center gap-2 mb-2">
-                    <svg class="w-4 h-4 text-[var(--device-amber)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    <svg
+                      class="w-4 h-4 text-[var(--device-amber)]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
                     </svg>
                     <span class="text-sm font-medium text-[var(--device-amber)]">
                       已登录设备 {{ existingSessions.length > 1 ? `#${idx + 1}` : '' }}
                     </span>
                   </div>
                   <div class="text-sm text-[var(--color-text-secondary)] pl-6 space-y-0.5">
-                    <p><span class="text-[var(--color-text-muted)]">设备：</span>{{ session.deviceInfo }}</p>
-                    <p v-if="session.ipAddress"><span class="text-[var(--color-text-muted)]">IP：</span>{{ session.ipAddress }}</p>
-                    <p><span class="text-[var(--color-text-muted)]">登录时间：</span>{{ formatTime(session.loggedInAt) }}</p>
+                    <p>
+                      <span class="text-[var(--color-text-muted)]">设备：</span
+                      >{{ session.deviceInfo }}
+                    </p>
+                    <p v-if="session.ipAddress">
+                      <span class="text-[var(--color-text-muted)]">IP：</span
+                      >{{ session.ipAddress }}
+                    </p>
+                    <p>
+                      <span class="text-[var(--color-text-muted)]">登录时间：</span
+                      >{{ formatTime(session.loggedInAt) }}
+                    </p>
                   </div>
                 </div>
               </div>
 
               <!-- 弹窗底部操作按钮 -->
-              <div class="px-6 py-4 border-t border-[var(--color-border)] bg-[var(--color-bg-tertiary)] flex gap-3 justify-end">
+              <div
+                class="px-6 py-4 border-t border-[var(--color-border)] bg-[var(--color-bg-tertiary)] flex gap-3 justify-end"
+              >
                 <!-- 取消按钮：幽灵按钮样式 -->
                 <button
                   type="button"
@@ -361,10 +440,25 @@ function formatTime(iso: string): string {
                   :disabled="confirmLoading"
                   @click="handleForceLogin"
                 >
-                  <svg v-if="confirmLoading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                    <path class="opacity-75" fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  <svg
+                    v-if="confirmLoading"
+                    class="animate-spin w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    />
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
                   </svg>
                   {{ confirmLoading ? '处理中...' : '继续登录' }}
                 </button>
@@ -396,12 +490,7 @@ function formatTime(iso: string): string {
 /* 玻璃分隔线 */
 .glass-divider {
   height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(255, 255, 255, 0.15),
-    transparent
-  );
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), transparent);
 }
 
 /* ═══════════ Agency级弹窗动画（保留） ═══════════ */
@@ -420,7 +509,9 @@ function formatTime(iso: string): string {
 /* 弹窗内容缩放动画：Apple Spring Curve */
 .modal-content-enter-active,
 .modal-content-leave-active {
-  transition: transform 500ms cubic-bezier(0.32, 0.72, 0, 1), opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    transform 500ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-content-enter-from,

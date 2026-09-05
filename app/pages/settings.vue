@@ -8,7 +8,9 @@
 
     <!-- ══════════ 个人信息卡片 ══════════ -->
     <div class="glass-card p-6 mb-6">
-      <h2 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+      <h2
+        class="text-lg font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2"
+      >
         <UIcon name="i-lucide-user-cog" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
         个人信息
       </h2>
@@ -16,7 +18,9 @@
       <!-- 头像预览 -->
       <div class="flex items-center gap-4 mb-6">
         <!-- 有头像 URL 时显示图片，否则显示用户名首字母 -->
-        <div class="w-20 h-20 rounded-full overflow-hidden bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-2xl font-bold shrink-0 ring-2 ring-white/20">
+        <div
+          class="w-20 h-20 rounded-full overflow-hidden bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-2xl font-bold shrink-0 ring-2 ring-white/20"
+        >
           <img
             v-if="form.avatar"
             :src="form.avatar"
@@ -28,7 +32,9 @@
         </div>
         <div class="flex-1">
           <div class="text-sm text-[var(--color-text-muted)] mb-1">头像</div>
-          <div class="text-xs text-[var(--color-text-muted)]">在下方「头像 URL」输入图片地址即可设置头像</div>
+          <div class="text-xs text-[var(--color-text-muted)]">
+            在下方「头像 URL」输入图片地址即可设置头像
+          </div>
         </div>
       </div>
 
@@ -36,7 +42,9 @@
       <div class="space-y-5">
         <!-- 用户名 -->
         <div>
-          <label class="dark-label">用户名 <span class="text-red-500 dark:text-red-400">*</span></label>
+          <label class="dark-label"
+            >用户名 <span class="text-red-500 dark:text-red-400">*</span></label
+          >
           <input
             v-model="form.username"
             type="text"
@@ -44,7 +52,9 @@
             placeholder="登录用户名"
             class="input-glass w-full"
           />
-          <p class="text-xs text-[var(--color-text-muted)] mt-1">用于登录，修改后需使用新用户名登录</p>
+          <p class="text-xs text-[var(--color-text-muted)] mt-1">
+            用于登录，修改后需使用新用户名登录
+          </p>
         </div>
 
         <!-- 昵称 -->
@@ -57,7 +67,9 @@
             placeholder="显示名称（可选）"
             class="input-glass w-full"
           />
-          <p class="text-xs text-[var(--color-text-muted)] mt-1">展示用名称，不填则默认使用用户名</p>
+          <p class="text-xs text-[var(--color-text-muted)] mt-1">
+            展示用名称，不填则默认使用用户名
+          </p>
         </div>
 
         <!-- 邮箱 -->
@@ -80,7 +92,9 @@
             placeholder="https://example.com/avatar.png"
             class="input-glass w-full"
           />
-          <p class="text-xs text-[var(--color-text-muted)] mt-1">输入图片地址，支持 JPG/PNG/GIF/WebP/SVG</p>
+          <p class="text-xs text-[var(--color-text-muted)] mt-1">
+            输入图片地址，支持 JPG/PNG/GIF/WebP/SVG
+          </p>
         </div>
 
         <!-- 行内错误提示 -->
@@ -93,31 +107,33 @@
             :disabled="savingProfile"
             @click="saveProfile"
           >
-            <UIcon v-if="savingProfile" name="i-lucide-loader" class="w-4 h-4 mr-1.5 animate-spin inline" />
+            <UIcon
+              v-if="savingProfile"
+              name="i-lucide-loader"
+              class="w-4 h-4 mr-1.5 animate-spin inline"
+            />
             <UIcon v-else name="i-lucide-save" class="w-4 h-4 mr-1.5 inline" />
             {{ savingProfile ? '保存中...' : '保存修改' }}
           </button>
-          <button
-            class="btn-ghost"
-            :disabled="savingProfile"
-            @click="resetForm"
-          >
-            重置
-          </button>
+          <button class="btn-ghost" :disabled="savingProfile" @click="resetForm">重置</button>
         </div>
       </div>
     </div>
 
     <!-- ══════════ 修改密码卡片 ══════════ -->
     <div class="glass-card p-6 mb-6">
-      <h2 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+      <h2
+        class="text-lg font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2"
+      >
         <UIcon name="i-lucide-key" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
         修改密码
       </h2>
 
       <div class="space-y-5">
         <div>
-          <label class="dark-label">旧密码 <span class="text-red-500 dark:text-red-400">*</span></label>
+          <label class="dark-label"
+            >旧密码 <span class="text-red-500 dark:text-red-400">*</span></label
+          >
           <input
             v-model="passwordForm.oldPassword"
             type="password"
@@ -126,7 +142,9 @@
           />
         </div>
         <div>
-          <label class="dark-label">新密码 <span class="text-red-500 dark:text-red-400">*</span></label>
+          <label class="dark-label"
+            >新密码 <span class="text-red-500 dark:text-red-400">*</span></label
+          >
           <input
             v-model="passwordForm.newPassword"
             type="password"
@@ -135,7 +153,9 @@
           />
         </div>
         <div>
-          <label class="dark-label">确认新密码 <span class="text-red-500 dark:text-red-400">*</span></label>
+          <label class="dark-label"
+            >确认新密码 <span class="text-red-500 dark:text-red-400">*</span></label
+          >
           <input
             v-model="passwordForm.confirmPassword"
             type="password"
@@ -145,7 +165,9 @@
         </div>
 
         <!-- 行内错误提示 -->
-        <p v-if="passwordError" class="text-sm text-red-500 dark:text-red-400">{{ passwordError }}</p>
+        <p v-if="passwordError" class="text-sm text-red-500 dark:text-red-400">
+          {{ passwordError }}
+        </p>
 
         <div class="pt-2">
           <button
@@ -153,7 +175,11 @@
             :disabled="savingPassword"
             @click="savePassword"
           >
-            <UIcon v-if="savingPassword" name="i-lucide-loader" class="w-4 h-4 mr-1.5 animate-spin inline" />
+            <UIcon
+              v-if="savingPassword"
+              name="i-lucide-loader"
+              class="w-4 h-4 mr-1.5 animate-spin inline"
+            />
             <UIcon v-else name="i-lucide-key-round" class="w-4 h-4 mr-1.5 inline" />
             {{ savingPassword ? '保存中...' : '修改密码' }}
           </button>

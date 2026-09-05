@@ -19,14 +19,14 @@ This skill triggers on **every task** in workspace `d:/Code/DebateTimer/DebateTi
 
 ## Project Context
 
-| Item | Detail |
-|------|--------|
-| Framework | Nuxt 4 (SSR) |
-| Frontend | Vue 3 + Pinia + @nuxt/ui |
-| Backend | Nitro (server/) |
-| Database | libsql via Prisma ORM |
-| Language | TypeScript strict mode |
-| CI | GitHub Actions (`.github/workflows/ci.yml`) |
+| Item      | Detail                                      |
+| --------- | ------------------------------------------- |
+| Framework | Nuxt 4 (SSR)                                |
+| Frontend  | Vue 3 + Pinia + @nuxt/ui                    |
+| Backend   | Nitro (server/)                             |
+| Database  | libsql via Prisma ORM                       |
+| Language  | TypeScript strict mode                      |
+| CI        | GitHub Actions (`.github/workflows/ci.yml`) |
 
 Key directories: `app/` (frontend), `server/` (204 .ts files), `shared/` (9 .ts), `prisma/` (schema), `docs/`, `tests/`
 
@@ -84,11 +84,13 @@ git push origin master
 ```
 
 **Commit rules:**
+
 - One commit = one logical change (feat, fix, refactor, etc.)
 - Never mix unrelated changes in a single commit
 - Every commit must leave the project in a buildable, testable state
 
 **Push rules:**
+
 - Push after completing a group of related commits
 - Push before ending a work session
 - Push before switching devices
@@ -116,11 +118,11 @@ Standard flow: `branch -> develop -> commit -> push -> open PR -> CI passes -> m
 
 Current test coverage is critically low (1 test file vs ~286 source files). Add tests when:
 
-| Priority | Scenario | Location |
-|----------|----------|----------|
-| High | Core business logic changes (timing, scoring, format calculation) | `tests/` |
-| Medium | New API endpoint boundary cases | `tests/` |
-| Low | Pure UI component rendering | Skip for now |
+| Priority | Scenario                                                          | Location     |
+| -------- | ----------------------------------------------------------------- | ------------ |
+| High     | Core business logic changes (timing, scoring, format calculation) | `tests/`     |
+| Medium   | New API endpoint boundary cases                                   | `tests/`     |
+| Low      | Pure UI component rendering                                       | Skip for now |
 
 ## Environment Variables
 

@@ -41,15 +41,26 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import TimerDisplay from '~/components/TimerDisplay.vue'
 
-
 // ═══════════ 类型定义 ═══════════
 interface StageInfo {
   id: number | string
   name: string
   duration: number
-  type: 'speech' | 'question' | 'summary' | 'special' | 'dual-timer'
-        | 'single_speech' | 'single_question' | 'bilateral_debate' | 'free_debate'
-        | 'no_timer' | 'single_timer' | 'double_timer' | 'ppt_replace' | string
+  type:
+    | 'speech'
+    | 'question'
+    | 'summary'
+    | 'special'
+    | 'dual-timer'
+    | 'single_speech'
+    | 'single_question'
+    | 'bilateral_debate'
+    | 'free_debate'
+    | 'no_timer'
+    | 'single_timer'
+    | 'double_timer'
+    | 'ppt_replace'
+    | string
   description?: string
   order?: number
   positiveDuration?: number
@@ -88,7 +99,7 @@ interface UIConfig {
 }
 
 interface SkinConfig {
-  backgroundType?: string         // 'default' | 'gradient' | 'image' | 'solid'；放开为 string 以兼容 useTimerConfig 推断的宽类型
+  backgroundType?: string // 'default' | 'gradient' | 'image' | 'solid'；放开为 string 以兼容 useTimerConfig 推断的宽类型
   gradientStart?: string
   gradientEnd?: string
   solidColor?: string
@@ -190,7 +201,7 @@ const uiConfig = computed<UIConfig>(() => {
     titleMarginBottom: 12,
     stageTimerGap: 10,
     positiveLabel: '正方',
-    negativeLabel: '反方'
+    negativeLabel: '反方',
   }
   return { ...defaults, ...(props.uiConfig || {}) }
 })
@@ -279,7 +290,7 @@ const scaleWrapperStyle = computed(() => {
 
 // 外层兜底背景（画布内 TimerDisplay 也会绘制相同背景）
 const containerStyle = computed(() => ({
-  background: 'radial-gradient(ellipse at center bottom, rgb(57, 76, 86) 0%, rgb(14, 17, 17) 100%)'
+  background: 'radial-gradient(ellipse at center bottom, rgb(57, 76, 86) 0%, rgb(14, 17, 17) 100%)',
 }))
 </script>
 

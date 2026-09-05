@@ -37,7 +37,9 @@ export default defineEventHandler(async (event) => {
 
     // 3) 校验参数
     const validModes = ['both', 'winner_only']
-    const bestDebaterMode = validModes.includes(body.bestDebaterMode) ? body.bestDebaterMode : 'both'
+    const bestDebaterMode = validModes.includes(body.bestDebaterMode)
+      ? body.bestDebaterMode
+      : 'both'
 
     // 4) 更新赛事配置
     await prisma.tournament.update({
@@ -50,6 +52,9 @@ export default defineEventHandler(async (event) => {
     if (error.statusCode) throw error
     const errMsg = error instanceof Error ? `${error.message}\n${error.stack}` : String(error)
     console.error('[result-settings] 保存失败:', errMsg)
-    throw createError({ statusCode: 500, message: error?.message || error?.toString() || '保存失败' })
-}
+    throw createError({
+      statusCode: 500,
+      message: error?.message || error?.toString() || '保存失败',
+    })
+  }
 })

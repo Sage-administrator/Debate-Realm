@@ -12,9 +12,10 @@ import { join } from 'node:path'
 // 注意：buildDir（.nuxt）与 vite 的 cacheDir **故意保留在项目内**，不使用此目录。
 // 原因是项目在 D 盘而 os.tmpdir() 在 C 盘，跨盘会让 @nuxt/kit 把绝对路径传给 ignore 库，
 // 在 Vite 7 下抛出 "path should be a path.relative()d string" 并导致段错误。
-const buildRoot = process.env.BUILD_IN_PLACE === 'true'
-  ? join(process.cwd(), '.build')
-  : join(os.tmpdir(), 'debate-timer-build')
+const buildRoot =
+  process.env.BUILD_IN_PLACE === 'true'
+    ? join(process.cwd(), '.build')
+    : join(os.tmpdir(), 'debate-timer-build')
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -25,7 +26,7 @@ export default defineNuxtConfig({
     '#shared': join(process.cwd(), 'shared'),
   },
   imports: {
-    dirs: ['lib'],  // app/lib/api.ts → useApi() 全局 auto-import
+    dirs: ['lib'], // app/lib/api.ts → useApi() 全局 auto-import
   },
 
   // 注：buildDir 不再路由到系统临时目录——项目在 D 盘、os.tmpdir() 在 C 盘，跨盘会导致
@@ -58,7 +59,13 @@ export default defineNuxtConfig({
     head: {
       link: [
         // 仅预加载小体积数字字体（< 50KB），提升计时器首屏渲染速度
-        { rel: 'preload', href: '/fonts/Digiface.woff2', as: 'font', type: 'font/woff2', crossorigin: '' },
+        {
+          rel: 'preload',
+          href: '/fonts/Digiface.woff2',
+          as: 'font',
+          type: 'font/woff2',
+          crossorigin: '',
+        },
       ],
     },
     // 关闭页面级 / 布局级过渡：原先配置 pageTransition + viewTransition
@@ -119,20 +126,36 @@ export default defineNuxtConfig({
         name: 'vendor-chunks',
         config(config: any) {
           const manualChunks = (id: string) => {
-            if (id.includes('node_modules/vue') || id.includes('node_modules/@vue/') || id.includes('node_modules/vue-router')) return 'vendor-vue'
-            if (id.includes('node_modules/pinia') || id.includes('node_modules/@pinia')) return 'vendor-pinia'
-            if (id.includes('node_modules/@nuxt/ui') || id.includes('node_modules/@nuxtjs/') || id.includes('node_modules/@nuxt/icon')) return 'vendor-ui'
+            if (
+              id.includes('node_modules/vue') ||
+              id.includes('node_modules/@vue/') ||
+              id.includes('node_modules/vue-router')
+            )
+              return 'vendor-vue'
+            if (id.includes('node_modules/pinia') || id.includes('node_modules/@pinia'))
+              return 'vendor-pinia'
+            if (
+              id.includes('node_modules/@nuxt/ui') ||
+              id.includes('node_modules/@nuxtjs/') ||
+              id.includes('node_modules/@nuxt/icon')
+            )
+              return 'vendor-ui'
             if (id.includes('node_modules/@vueuse')) return 'vendor-vueuse'
-            if (id.includes('node_modules/vue-draggable-plus') || id.includes('node_modules/sortablejs')) return 'vendor-drag'
+            if (
+              id.includes('node_modules/vue-draggable-plus') ||
+              id.includes('node_modules/sortablejs')
+            )
+              return 'vendor-drag'
             if (id.includes('node_modules/docx')) return 'vendor-docx'
             if (id.includes('node_modules/ws')) return 'vendor-ws'
-            if (id.includes('node_modules/iconify') || id.includes('node_modules/@iconify')) return 'vendor-icons'
+            if (id.includes('node_modules/iconify') || id.includes('node_modules/@iconify'))
+              return 'vendor-icons'
           }
           if (!config.build) config.build = {}
           config.build.rollupOptions = config.build.rollupOptions || {}
           const output = config.build.rollupOptions.output
           if (Array.isArray(output)) {
-            output.forEach((o: any) => o.manualChunks = manualChunks)
+            output.forEach((o: any) => (o.manualChunks = manualChunks))
           } else if (output && typeof output === 'object') {
             output.manualChunks = manualChunks
           } else {
@@ -196,9 +219,7 @@ export default defineNuxtConfig({
   nitro: {
     // 构建产物 .output 迁到临时目录（与 buildDir 同理，规避清理拦截）
     // 仅在 production 构建时使用临时目录；dev 模式用默认输出，避免 dev server 从临时目录解析模块失败
-    output: process.env.NODE_ENV === 'production'
-      ? { dir: join(buildRoot, 'output') }
-      : {},
+    output: process.env.NODE_ENV === 'production' ? { dir: join(buildRoot, 'output') } : {},
     experimental: {
       openAPI: true,
       websocket: true,

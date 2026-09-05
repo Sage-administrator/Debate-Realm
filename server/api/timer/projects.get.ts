@@ -9,8 +9,8 @@ export default defineEventHandler(async (event) => {
     where: { userId: payload.userId },
     include: {
       stages: {
-      orderBy: { orderIndex: 'asc' },
-    },
+        orderBy: { orderIndex: 'asc' },
+      },
     },
     orderBy: [{ updatedAt: 'desc' }],
   })

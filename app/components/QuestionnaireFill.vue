@@ -35,9 +35,13 @@ const qSettings = computed(() => props.questionnaire?.settings || {})
 const qTitle = computed(() => props.questionnaire?.title || '')
 const qDescHtml = computed(() => sanitizeHtml(props.questionnaire?.description || ''))
 const qAlign = computed<'left' | 'center' | 'right'>(qSettings.value.align || 'center')
-const qAlignClass = computed(() => ({ left: 'text-left', center: 'text-center', right: 'text-right' })[qAlign.value])
+const qAlignClass = computed(
+  () => ({ left: 'text-left', center: 'text-center', right: 'text-right' })[qAlign.value],
+)
 const qSubmitText = computed(() => qSettings.value.submitText || '提交评分')
-const qThankYou = computed(() => qSettings.value.thankYouText || '感谢您的评分！您可重新提交以更新结果。')
+const qThankYou = computed(
+  () => qSettings.value.thankYouText || '感谢您的评分！您可重新提交以更新结果。',
+)
 
 // ── 表单状态 ──
 const formData = reactive<Record<string, any>>({})
@@ -55,11 +59,17 @@ function parseFieldOptions(raw: string | null | undefined): { label: string; val
     const parsed = JSON.parse(raw)
     if (Array.isArray(parsed)) {
       return parsed.map((item: any) =>
-        typeof item === 'string' ? { label: item, value: item } : { label: item.label, value: item.value }
+        typeof item === 'string'
+          ? { label: item, value: item }
+          : { label: item.label, value: item.value },
       )
     }
   } catch {
-    return String(raw).split(',').map(s => s.trim()).filter(Boolean).map(s => ({ label: s, value: s }))
+    return String(raw)
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((s) => ({ label: s, value: s }))
   }
   return []
 }
@@ -126,14 +136,17 @@ async function handleSubmit() {
 
   submitting.value = true
   try {
-    const res = await fetch(`/api/tournaments/${tournamentId.value}/questionnaires/${questionnaireId.value}/submit`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authStore.token}`,
+    const res = await fetch(
+      `/api/tournaments/${tournamentId.value}/questionnaires/${questionnaireId.value}/submit`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authStore.token}`,
+        },
+        body: JSON.stringify({ matchId: props.matchId, answers: { ...formData } }),
       },
-      body: JSON.stringify({ matchId: props.matchId, answers: { ...formData } }),
-    })
+    )
     const data = await res.json()
     if (!res.ok || !data.success) {
       throw new Error(data.message || '提交失败')
@@ -155,13 +168,17 @@ async function handleSubmit() {
     <div v-if="blockedByLogin" class="glass-card p-8 text-center">
       <UIcon name="i-lucide-lock" class="w-10 h-10 text-[var(--color-text-muted)] mx-auto mb-3" />
       <h3 class="text-base font-semibold text-[var(--color-text-primary)] mb-2">需要登录</h3>
-      <p class="text-sm text-[var(--color-text-muted)] mb-4">该评分问卷仅限登录用户填写，请先登录。</p>
+      <p class="text-sm text-[var(--color-text-muted)] mb-4">
+        该评分问卷仅限登录用户填写，请先登录。
+      </p>
       <UButton color="primary" @click="void navigateTo('/login')">前往登录</UButton>
     </div>
 
     <!-- ═══ 已提交 ═══ -->
     <div v-else-if="alreadySubmitted" class="glass-card p-8 text-center">
-      <div class="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3">
+      <div
+        class="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3"
+      >
         <UIcon name="i-lucide-check" class="w-8 h-8 text-green-600 dark:text-green-400" />
       </div>
       <h3 class="text-base font-semibold text-[var(--color-text-primary)] mb-1">评分已提交</h3>
@@ -172,11 +189,15 @@ async function handleSubmit() {
     <template v-else>
       <!-- 问卷标题与富文本说明 -->
       <div class="mb-5" :class="qAlignClass">
-        <h2 v-if="qTitle" class="text-xl font-bold text-[var(--color-text-primary)]">{{ qTitle }}</h2>
+        <h2 v-if="qTitle" class="text-xl font-bold text-[var(--color-text-primary)]">
+          {{ qTitle }}
+        </h2>
         <div
           v-if="qDescHtml"
           class="qfill-rich mt-2 text-sm text-[var(--color-text-secondary)] leading-relaxed"
-          :class="qAlign === 'center' ? 'text-center' : (qAlign === 'right' ? 'text-right' : 'text-left')"
+          :class="
+            qAlign === 'center' ? 'text-center' : qAlign === 'right' ? 'text-right' : 'text-left'
+          "
           v-html="qDescHtml"
         ></div>
       </div>
@@ -184,24 +205,40 @@ async function handleSubmit() {
       <div class="space-y-5">
         <template v-for="(q, idx) in questions" :key="q.id || idx">
           <!-- 分割线 -->
-          <div v-if="q.questionType === 'divider'" class="border-t border-[var(--color-border)] my-2"></div>
+          <div
+            v-if="q.questionType === 'divider'"
+            class="border-t border-[var(--color-border)] my-2"
+          ></div>
           <!-- 分组标题 -->
-          <h3 v-else-if="q.questionType === 'heading'" class="text-base font-bold text-[var(--color-text-primary)] mt-2">
+          <h3
+            v-else-if="q.questionType === 'heading'"
+            class="text-base font-bold text-[var(--color-text-primary)] mt-2"
+          >
             {{ q.title }}
           </h3>
 
           <!-- 量表题 -->
           <UCard v-else-if="q.questionType === 'scale'">
             <template #header>
-              <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+              <h2
+                class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+              >
                 <UIcon name="i-lucide-star" class="w-4 h-4 text-[var(--color-accent-primary)]" />
                 {{ q.title }}
                 <span v-if="q.required" class="text-red-500 text-sm">*</span>
-                <span v-else class="text-xs font-normal text-[var(--color-text-muted)]">（选填）</span>
+                <span v-else class="text-xs font-normal text-[var(--color-text-muted)]"
+                  >（选填）</span
+                >
               </h2>
             </template>
-            <p v-if="q.description" class="text-xs text-[var(--color-text-muted)] mb-3" v-html="q.description"></p>
-            <div class="flex items-center justify-between mb-2 text-xs text-[var(--color-text-muted)]">
+            <p
+              v-if="q.description"
+              class="text-xs text-[var(--color-text-muted)] mb-3"
+              v-html="q.description"
+            ></p>
+            <div
+              class="flex items-center justify-between mb-2 text-xs text-[var(--color-text-muted)]"
+            >
               <span>{{ scaleMeta(q).leftLabel }}</span>
               <span>{{ scaleMeta(q).rightLabel }}</span>
             </div>
@@ -217,39 +254,96 @@ async function handleSubmit() {
                     : 'border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:border-indigo-400',
                 ]"
                 @click="selectScale(q, v)"
-              >{{ v }}</button>
+              >
+                {{ v }}
+              </button>
             </div>
           </UCard>
 
           <!-- 普通字段 -->
           <UCard v-else>
             <template #header>
-              <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+              <h2
+                class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+              >
                 <UIcon name="i-lucide-square" class="w-4 h-4 text-[var(--color-text-muted)]" />
                 {{ q.title }}
                 <span v-if="q.required" class="text-red-500 text-sm">*</span>
-                <span v-else class="text-xs font-normal text-[var(--color-text-muted)]">（选填）</span>
+                <span v-else class="text-xs font-normal text-[var(--color-text-muted)]"
+                  >（选填）</span
+                >
               </h2>
             </template>
-            <p v-if="q.description" class="text-xs text-[var(--color-text-muted)] mb-2" v-html="q.description"></p>
+            <p
+              v-if="q.description"
+              class="text-xs text-[var(--color-text-muted)] mb-2"
+              v-html="q.description"
+            ></p>
 
             <!-- 单行文本 -->
-            <UInput v-if="q.questionType === 'text'" v-model="formData[q.fieldKey]" class="w-full" :ui="{ base: 'input-glass' }" :placeholder="`请输入${q.title}`" />
+            <UInput
+              v-if="q.questionType === 'text'"
+              v-model="formData[q.fieldKey]"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+              :placeholder="`请输入${q.title}`"
+            />
             <!-- 多行文本 -->
-            <UTextarea v-else-if="q.questionType === 'textarea'" v-model="formData[q.fieldKey]" :rows="3" class="w-full" :ui="{ base: 'input-glass' }" :placeholder="`请输入${q.title}`" />
+            <UTextarea
+              v-else-if="q.questionType === 'textarea'"
+              v-model="formData[q.fieldKey]"
+              :rows="3"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+              :placeholder="`请输入${q.title}`"
+            />
             <!-- 数字 -->
-            <UInput v-else-if="q.questionType === 'number'" v-model="formData[q.fieldKey]" type="number" class="w-full" :ui="{ base: 'input-glass' }" :placeholder="`请输入${q.title}`" />
+            <UInput
+              v-else-if="q.questionType === 'number'"
+              v-model="formData[q.fieldKey]"
+              type="number"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+              :placeholder="`请输入${q.title}`"
+            />
             <!-- 日期 -->
-            <BaseDateTimePicker v-else-if="q.questionType === 'date'" v-model="formData[q.fieldKey]" mode="date" placeholder="选择日期" />
+            <BaseDateTimePicker
+              v-else-if="q.questionType === 'date'"
+              v-model="formData[q.fieldKey]"
+              mode="date"
+              placeholder="选择日期"
+            />
             <!-- 电话 -->
-            <UInput v-else-if="q.questionType === 'phone'" v-model="formData[q.fieldKey]" type="tel" class="w-full" :ui="{ base: 'input-glass' }" placeholder="请输入手机号或电话" />
+            <UInput
+              v-else-if="q.questionType === 'phone'"
+              v-model="formData[q.fieldKey]"
+              type="tel"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+              placeholder="请输入手机号或电话"
+            />
             <!-- 邮箱 -->
-            <UInput v-else-if="q.questionType === 'email'" v-model="formData[q.fieldKey]" type="email" class="w-full" :ui="{ base: 'input-glass' }" placeholder="请输入邮箱地址" />
+            <UInput
+              v-else-if="q.questionType === 'email'"
+              v-model="formData[q.fieldKey]"
+              type="email"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+              placeholder="请输入邮箱地址"
+            />
             <!-- 下拉 / 单选 -->
             <ClientOnly v-else-if="q.questionType === 'select' || q.questionType === 'radio'">
-              <USelect v-model="formData[q.fieldKey]" :items="parseFieldOptions(q.options)" class="w-full" :ui="{ base: 'input-glass' }" :placeholder="`请选择${q.title}`" />
+              <USelect
+                v-model="formData[q.fieldKey]"
+                :items="parseFieldOptions(q.options)"
+                class="w-full"
+                :ui="{ base: 'input-glass' }"
+                :placeholder="`请选择${q.title}`"
+              />
               <template #fallback>
-                <div class="w-full h-8 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"></div>
+                <div
+                  class="w-full h-8 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
+                ></div>
               </template>
             </ClientOnly>
             <!-- 多选 -->
@@ -270,9 +364,20 @@ async function handleSubmit() {
               </label>
             </div>
             <!-- 成员信息（评分问卷内降级为只读提示） -->
-            <p v-else-if="q.questionType === 'members'" class="text-xs text-[var(--color-text-muted)]">成员信息（本问卷不适用）</p>
+            <p
+              v-else-if="q.questionType === 'members'"
+              class="text-xs text-[var(--color-text-muted)]"
+            >
+              成员信息（本问卷不适用）
+            </p>
             <!-- 兜底 -->
-            <UInput v-else v-model="formData[q.fieldKey]" class="w-full" :ui="{ base: 'input-glass' }" :placeholder="`请输入${q.title}`" />
+            <UInput
+              v-else
+              v-model="formData[q.fieldKey]"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+              :placeholder="`请输入${q.title}`"
+            />
           </UCard>
         </template>
 

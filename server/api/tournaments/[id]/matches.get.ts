@@ -14,14 +14,25 @@ export default defineEventHandler(async (event) => {
     })
 
     return matches.map((m) => ({
-      id: m.id, round: m.round, orderNum: m.orderNum,
-      teamA: m.teamA, teamB: m.teamB, winner: m.winner,
-      scoreA: m.scoreA, scoreB: m.scoreB, status: m.status,
-      scheduledAt: m.scheduledAt, topic: m.topic,
+      id: m.id,
+      round: m.round,
+      orderNum: m.orderNum,
+      teamA: m.teamA,
+      teamB: m.teamB,
+      winner: m.winner,
+      scoreA: m.scoreA,
+      scoreB: m.scoreB,
+      status: m.status,
+      scheduledAt: m.scheduledAt,
+      topic: m.topic,
       affirmativeSide: m.affirmativeSide,
-      bestDebaterA: m.bestDebaterA, bestDebaterB: m.bestDebaterB,
-      judge: m.judge, deletedAt: m.deletedAt, version: m.version,
-      promotedFromA: m.promotedFromA, promotedFromB: m.promotedFromB,
+      bestDebaterA: m.bestDebaterA,
+      bestDebaterB: m.bestDebaterB,
+      judge: m.judge,
+      deletedAt: m.deletedAt,
+      version: m.version,
+      promotedFromA: m.promotedFromA,
+      promotedFromB: m.promotedFromB,
       isBye: m.isBye,
     }))
   } catch (error: any) {

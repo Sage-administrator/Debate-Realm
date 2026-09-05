@@ -41,9 +41,12 @@ export function useSidebarLayout(config: SidebarLayoutConfig = {}) {
   const sidebarOpen = ref(false)
 
   // 路由切换时自动关闭移动端侧边栏
-  watch(() => route.fullPath, () => {
-    sidebarOpen.value = false
-  })
+  watch(
+    () => route.fullPath,
+    () => {
+      sidebarOpen.value = false
+    },
+  )
 
   function closeSidebarOnMobile() {
     if (window.innerWidth < 1024) {

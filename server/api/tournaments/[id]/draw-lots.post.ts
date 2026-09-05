@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody<{
       drawType: 'groups' | 'topics_sides' | 'all'
       groupCount?: number
-      topicPool?: { pro: string, con: string }[]
+      topicPool?: { pro: string; con: string }[]
       bestDebaterMode?: 'both' | 'winner_only'
     }>(event)
 
@@ -76,7 +76,7 @@ export default defineEventHandler(async (event) => {
 
     // 3) 准备抽签数据
     const teams = tournament.teams.map((t) => t.name)
-    const topicPool: { pro: string, con: string }[] = body.topicPool
+    const topicPool: { pro: string; con: string }[] = body.topicPool
       ? body.topicPool
       : (() => {
           try {
@@ -87,7 +87,9 @@ export default defineEventHandler(async (event) => {
               return parsed.map((s: string) => ({ pro: s, con: s }))
             }
             return parsed
-          } catch { return [] }
+          } catch {
+            return []
+          }
         })()
     const groupCount = body.groupCount ?? tournament.groupCount ?? 0
     const matches = tournament.matches.map((m) => ({
@@ -127,8 +129,8 @@ export default defineEventHandler(async (event) => {
         // 已有的比赛 round 标签可能需要更新为 "A组-第1轮" 格式
         // 这里的做法是：读取 match 的 teamA/teamB → 找到它们所在组 → 重命名 round
         // 仅在比赛尚无明确分组标签（如仅"第1轮"）时触发
-        const plainMatches = tournament.matches.filter((m) =>
-          !/^[A-H]组-/.test(m.round) && m.teamA && m.teamB
+        const plainMatches = tournament.matches.filter(
+          (m) => !/^[A-H]组-/.test(m.round) && m.teamA && m.teamB,
         )
         if (plainMatches.length > 0) {
           // 构造 team → group 的映射

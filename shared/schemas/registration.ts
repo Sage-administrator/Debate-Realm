@@ -7,16 +7,29 @@ import { ID, RegistrationType, RegistrationStatus } from './common'
 // ── 报名配置 ──
 
 export const RegistrationConfig = z.object({
-  id: ID, name: z.string(), description: z.string().nullable(),
-  format: z.string(), venue: z.string().nullable(), scheduledAt: z.string().nullable(),
-  registrationOpen: z.boolean(), registrationDeadline: z.string().nullable(),
-  isPublic: z.boolean(), teamSize: z.number().int().nullable(),
+  id: ID,
+  name: z.string(),
+  description: z.string().nullable(),
+  format: z.string(),
+  venue: z.string().nullable(),
+  scheduledAt: z.string().nullable(),
+  registrationOpen: z.boolean(),
+  registrationDeadline: z.string().nullable(),
+  isPublic: z.boolean(),
+  teamSize: z.number().int().nullable(),
   registrationInfo: z.string().nullable(),
-  fields: z.array(z.object({
-    id: ID, fieldName: z.string(), fieldKey: z.string(),
-    fieldType: z.string(), fieldOptions: z.string().nullable(),
-    required: z.boolean(), sortOrder: z.number().int(), appliesTo: z.string(),
-  })),
+  fields: z.array(
+    z.object({
+      id: ID,
+      fieldName: z.string(),
+      fieldKey: z.string(),
+      fieldType: z.string(),
+      fieldOptions: z.string().nullable(),
+      required: z.boolean(),
+      sortOrder: z.number().int(),
+      appliesTo: z.string(),
+    }),
+  ),
 })
 export type RegistrationConfig = z.infer<typeof RegistrationConfig>
 
@@ -30,11 +43,15 @@ export const SubmitRegistrationRequest = z.object({
   contactEmail: z.string().email().optional(),
   notes: z.string().optional(),
   customData: z.record(z.string(), z.string()).optional(),
-  members: z.array(z.object({
-    name: z.string().min(1),
-    preferredPosition: z.string().optional(),
-    experience: z.string().optional(),
-  })).min(1),
+  members: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        preferredPosition: z.string().optional(),
+        experience: z.string().optional(),
+      }),
+    )
+    .min(1),
 })
 export type SubmitRegistrationRequest = z.infer<typeof SubmitRegistrationRequest>
 
@@ -55,10 +72,16 @@ export const RegistrationRecord = z.object({
   createdAt: z.string(),
   reviewedAt: z.string().nullable(),
   reviewNote: z.string().nullable(),
-  members: z.array(z.object({
-    id: ID, name: z.string(), preferredPosition: z.string().nullable(),
-    experience: z.string().nullable(),
-  })).optional(),
+  members: z
+    .array(
+      z.object({
+        id: ID,
+        name: z.string(),
+        preferredPosition: z.string().nullable(),
+        experience: z.string().nullable(),
+      }),
+    )
+    .optional(),
 })
 export type RegistrationRecord = z.infer<typeof RegistrationRecord>
 

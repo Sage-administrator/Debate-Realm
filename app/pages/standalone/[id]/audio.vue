@@ -34,7 +34,10 @@ async function savePageConfig() {
 }
 
 // ═══════════ 音频文件上传处理 ═══════════
-async function onAudioSelect(event: Event, field: 'warningSound' | 'finalWarningSound' | 'timeUpSound') {
+async function onAudioSelect(
+  event: Event,
+  field: 'warningSound' | 'finalWarningSound' | 'timeUpSound',
+) {
   const target = event.target as HTMLInputElement
   if (!target?.files?.[0]) return
 
@@ -61,7 +64,7 @@ async function onAudioSelect(event: Event, field: 'warningSound' | 'finalWarning
       config.value.audioConfig[field] = uploadRes.data.path
       toast.add({
         title: `已上传: ${uploadRes.data.originalName}`,
-        color: 'success'
+        color: 'success',
       })
     } else {
       toast.add({ title: '上传失败，请重试', color: 'error' })
@@ -91,150 +94,205 @@ watch(
       if (!loading.value) savePageConfig()
     }, 1500)
   },
-  { deep: true }
+  { deep: true },
 )
 </script>
 
 <template>
   <template v-if="tournament">
-  <!-- ═══ 主内容：左侧预览 + 右侧配置（左1/3 + 右2/3） ═══ -->
-  <div class="py-6 grid grid-cols-12 gap-6">
+    <!-- ═══ 主内容：左侧预览 + 右侧配置（左1/3 + 右2/3） ═══ -->
+    <div class="py-6 grid grid-cols-12 gap-6">
+      <!-- 左侧：实时预览（左4列，约1/3宽度） -->
+      <div class="col-span-4">
+        <TimerPreviewCard
+          :full-config="config"
+          :tournament-id="matchId"
+          type="standalone"
+          v-model:stage-index="previewStageIndex"
+        />
+      </div>
 
-    <!-- 左侧：实时预览（左4列，约1/3宽度） -->
-    <div class="col-span-4">
-      <TimerPreviewCard
-        :full-config="config"
-        :tournament-id="matchId"
-        type="standalone"
-        v-model:stage-index="previewStageIndex"
-      />
-    </div>
+      <!-- 右侧：提示音配置（右8列，约2/3宽度） -->
+      <div class="col-span-8 space-y-4">
+        <UCard>
+          <template #header>
+            <h2
+              class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+            >
+              <UIcon name="i-lucide-volume-2" class="w-4 h-4 text-[var(--color-text-muted)]" />
+              提示音设置
+            </h2>
+          </template>
 
-    <!-- 右侧：提示音配置（右8列，约2/3宽度） -->
-    <div class="col-span-8 space-y-4">
-      <UCard>
-        <template #header>
-          <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-            <UIcon name="i-lucide-volume-2" class="w-4 h-4 text-[var(--color-text-muted)]" />
-            提示音设置
-          </h2>
-        </template>
-
-        <!-- 启用提示音开关 -->
-        <div class="flex items-center justify-between py-2 px-3 bg-[var(--color-bg-secondary)] rounded mb-4">
-          <div>
-            <label class="text-sm text-[var(--color-text-primary)] font-medium">启用提示音</label>
-            <p class="text-xs text-[var(--color-text-muted)]">控制是否在计时器中播放提示音</p>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" v-model="config.audioConfig.enabled">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <!-- 声音方案选择 -->
-        <div class="py-3 px-3 bg-[var(--color-bg-secondary)] rounded mb-4 border border-[var(--color-border)]">
-          <label class="text-sm text-[var(--color-text-primary)] font-medium">声音方案</label>
-          <p class="text-xs text-[var(--color-text-muted)] mt-0.5 mb-2">
-            正式比赛提示音使用钉钉响铃：剩余 30 秒与结束时各响一次，剩余 5 秒不响。
-          </p>
-          <div class="flex gap-2">
-            <button type="button"
-              class="px-3 py-2 rounded text-sm border transition-colors"
-              :class="config.audioConfig.scheme === 'formal' ? 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-tertiary)]' : 'border-[var(--color-accent-primary)] bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)] font-medium'"
-              @click="config.audioConfig.scheme = 'default'">
-              默认提示音（30 / 5 / 0 秒）
-            </button>
-            <button type="button"
-              class="px-3 py-2 rounded text-sm border transition-colors"
-              :class="config.audioConfig.scheme === 'formal' ? 'border-[var(--color-accent-primary)] bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)] font-medium' : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-tertiary)]'"
-              @click="config.audioConfig.scheme = 'formal'">
-              正式比赛提示音（钉钉响铃）
-            </button>
-          </div>
-        </div>
-
-        <!-- 提示音上传区 - 水平并行 -->
-        <div class="flex gap-4 mb-4">
-          <!-- 30秒提示音 -->
-          <div class="space-y-2 flex-1">
-            <label class="block text-sm text-[var(--color-text-primary)] font-medium">30秒提示音</label>
-            <div class="flex items-center gap-2">
-              <label class="px-3 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2 whitespace-nowrap">
-                <UIcon name="i-lucide-upload" class="w-4 h-4" />
-                选择文件
-                <input
-                  type="file"
-                  accept="audio/*"
-                  class="hidden"
-                  @change="(e: Event) => onAudioSelect(e, 'warningSound')"
-                >
-              </label>
-              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ config.audioConfig.warningSound || '未选择文件' }}</span>
+          <!-- 启用提示音开关 -->
+          <div
+            class="flex items-center justify-between py-2 px-3 bg-[var(--color-bg-secondary)] rounded mb-4"
+          >
+            <div>
+              <label class="text-sm text-[var(--color-text-primary)] font-medium">启用提示音</label>
+              <p class="text-xs text-[var(--color-text-muted)]">控制是否在计时器中播放提示音</p>
             </div>
-            <div v-if="config.audioConfig.warningSound" class="flex items-center gap-2">
-              <audio :src="config.audioConfig.warningSound" controls class="h-8 w-full max-w-xs"></audio>
-            </div>
-          </div>
-
-          <!-- 5秒提示音 -->
-          <div class="space-y-2 flex-1" :class="config.audioConfig.scheme === 'formal' ? 'opacity-50' : ''">
-            <label class="block text-sm text-[var(--color-text-primary)] font-medium">
-              5秒提示音
-              <span v-if="config.audioConfig.scheme === 'formal'" class="text-xs text-[var(--color-warning)]">（正式方案下不播放）</span>
+            <label class="toggle-switch">
+              <input type="checkbox" v-model="config.audioConfig.enabled" />
+              <span class="toggle-slider"></span>
             </label>
-            <div class="flex items-center gap-2">
-              <label class="px-3 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2 whitespace-nowrap">
-                <UIcon name="i-lucide-upload" class="w-4 h-4" />
-                选择文件
-                <input
-                  type="file"
-                  accept="audio/*"
-                  class="hidden"
-                  @change="(e: Event) => onAudioSelect(e, 'finalWarningSound')"
-                >
-              </label>
-              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ config.audioConfig.finalWarningSound || '未选择文件' }}</span>
-            </div>
-            <div v-if="config.audioConfig.finalWarningSound" class="flex items-center gap-2">
-              <audio :src="config.audioConfig.finalWarningSound" controls class="h-8 w-full max-w-xs"></audio>
+          </div>
+
+          <!-- 声音方案选择 -->
+          <div
+            class="py-3 px-3 bg-[var(--color-bg-secondary)] rounded mb-4 border border-[var(--color-border)]"
+          >
+            <label class="text-sm text-[var(--color-text-primary)] font-medium">声音方案</label>
+            <p class="text-xs text-[var(--color-text-muted)] mt-0.5 mb-2">
+              正式比赛提示音使用钉钉响铃：剩余 30 秒与结束时各响一次，剩余 5 秒不响。
+            </p>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="px-3 py-2 rounded text-sm border transition-colors"
+                :class="
+                  config.audioConfig.scheme === 'formal'
+                    ? 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-tertiary)]'
+                    : 'border-[var(--color-accent-primary)] bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)] font-medium'
+                "
+                @click="config.audioConfig.scheme = 'default'"
+              >
+                默认提示音（30 / 5 / 0 秒）
+              </button>
+              <button
+                type="button"
+                class="px-3 py-2 rounded text-sm border transition-colors"
+                :class="
+                  config.audioConfig.scheme === 'formal'
+                    ? 'border-[var(--color-accent-primary)] bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)] font-medium'
+                    : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-tertiary)]'
+                "
+                @click="config.audioConfig.scheme = 'formal'"
+              >
+                正式比赛提示音（钉钉响铃）
+              </button>
             </div>
           </div>
 
-          <!-- 时间到提示音 -->
-          <div class="space-y-2 flex-1">
-            <label class="block text-sm text-[var(--color-text-primary)] font-medium">时间到提示音</label>
-            <div class="flex items-center gap-2">
-              <label class="px-3 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2 whitespace-nowrap">
-                <UIcon name="i-lucide-upload" class="w-4 h-4" />
-                选择文件
-                <input
-                  type="file"
-                  accept="audio/*"
-                  class="hidden"
-                  @change="(e: Event) => onAudioSelect(e, 'timeUpSound')"
+          <!-- 提示音上传区 - 水平并行 -->
+          <div class="flex gap-4 mb-4">
+            <!-- 30秒提示音 -->
+            <div class="space-y-2 flex-1">
+              <label class="block text-sm text-[var(--color-text-primary)] font-medium"
+                >30秒提示音</label
+              >
+              <div class="flex items-center gap-2">
+                <label
+                  class="px-3 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2 whitespace-nowrap"
+                >
+                  <UIcon name="i-lucide-upload" class="w-4 h-4" />
+                  选择文件
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    class="hidden"
+                    @change="(e: Event) => onAudioSelect(e, 'warningSound')"
+                  />
+                </label>
+                <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{
+                  config.audioConfig.warningSound || '未选择文件'
+                }}</span>
+              </div>
+              <div v-if="config.audioConfig.warningSound" class="flex items-center gap-2">
+                <audio
+                  :src="config.audioConfig.warningSound"
+                  controls
+                  class="h-8 w-full max-w-xs"
+                ></audio>
+              </div>
+            </div>
+
+            <!-- 5秒提示音 -->
+            <div
+              class="space-y-2 flex-1"
+              :class="config.audioConfig.scheme === 'formal' ? 'opacity-50' : ''"
+            >
+              <label class="block text-sm text-[var(--color-text-primary)] font-medium">
+                5秒提示音
+                <span
+                  v-if="config.audioConfig.scheme === 'formal'"
+                  class="text-xs text-[var(--color-warning)]"
+                  >（正式方案下不播放）</span
                 >
               </label>
-              <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{ config.audioConfig.timeUpSound || '未选择文件' }}</span>
+              <div class="flex items-center gap-2">
+                <label
+                  class="px-3 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2 whitespace-nowrap"
+                >
+                  <UIcon name="i-lucide-upload" class="w-4 h-4" />
+                  选择文件
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    class="hidden"
+                    @change="(e: Event) => onAudioSelect(e, 'finalWarningSound')"
+                  />
+                </label>
+                <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{
+                  config.audioConfig.finalWarningSound || '未选择文件'
+                }}</span>
+              </div>
+              <div v-if="config.audioConfig.finalWarningSound" class="flex items-center gap-2">
+                <audio
+                  :src="config.audioConfig.finalWarningSound"
+                  controls
+                  class="h-8 w-full max-w-xs"
+                ></audio>
+              </div>
             </div>
-            <div v-if="config.audioConfig.timeUpSound" class="flex items-center gap-2">
-              <audio :src="config.audioConfig.timeUpSound" controls class="h-8 w-full max-w-xs"></audio>
+
+            <!-- 时间到提示音 -->
+            <div class="space-y-2 flex-1">
+              <label class="block text-sm text-[var(--color-text-primary)] font-medium"
+                >时间到提示音</label
+              >
+              <div class="flex items-center gap-2">
+                <label
+                  class="px-3 py-2 border border-[var(--color-border)] rounded text-sm cursor-pointer hover:bg-[var(--color-bg-secondary)] transition-colors flex items-center gap-2 whitespace-nowrap"
+                >
+                  <UIcon name="i-lucide-upload" class="w-4 h-4" />
+                  选择文件
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    class="hidden"
+                    @change="(e: Event) => onAudioSelect(e, 'timeUpSound')"
+                  />
+                </label>
+                <span class="text-xs text-[var(--color-text-muted)] truncate max-w-[60%]">{{
+                  config.audioConfig.timeUpSound || '未选择文件'
+                }}</span>
+              </div>
+              <div v-if="config.audioConfig.timeUpSound" class="flex items-center gap-2">
+                <audio
+                  :src="config.audioConfig.timeUpSound"
+                  controls
+                  class="h-8 w-full max-w-xs"
+                ></audio>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- 说明文字 -->
-        <div class="pt-4 border-t border-[var(--color-border)]">
-          <p v-if="config.audioConfig.scheme === 'formal'" class="text-xs text-[var(--color-warning)] mb-1">
-            注：当前为「正式比赛提示音」方案，5 秒提示音不会播放（仅 30 秒与结束时响铃）。
-          </p>
-          <p class="text-xs text-[var(--color-text-muted)]">
-            提示：修改后会自动保存。支持格式 MP3、WAV、OGG，单个文件最大 10MB。
-          </p>
-        </div>
-      </UCard>
+          <!-- 说明文字 -->
+          <div class="pt-4 border-t border-[var(--color-border)]">
+            <p
+              v-if="config.audioConfig.scheme === 'formal'"
+              class="text-xs text-[var(--color-warning)] mb-1"
+            >
+              注：当前为「正式比赛提示音」方案，5 秒提示音不会播放（仅 30 秒与结束时响铃）。
+            </p>
+            <p class="text-xs text-[var(--color-text-muted)]">
+              提示：修改后会自动保存。支持格式 MP3、WAV、OGG，单个文件最大 10MB。
+            </p>
+          </div>
+        </UCard>
+      </div>
     </div>
-  </div>
   </template>
 </template>
 

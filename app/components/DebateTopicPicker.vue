@@ -65,9 +65,12 @@ async function load() {
 }
 
 // 打开时加载；搜索/分类变化时重新加载
-watch(() => props.open, (v) => {
-  if (v) load()
-})
+watch(
+  () => props.open,
+  (v) => {
+    if (v) load()
+  },
+)
 watch([search, category], () => {
   if (props.open) load()
 })
@@ -107,88 +110,118 @@ function close() {
     <template #header>
       <div class="flex items-center gap-2">
         <UIcon name="i-lucide-library" class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-        <span class="text-base font-semibold text-[var(--color-text-primary)]">从辩题库拉取辩题</span>
+        <span class="text-base font-semibold text-[var(--color-text-primary)]"
+          >从辩题库拉取辩题</span
+        >
       </div>
     </template>
 
     <template #body>
       <div class="p-5">
-      <!-- 搜索 + 分类过滤 -->
-      <div class="flex flex-wrap items-center gap-2 mb-4">
-        <div class="flex-1 min-w-[180px]">
-          <input
-            v-model="search"
-            type="text"
-            placeholder="搜索正方 / 反方 / 备注"
-            class="w-full fd-input"
+        <!-- 搜索 + 分类过滤 -->
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          <div class="flex-1 min-w-[180px]">
+            <input
+              v-model="search"
+              type="text"
+              placeholder="搜索正方 / 反方 / 备注"
+              class="w-full fd-input"
+            />
+          </div>
+          <ClientOnly>
+            <USelect
+              v-model="category"
+              :items="[
+                { label: '全部分类', value: 'all' },
+                ...categories.map((c) => ({ label: c, value: c })),
+              ]"
+              class="w-36"
+              :ui="{
+                base: 'bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border-[var(--color-border)]',
+              }"
+            />
+            <template #fallback>
+              <div
+                class="w-36 h-9 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
+              ></div>
+            </template>
+          </ClientOnly>
+        </div>
+
+        <!-- 列表 -->
+        <div v-if="loading" class="flex justify-center py-10">
+          <UIcon
+            name="i-lucide-loader"
+            class="w-6 h-6 animate-spin text-emerald-600 dark:text-emerald-400"
           />
         </div>
-        <ClientOnly>
-          <USelect
-            v-model="category"
-            :items="[
-              { label: '全部分类', value: 'all' },
-              ...categories.map((c) => ({ label: c, value: c })),
-            ]"
-            class="w-36"
-            :ui="{ base: 'bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border-[var(--color-border)]' }"
+        <div v-else-if="topics.length === 0" class="text-center py-10">
+          <UIcon
+            name="i-lucide-inbox"
+            class="w-10 h-10 text-[var(--color-text-muted)] mx-auto mb-2"
           />
-          <template #fallback>
-            <div class="w-36 h-9 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"></div>
-          </template>
-        </ClientOnly>
-      </div>
-
-      <!-- 列表 -->
-      <div v-if="loading" class="flex justify-center py-10">
-        <UIcon name="i-lucide-loader" class="w-6 h-6 animate-spin text-emerald-600 dark:text-emerald-400" />
-      </div>
-      <div v-else-if="topics.length === 0" class="text-center py-10">
-        <UIcon name="i-lucide-inbox" class="w-10 h-10 text-[var(--color-text-muted)] mx-auto mb-2" />
-        <p class="text-sm text-[var(--color-text-secondary)]">辩题库暂无条目</p>
-        <p class="text-xs text-[var(--color-text-muted)] mt-1">
-          请先切换到
-          <NuxtLink :to="`/tournaments/${tournamentId}/topic-votes?tab=library`" class="text-emerald-600 dark:text-emerald-400 hover:underline" @click="close">
-            辩题库
-          </NuxtLink>
-          标签页添加辩题
-        </p>
-      </div>
-      <div v-else class="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
-        <div
-          v-for="t in topics"
-          :key="t.id"
-          class="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-3"
-        >
-          <div class="flex items-start justify-between gap-3">
-            <div class="flex-1 min-w-0">
-              <div v-if="t.category || isAdded(t)" class="mb-1 flex items-center gap-1.5">
-                <span v-if="t.category" class="text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">{{ t.category }}</span>
-                <span v-if="isAdded(t)" class="text-[11px] px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]">已加入候选</span>
-              </div>
-              <div class="flex items-start gap-2 text-sm">
-                <span class="side-badge side-badge-pro shrink-0">正方</span>
-                <span class="text-[var(--color-text-primary)] leading-relaxed">{{ t.affirmative }}</span>
-              </div>
-              <div class="flex items-start gap-2 text-sm mt-1">
-                <span class="side-badge side-badge-con shrink-0">反方</span>
-                <span class="text-[var(--color-text-primary)] leading-relaxed">{{ t.negative }}</span>
-              </div>
-              <p v-if="t.note" class="text-xs text-[var(--color-text-muted)] mt-1.5">{{ t.note }}</p>
-            </div>
-            <UButton
-              size="xs"
-              :color="isAdded(t) ? 'neutral' : 'success'"
-              :variant="isAdded(t) ? 'soft' : 'soft'"
-              :disabled="isAdded(t)"
-              icon="i-lucide-plus"
-              @click="handleSelect(t)"
+          <p class="text-sm text-[var(--color-text-secondary)]">辩题库暂无条目</p>
+          <p class="text-xs text-[var(--color-text-muted)] mt-1">
+            请先切换到
+            <NuxtLink
+              :to="`/tournaments/${tournamentId}/topic-votes?tab=library`"
+              class="text-emerald-600 dark:text-emerald-400 hover:underline"
+              @click="close"
             >
-              {{ isAdded(t) ? '已加入' : '加入' }}
-            </UButton>
+              辩题库
+            </NuxtLink>
+            标签页添加辩题
+          </p>
+        </div>
+        <div v-else class="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
+          <div
+            v-for="t in topics"
+            :key="t.id"
+            class="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-3"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div v-if="t.category || isAdded(t)" class="mb-1 flex items-center gap-1.5">
+                  <span
+                    v-if="t.category"
+                    class="text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                    >{{ t.category }}</span
+                  >
+                  <span
+                    v-if="isAdded(t)"
+                    class="text-[11px] px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]"
+                    >已加入候选</span
+                  >
+                </div>
+                <div class="flex items-start gap-2 text-sm">
+                  <span class="side-badge side-badge-pro shrink-0">正方</span>
+                  <span class="text-[var(--color-text-primary)] leading-relaxed">{{
+                    t.affirmative
+                  }}</span>
+                </div>
+                <div class="flex items-start gap-2 text-sm mt-1">
+                  <span class="side-badge side-badge-con shrink-0">反方</span>
+                  <span class="text-[var(--color-text-primary)] leading-relaxed">{{
+                    t.negative
+                  }}</span>
+                </div>
+                <p v-if="t.note" class="text-xs text-[var(--color-text-muted)] mt-1.5">
+                  {{ t.note }}
+                </p>
+              </div>
+              <UButton
+                size="xs"
+                :color="isAdded(t) ? 'neutral' : 'success'"
+                :variant="isAdded(t) ? 'soft' : 'soft'"
+                :disabled="isAdded(t)"
+                icon="i-lucide-plus"
+                @click="handleSelect(t)"
+              >
+                {{ isAdded(t) ? '已加入' : '加入' }}
+              </UButton>
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </template>
 
@@ -245,7 +278,10 @@ function close() {
   border: 1px solid var(--color-border);
   border-radius: 6px;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background-color 0.15s;
 }
 .fd-input::placeholder {
   color: var(--color-text-muted);

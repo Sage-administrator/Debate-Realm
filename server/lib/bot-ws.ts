@@ -143,7 +143,7 @@ console.log('[Bot] ✅ v3-dedup: 消息ID去重 + 内容级去重 + 回复级去
 function shouldSuppressReply(channelId: string, reply: string): boolean {
   const now = Date.now()
   const recent = recentReplies.get(channelId)
-  if (recent && recent.reply === reply && (now - recent.timestamp) < REPLY_DEDUP_WINDOW_MS) {
+  if (recent && recent.reply === reply && now - recent.timestamp < REPLY_DEDUP_WINDOW_MS) {
     console.log(`[Bot] 🚫 回复级去重: channel=${channelId} 跳过重复回复 "${reply.slice(0, 50)}"`)
     return true
   }
@@ -198,23 +198,26 @@ export function resolveIntents(isPrivate?: boolean): string[] {
 }
 
 // 每个 bot 实例的私有状态
-const stateMap = new Map<string, {
-  accessToken: string | null
-  tokenExpiresAt: number
-  ws: WebSocket | null
-  sessionId: string | null
-  lastSequence: number
-  heartbeatInterval: ReturnType<typeof setInterval> | null
-  // 重连退避状态：失败次数越多，间隔越长
-  retryCount: number
-  backoffTimer: ReturnType<typeof setTimeout> | null
-  // intents 降级索引：当 intents 不匹配时，逐步尝试其他配置
-  intentIndex: number
-  // intents 降级完整轮次：2 轮后停止重连，避免无限循环
-  fullRoundsTried: number
-  // 熔断标志：circuitBreaker = true 时，所有重连尝试都被阻止
-  circuitBreaker: boolean
-}>()
+const stateMap = new Map<
+  string,
+  {
+    accessToken: string | null
+    tokenExpiresAt: number
+    ws: WebSocket | null
+    sessionId: string | null
+    lastSequence: number
+    heartbeatInterval: ReturnType<typeof setInterval> | null
+    // 重连退避状态：失败次数越多，间隔越长
+    retryCount: number
+    backoffTimer: ReturnType<typeof setTimeout> | null
+    // intents 降级索引：当 intents 不匹配时，逐步尝试其他配置
+    intentIndex: number
+    // intents 降级完整轮次：2 轮后停止重连，避免无限循环
+    fullRoundsTried: number
+    // 熔断标志：circuitBreaker = true 时，所有重连尝试都被阻止
+    circuitBreaker: boolean
+  }
+>()
 
 function getState(teamId: string) {
   // 如果团队已被关闭/解绑，不创建新状态，返回空的只读状态
@@ -292,16 +295,22 @@ async function getAccessToken(config: BotConfig): Promise<string> {
     })
   } catch (err) {
     if (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
-      throw new Error(`获取 Access Token 超时（>${QQ_API_TIMEOUT_MS / 1000}s），请检查网络或 Bot 凭证`)
+      throw new Error(
+        `获取 Access Token 超时（>${QQ_API_TIMEOUT_MS / 1000}s），请检查网络或 Bot 凭证`,
+      )
     }
     throw err
   }
 
   if (!response.ok) {
     const text = await response.text()
-    console.error(`[Bot][${config.teamName}] ❌ 获取 Access Token 失败: HTTP ${response.status} - ${text}`)
+    console.error(
+      `[Bot][${config.teamName}] ❌ 获取 Access Token 失败: HTTP ${response.status} - ${text}`,
+    )
     console.error(`[Bot][${config.teamName}]    使用的 appId: ${config.appId}`)
-    console.error(`[Bot][${config.teamName}]    使用的 secret: ${config.appSecret.substring(0, 8)}...(${config.appSecret.length} 字符)`)
+    console.error(
+      `[Bot][${config.teamName}]    使用的 secret: ${config.appSecret.substring(0, 8)}...(${config.appSecret.length} 字符)`,
+    )
     throw new Error(`获取 Access Token 失败: ${response.status} - ${text}`)
   }
 
@@ -309,7 +318,9 @@ async function getAccessToken(config: BotConfig): Promise<string> {
   state.accessToken = json.access_token
   state.tokenExpiresAt = Date.now() + json.expires_in * 1000
 
-  console.log(`[Bot][${config.teamName}] ✅ Access Token 已更新 (appId=${config.appId})，有效期: ${json.expires_in} 秒`)
+  console.log(
+    `[Bot][${config.teamName}] ✅ Access Token 已更新 (appId=${config.appId})，有效期: ${json.expires_in} 秒`,
+  )
   return state.accessToken
 }
 
@@ -390,7 +401,9 @@ export async function callBotApi(
     })
   } catch (err) {
     if (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
-      throw new Error(`调用 QQ 接口超时（>${QQ_API_TIMEOUT_MS / 1000}s），请检查网络或 Bot 凭证：${path}`)
+      throw new Error(
+        `调用 QQ 接口超时（>${QQ_API_TIMEOUT_MS / 1000}s），请检查网络或 Bot 凭证：${path}`,
+      )
     }
     throw err
   }
@@ -479,17 +492,17 @@ export async function sendChannelMessage(
 
 function calculateIntentsValue(intents: string[]): number {
   const intentMap: Record<string, number> = {
-    GUILDS: 1 << 0,                  // 频道
-    GUILD_MEMBERS: 1 << 1,          // 频道成员
-    GUILD_MESSAGES: 1 << 9,         // 私域消息（官方文档: 1 << 9）
+    GUILDS: 1 << 0, // 频道
+    GUILD_MEMBERS: 1 << 1, // 频道成员
+    GUILD_MESSAGES: 1 << 9, // 私域消息（官方文档: 1 << 9）
     GUILD_MESSAGE_REACTIONS: 1 << 10, // 消息表态
-    DIRECT_MESSAGE: 1 << 12,        // 私聊消息
-    INTERACTION: 1 << 26,           // 互动事件
-    MESSAGE_AUDIT: 1 << 27,         // 消息审核
-    FORUMS_EVENT: 1 << 28,          // 论坛事件
-    AUDIO_ACTION: 1 << 29,          // 音频动作
+    DIRECT_MESSAGE: 1 << 12, // 私聊消息
+    INTERACTION: 1 << 26, // 互动事件
+    MESSAGE_AUDIT: 1 << 27, // 消息审核
+    FORUMS_EVENT: 1 << 28, // 论坛事件
+    AUDIO_ACTION: 1 << 29, // 音频动作
     PUBLIC_GUILD_MESSAGES: 1 << 30, // 公域消息（AITalent等）
-    GROUP_AND_C2C_EVENT: 1 << 25,   // 群聊 + 私聊
+    GROUP_AND_C2C_EVENT: 1 << 25, // 群聊 + 私聊
   }
 
   let value = 0
@@ -617,12 +630,20 @@ function handleWebSocketMessage(config: BotConfig, payload: WebSocketPayload, ws
       // 熔断机制：当 intentIndex 回到 0 时表示完成 1 轮所有同域配置
       if (state.intentIndex === 0) {
         state.fullRoundsTried += 1
-        console.log(`[Bot][${config.teamName}] ⚠️ 已完成第 ${state.fullRoundsTried} 轮同域 intents 尝试`)
+        console.log(
+          `[Bot][${config.teamName}] ⚠️ 已完成第 ${state.fullRoundsTried} 轮同域 intents 尝试`,
+        )
         if (state.fullRoundsTried >= 2) {
           const domainLabel = config.isPrivate ? '私域' : '公域'
-          console.log(`[Bot][${config.teamName}] 🔴 熔断：所有 ${intentList.length} 个${domainLabel} intents 已尝试 2 轮，全部失败。`)
-          console.log(`[Bot][${config.teamName}]    这通常意味着：1) Bot 在 QQ 开放平台配置的私域/公域 与实际选择不符（${domainLabel}机器人无法用${config.isPrivate ? '公域' : '私域'}意图登录）  2) Bot 处于沙盒环境  3) Bot 凭据无效`)
-          console.log(`[Bot][${config.teamName}]    停止自动重连。可通过前端页面重新配置公私域后重新启动。`)
+          console.log(
+            `[Bot][${config.teamName}] 🔴 熔断：所有 ${intentList.length} 个${domainLabel} intents 已尝试 2 轮，全部失败。`,
+          )
+          console.log(
+            `[Bot][${config.teamName}]    这通常意味着：1) Bot 在 QQ 开放平台配置的私域/公域 与实际选择不符（${domainLabel}机器人无法用${config.isPrivate ? '公域' : '私域'}意图登录）  2) Bot 处于沙盒环境  3) Bot 凭据无效`,
+          )
+          console.log(
+            `[Bot][${config.teamName}]    停止自动重连。可通过前端页面重新配置公私域后重新启动。`,
+          )
           const inst2 = botInstances.get(config.teamId)
           if (inst2) inst2.status = 'disconnected'
           state.sessionId = null
@@ -632,12 +653,17 @@ function handleWebSocketMessage(config: BotConfig, payload: WebSocketPayload, ws
         }
       }
 
-      console.log(`[Bot][${config.teamName}] ❌ Session 无效，切换同域 intents 后重试 → 下一个: ${nextIntent.name} (value=${nextIntent.value})`)
+      console.log(
+        `[Bot][${config.teamName}] ❌ Session 无效，切换同域 intents 后重试 → 下一个: ${nextIntent.name} (value=${nextIntent.value})`,
+      )
       if (d) {
         console.log(`[Bot][${config.teamName}] → 服务端 op=9 详情:`, JSON.stringify(d))
       }
       state.sessionId = null
-      scheduleReconnect(config, `Session 无效（op=9），切换同域 intents 重试 [第${state.fullRoundsTried + 1}轮]`)
+      scheduleReconnect(
+        config,
+        `Session 无效（op=9），切换同域 intents 重试 [第${state.fullRoundsTried + 1}轮]`,
+      )
       break
 
     default:
@@ -686,7 +712,9 @@ async function sendIdentify(config: BotConfig, ws: WebSocket): Promise<void> {
 
     const payloadStr = JSON.stringify(identifyPayload)
     const tokenDebug = `${token.substring(0, 10)}...${token.substring(token.length - 10)}`
-    console.log(`[Bot][${config.teamName}] 已发送 Identify: token=QQBot ${tokenDebug}, intents=${intentsValue} (${currentIntent.name}, 尝试 #${state.intentIndex + 1})`)
+    console.log(
+      `[Bot][${config.teamName}] 已发送 Identify: token=QQBot ${tokenDebug}, intents=${intentsValue} (${currentIntent.name}, 尝试 #${state.intentIndex + 1})`,
+    )
     ws.send(payloadStr)
   } catch (err) {
     console.error(`[Bot][${config.teamName}] ❌ sendIdentify 失败:`, (err as Error).message)
@@ -706,8 +734,11 @@ function handleDispatchEvent(config: BotConfig, eventType: string | undefined, d
       readyState.retryCount = 0
       readyState.fullRoundsTried = 0
       readyState.circuitBreaker = false
-      const intentInfo = getIntentList(config)[readyState.intentIndex % getIntentList(config).length]!
-      console.log(`[Bot][${config.teamName}] 🎉 READY（intents=${intentInfo.value} - ${intentInfo.name}）Session: ${data.session_id}`)
+      const intentInfo =
+        getIntentList(config)[readyState.intentIndex % getIntentList(config).length]!
+      console.log(
+        `[Bot][${config.teamName}] 🎉 READY（intents=${intentInfo.value} - ${intentInfo.name}）Session: ${data.session_id}`,
+      )
       // 记录 Bot 运行时信息
       const inst2 = botInstances.get(config.teamId)
       if (inst2) {
@@ -722,8 +753,8 @@ function handleDispatchEvent(config: BotConfig, eventType: string | undefined, d
       console.log(`[Bot][${config.teamName}] 连接已恢复`)
       break
 
-    case 'MESSAGE_CREATE':      // 私域全量消息（intents GUILD_MESSAGES, 1<<9）
-    case 'AT_MESSAGE_CREATE':   // 公域 @消息（intents PUBLIC_GUILD_MESSAGES, 1<<30）
+    case 'MESSAGE_CREATE': // 私域全量消息（intents GUILD_MESSAGES, 1<<9）
+    case 'AT_MESSAGE_CREATE': // 公域 @消息（intents PUBLIC_GUILD_MESSAGES, 1<<30）
       handleChannelMessage(config, data)
       break
 
@@ -760,7 +791,9 @@ async function handleChannelMessage(config: BotConfig, data: any): Promise<void>
 
   // 内容级去重：防止同一消息以不同事件类型（MESSAGE_CREATE / AT_MESSAGE_CREATE）或 WS 重连回放导致重复处理
   if (content && checkAndMarkContent(msg.channel_id, msg.author?.id || '', content)) {
-    console.log(`[Bot][${config.teamName}] 跳过重复内容: channel=${msg.channel_id} user=${msg.author?.id} content="${content}"`)
+    console.log(
+      `[Bot][${config.teamName}] 跳过重复内容: channel=${msg.channel_id} user=${msg.author?.id} content="${content}"`,
+    )
     return
   }
 
@@ -888,7 +921,9 @@ function scheduleReconnect(config: BotConfig, reason: string): void {
 
   const backoffMs = getBackoffMs(state.retryCount)
   state.retryCount += 1
-  console.log(`[Bot][${config.teamName}] ${Math.round(backoffMs / 1000)} 秒后重连（${reason}，第 ${state.retryCount} 次）`)
+  console.log(
+    `[Bot][${config.teamName}] ${Math.round(backoffMs / 1000)} 秒后重连（${reason}，第 ${state.retryCount} 次）`,
+  )
   state.backoffTimer = setTimeout(() => {
     reconnectWebSocket(config)
   }, backoffMs)
@@ -911,8 +946,10 @@ async function reconnectWebSocket(config: BotConfig): Promise<void> {
   const elapsed = Date.now() - lastReconnectAttempt
   if (elapsed < MIN_RECONNECT_MS) {
     const waitMs = MIN_RECONNECT_MS - elapsed
-    console.log(`[Bot][${config.teamName}] 距上次重连仅 ${Math.round(elapsed / 1000)} 秒，强制等待 ${Math.round(waitMs / 1000)} 秒`)
-    await new Promise(resolve => setTimeout(resolve, waitMs))
+    console.log(
+      `[Bot][${config.teamName}] 距上次重连仅 ${Math.round(elapsed / 1000)} 秒，强制等待 ${Math.round(waitMs / 1000)} 秒`,
+    )
+    await new Promise((resolve) => setTimeout(resolve, waitMs))
   }
   lastReconnectAttempt = Date.now()
 
@@ -924,19 +961,25 @@ async function reconnectWebSocket(config: BotConfig): Promise<void> {
   } catch (err) {
     // 解析是否为频率限制错误
     const errMsg = err instanceof Error ? err.message : String(err)
-    const isRateLimited = errMsg.includes('RATE_LIMITED') || errMsg.includes('100017') || errMsg.includes('40023001')
+    const isRateLimited =
+      errMsg.includes('RATE_LIMITED') || errMsg.includes('100017') || errMsg.includes('40023001')
 
     if (isRateLimited) {
       // 频率限制：延长退避并记录
       const backoffMs = getBackoffMs(state.retryCount, true)
       state.retryCount += 1
-      console.warn(`[Bot][${config.teamName}] API 频率限制（code: 100017），${Math.round(backoffMs / 1000)} 秒后再试`)
+      console.warn(
+        `[Bot][${config.teamName}] API 频率限制（code: 100017），${Math.round(backoffMs / 1000)} 秒后再试`,
+      )
       state.backoffTimer = setTimeout(() => reconnectWebSocket(config), backoffMs)
     } else {
       // 其他错误：正常指数退避
       const backoffMs = getBackoffMs(state.retryCount)
       state.retryCount += 1
-      console.error(`[Bot][${config.teamName}] 重连失败（${state.retryCount} 次），${Math.round(backoffMs / 1000)} 秒后再试:`, errMsg)
+      console.error(
+        `[Bot][${config.teamName}] 重连失败（${state.retryCount} 次），${Math.round(backoffMs / 1000)} 秒后再试:`,
+        errMsg,
+      )
       state.backoffTimer = setTimeout(() => reconnectWebSocket(config), backoffMs)
     }
   }
@@ -959,7 +1002,11 @@ export function createBotInstance(config: BotConfig): BotInstance {
   if (existing) {
     const state = getState(config.teamId)
     // a) 正在连接 / 已连接 / 正在重连 → 什么都不做，直接返回
-    if (existing.status === 'connected' || existing.status === 'connecting' || existing.status === 'reconnecting') {
+    if (
+      existing.status === 'connected' ||
+      existing.status === 'connecting' ||
+      existing.status === 'reconnecting'
+    ) {
       console.log(`[Bot][${config.teamName}] 实例已存在（状态=${existing.status}），复用`)
       return existing
     }
@@ -1008,7 +1055,9 @@ export function createBotInstance(config: BotConfig): BotInstance {
       .catch((err) => console.error(`[Bot][${config.teamName}] 启动失败:`, err))
   }
 
-  console.log(`[Bot][${config.teamName}] Bot 实例已创建 (appId=${config.appId}, domain=${config.isPrivate ? '私域' : '公域'}, intents=[${resolveIntents(config.isPrivate).join(',')}])`)
+  console.log(
+    `[Bot][${config.teamName}] Bot 实例已创建 (appId=${config.appId}, domain=${config.isPrivate ? '私域' : '公域'}, intents=[${resolveIntents(config.isPrivate).join(',')}])`,
+  )
   return instance
 }
 
@@ -1062,7 +1111,14 @@ export function disconnectBot(teamId: string): void {
 /**
  * 重新连接已配置的 Bot
  */
-export function connectBot(teamId: string, botAppId: string, botAppSecret: string, teamName: string, channelId?: string | null, isPrivate?: boolean): void {
+export function connectBot(
+  teamId: string,
+  botAppId: string,
+  botAppSecret: string,
+  teamName: string,
+  channelId?: string | null,
+  isPrivate?: boolean,
+): void {
   // 先断开旧连接
   disconnectBot(teamId)
 
@@ -1084,7 +1140,10 @@ export function connectBot(teamId: string, botAppId: string, botAppSecret: strin
       status: 'connecting',
       sendMessage: async (chId, content, msgId) => {
         const b: Record<string, unknown> = { content }
-        if (msgId) { b.msg_id = msgId; b.message_reference = { message_id: msgId } }
+        if (msgId) {
+          b.msg_id = msgId
+          b.message_reference = { message_id: msgId }
+        }
         return callBotApi(config, `/channels/${chId}/messages`, 'POST', b)
       },
       sendGroupMessage: async (gId, content) => {
@@ -1122,7 +1181,7 @@ export async function fetchBotGuilds(teamId: string): Promise<{
   try {
     const data = await callBotApi(instance.config, '/users/@me/guilds', 'GET')
     // QQ Bot API 返回的可能是数组，也可能包裹在 { data: [...] } 中
-    const guilds = Array.isArray(data) ? data : (data.data || [])
+    const guilds = Array.isArray(data) ? data : data.data || []
     return {
       guilds: guilds.map((g: any) => ({
         id: g.id,
@@ -1162,7 +1221,7 @@ export async function fetchBotChannels(
   try {
     const data = await callBotApi(instance.config, `/guilds/${guildId}/channels`, 'GET')
     // QQ Bot API 返回的可能是数组，也可能包裹在 { channels: [...] } 中
-    const channels = Array.isArray(data) ? data : (data?.channels || [])
+    const channels = Array.isArray(data) ? data : data?.channels || []
     return {
       channels: channels.map((c: any) => ({
         id: c.id,
@@ -1221,7 +1280,8 @@ export interface BotRuntimeStatus {
   /** 公私域：true=私域，false/null=公域 */
   isPrivate?: boolean
   /** WebSocket 连接状态 */
-  connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error' | 'not_configured'
+  connectionStatus:
+    'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error' | 'not_configured'
   /** Bot 用户名 */
   botUsername?: string
   /** Bot ID */
@@ -1242,14 +1302,17 @@ export interface BotRuntimeStatus {
  * 这样读状态就是一个幂等只读操作，不会因「看了眼仪表盘」而改变 Bot 的运行状态，
  * 也不会在 serverless 冷启后依赖某次状态读取来复活 Bot。
  */
-export function readBotRuntimeStatus(teamId: string, teamInfo: {
-  name: string
-  mode: string
-  botAppId?: string | null
-  botAppSecret?: string | null
-  botChannelId?: string | null
-  botIsPrivate?: boolean | null
-}): BotRuntimeStatus {
+export function readBotRuntimeStatus(
+  teamId: string,
+  teamInfo: {
+    name: string
+    mode: string
+    botAppId?: string | null
+    botAppSecret?: string | null
+    botChannelId?: string | null
+    botIsPrivate?: boolean | null
+  },
+): BotRuntimeStatus {
   const instance = botInstances.get(teamId)
   const isConfigured = !!(teamInfo.botAppId && instance)
 
@@ -1275,9 +1338,7 @@ export function readBotRuntimeStatus(teamId: string, teamInfo: {
     status.sessionId = instance.sessionId
     status.heartbeatInterval = instance.heartbeatInterval
     if (instance.connectedAt && instance.status === 'connected') {
-      status.connectedDuration = Math.floor(
-        (Date.now() - instance.connectedAt) / 1000,
-      )
+      status.connectedDuration = Math.floor((Date.now() - instance.connectedAt) / 1000)
     }
   }
 

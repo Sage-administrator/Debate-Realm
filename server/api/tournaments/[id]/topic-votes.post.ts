@@ -17,13 +17,13 @@ export default defineEventHandler(async (event) => {
     const body = await readBody<{
       title: string
       description?: string
-      topics: any[]             // 候选辩题数组（字符串或结构化对象）
-      matchId?: string | null   // 关联比赛 ID；不传/null 为赛事级
-      allowedVoters?: string[]  // 允许的投票者类型
-      multipleChoice?: boolean  // 是否多选
-      deadline?: string | null  // 截止时间
-      showResults?: boolean     // 是否展示实时结果
-      status?: string           // draft | open | closed
+      topics: any[] // 候选辩题数组（字符串或结构化对象）
+      matchId?: string | null // 关联比赛 ID；不传/null 为赛事级
+      allowedVoters?: string[] // 允许的投票者类型
+      multipleChoice?: boolean // 是否多选
+      deadline?: string | null // 截止时间
+      showResults?: boolean // 是否展示实时结果
+      status?: string // draft | open | closed
     }>(event)
 
     // 3. 校验：标题必填

@@ -6,7 +6,7 @@ import { requireEnvVar } from '../utils/common'
 const effectiveSecret = requireEnvVar(
   'JWT_SECRET',
   'debate-timer-dev-secret-change-in-production',
-  '请在 .env 文件或系统环境变量中配置：JWT_SECRET=<至少32字符的随机字符串>'
+  '请在 .env 文件或系统环境变量中配置：JWT_SECRET=<至少32字符的随机字符串>',
 )
 const JWT_EXPIRES_IN = '7d'
 

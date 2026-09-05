@@ -8,24 +8,34 @@ import { syncRegistrationQuestionnaire } from '../../../utils/questionnaire'
 
 // 单个报名字段的结构定义
 interface RegistrationFieldInput {
-  id?: string               // 已有字段的 ID（系统字段更新时需要）
-  fieldName: string        // 字段显示名称（中文标签）
-  fieldKey: string          // 字段键名（英文标识，用于数据存储与映射）
-  fieldType: string         // text | textarea | select | checkbox | radio | number | date | phone | email | members | divider | heading
-  fieldOptions?: string | null  // JSON 字符串：选项列表（select/radio/checkbox 用）
+  id?: string // 已有字段的 ID（系统字段更新时需要）
+  fieldName: string // 字段显示名称（中文标签）
+  fieldKey: string // 字段键名（英文标识，用于数据存储与映射）
+  fieldType: string // text | textarea | select | checkbox | radio | number | date | phone | email | members | divider | heading
+  fieldOptions?: string | null // JSON 字符串：选项列表（select/radio/checkbox 用）
   required: boolean
   sortOrder: number
-  appliesTo: string        // individual | team | both
+  appliesTo: string // individual | team | both
   placeholder?: string | null
   description?: string | null
-  width?: string           // half | full
+  width?: string // half | full
   systemField?: boolean
 }
 
 // 合法的字段类型
 const VALID_FIELD_TYPES = [
-  'text', 'textarea', 'select', 'checkbox', 'radio',
-  'number', 'date', 'phone', 'email', 'members', 'divider', 'heading',
+  'text',
+  'textarea',
+  'select',
+  'checkbox',
+  'radio',
+  'number',
+  'date',
+  'phone',
+  'email',
+  'members',
+  'divider',
+  'heading',
 ]
 
 // 合法的 appliesTo 值
@@ -60,7 +70,10 @@ export default defineEventHandler(async (event) => {
       let i = 0
       for (const f of body.fields) {
         // 跳过空记录或 fieldName 为空且非装饰类型的记录
-        if (!f || (!f.fieldName?.trim() && !['divider', 'heading'].includes(f.fieldType))) { i++; continue }
+        if (!f || (!f.fieldName?.trim() && !['divider', 'heading'].includes(f.fieldType))) {
+          i++
+          continue
+        }
 
         const fieldType = VALID_FIELD_TYPES.includes(f.fieldType) ? f.fieldType : 'text'
         const appliesTo = VALID_APPLIES_TO.includes(f.appliesTo) ? f.appliesTo : 'both'

@@ -76,16 +76,18 @@ export const CreateTimerProjectRequest = z.object({
 })
 export type CreateTimerProjectRequest = z.infer<typeof CreateTimerProjectRequest>
 
-export const UpdateTimerProjectRequest = z.object({
-  title: z.string().optional(),
-  name: z.string().optional(),
-  positiveTopic: z.string().nullable().optional(),
-  negativeTopic: z.string().nullable().optional(),
-  teamPositiveName: z.string().nullable().optional(),
-  teamNegativeName: z.string().nullable().optional(),
-  uiConfig: z.record(z.string(), z.any()).nullable().optional(),
-  stages: z.array(TimerStage).optional(),
-}).partial()
+export const UpdateTimerProjectRequest = z
+  .object({
+    title: z.string().optional(),
+    name: z.string().optional(),
+    positiveTopic: z.string().nullable().optional(),
+    negativeTopic: z.string().nullable().optional(),
+    teamPositiveName: z.string().nullable().optional(),
+    teamNegativeName: z.string().nullable().optional(),
+    uiConfig: z.record(z.string(), z.any()).nullable().optional(),
+    stages: z.array(TimerStage).optional(),
+  })
+  .partial()
 export type UpdateTimerProjectRequest = z.infer<typeof UpdateTimerProjectRequest>
 
 // ── 计时器模板 ──

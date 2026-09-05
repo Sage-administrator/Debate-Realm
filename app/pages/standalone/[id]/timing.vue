@@ -23,255 +23,311 @@ const standaloneMatch = inject<Ref<any>>('standaloneMatch')!
 const matchId = computed(() => route.params.id as string)
 
 const {
-  config, loading, saving, previewStageIndex, expandedId, showTemplateModal,
-  dragSourceId, dragOverId, timerCountTypes, speechTypes, questionTypes, dualTypes,
+  config,
+  loading,
+  saving,
+  previewStageIndex,
+  expandedId,
+  showTemplateModal,
+  dragSourceId,
+  dragOverId,
+  timerCountTypes,
+  speechTypes,
+  questionTypes,
+  dualTypes,
   debateTemplates,
-  loadPageConfig, savePageConfig, addStageByType, removeStage, duplicateStage,
-  onDragStart, onDragOver, onDragLeave, onDrop, onDragEnd, toggleExpand,
-  onStageFormUpdate, applyTemplate, openTemplateModal, closeTemplateModal,
+  loadPageConfig,
+  savePageConfig,
+  addStageByType,
+  removeStage,
+  duplicateStage,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragEnd,
+  toggleExpand,
+  onStageFormUpdate,
+  applyTemplate,
+  openTemplateModal,
+  closeTemplateModal,
   getStageSpeaker,
 } = useStageEditor({ hostType: 'standalone', hostNameRef: standaloneMatch })
 </script>
 
 <template>
   <template v-if="standaloneMatch">
-  <!-- ═══ 主内容：左侧实时预览 + 右侧环节配置（左右并排，左1/3 + 右2/3） ═══ -->
-  <div class="py-6 grid grid-cols-12 gap-6">
+    <!-- ═══ 主内容：左侧实时预览 + 右侧环节配置（左右并排，左1/3 + 右2/3） ═══ -->
+    <div class="py-6 grid grid-cols-12 gap-6">
+      <!-- ═══ 左侧：实时预览（左4列，约1/3宽度） ═══ -->
+      <div class="col-span-4">
+        <TimerPreviewCard
+          :full-config="config"
+          :tournament-id="matchId"
+          type="standalone"
+          v-model:stage-index="previewStageIndex"
+        />
+      </div>
 
-    <!-- ═══ 左侧：实时预览（左4列，约1/3宽度） ═══ -->
-    <div class="col-span-4">
-      <TimerPreviewCard
-        :full-config="config"
-        :tournament-id="matchId"
-        type="standalone"
-        v-model:stage-index="previewStageIndex"
-      />
-    </div>
-
-    <!-- ═══ 右侧：环节配置（右8列，约2/3宽度） ═══ -->
-    <div class="col-span-8 space-y-4">
-      <div class="stages-config-card">
-        <div class="flex gap-4 stages-flex-container">
-          <!-- 左侧分类栏 -->
-          <div class="category-sidebar stages-sidebar-scroll">
-            <!-- 计时器数量 -->
-            <div class="category-group">
-              <h4 class="category-title">
-                <UIcon name="i-lucide-timer" class="w-4 h-4 mr-1" />
-                计时器数量
-              </h4>
-              <button
-                v-for="item in timerCountTypes"
-                :key="item.type"
-                class="category-btn"
-                @click="addStageByType(item.type, item.name)"
-              >
-                <span>{{ item.label }}</span>
-                <span class="text-lg">+</span>
-              </button>
-            </div>
-            <!-- 单方发言 -->
-            <div class="category-group">
-              <h4 class="category-title">
-                <UIcon name="i-lucide-message-circle" class="w-4 h-4 mr-1" />
-                单方发言
-              </h4>
-              <button
-                v-for="item in speechTypes"
-                :key="item.name"
-                class="category-btn"
-                @click="addStageByType('single_speech', item.name)"
-              >
-                <span>{{ item.name }}</span>
-                <span class="text-lg">+</span>
-              </button>
-            </div>
-            <!-- 单方发问 -->
-            <div class="category-group">
-              <h4 class="category-title">
-                <UIcon name="i-lucide-help-circle" class="w-4 h-4 mr-1" />
-                单方发问
-              </h4>
-              <button
-                v-for="item in questionTypes"
-                :key="item.name"
-                class="category-btn"
-                @click="addStageByType('single_question', item.name)"
-              >
-                <span>{{ item.name }}</span>
-                <span class="text-lg">+</span>
-              </button>
-            </div>
-            <!-- 双边对辩 -->
-            <div class="category-group">
-              <h4 class="category-title">
-                <UIcon name="i-lucide-check-circle" class="w-4 h-4 mr-1" />
-                双边对辩
-              </h4>
-              <button
-                v-for="item in dualTypes"
-                :key="item.name"
-                class="category-btn"
-                @click="addStageByType('bilateral_debate', item.name)"
-              >
-                <span>{{ item.name }}</span>
-                <span class="text-lg">+</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- 右侧环节列表 -->
-          <div class="flex-1 stages-right-container">
-            <!-- 空状态 -->
-            <div v-if="config.stages.length === 0" class="empty-state">
-              <UIcon name="i-lucide-clock" class="w-10 h-10 mx-auto mb-2 text-white/30" />
-              <p>从左侧分类栏添加计时环节</p>
+      <!-- ═══ 右侧：环节配置（右8列，约2/3宽度） ═══ -->
+      <div class="col-span-8 space-y-4">
+        <div class="stages-config-card">
+          <div class="flex gap-4 stages-flex-container">
+            <!-- 左侧分类栏 -->
+            <div class="category-sidebar stages-sidebar-scroll">
+              <!-- 计时器数量 -->
+              <div class="category-group">
+                <h4 class="category-title">
+                  <UIcon name="i-lucide-timer" class="w-4 h-4 mr-1" />
+                  计时器数量
+                </h4>
+                <button
+                  v-for="item in timerCountTypes"
+                  :key="item.type"
+                  class="category-btn"
+                  @click="addStageByType(item.type, item.name)"
+                >
+                  <span>{{ item.label }}</span>
+                  <span class="text-lg">+</span>
+                </button>
+              </div>
+              <!-- 单方发言 -->
+              <div class="category-group">
+                <h4 class="category-title">
+                  <UIcon name="i-lucide-message-circle" class="w-4 h-4 mr-1" />
+                  单方发言
+                </h4>
+                <button
+                  v-for="item in speechTypes"
+                  :key="item.name"
+                  class="category-btn"
+                  @click="addStageByType('single_speech', item.name)"
+                >
+                  <span>{{ item.name }}</span>
+                  <span class="text-lg">+</span>
+                </button>
+              </div>
+              <!-- 单方发问 -->
+              <div class="category-group">
+                <h4 class="category-title">
+                  <UIcon name="i-lucide-help-circle" class="w-4 h-4 mr-1" />
+                  单方发问
+                </h4>
+                <button
+                  v-for="item in questionTypes"
+                  :key="item.name"
+                  class="category-btn"
+                  @click="addStageByType('single_question', item.name)"
+                >
+                  <span>{{ item.name }}</span>
+                  <span class="text-lg">+</span>
+                </button>
+              </div>
+              <!-- 双边对辩 -->
+              <div class="category-group">
+                <h4 class="category-title">
+                  <UIcon name="i-lucide-check-circle" class="w-4 h-4 mr-1" />
+                  双边对辩
+                </h4>
+                <button
+                  v-for="item in dualTypes"
+                  :key="item.name"
+                  class="category-btn"
+                  @click="addStageByType('bilateral_debate', item.name)"
+                >
+                  <span>{{ item.name }}</span>
+                  <span class="text-lg">+</span>
+                </button>
+              </div>
             </div>
 
-            <!-- 环节卡片列表 -->
-            <!-- 环节卡片列表（可拖拽排序）-->
-            <div class="stages-scroll">
-              <!-- 顶部：使用模板按钮（随列表滚动） -->
-              <button class="template-btn" @click="() => { showTemplateModal = true }">
-                <UIcon name="i-lucide-download" class="template-btn-icon" />
-                <span>使用模板</span>
-              </button>
-              <div
-                v-for="(stage, idx) in config.stages"
-                :key="stage.id"
-                class="stage-card"
-                :class="{
-                  'stage-card--dragging': dragSourceId === stage.id,
-                  'stage-card--over': dragOverId === stage.id
-                }"
-                draggable="true"
-                @dragstart="onDragStart($event, stage.id)"
-                @dragover.prevent="onDragOver($event, stage.id)"
-                @dragleave="onDragLeave(stage.id)"
-                @drop.prevent="onDrop(stage.id)"
-                @dragend="onDragEnd"
-              >
-                <!-- 卡片头（新状态栏风格，可拖拽排序）-->
-                <div class="stage-card-header" @click="toggleExpand(stage.id)">
-                  <!-- 拖拽把手 + 序号：用户按住此处拖动 -->
-                  <div class="stage-order stage-order--handle" title="拖动调整顺序">
-                    <span>{{ idx + 1 }}</span>
-                  </div>
+            <!-- 右侧环节列表 -->
+            <div class="flex-1 stages-right-container">
+              <!-- 空状态 -->
+              <div v-if="config.stages.length === 0" class="empty-state">
+                <UIcon name="i-lucide-clock" class="w-10 h-10 mx-auto mb-2 text-white/30" />
+                <p>从左侧分类栏添加计时环节</p>
+              </div>
 
-                  <!-- 左侧标签组：类/类型/时/时间 -->
-                  <div class="stage-header-tags">
-                    <span class="status-tag status-tag--green">类</span>
-                    <span class="status-tag status-tag--white status-tag--type">{{ typeLabel(stage.type) }}</span>
-                    <span class="status-tag status-tag--green">时</span>
-                    <span v-if="hasTimer(stage.type)" class="status-tag status-tag--white status-tag--time">
-                      {{ isDualTimer(stage.type)
-                          ? `${stage.positiveDuration ?? stage.duration}/${stage.negativeDuration ?? stage.duration}`
-                          : stage.duration
-                      }}
-                    </span>
-                  </div>
+              <!-- 环节卡片列表 -->
+              <!-- 环节卡片列表（可拖拽排序）-->
+              <div class="stages-scroll">
+                <!-- 顶部：使用模板按钮（随列表滚动） -->
+                <button
+                  class="template-btn"
+                  @click="
+                    () => {
+                      showTemplateModal = true
+                    }
+                  "
+                >
+                  <UIcon name="i-lucide-download" class="template-btn-icon" />
+                  <span>使用模板</span>
+                </button>
+                <div
+                  v-for="(stage, idx) in config.stages"
+                  :key="stage.id"
+                  class="stage-card"
+                  :class="{
+                    'stage-card--dragging': dragSourceId === stage.id,
+                    'stage-card--over': dragOverId === stage.id,
+                  }"
+                  draggable="true"
+                  @dragstart="onDragStart($event, stage.id)"
+                  @dragover.prevent="onDragOver($event, stage.id)"
+                  @dragleave="onDragLeave(stage.id)"
+                  @drop.prevent="onDrop(stage.id)"
+                  @dragend="onDragEnd"
+                >
+                  <!-- 卡片头（新状态栏风格，可拖拽排序）-->
+                  <div class="stage-card-header" @click="toggleExpand(stage.id)">
+                    <!-- 拖拽把手 + 序号：用户按住此处拖动 -->
+                    <div class="stage-order stage-order--handle" title="拖动调整顺序">
+                      <span>{{ idx + 1 }}</span>
+                    </div>
 
-                  <!-- 右侧标题：动态文本 -->
-                  <div class="stage-header-title">
-                    <template v-if="hasTimer(stage.type)">
-                      <template v-if="stage.type === 'single_speech' || stage.type === 'speech' || stage.type === 'summary'">
-                        {{ (stage.speaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}
-                      </template>
-                      <template v-else-if="stage.type === 'single_question'">
-                        {{ getStageSpeaker(stage) }}
-                      </template>
-                      <template v-else-if="isDualTimer(stage.type)">
-                        <template v-if="normalizeStageType(stage.type) === 'free_debate'">{{ stage.name }}</template>
-                        <template v-else>{{ (stage.firstSpeaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }}·{{ stage.name }}</template>
+                    <!-- 左侧标签组：类/类型/时/时间 -->
+                    <div class="stage-header-tags">
+                      <span class="status-tag status-tag--green">类</span>
+                      <span class="status-tag status-tag--white status-tag--type">{{
+                        typeLabel(stage.type)
+                      }}</span>
+                      <span class="status-tag status-tag--green">时</span>
+                      <span
+                        v-if="hasTimer(stage.type)"
+                        class="status-tag status-tag--white status-tag--time"
+                      >
+                        {{
+                          isDualTimer(stage.type)
+                            ? `${stage.positiveDuration ?? stage.duration}/${stage.negativeDuration ?? stage.duration}`
+                            : stage.duration
+                        }}
+                      </span>
+                    </div>
+
+                    <!-- 右侧标题：动态文本 -->
+                    <div class="stage-header-title">
+                      <template v-if="hasTimer(stage.type)">
+                        <template
+                          v-if="
+                            stage.type === 'single_speech' ||
+                            stage.type === 'speech' ||
+                            stage.type === 'summary'
+                          "
+                        >
+                          {{ (stage.speaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }}·{{
+                            stage.name
+                          }}
+                        </template>
+                        <template v-else-if="stage.type === 'single_question'">
+                          {{ getStageSpeaker(stage) }}
+                        </template>
+                        <template v-else-if="isDualTimer(stage.type)">
+                          <template v-if="normalizeStageType(stage.type) === 'free_debate'">{{
+                            stage.name
+                          }}</template>
+                          <template v-else
+                            >{{ (stage.firstSpeaker || '正方·一辩').replace(/[·\/\s\-]/g, '') }}·{{
+                              stage.name
+                            }}</template
+                          >
+                        </template>
+                        <template v-else>
+                          {{ stage.name }}
+                        </template>
                       </template>
                       <template v-else>
                         {{ stage.name }}
                       </template>
-                    </template>
-                    <template v-else>
-                      {{ stage.name }}
-                    </template>
+                    </div>
                   </div>
-                </div>
-                <!-- 展开的详情（使用新的 StageForm 组件）-->
-                <div v-if="expandedId === stage.id" class="stage-card-body">
-                  <!-- 动态表单：根据环节类型展示不同字段 -->
-                  <StageForm
-                    :model-value="{
-                      type: stage.type,
-                      name: stage.name,
-                      duration: isDualTimer(stage.type) ? (stage.positiveDuration ?? 120) : (stage.duration ?? 180),
-                      protectionTime: stage.protectionTime ?? 0,
-                      speaker: stage.speaker || '正方 · 一辩',
-                      speakerMode: stage.speakerMode ?? 0,
-                      questioner: stage.questioner || '反方 · 二辩',
-                      questionerMode: stage.questionerMode ?? 0,
-                      responder: stage.responder || '正方 · 一辩',
-                      responders: stage.responders || null,
-                      respondersMode: stage.respondersMode ?? 0,
-                      firstSpeaker: stage.firstSpeaker || '正方 · 一辩',
-                      positiveSpeakers: stage.positiveSpeakers || [],
-                      negativeSpeakers: stage.negativeSpeakers || [],
-                      speakers: stage.speakers || [],
-                      questionDuration: stage.questionDuration ?? 0,
-                      answerDuration: stage.answerDuration ?? 0,
-                      pptImage: stage.pptImage || '',
-                    }"
-                    @update:model-value="(val) => onStageFormUpdate(stage, val)"
-                  />
+                  <!-- 展开的详情（使用新的 StageForm 组件）-->
+                  <div v-if="expandedId === stage.id" class="stage-card-body">
+                    <!-- 动态表单：根据环节类型展示不同字段 -->
+                    <StageForm
+                      :model-value="{
+                        type: stage.type,
+                        name: stage.name,
+                        duration: isDualTimer(stage.type)
+                          ? (stage.positiveDuration ?? 120)
+                          : (stage.duration ?? 180),
+                        protectionTime: stage.protectionTime ?? 0,
+                        speaker: stage.speaker || '正方 · 一辩',
+                        speakerMode: stage.speakerMode ?? 0,
+                        questioner: stage.questioner || '反方 · 二辩',
+                        questionerMode: stage.questionerMode ?? 0,
+                        responder: stage.responder || '正方 · 一辩',
+                        responders: stage.responders || null,
+                        respondersMode: stage.respondersMode ?? 0,
+                        firstSpeaker: stage.firstSpeaker || '正方 · 一辩',
+                        positiveSpeakers: stage.positiveSpeakers || [],
+                        negativeSpeakers: stage.negativeSpeakers || [],
+                        speakers: stage.speakers || [],
+                        questionDuration: stage.questionDuration ?? 0,
+                        answerDuration: stage.answerDuration ?? 0,
+                        pptImage: stage.pptImage || '',
+                      }"
+                      @update:model-value="(val) => onStageFormUpdate(stage, val)"
+                    />
 
-                  <!-- 底部操作按钮 -->
-                  <div class="stage-card-actions">
-                    <button class="action-btn action-btn--copy" @click.stop="duplicateStage(idx)">
-                      <UIcon name="i-lucide-copy" class="w-4 h-4" />
-                      复制
-                    </button>
-                    <button class="action-btn action-btn--delete" @click.stop="removeStage(idx)">
-                      <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
-                      删除
-                    </button>
+                    <!-- 底部操作按钮 -->
+                    <div class="stage-card-actions">
+                      <button class="action-btn action-btn--copy" @click.stop="duplicateStage(idx)">
+                        <UIcon name="i-lucide-copy" class="w-4 h-4" />
+                        复制
+                      </button>
+                      <button class="action-btn action-btn--delete" @click.stop="removeStage(idx)">
+                        <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
+                        删除
+                      </button>
+                    </div>
                   </div>
                 </div>
+
+                <!-- 底部：添加一个环节（随列表滚动） -->
+                <button class="add-stage-btn" @click="addStageByType('single_speech', '新环节')">
+                  <span class="add-stage-plus">＋</span>
+                  <span>添加一个环节</span>
+                </button>
               </div>
-
-              <!-- 底部：添加一个环节（随列表滚动） -->
-              <button class="add-stage-btn" @click="addStageByType('single_speech', '新环节')">
-                <span class="add-stage-plus">＋</span>
-                <span>添加一个环节</span>
-              </button>
             </div>
-
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- ═══ 模板选择弹窗 ═══ -->
-    <div v-if="showTemplateModal" class="template-modal-mask" @click.self="showTemplateModal = false">
-      <div class="template-modal">
-        <div class="template-modal-header">
-          <h3 class="text-lg font-bold text-[var(--color-text-primary)]/90">选择计时器模板</h3>
-          <button class="template-modal-close" @click="() => { showTemplateModal = false }">×</button>
-        </div>
-        <div class="template-modal-body">
-          <div
-            v-for="tpl in debateTemplates"
-            :key="tpl.id"
-            class="template-item"
-          >
-            <div class="template-item-info">
-              <div class="template-item-name">{{ tpl.name }}</div>
-              <div class="template-item-desc">{{ tpl.description }}</div>
-              <div class="template-item-count">共 {{ tpl.stages.length }} 个环节</div>
-            </div>
-            <button class="template-item-btn" @click="applyTemplate(tpl.id)">
-              使用该模板
+      <!-- ═══ 模板选择弹窗 ═══ -->
+      <div
+        v-if="showTemplateModal"
+        class="template-modal-mask"
+        @click.self="showTemplateModal = false"
+      >
+        <div class="template-modal">
+          <div class="template-modal-header">
+            <h3 class="text-lg font-bold text-[var(--color-text-primary)]/90">选择计时器模板</h3>
+            <button
+              class="template-modal-close"
+              @click="
+                () => {
+                  showTemplateModal = false
+                }
+              "
+            >
+              ×
             </button>
           </div>
+          <div class="template-modal-body">
+            <div v-for="tpl in debateTemplates" :key="tpl.id" class="template-item">
+              <div class="template-item-info">
+                <div class="template-item-name">{{ tpl.name }}</div>
+                <div class="template-item-desc">{{ tpl.description }}</div>
+                <div class="template-item-count">共 {{ tpl.stages.length }} 个环节</div>
+              </div>
+              <button class="template-item-btn" @click="applyTemplate(tpl.id)">使用该模板</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
   </template>
 </template>
 
@@ -335,7 +391,11 @@ const {
   margin-bottom: 0.5rem;
   overflow: hidden;
   cursor: grab;
-  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s,
+    transform 0.2s,
+    opacity 0.2s;
   user-select: none;
 }
 
@@ -375,7 +435,7 @@ const {
   height: 2rem;
   border-radius: 0.375rem;
   background: var(--color-accent-primary);
-  color: #FFFFFF;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -409,7 +469,7 @@ const {
 }
 
 .status-tag--green {
-  color: #FFFFFF;
+  color: #ffffff;
   background-color: var(--color-accent-primary);
   font-weight: 500;
 }
@@ -477,13 +537,13 @@ const {
 }
 
 .action-btn--copy:hover {
-  color: #60A5FA;
-  border-color: #60A5FA;
+  color: #60a5fa;
+  border-color: #60a5fa;
 }
 
 .action-btn--delete:hover {
-  color: #F87171;
-  border-color: #F87171;
+  color: #f87171;
+  border-color: #f87171;
 }
 
 /* ═══════════ 使用模板按钮 ═══════════ */
@@ -635,7 +695,7 @@ const {
 
 .template-item-btn:hover {
   background: var(--color-accent-primary);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 /* ═══════════ 添加环节按钮 ═══════════ */

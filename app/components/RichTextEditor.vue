@@ -15,18 +15,21 @@
 import { ref, onMounted, watch } from 'vue'
 import { sanitizeHtml, isRich, escapeHtml } from '~/utils/richtext'
 
-const props = withDefaults(defineProps<{
-  modelValue?: string
-  placeholder?: string
-  minHeight?: string
-  /** 是否显示工具条（画布内可设 false，仅作只读富文本展示） */
-  toolbar?: boolean
-}>(), {
-  modelValue: '',
-  placeholder: '请输入内容…',
-  minHeight: '96px',
-  toolbar: true,
-})
+const props = withDefaults(
+  defineProps<{
+    modelValue?: string
+    placeholder?: string
+    minHeight?: string
+    /** 是否显示工具条（画布内可设 false，仅作只读富文本展示） */
+    toolbar?: boolean
+  }>(),
+  {
+    modelValue: '',
+    placeholder: '请输入内容…',
+    minHeight: '96px',
+    toolbar: true,
+  },
+)
 
 const emit = defineEmits<{ 'update:modelValue': [string] }>()
 
@@ -47,13 +50,16 @@ onMounted(() => {
 })
 
 // 外部 modelValue 变化（如载入模板）同步到编辑器，避免光标回跳
-watch(() => props.modelValue, (val) => {
-  if (!editorRef.value) return
-  const current = editorRef.value.innerHTML
-  if (sanitizeHtml(current) !== sanitizeHtml(val || '')) {
-    editorRef.value.innerHTML = initialHtml(val || '')
-  }
-})
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (!editorRef.value) return
+    const current = editorRef.value.innerHTML
+    if (sanitizeHtml(current) !== sanitizeHtml(val || '')) {
+      editorRef.value.innerHTML = initialHtml(val || '')
+    }
+  },
+)
 
 function emitValue() {
   if (!editorRef.value) return
@@ -96,7 +102,9 @@ function wrapSelection(style: string) {
     const r = document.createRange()
     r.selectNodeContents(span)
     sel.addRange(r)
-  } catch { /* 跨节点选区可能失败，忽略 */ }
+  } catch {
+    /* 跨节点选区可能失败，忽略 */
+  }
   onInput()
 }
 
@@ -146,10 +154,18 @@ function toggleSource() {
       v-if="toolbar"
       class="rte-toolbar flex flex-wrap items-center gap-0.5 px-1.5 py-1 border border-[var(--color-border)] border-b-0 rounded-t-md bg-[var(--color-bg-tertiary)]"
     >
-      <button type="button" class="rte-btn" title="加粗" @click="toggleBold"><UIcon name="i-lucide-bold" class="w-4 h-4" /></button>
-      <button type="button" class="rte-btn" title="斜体" @click="toggleItalic"><UIcon name="i-lucide-italic" class="w-4 h-4" /></button>
-      <button type="button" class="rte-btn" title="下划线" @click="toggleUnderline"><UIcon name="i-lucide-underline" class="w-4 h-4" /></button>
-      <button type="button" class="rte-btn" title="删除线" @click="const_toggleStrike"><UIcon name="i-lucide-strikethrough" class="w-4 h-4" /></button>
+      <button type="button" class="rte-btn" title="加粗" @click="toggleBold">
+        <UIcon name="i-lucide-bold" class="w-4 h-4" />
+      </button>
+      <button type="button" class="rte-btn" title="斜体" @click="toggleItalic">
+        <UIcon name="i-lucide-italic" class="w-4 h-4" />
+      </button>
+      <button type="button" class="rte-btn" title="下划线" @click="toggleUnderline">
+        <UIcon name="i-lucide-underline" class="w-4 h-4" />
+      </button>
+      <button type="button" class="rte-btn" title="删除线" @click="const_toggleStrike">
+        <UIcon name="i-lucide-strikethrough" class="w-4 h-4" />
+      </button>
 
       <span class="rte-sep"></span>
 
@@ -174,24 +190,42 @@ function toggleSource() {
 
       <span class="rte-sep"></span>
 
-      <button type="button" class="rte-btn" title="左对齐" @click="alignLeft"><UIcon name="i-lucide-align-left" class="w-4 h-4" /></button>
-      <button type="button" class="rte-btn" title="居中" @click="alignCenter"><UIcon name="i-lucide-align-center" class="w-4 h-4" /></button>
-      <button type="button" class="rte-btn" title="右对齐" @click="alignRight"><UIcon name="i-lucide-align-right" class="w-4 h-4" /></button>
+      <button type="button" class="rte-btn" title="左对齐" @click="alignLeft">
+        <UIcon name="i-lucide-align-left" class="w-4 h-4" />
+      </button>
+      <button type="button" class="rte-btn" title="居中" @click="alignCenter">
+        <UIcon name="i-lucide-align-center" class="w-4 h-4" />
+      </button>
+      <button type="button" class="rte-btn" title="右对齐" @click="alignRight">
+        <UIcon name="i-lucide-align-right" class="w-4 h-4" />
+      </button>
 
       <span class="rte-sep"></span>
 
-      <button type="button" class="rte-btn" title="有序列表" @click="toggleOl"><UIcon name="i-lucide-list-ordered" class="w-4 h-4" /></button>
-      <button type="button" class="rte-btn" title="无序列表" @click="toggleUl"><UIcon name="i-lucide-list" class="w-4 h-4" /></button>
+      <button type="button" class="rte-btn" title="有序列表" @click="toggleOl">
+        <UIcon name="i-lucide-list-ordered" class="w-4 h-4" />
+      </button>
+      <button type="button" class="rte-btn" title="无序列表" @click="toggleUl">
+        <UIcon name="i-lucide-list" class="w-4 h-4" />
+      </button>
 
       <span class="rte-sep"></span>
 
-      <button type="button" class="rte-btn" title="插入链接" @click="applyLink"><UIcon name="i-lucide-link" class="w-4 h-4" /></button>
-      <button type="button" class="rte-btn" title="取消链接" @click="removeLink"><UIcon name="i-lucide-unlink" class="w-4 h-4" /></button>
-      <button type="button" class="rte-btn" title="清除格式" @click="clearFormat"><UIcon name="i-lucide-eraser" class="w-4 h-4" /></button>
+      <button type="button" class="rte-btn" title="插入链接" @click="applyLink">
+        <UIcon name="i-lucide-link" class="w-4 h-4" />
+      </button>
+      <button type="button" class="rte-btn" title="取消链接" @click="removeLink">
+        <UIcon name="i-lucide-unlink" class="w-4 h-4" />
+      </button>
+      <button type="button" class="rte-btn" title="清除格式" @click="clearFormat">
+        <UIcon name="i-lucide-eraser" class="w-4 h-4" />
+      </button>
 
       <span class="rte-sep"></span>
 
-      <button type="button" class="rte-btn" title="查看/编辑 HTML" @click="toggleSource"><UIcon name="i-lucide-code" class="w-4 h-4" /></button>
+      <button type="button" class="rte-btn" title="查看/编辑 HTML" @click="toggleSource">
+        <UIcon name="i-lucide-code" class="w-4 h-4" />
+      </button>
     </div>
 
     <!-- 富文本编辑区 -->
@@ -228,7 +262,9 @@ function toggleSource() {
   border-radius: 6px;
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: background-color 0.12s, color 0.12s;
+  transition:
+    background-color 0.12s,
+    color 0.12s;
 }
 .rte-btn:hover {
   background: var(--color-bg-secondary);
@@ -251,7 +287,9 @@ function toggleSource() {
   outline: none;
   cursor: pointer;
 }
-.rte-select:hover { border-color: var(--color-border-accented); }
+.rte-select:hover {
+  border-color: var(--color-border-accented);
+}
 .rte-color {
   position: relative;
   overflow: hidden;
@@ -272,7 +310,10 @@ function toggleSource() {
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background-color 0.15s;
   overflow-y: auto;
 }
 .rte-editor:focus {

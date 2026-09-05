@@ -2,7 +2,13 @@
  * 赛事相关 Schema — 前后端共享
  */
 import { z } from 'zod'
-import { ID, TournamentFormat, TournamentStatus, RegistrationAllowedType, BestDebaterMode } from './common'
+import {
+  ID,
+  TournamentFormat,
+  TournamentStatus,
+  RegistrationAllowedType,
+  BestDebaterMode,
+} from './common'
 
 // ── 赛事基础信息 ──
 
@@ -39,16 +45,18 @@ export const CreateTournamentRequest = z.object({
 })
 export type CreateTournamentRequest = z.infer<typeof CreateTournamentRequest>
 
-export const UpdateTournamentRequest = z.object({
-  name: z.string().min(1).optional(),
-  description: z.string().optional(),
-  format: TournamentFormat.optional(),
-  status: TournamentStatus.optional(),
-  scheduledAt: z.string().nullable().optional(),
-  venue: z.string().nullable().optional(),
-  teams: z.array(z.string()).optional(),
-  judges: z.array(z.string()).optional(),
-}).partial()
+export const UpdateTournamentRequest = z
+  .object({
+    name: z.string().min(1).optional(),
+    description: z.string().optional(),
+    format: TournamentFormat.optional(),
+    status: TournamentStatus.optional(),
+    scheduledAt: z.string().nullable().optional(),
+    venue: z.string().nullable().optional(),
+    teams: z.array(z.string()).optional(),
+    judges: z.array(z.string()).optional(),
+  })
+  .partial()
 export type UpdateTournamentRequest = z.infer<typeof UpdateTournamentRequest>
 
 // ── 公开赛事 ──
@@ -83,11 +91,17 @@ export type PublicTournamentListQuery = z.infer<typeof PublicTournamentListQuery
 // ── 赛事列表项 ──
 
 export const TournamentListItem = z.object({
-  id: ID, name: z.string(), description: z.string().nullable(),
-  format: z.string(), status: z.string(),
-  scheduledAt: z.string().nullable(), venue: z.string().nullable(),
-  teams: z.array(z.string()), judges: z.array(z.string()),
-  matchCount: z.number(), createdAt: z.string(),
+  id: ID,
+  name: z.string(),
+  description: z.string().nullable(),
+  format: z.string(),
+  status: z.string(),
+  scheduledAt: z.string().nullable(),
+  venue: z.string().nullable(),
+  teams: z.array(z.string()),
+  judges: z.array(z.string()),
+  matchCount: z.number(),
+  createdAt: z.string(),
 })
 export type TournamentListItem = z.infer<typeof TournamentListItem>
 
@@ -121,7 +135,14 @@ export type DrawLotsResult = { success: boolean; info: string; [key: string]: an
 // ── 赛程生成 ──
 
 export const GenerateMatchesRequest = z.object({
-  format: z.enum(['single_elimination', 'double_elimination', 'round_robin', 'page_playoff', 'swiss', 'group_knockout']),
+  format: z.enum([
+    'single_elimination',
+    'double_elimination',
+    'round_robin',
+    'page_playoff',
+    'swiss',
+    'group_knockout',
+  ]),
   teams: z.array(z.object({ name: z.string(), seed: z.number().int() })),
   seedMethod: z.enum(['random', 'rating', 'name']).optional(),
   roundRobinMode: z.enum(['single', 'double']).optional(),

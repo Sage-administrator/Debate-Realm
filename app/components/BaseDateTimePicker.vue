@@ -32,18 +32,47 @@
       <template v-if="mode !== 'time'">
         <div class="flex items-center justify-between mb-2">
           <div class="flex gap-1">
-            <button type="button" class="w-6 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] text-xs" @click="prevYear">«</button>
-            <button type="button" class="w-6 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]" @click="prevMonth">‹</button>
+            <button
+              type="button"
+              class="w-6 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] text-xs"
+              @click="prevYear"
+            >
+              «
+            </button>
+            <button
+              type="button"
+              class="w-6 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
+              @click="prevMonth"
+            >
+              ‹
+            </button>
           </div>
           <span class="text-sm font-medium">{{ viewYear }}年{{ viewMonth + 1 }}月</span>
           <div class="flex gap-1">
-            <button type="button" class="w-6 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]" @click="nextMonth">›</button>
-            <button type="button" class="w-6 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] text-xs" @click="nextYear">»</button>
+            <button
+              type="button"
+              class="w-6 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
+              @click="nextMonth"
+            >
+              ›
+            </button>
+            <button
+              type="button"
+              class="w-6 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] text-xs"
+              @click="nextYear"
+            >
+              »
+            </button>
           </div>
         </div>
 
         <div class="grid grid-cols-7 mb-1">
-          <span v-for="w in weekDays" :key="w" class="text-center text-[11px] text-[var(--color-text-muted)] py-1">{{ w }}</span>
+          <span
+            v-for="w in weekDays"
+            :key="w"
+            class="text-center text-[11px] text-[var(--color-text-muted)] py-1"
+            >{{ w }}</span
+          >
         </div>
 
         <div class="grid grid-cols-7 gap-0.5">
@@ -55,68 +84,120 @@
             class="h-8 rounded text-xs flex items-center justify-center transition-colors"
             :class="[
               c.disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer',
-              !c.inMonth ? 'text-[var(--color-text-muted)] opacity-60' : 'text-[var(--color-text-primary)]',
+              !c.inMonth
+                ? 'text-[var(--color-text-muted)] opacity-60'
+                : 'text-[var(--color-text-primary)]',
               isSelected(c.date)
                 ? 'bg-[var(--color-accent-primary)] text-white font-semibold'
-                : (c.inMonth && !c.disabled ? 'hover:bg-[var(--color-accent-bg)]' : ''),
+                : c.inMonth && !c.disabled
+                  ? 'hover:bg-[var(--color-accent-bg)]'
+                  : '',
             ]"
             @click="pickDay(c.date)"
           >
-            <span v-if="isToday(c.date) && !isSelected(c.date)" class="underline decoration-[var(--color-accent-primary)] decoration-2 underline-offset-2">{{ c.date.getDate() }}</span>
+            <span
+              v-if="isToday(c.date) && !isSelected(c.date)"
+              class="underline decoration-[var(--color-accent-primary)] decoration-2 underline-offset-2"
+              >{{ c.date.getDate() }}</span
+            >
             <span v-else>{{ c.date.getDate() }}</span>
           </button>
         </div>
       </template>
 
       <!-- 时间步进器（date 模式不显示） -->
-      <div v-if="mode !== 'date'" class="mt-3 pt-3 border-t border-[var(--color-border)] flex items-center justify-center gap-5">
+      <div
+        v-if="mode !== 'date'"
+        class="mt-3 pt-3 border-t border-[var(--color-border)] flex items-center justify-center gap-5"
+      >
         <div class="flex flex-col items-center gap-1">
-          <button type="button" class="w-7 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]" @click="adjust('hour', 1)">▲</button>
-          <span class="text-lg font-semibold tabular-nums w-8 text-center">{{ pad(draft.getHours()) }}</span>
-          <button type="button" class="w-7 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]" @click="adjust('hour', -1)">▼</button>
+          <button
+            type="button"
+            class="w-7 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
+            @click="adjust('hour', 1)"
+          >
+            ▲
+          </button>
+          <span class="text-lg font-semibold tabular-nums w-8 text-center">{{
+            pad(draft.getHours())
+          }}</span>
+          <button
+            type="button"
+            class="w-7 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
+            @click="adjust('hour', -1)"
+          >
+            ▼
+          </button>
           <span class="text-[10px] text-[var(--color-text-muted)]">时</span>
         </div>
         <span class="text-lg font-semibold pb-4">:</span>
         <div class="flex flex-col items-center gap-1">
-          <button type="button" class="w-7 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]" @click="adjust('minute', 1)">▲</button>
-          <span class="text-lg font-semibold tabular-nums w-8 text-center">{{ pad(draft.getMinutes()) }}</span>
-          <button type="button" class="w-7 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]" @click="adjust('minute', -1)">▼</button>
+          <button
+            type="button"
+            class="w-7 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
+            @click="adjust('minute', 1)"
+          >
+            ▲
+          </button>
+          <span class="text-lg font-semibold tabular-nums w-8 text-center">{{
+            pad(draft.getMinutes())
+          }}</span>
+          <button
+            type="button"
+            class="w-7 h-6 rounded hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
+            @click="adjust('minute', -1)"
+          >
+            ▼
+          </button>
           <span class="text-[10px] text-[var(--color-text-muted)]">分</span>
         </div>
       </div>
 
       <!-- 底部操作 -->
-      <div class="mt-3 pt-2 border-t border-[var(--color-border)] flex items-center justify-between">
-        <button type="button" class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" @click="clearValue">清除</button>
+      <div
+        class="mt-3 pt-2 border-t border-[var(--color-border)] flex items-center justify-between"
+      >
+        <button
+          type="button"
+          class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+          @click="clearValue"
+        >
+          清除
+        </button>
         <button
           v-if="mode !== 'date'"
           type="button"
           class="px-3 py-1 rounded-md bg-[var(--color-accent-primary)] text-white text-xs hover:opacity-90"
           @click="confirm"
-        >确定</button>
+        >
+          确定
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(defineProps<{
-  modelValue?: string
-  mode?: 'date' | 'datetime' | 'time'
-  placeholder?: string
-  min?: string
-  max?: string
-  disabled?: boolean
-  inputClass?: string
-}>(), {
-  modelValue: '',
-  mode: 'date',
-  placeholder: '',
-  min: '',
-  max: '',
-  disabled: false,
-  inputClass: 'input-glass w-full',
-})
+const props = withDefaults(
+  defineProps<{
+    modelValue?: string
+    mode?: 'date' | 'datetime' | 'time'
+    placeholder?: string
+    min?: string
+    max?: string
+    disabled?: boolean
+    inputClass?: string
+  }>(),
+  {
+    modelValue: '',
+    mode: 'date',
+    placeholder: '',
+    min: '',
+    max: '',
+    disabled: false,
+    inputClass: 'input-glass w-full',
+  },
+)
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 
@@ -174,8 +255,10 @@ let scrollHandler: (() => void) | null = null
 
 const weekDays = ['一', '二', '三', '四', '五', '六', '日']
 
-const defaultPlaceholder = computed(() =>
-  props.placeholder || (props.mode === 'time' ? '选择时间' : props.mode === 'datetime' ? '选择日期时间' : '选择日期'),
+const defaultPlaceholder = computed(
+  () =>
+    props.placeholder ||
+    (props.mode === 'time' ? '选择时间' : props.mode === 'datetime' ? '选择日期时间' : '选择日期'),
 )
 
 const displayLabel = computed(() => {
@@ -216,11 +299,19 @@ const cells = computed(() => {
 
 function isSelected(d: Date): boolean {
   const s = draft.value
-  return s.getFullYear() === d.getFullYear() && s.getMonth() === d.getMonth() && s.getDate() === d.getDate()
+  return (
+    s.getFullYear() === d.getFullYear() &&
+    s.getMonth() === d.getMonth() &&
+    s.getDate() === d.getDate()
+  )
 }
 function isToday(d: Date): boolean {
   const t = new Date()
-  return t.getFullYear() === d.getFullYear() && t.getMonth() === d.getMonth() && t.getDate() === d.getDate()
+  return (
+    t.getFullYear() === d.getFullYear() &&
+    t.getMonth() === d.getMonth() &&
+    t.getDate() === d.getDate()
+  )
 }
 
 // ═══════════ 交互 ═══════════
@@ -310,15 +401,23 @@ function clearValue() {
 }
 
 function prevMonth() {
-  if (viewMonth.value === 0) { viewMonth.value = 11; viewYear.value-- }
-  else viewMonth.value--
+  if (viewMonth.value === 0) {
+    viewMonth.value = 11
+    viewYear.value--
+  } else viewMonth.value--
 }
 function nextMonth() {
-  if (viewMonth.value === 11) { viewMonth.value = 0; viewYear.value++ }
-  else viewMonth.value++
+  if (viewMonth.value === 11) {
+    viewMonth.value = 0
+    viewYear.value++
+  } else viewMonth.value++
 }
-function prevYear() { viewYear.value-- }
-function nextYear() { viewYear.value++ }
+function prevYear() {
+  viewYear.value--
+}
+function nextYear() {
+  viewYear.value++
+}
 
 // 点击外部 / Esc 关闭
 function onDocClick(e: MouseEvent) {

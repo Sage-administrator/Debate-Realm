@@ -7,49 +7,49 @@
 
 ## 1. 项目背景速览
 
-| 项目 | 说明 |
-|------|------|
-| **名称** | DebateTimer V3 |
-| **定位** | 辩论赛计时、评分、赛制管理全栈系统 |
-| **框架** | Nuxt 4（SSR 全栈） |
-| **前端** | Vue 3 + Pinia + @nuxt/ui |
-| **后端** | Nitro（Nuxt server/） |
-| **数据库** | libsql（通过 Prisma ORM） |
-| **语言** | TypeScript（严格模式） |
+| 项目       | 说明                               |
+| ---------- | ---------------------------------- |
+| **名称**   | DebateTimer V3                     |
+| **定位**   | 辩论赛计时、评分、赛制管理全栈系统 |
+| **框架**   | Nuxt 4（SSR 全栈）                 |
+| **前端**   | Vue 3 + Pinia + @nuxt/ui           |
+| **后端**   | Nitro（Nuxt server/）              |
+| **数据库** | libsql（通过 Prisma ORM）          |
+| **语言**   | TypeScript（严格模式）             |
 
 ### 关键目录速查
 
-| 目录 | 用途 |
-|------|------|
-| `app/` | 前端页面与组件（82 个 .vue，28 个 .ts） |
-| `server/` | 后端 API 与服务端逻辑（204 个 .ts） |
-| `shared/` | 前后端共享的类型与工具（9 个 .ts） |
-| `prisma/` | 数据库 Schema |
-| `docs/` | 项目文档与架构说明 |
-| `scripts/` | 辅助脚本（一次性工具、验证脚本等） |
-| `tests/` | 测试文件 |
-| `public/` | 静态资源 |
+| 目录       | 用途                                    |
+| ---------- | --------------------------------------- |
+| `app/`     | 前端页面与组件（82 个 .vue，28 个 .ts） |
+| `server/`  | 后端 API 与服务端逻辑（204 个 .ts）     |
+| `shared/`  | 前后端共享的类型与工具（9 个 .ts）      |
+| `prisma/`  | 数据库 Schema                           |
+| `docs/`    | 项目文档与架构说明                      |
+| `scripts/` | 辅助脚本（一次性工具、验证脚本等）      |
+| `tests/`   | 测试文件                                |
+| `public/`  | 静态资源                                |
 
 ### 关键配置文件
 
-| 文件 | 作用 |
-|------|------|
-| `nuxt.config.ts` | Nuxt 主配置 |
-| `tsconfig.json` | TypeScript 配置 |
-| `package.json` | 依赖与脚本 |
-| `vitest.config.ts` | 测试配置 |
-| `.github/workflows/ci.yml` | CI 流水线 |
+| 文件                       | 作用            |
+| -------------------------- | --------------- |
+| `nuxt.config.ts`           | Nuxt 主配置     |
+| `tsconfig.json`            | TypeScript 配置 |
+| `package.json`             | 依赖与脚本      |
+| `vitest.config.ts`         | 测试配置        |
+| `.github/workflows/ci.yml` | CI 流水线       |
 
 ### 可用 npm scripts
 
-| 命令 | 作用 |
-|------|------|
-| `npm run dev` | 启动开发服务器 |
-| `npm run build` | 生产构建 |
-| `npm run typecheck` | TypeScript 类型检查 |
-| `npm run test` | 运行全部测试 |
-| `npm run test:watch` | 测试监听模式 |
-| `npm run validate:templates` | 验证辩论模板 |
+| 命令                         | 作用                |
+| ---------------------------- | ------------------- |
+| `npm run dev`                | 启动开发服务器      |
+| `npm run build`              | 生产构建            |
+| `npm run typecheck`          | TypeScript 类型检查 |
+| `npm run test`               | 运行全部测试        |
+| `npm run test:watch`         | 测试监听模式        |
+| `npm run validate:templates` | 验证辩论模板        |
 
 ---
 
@@ -59,23 +59,23 @@
 
 **按逻辑单元提交，而非按时间或文件数量。** 每个 commit 必须是一个完整、可独立回滚的变更。
 
-| 触发时机 | 示例 |
-|----------|------|
-| 完成一个功能/特性 | `feat(timer): 添加暂停/恢复功能` |
-| 修复一个 bug | `fix(auth): 修复 token 过期未刷新` |
-| 完成一次重构 | `refactor(layout): 抽取公共 composable` |
-| 达到阶段性稳定状态 | 当前代码可编译、测试通过 |
+| 触发时机           | 示例                                    |
+| ------------------ | --------------------------------------- |
+| 完成一个功能/特性  | `feat(timer): 添加暂停/恢复功能`        |
+| 修复一个 bug       | `fix(auth): 修复 token 过期未刷新`      |
+| 完成一次重构       | `refactor(layout): 抽取公共 composable` |
+| 达到阶段性稳定状态 | 当前代码可编译、测试通过                |
 
 **原则：每个 commit 都能独立回滚，不会让项目处于"半成品"状态。**
 
 ### 2.2 推送时机
 
-| 时机 | 说明 |
-|------|------|
+| 时机                       | 说明                                              |
+| -------------------------- | ------------------------------------------------- |
 | **完成一组相关 commit 后** | 比如一个功能拆成 3 个 commit，全部完成后一起 push |
-| **每天收工前** | 保证远程有备份 |
-| **切换设备前** | 确保另一台设备能拉到最新 |
-| **需要协作/分享时** | 别人需要看到你的改动 |
+| **每天收工前**             | 保证远程有备份                                    |
+| **切换设备前**             | 确保另一台设备能拉到最新                          |
+| **需要协作/分享时**        | 别人需要看到你的改动                              |
 
 ### 2.3 标准操作流程
 
@@ -102,15 +102,15 @@ git push origin master        # 推送
 类型(范围): 简短描述
 ```
 
-| 类型 | 用途 | 示例 |
-|------|------|------|
-| `feat` | 新功能 | `feat(timer): 添加辩论计时暂停功能` |
-| `fix` | 修 bug | `fix(auth): 修复 token 过期未刷新问题` |
-| `refactor` | 重构（不改变功能） | `refactor(api): 统一错误处理中间件` |
-| `perf` | 性能优化 | `perf(tournaments): 使用 useAsyncData 预取` |
-| `chore` | 杂项（配置、依赖等） | `chore: 更新 vitest 配置` |
-| `style` | 代码风格（不影响逻辑） | `style: 统一缩进格式` |
-| `docs` | 文档 | `docs: 添加 API 接口说明` |
+| 类型       | 用途                   | 示例                                        |
+| ---------- | ---------------------- | ------------------------------------------- |
+| `feat`     | 新功能                 | `feat(timer): 添加辩论计时暂停功能`         |
+| `fix`      | 修 bug                 | `fix(auth): 修复 token 过期未刷新问题`      |
+| `refactor` | 重构（不改变功能）     | `refactor(api): 统一错误处理中间件`         |
+| `perf`     | 性能优化               | `perf(tournaments): 使用 useAsyncData 预取` |
+| `chore`    | 杂项（配置、依赖等）   | `chore: 更新 vitest 配置`                   |
+| `style`    | 代码风格（不影响逻辑） | `style: 统一缩进格式`                       |
+| `docs`     | 文档                   | `docs: 添加 API 接口说明`                   |
 
 ### 2.5 分支策略
 
@@ -147,12 +147,12 @@ Git 管"代码版本"，CI 管"代码质量"。
 
 配置文件：`.github/workflows/ci.yml`
 
-| 检查项 | 命令 | 说明 |
-|--------|------|------|
-| Type Check | `npm run typecheck` | 确保 TypeScript 无类型错误 |
-| Prisma Validate | `npx prisma validate` | 确保数据库 Schema 有效 |
-| Unit Tests | `npm run test` | 确保已有功能未被破坏 |
-| Build Check | `npm run build` | 确保项目能正常编译 |
+| 检查项          | 命令                  | 说明                       |
+| --------------- | --------------------- | -------------------------- |
+| Type Check      | `npm run typecheck`   | 确保 TypeScript 无类型错误 |
+| Prisma Validate | `npx prisma validate` | 确保数据库 Schema 有效     |
+| Unit Tests      | `npm run test`        | 确保已有功能未被破坏       |
+| Build Check     | `npm run build`       | 确保项目能正常编译         |
 
 触发条件：`push` 到 `master` 分支，或 `pull_request` 到 `master` 分支。
 
@@ -205,11 +205,11 @@ CI 失败 ❌
 
 当前项目测试覆盖率严重不足（1 个测试文件 vs 286 个源文件）。Agent 在以下情况应补充测试：
 
-| 优先级 | 场景 | 位置 |
-|--------|------|------|
-| 🔴 高 | 核心业务逻辑变更（计时、评分、赛制计算） | `tests/` 目录 |
-| 🟡 中 | 新增 API 端点的边界情况 | `tests/` 目录 |
-| 🟢 低 | 纯 UI 组件渲染 | 暂可跳过 |
+| 优先级 | 场景                                     | 位置          |
+| ------ | ---------------------------------------- | ------------- |
+| 🔴 高  | 核心业务逻辑变更（计时、评分、赛制计算） | `tests/` 目录 |
+| 🟡 中  | 新增 API 端点的边界情况                  | `tests/` 目录 |
+| 🟢 低  | 纯 UI 组件渲染                           | 暂可跳过      |
 
 ### 4.5 环境变量
 
@@ -304,4 +304,4 @@ git log --oneline
 
 ---
 
-*本文档随项目演进持续更新。最后一次更新：2026-08-08*
+_本文档随项目演进持续更新。最后一次更新：2026-08-08_

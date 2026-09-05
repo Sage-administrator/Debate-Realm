@@ -29,7 +29,7 @@ if (process.env.NODE_ENV === 'development') {
     const duration = e.duration as number
     if (duration > SLOW_QUERY_THRESHOLD) {
       console.warn(
-        `[慢查询] ${duration}ms | ${e.query.substring(0, 120)}${e.query.length > 120 ? '...' : ''}`
+        `[慢查询] ${duration}ms | ${e.query.substring(0, 120)}${e.query.length > 120 ? '...' : ''}`,
       )
     }
   })

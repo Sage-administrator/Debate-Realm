@@ -18,7 +18,12 @@
 import { readBody } from 'h3'
 import { prisma } from '../../lib/prisma'
 import { getUserFromEventWithSession } from '../../utils/auth'
-import { createBotInstance, stopBotInstance, getBotInstance, resolveIntents } from '../../lib/bot-ws'
+import {
+  createBotInstance,
+  stopBotInstance,
+  getBotInstance,
+  resolveIntents,
+} from '../../lib/bot-ws'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -44,8 +49,12 @@ export default defineEventHandler(async (event) => {
     const team = await prisma.team.findUnique({
       where: { id: teamId },
       select: {
-        id: true, name: true, mode: true,
-        botAppId: true, botAppSecret: true, botChannelId: true,
+        id: true,
+        name: true,
+        mode: true,
+        botAppId: true,
+        botAppSecret: true,
+        botChannelId: true,
         botIsPrivate: true,
       },
     })
@@ -69,8 +78,12 @@ export default defineEventHandler(async (event) => {
       where: { id: teamId },
       data: updateData,
       select: {
-        id: true, name: true, mode: true,
-        botAppId: true, botAppSecret: true, botChannelId: true,
+        id: true,
+        name: true,
+        mode: true,
+        botAppId: true,
+        botAppSecret: true,
+        botChannelId: true,
         botIsPrivate: true,
       },
     })

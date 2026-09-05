@@ -8,27 +8,50 @@
 -->
 <template>
   <div class="debate-header" v-if="shouldShow" :style="headerStyle">
-    <div class="flex w-full banner-row" :style="{ marginTop: `${(uiConfig.bannerPos ?? 0) * 7.2}px` }">
+    <div
+      class="flex w-full banner-row"
+      :style="{ marginTop: `${(uiConfig.bannerPos ?? 0) * 7.2}px` }"
+    >
       <!-- 正方横幅（红色） -->
-      <div
-        class="flex-1 debate-side-positive flex items-center"
-        :style="sideStylePos"
-      >
+      <div class="flex-1 debate-side-positive flex items-center" :style="sideStylePos">
         <div class="debate-label-white" :style="{ fontSize: `${labelFontSize}px` }">
-          <span class="font-bold" :style="{ color: bannerFontColorPos, fontFamily: bannerFontFamily }">
+          <span
+            class="font-bold"
+            :style="{ color: bannerFontColorPos, fontFamily: bannerFontFamily }"
+          >
             {{ positiveLabel }}
           </span>
         </div>
-        <div ref="positiveTopicRef" class="font-bold debate-topic-text" :style="{ color: bannerFontColorPos, fontSize: `${bannerFontSize}px`, fontFamily: bannerFontFamily }">{{ positiveTopic || '' }}</div>
+        <div
+          ref="positiveTopicRef"
+          class="font-bold debate-topic-text"
+          :style="{
+            color: bannerFontColorPos,
+            fontSize: `${bannerFontSize}px`,
+            fontFamily: bannerFontFamily,
+          }"
+        >
+          {{ positiveTopic || '' }}
+        </div>
       </div>
       <!-- 反方横幅（蓝色） -->
-      <div
-        class="flex-1 debate-side-negative flex items-center justify-end"
-        :style="sideStyleNeg"
-      >
-        <div ref="negativeTopicRef" class="font-bold text-right debate-topic-text debate-topic-right" :style="{ color: bannerFontColorNeg, fontSize: `${bannerFontSize}px`, fontFamily: bannerFontFamily }">{{ negativeTopic || '' }}</div>
+      <div class="flex-1 debate-side-negative flex items-center justify-end" :style="sideStyleNeg">
+        <div
+          ref="negativeTopicRef"
+          class="font-bold text-right debate-topic-text debate-topic-right"
+          :style="{
+            color: bannerFontColorNeg,
+            fontSize: `${bannerFontSize}px`,
+            fontFamily: bannerFontFamily,
+          }"
+        >
+          {{ negativeTopic || '' }}
+        </div>
         <div class="debate-label-white" :style="{ fontSize: `${labelFontSize}px` }">
-          <span class="font-bold" :style="{ color: bannerFontColorNeg, fontFamily: bannerFontFamily }">
+          <span
+            class="font-bold"
+            :style="{ color: bannerFontColorNeg, fontFamily: bannerFontFamily }"
+          >
             {{ negativeLabel }}
           </span>
         </div>
@@ -57,21 +80,23 @@ const negativeLabel = computed(() => props.negativeLabel || props.uiConfig?.nega
 
 // ═══════════ 可配置视觉项（字体 / 颜色 / 厚度 / 字号） ═══════════
 // 横幅字体：优先 bannerFontFamily，其次全局 fontFamily，空 = 默认宋体
-const bannerFontFamily = computed(() => props.uiConfig?.bannerFontFamily || props.uiConfig?.fontFamily || '')
+const bannerFontFamily = computed(
+  () => props.uiConfig?.bannerFontFamily || props.uiConfig?.fontFamily || '',
+)
 // 横幅厚度（红蓝条垂直内边距，即"宽窄"），默认 5px 与历史外观一致
 const bannerHeight = computed(() => {
   const v = props.uiConfig?.bannerHeight
-  return (typeof v === 'number' && !Number.isNaN(v)) ? v : 5
+  return typeof v === 'number' && !Number.isNaN(v) ? v : 5
 })
 // 辩题文字字号
 const bannerFontSize = computed(() => {
   const v = props.uiConfig?.bannerFontSize
-  return (typeof v === 'number' && !Number.isNaN(v)) ? v : 21
+  return typeof v === 'number' && !Number.isNaN(v) ? v : 21
 })
 // 正方/反方标签框字号
 const labelFontSize = computed(() => {
   const v = props.uiConfig?.labelFontSize
-  return (typeof v === 'number' && !Number.isNaN(v)) ? v : 38
+  return typeof v === 'number' && !Number.isNaN(v) ? v : 38
 })
 const bannerColorPos = computed(() => props.uiConfig?.bannerColorPos || 'rgb(169, 35, 35)')
 const bannerColorNeg = computed(() => props.uiConfig?.bannerColorNeg || 'rgb(3, 105, 161)')
@@ -121,7 +146,7 @@ function checkTopicOverflow() {
 }
 watch(
   () => [props.positiveTopic, props.negativeTopic],
-  () => nextTick(checkTopicOverflow)
+  () => nextTick(checkTopicOverflow),
 )
 onMounted(() => nextTick(checkTopicOverflow))
 </script>

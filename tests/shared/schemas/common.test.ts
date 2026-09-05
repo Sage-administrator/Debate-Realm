@@ -7,7 +7,11 @@ import { z } from 'zod'
 
 // Import schemas
 import { LoginRequest, ChangePasswordRequest, LoginResponse } from '../../../shared/schemas/auth'
-import { CreateMatchRequest, SubmitResultRequest, SubmitScoreRequest } from '../../../shared/schemas/match'
+import {
+  CreateMatchRequest,
+  SubmitResultRequest,
+  SubmitScoreRequest,
+} from '../../../shared/schemas/match'
 import { CreateTournamentRequest } from '../../../shared/schemas/tournament'
 import { CreateTimerProjectRequest, TimerStage } from '../../../shared/schemas/timer'
 import {
@@ -43,7 +47,15 @@ describe('common schemas', () => {
 
   describe('TournamentFormat', () => {
     it('should accept all 7 formats', () => {
-      const formats = ['single_elimination', 'double_elimination', 'round_robin', 'page_playoff', 'swiss', 'group_knockout', 'manual']
+      const formats = [
+        'single_elimination',
+        'double_elimination',
+        'round_robin',
+        'page_playoff',
+        'swiss',
+        'group_knockout',
+        'manual',
+      ]
       for (const f of formats) {
         expect(TournamentFormat.safeParse(f).success).toBe(true)
       }
@@ -52,7 +64,17 @@ describe('common schemas', () => {
 
   describe('StageType', () => {
     it('should accept all 9 types', () => {
-      const types = ['single_speech', 'single_question', 'summary', 'bilateral_debate', 'free_debate', 'single_timer', 'double_timer', 'no_timer', 'ppt_replace']
+      const types = [
+        'single_speech',
+        'single_question',
+        'summary',
+        'bilateral_debate',
+        'free_debate',
+        'single_timer',
+        'double_timer',
+        'no_timer',
+        'ppt_replace',
+      ]
       for (const t of types) {
         expect(StageType.safeParse(t).success).toBe(true)
       }
@@ -121,11 +143,15 @@ describe('auth schemas', () => {
 
   describe('ChangePasswordRequest', () => {
     it('should accept valid request', () => {
-      expect(ChangePasswordRequest.safeParse({ oldPassword: 'old', newPassword: 'new123' }).success).toBe(true)
+      expect(
+        ChangePasswordRequest.safeParse({ oldPassword: 'old', newPassword: 'new123' }).success,
+      ).toBe(true)
     })
 
     it('should reject newPassword shorter than 6', () => {
-      expect(ChangePasswordRequest.safeParse({ oldPassword: 'old', newPassword: '12345' }).success).toBe(false)
+      expect(
+        ChangePasswordRequest.safeParse({ oldPassword: 'old', newPassword: '12345' }).success,
+      ).toBe(false)
     })
   })
 
@@ -134,7 +160,14 @@ describe('auth schemas', () => {
       const result = LoginResponse.safeParse({
         needConfirm: false,
         token: 'jwt-token',
-        user: { id: 'u1', username: 'test', nickname: null, role: 'admin', mode: 'qq_bot', teamId: null },
+        user: {
+          id: 'u1',
+          username: 'test',
+          nickname: null,
+          role: 'admin',
+          mode: 'qq_bot',
+          teamId: null,
+        },
       })
       expect(result.success).toBe(true)
     })
@@ -143,7 +176,9 @@ describe('auth schemas', () => {
       const result = LoginResponse.safeParse({
         needConfirm: true,
         userId: 'u1',
-        existingSessions: [{ id: 's1', deviceInfo: 'Chrome', ipAddress: null, loggedInAt: '2024-01-01' }],
+        existingSessions: [
+          { id: 's1', deviceInfo: 'Chrome', ipAddress: null, loggedInAt: '2024-01-01' },
+        ],
         newDevice: { deviceInfo: 'Firefox', ipAddress: '1.2.3.4' },
       })
       expect(result.success).toBe(true)
@@ -173,18 +208,28 @@ describe('match schemas', () => {
     })
 
     it('should accept optional team fields', () => {
-      const valid = { round: '第1轮', orderNum: 1, teamA: 'T1', teamB: 'T2', scheduledAt: '2024-01-01' }
+      const valid = {
+        round: '第1轮',
+        orderNum: 1,
+        teamA: 'T1',
+        teamB: 'T2',
+        scheduledAt: '2024-01-01',
+      }
       expect(CreateMatchRequest.safeParse(valid).success).toBe(true)
     })
   })
 
   describe('SubmitResultRequest', () => {
     it('should accept valid result', () => {
-      expect(SubmitResultRequest.safeParse({ winner: 'T1', scoreA: 3, scoreB: 0 }).success).toBe(true)
+      expect(SubmitResultRequest.safeParse({ winner: 'T1', scoreA: 3, scoreB: 0 }).success).toBe(
+        true,
+      )
     })
 
     it('should reject empty winner', () => {
-      expect(SubmitResultRequest.safeParse({ winner: '', scoreA: 3, scoreB: 0 }).success).toBe(false)
+      expect(SubmitResultRequest.safeParse({ winner: '', scoreA: 3, scoreB: 0 }).success).toBe(
+        false,
+      )
     })
   })
 
@@ -193,7 +238,10 @@ describe('match schemas', () => {
       const valid = {
         matchId: 'm1',
         judgeName: '评委A',
-        dimensions: [{ name: '论点', score: 90 }, { name: '表达', score: 85 }],
+        dimensions: [
+          { name: '论点', score: 90 },
+          { name: '表达', score: 85 },
+        ],
         scoreTeamA: 175,
         scoreTeamB: 180,
         winner: 'T2',
@@ -251,42 +299,50 @@ describe('tournament schemas', () => {
 describe('timer schemas', () => {
   describe('TimerStage', () => {
     it('should accept valid stage with required fields', () => {
-      expect(TimerStage.safeParse({
-        name: '立论',
-        duration: 180,
-        type: 'single_speech',
-        orderIndex: 0,
-      }).success).toBe(true)
+      expect(
+        TimerStage.safeParse({
+          name: '立论',
+          duration: 180,
+          type: 'single_speech',
+          orderIndex: 0,
+        }).success,
+      ).toBe(true)
     })
 
     it('should reject negative duration', () => {
-      expect(TimerStage.safeParse({
-        name: '立论',
-        duration: -1,
-        type: 'single_speech',
-        orderIndex: 0,
-      }).success).toBe(false)
+      expect(
+        TimerStage.safeParse({
+          name: '立论',
+          duration: -1,
+          type: 'single_speech',
+          orderIndex: 0,
+        }).success,
+      ).toBe(false)
     })
 
     it('should reject empty name', () => {
-      expect(TimerStage.safeParse({
-        name: '',
-        duration: 180,
-        type: 'single_speech',
-        orderIndex: 0,
-      }).success).toBe(false)
+      expect(
+        TimerStage.safeParse({
+          name: '',
+          duration: 180,
+          type: 'single_speech',
+          orderIndex: 0,
+        }).success,
+      ).toBe(false)
     })
 
     it('should accept optional fields', () => {
-      expect(TimerStage.safeParse({
-        name: '对辩',
-        duration: 300,
-        type: 'bilateral_debate',
-        orderIndex: 1,
-        positiveDuration: 240,
-        negativeDuration: 240,
-        speaker: '正方一辩',
-      }).success).toBe(true)
+      expect(
+        TimerStage.safeParse({
+          name: '对辩',
+          duration: 300,
+          type: 'bilateral_debate',
+          orderIndex: 1,
+          positiveDuration: 240,
+          negativeDuration: 240,
+          speaker: '正方一辩',
+        }).success,
+      ).toBe(true)
     })
   })
 
@@ -296,7 +352,9 @@ describe('timer schemas', () => {
     })
 
     it('should accept partial fields', () => {
-      expect(CreateTimerProjectRequest.safeParse({ name: 'My Project', title: '比赛' }).success).toBe(true)
+      expect(
+        CreateTimerProjectRequest.safeParse({ name: 'My Project', title: '比赛' }).success,
+      ).toBe(true)
     })
   })
 })

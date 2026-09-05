@@ -84,9 +84,8 @@ export function getAuthFromCookies(): { token: string; user: UserInfo } | null {
   try {
     // useCookie 会自动解析 JSON，所以 userValue 可能已经是对象
     // 如果是字符串，再手动解析；如果已经是对象，直接使用
-    const user = typeof userValue === 'string'
-      ? JSON.parse(userValue) as UserInfo
-      : userValue as UserInfo
+    const user =
+      typeof userValue === 'string' ? (JSON.parse(userValue) as UserInfo) : (userValue as UserInfo)
     return { token, user }
   } catch {
     // 解析失败，清除无效 Cookie

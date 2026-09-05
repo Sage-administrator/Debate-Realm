@@ -95,7 +95,7 @@ export function getSystemFieldDef(fieldKey: string): SystemFieldDef | undefined 
  */
 export async function ensureSystemFieldsForTournament(
   prisma: any,
-  tournamentId: string
+  tournamentId: string,
 ): Promise<void> {
   const existing = await prisma.registrationField.findFirst({
     where: { tournamentId, systemField: true },
@@ -126,11 +126,15 @@ export async function ensureSystemFieldsForTournament(
  * ponytail: 使用 safeJsonParse 消除 try-catch 样板代码
  */
 export function parseLegacyDefaultFieldsConfig(rawConfig: string | null) {
-  const stored = safeJsonParse<Record<string, { appliesTo?: string; required?: boolean }>>(rawConfig, {})
+  const stored = safeJsonParse<Record<string, { appliesTo?: string; required?: boolean }>>(
+    rawConfig,
+    {},
+  )
   return SYSTEM_FIELDS.map((f) => ({
     fieldKey: f.fieldKey,
     fieldName: f.fieldName,
     appliesTo: stored[f.fieldKey]?.appliesTo || f.defaultAppliesTo,
-    required: stored[f.fieldKey]?.required !== undefined ? stored[f.fieldKey]!.required : f.defaultRequired,
+    required:
+      stored[f.fieldKey]?.required !== undefined ? stored[f.fieldKey]!.required : f.defaultRequired,
   }))
 }

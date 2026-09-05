@@ -21,7 +21,10 @@ export default defineEventHandler(async (event) => {
 
     const validSides = ['affirmative', 'negative', 'judge', 'audience']
     if (!targetSide || !validSides.includes(targetSide)) {
-      throw createError({ statusCode: 400, message: `无效的 targetSide，可选：${validSides.join('、')}` })
+      throw createError({
+        statusCode: 400,
+        message: `无效的 targetSide，可选：${validSides.join('、')}`,
+      })
     }
 
     // 获取 Bot 实例

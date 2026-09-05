@@ -84,7 +84,7 @@ function syncFromModel() {
   const arr = (props.modelValue as string[] | undefined) || []
   const map: Record<string, string[]> = { positive: [], negative: [], other: [] }
   for (const role of arr) {
-    const g = groups.find(g => g.members.some(m => m.value === role))
+    const g = groups.find((g) => g.members.some((m) => m.value === role))
     // g 和 g.value 都已在 find 成功时保证存在
     if (g && map[g.value!]) map[g.value!]!.push(role)
   }
@@ -101,7 +101,7 @@ function onTriggerClick() {
 }
 
 function findGroup(value: string) {
-  return groups.find(g => g.members.some(m => m.value === value))
+  return groups.find((g) => g.members.some((m) => m.value === value))
 }
 
 // 切换某角色的选中状态（按角色所在分组更新）
@@ -116,7 +116,7 @@ function toggleMember(value: string) {
 }
 
 function isSelected(value: string): boolean {
-  return Object.values(multiSelected.value).some(list => list.includes(value))
+  return Object.values(multiSelected.value).some((list) => list.includes(value))
 }
 
 // 确认：展平为角色 label 列表回写
@@ -142,9 +142,7 @@ function confirm() {
       @click="onTriggerClick"
     >
       <span
-        :class="(modelValue as string[])?.length
-          ? 'role-picker-value'
-          : 'role-picker-placeholder'"
+        :class="(modelValue as string[])?.length ? 'role-picker-value' : 'role-picker-placeholder'"
       >
         {{ getDisplayText() }}
       </span>
@@ -174,7 +172,10 @@ function confirm() {
                 :class="{ 'role-picker-item--active': isSelected(m.value) }"
                 @click="toggleMember(m.value)"
               >
-                <span class="role-picker-check" :class="{ 'role-picker-check--checked': isSelected(m.value) }">
+                <span
+                  class="role-picker-check"
+                  :class="{ 'role-picker-check--checked': isSelected(m.value) }"
+                >
                   <UIcon v-if="isSelected(m.value)" name="i-lucide-check" class="w-3 h-3" />
                 </span>
                 <span>{{ formatRole(m.value) }}</span>
@@ -183,9 +184,7 @@ function confirm() {
 
             <!-- 确定按钮 -->
             <div class="role-picker-confirm-bar">
-              <button class="role-picker-confirm-btn" @click="confirm">
-                确定
-              </button>
+              <button class="role-picker-confirm-btn" @click="confirm">确定</button>
             </div>
           </div>
         </div>
@@ -199,7 +198,7 @@ function confirm() {
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--rp-active-text, #07C160);
+  color: var(--rp-active-text, #07c160);
   background: var(--rp-hover-bg, rgba(0, 0, 0, 0.03));
   border-bottom: 1px solid var(--rp-divider, rgba(0, 0, 0, 0.06));
   border-top: 1px solid var(--rp-divider, rgba(0, 0, 0, 0.06));

@@ -70,7 +70,9 @@ export function useStageEditor(opts: StageEditorOptions) {
   const { config, loadConfig, saveConfig } = useTimerConfig()
 
   function genTmpId(): string {
-    return 'tmp_' + (crypto?.randomUUID?.() || Date.now() + '_' + Math.random().toString(36).slice(2))
+    return (
+      'tmp_' + (crypto?.randomUUID?.() || Date.now() + '_' + Math.random().toString(36).slice(2))
+    )
   }
 
   // 分类栏数据
@@ -79,20 +81,9 @@ export function useStageEditor(opts: StageEditorOptions) {
     { type: 'bilateral_debate', name: '双计时器环节', label: '双计时器' },
     { type: 'no_timer', name: '无计时器环节', label: '无计时器' },
   ]
-  const speechTypes = [
-    { name: '立论' },
-    { name: '驳论' },
-    { name: '小结' },
-    { name: '总结陈词' },
-  ]
-  const questionTypes = [
-    { name: '质询' },
-    { name: '盘问' },
-  ]
-  const dualTypes = [
-    { name: '对辩' },
-    { name: '自由辩论' },
-  ]
+  const speechTypes = [{ name: '立论' }, { name: '驳论' }, { name: '小结' }, { name: '总结陈词' }]
+  const questionTypes = [{ name: '质询' }, { name: '盘问' }]
+  const dualTypes = [{ name: '对辩' }, { name: '自由辩论' }]
 
   /** 获取环节对应的角色信息（用于卡片头标题显示） */
   function getStageSpeaker(stage: any): string {
@@ -109,9 +100,10 @@ export function useStageEditor(opts: StageEditorOptions) {
     if (t === 'single_question') {
       const strip = (s: string) => (s || '').replace(/[·\/\s\-]/g, '')
       const q = strip(questioner || '反方·二辩')
-      const rList = responders && responders.length
-        ? responders.map((r: string) => strip(r))
-        : [strip(responder || '正方·一辩')]
+      const rList =
+        responders && responders.length
+          ? responders.map((r: string) => strip(r))
+          : [strip(responder || '正方·一辩')]
       return `${q} · ${stage.name || ''} · ${rList.join('、')}`
     }
     if (isDualTimer(t)) {
@@ -120,7 +112,9 @@ export function useStageEditor(opts: StageEditorOptions) {
     if (t === 'no_timer') {
       const speakers: string[] = Array.isArray(stage.speakers)
         ? stage.speakers
-        : (typeof stage.speakers === 'string' && stage.speakers ? JSON.parse(stage.speakers) : [])
+        : typeof stage.speakers === 'string' && stage.speakers
+          ? JSON.parse(stage.speakers)
+          : []
       return speakers.length ? speakers.join('、') : ''
     }
     return ''
@@ -158,7 +152,15 @@ export function useStageEditor(opts: StageEditorOptions) {
     return [
       { id: 1, name: '开篇立论', duration: 180, type: 'single_speech', order: 1 },
       { id: 2, name: '攻辩', duration: 120, type: 'single_speech', order: 2 },
-      { id: 3, name: '自由辩论', duration: 240, type: 'free_debate', order: 3, positiveDuration: 120, negativeDuration: 120 },
+      {
+        id: 3,
+        name: '自由辩论',
+        duration: 240,
+        type: 'free_debate',
+        order: 3,
+        positiveDuration: 120,
+        negativeDuration: 120,
+      },
       { id: 4, name: '总结陈词', duration: 180, type: 'single_speech', order: 4 },
     ]
   }
@@ -180,7 +182,7 @@ export function useStageEditor(opts: StageEditorOptions) {
     const newStage: Stage = {
       id: genTmpId(),
       name,
-      duration: (isNoTimer(type) || isPpt(type)) ? 0 : 180,
+      duration: isNoTimer(type) || isPpt(type) ? 0 : 180,
       type: type as Stage['type'],
       orderIndex: (config.value.stages as Stage[]).length + 1,
       description: '',
@@ -241,8 +243,8 @@ export function useStageEditor(opts: StageEditorOptions) {
   function onDrop(targetId: string | number) {
     if (dragSourceId.value === null || dragSourceId.value === targetId) return
     const stages = config.value.stages as Stage[]
-    const sourceIdx = stages.findIndex(s => s.id === dragSourceId.value)
-    const targetIdx = stages.findIndex(s => s.id === targetId)
+    const sourceIdx = stages.findIndex((s) => s.id === dragSourceId.value)
+    const targetIdx = stages.findIndex((s) => s.id === targetId)
     if (sourceIdx < 0 || targetIdx < 0) return
     const [item] = stages.splice(sourceIdx, 1)
     if (item) stages.splice(targetIdx, 0, item)
@@ -259,25 +261,28 @@ export function useStageEditor(opts: StageEditorOptions) {
     expandedId.value = expandedId.value === id ? null : id
   }
 
-  function onStageFormUpdate(stage: Stage, formData: {
-    type: string
-    name: string
-    duration: number
-    protectionTime: number
-    speaker?: string
-    questioner?: string
-    responders?: string[]
-    firstSpeaker?: string
-    positiveSpeakers?: string[]
-    negativeSpeakers?: string[]
-    questionDuration?: number
-    answerDuration?: number
-    speakers?: string[]
-    pptImage?: string
-    speakerMode?: number
-    questionerMode?: number
-    respondersMode?: number
-  }) {
+  function onStageFormUpdate(
+    stage: Stage,
+    formData: {
+      type: string
+      name: string
+      duration: number
+      protectionTime: number
+      speaker?: string
+      questioner?: string
+      responders?: string[]
+      firstSpeaker?: string
+      positiveSpeakers?: string[]
+      negativeSpeakers?: string[]
+      questionDuration?: number
+      answerDuration?: number
+      speakers?: string[]
+      pptImage?: string
+      speakerMode?: number
+      questionerMode?: number
+      respondersMode?: number
+    },
+  ) {
     stage.type = formData.type
     stage.name = formData.name
     stage.protectionTime = formData.protectionTime
@@ -310,9 +315,9 @@ export function useStageEditor(opts: StageEditorOptions) {
   }
 
   function applyTemplate(tplId: string) {
-    const tpl = debateTemplates.find(t => t.id === tplId)
+    const tpl = debateTemplates.find((t) => t.id === tplId)
     if (!tpl) return
-    config.value.stages = tpl.stages.map(s => ({
+    config.value.stages = tpl.stages.map((s) => ({
       id: genTmpId(),
       ...s,
     }))

@@ -7,7 +7,5 @@
     "bradlc.vscode-tailwindcss",
     "editorconfig.editorconfig"
   ],
-  "unwantedRecommendations": [
-    "octref.vetur"
-  ]
+  "unwantedRecommendations": ["octref.vetur"]
 }

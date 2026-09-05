@@ -53,15 +53,15 @@ export default defineEventHandler(async (event) => {
     return {
       active: true,
       total: arenas.length,
-      arenas: arenas.map(arena => ({
+      arenas: arenas.map((arena) => ({
         id: arena.id,
         name: arena.name,
         matchFormat: arena.matchFormat,
         status: arena.status,
-        channelId: arena.channelId,  // 子频道ID（赛场主阵地）
-        guildId: arena.guildId,      // 频道ID（容器）
+        channelId: arena.channelId, // 子频道ID（赛场主阵地）
+        guildId: arena.guildId, // 频道ID（容器）
         createdAt: arena.createdAt,
-        roles: arena.roles.map(r => ({
+        roles: arena.roles.map((r) => ({
           id: r.id,
           label: r.label,
           side: r.side,
@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
           qqRoleId: r.qqRoleId,
           maxCount: r.maxCount,
           claimedCount: r.claims.length,
-          claims: r.claims.map(c => ({
+          claims: r.claims.map((c) => ({
             userId: c.userId,
             username: c.username,
           })),

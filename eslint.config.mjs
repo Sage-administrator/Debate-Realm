@@ -23,7 +23,7 @@ export default withNuxt(
     rules: {
       // 关闭可能冲突的规则（根据项目实际情况调整）
       'vue/multi-word-component-names': 'off', // 单字组件名在辩论赛场景中很常见
-      'vue/no-v-html': 'warn',                 // v-html 使用需谨慎
+      'vue/no-v-html': 'warn', // v-html 使用需谨慎
       'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
       'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     },

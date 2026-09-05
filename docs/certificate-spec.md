@@ -23,22 +23,25 @@
 采用与 `TimerDisplay` 一致的**单一视觉来源 + 固定设计坐标系**策略，彻底避免「预览 ≠ 导出」漂移。
 
 ### 2.1 设计基准（design base）= 导出分辨率
+
 编辑器内纸张用**固定 px 尺寸**渲染，外层用 `transform: scale()` 等比缩放填充。
 
-| 预设 | 设计基准 (px) | 比例 | 说明 |
-|---|---|---|---|
-| **A4 横向**（默认） | 1754 × 1240 | ≈1.414 | 150 DPI，最常见证书版式 |
-| A4 纵向 | 1240 × 1754 | ≈0.707 | 竖向荣誉证书 |
-| 方形 1:1 | 1400 × 1400 | 1 | 社交分享友好 |
-| 宽屏 16:9 | 1600 × 900 | 1.778 | 投屏/线上展示 |
+| 预设                | 设计基准 (px) | 比例   | 说明                    |
+| ------------------- | ------------- | ------ | ----------------------- |
+| **A4 横向**（默认） | 1754 × 1240   | ≈1.414 | 150 DPI，最常见证书版式 |
+| A4 纵向             | 1240 × 1754   | ≈0.707 | 竖向荣誉证书            |
+| 方形 1:1            | 1400 × 1400   | 1      | 社交分享友好            |
+| 宽屏 16:9           | 1600 × 900    | 1.778  | 投屏/线上展示           |
 
 ### 2.2 缩放引擎（复用 TimerPreview 技术）
+
 - 外层容器用 `ResizeObserver` 测量可用宽高，`scale = min(availW/baseW, availH/baseH) × zoom`。
 - 纸张 `transform: scale(scale); transform-origin: top left`，外层容器显式设 `baseW*scale × baseH*scale` 占位，避免留白/溢出。
 - 提供缩放滑块（0.5×–2×）+「适应屏幕 / 实际大小」快捷键。
 - 所有文字、边框、间距在纸张内部**一律用固定 px**（不随容器变），保证导出像素级一致。
 
 ### 2.3 导出分辨率（DPI 映射）
+
 - **PNG**：`html-to-image` 的 `toPng(node, { pixelRatio })`。
   - 标准（150 DPI）：`pixelRatio = 1` → 直接按设计基准导出。
   - 高清（300 DPI）：`pixelRatio = 2` → A4 横向输出 3508×2480。
@@ -92,6 +95,7 @@ certificate.vue (page)
 ## 5. 模板与字段
 
 **内置模板**（各自含默认内容 + 纸张配色）：
+
 1. 冠军证书（红金官方风）
 2. 亚军证书
 3. 季军证书
@@ -100,24 +104,25 @@ certificate.vue (page)
 6. 自定义（空白，用户全改）
 
 **可编辑字段（config 模型）**：
+
 ```ts
 interface CertificateConfig {
   size: 'a4-landscape' | 'a4-portrait' | 'square' | '16:9'
   template: string
-  title: string            // 证书标题，如「荣誉证书」
-  recipientName: string    // 获得者
+  title: string // 证书标题，如「荣誉证书」
+  recipientName: string // 获得者
   recipientType: 'team' | 'person'
-  recipientLogo?: string   // 队徽 url
-  tournamentName: string   // 自动
-  awardText: string        // 颁奖词/事由，如「在 XX 辩论赛中获得冠军」
-  date: string             // 颁发日期
-  issuer: string           // 落款/主办方，自动
+  recipientLogo?: string // 队徽 url
+  tournamentName: string // 自动
+  awardText: string // 颁奖词/事由，如「在 XX 辩论赛中获得冠军」
+  date: string // 颁发日期
+  issuer: string // 落款/主办方，自动
   style: {
     theme: 'gold' | 'blue' | 'red' | 'custom'
     border: 'classic' | 'modern' | 'none'
     font: 'serif' | 'sans' | 'kai'
-    bg: string             // 背景（渐变/纯色/图）
-    seal: boolean          // 印章显隐
+    bg: string // 背景（渐变/纯色/图）
+    seal: boolean // 印章显隐
   }
 }
 ```
@@ -153,13 +158,13 @@ interface CertificateConfig {
 
 ## 9. 技术风险与对策
 
-| 风险 | 对策 |
-|---|---|
-| 预览 ≠ 导出（尺寸漂移） | 固定设计坐标 + 单一 `CertificatePaper` 来源，导出直接截该节点 |
-| Web 字体未嵌入 PNG | 导出前 `await document.fonts.ready`；html-to-image 自动内联 |
-| 大基准 DOM 卡顿 | 设计基准用 150 DPI；编辑态不渲染高清，仅导出时 `pixelRatio=2` |
-| 暗色主题污染纸张 | 纸张强制浅色背景 + 独立作用域样式 |
-| 队徽/背景跨域污染 canvas | 队徽来自同域 `/uploads`；若用外链图需 `crossOrigin` |
+| 风险                     | 对策                                                          |
+| ------------------------ | ------------------------------------------------------------- |
+| 预览 ≠ 导出（尺寸漂移）  | 固定设计坐标 + 单一 `CertificatePaper` 来源，导出直接截该节点 |
+| Web 字体未嵌入 PNG       | 导出前 `await document.fonts.ready`；html-to-image 自动内联   |
+| 大基准 DOM 卡顿          | 设计基准用 150 DPI；编辑态不渲染高清，仅导出时 `pixelRatio=2` |
+| 暗色主题污染纸张         | 纸张强制浅色背景 + 独立作用域样式                             |
+| 队徽/背景跨域污染 canvas | 队徽来自同域 `/uploads`；若用外链图需 `crossOrigin`           |
 
 ---
 

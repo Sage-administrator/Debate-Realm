@@ -12,10 +12,12 @@ export type ResultSettingsRequest = z.infer<typeof ResultSettingsRequest>
 
 /** Update default registration fields */
 export const DefaultFieldsRequest = z.object({
-  fields: z.array(z.object({
-    fieldKey: z.string().min(1),
-    appliesTo: z.string(),
-    required: z.boolean(),
-  })),
+  fields: z.array(
+    z.object({
+      fieldKey: z.string().min(1),
+      appliesTo: z.string(),
+      required: z.boolean(),
+    }),
+  ),
 })
 export type DefaultFieldsRequest = z.infer<typeof DefaultFieldsRequest>

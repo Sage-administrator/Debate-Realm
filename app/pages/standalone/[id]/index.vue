@@ -28,9 +28,15 @@ async function handleDeleteMatch() {
 }
 
 // ── 工具函数 ──
-const statusLabel = (s: string) => ({ pending: '待开始', running: '进行中', finished: '已完成' }[s] || s)
-const statusColor = (s: string): 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral' => {
-  return ({ pending: 'neutral', running: 'primary', finished: 'success' } as Record<string, any>)[s] || 'neutral'
+const statusLabel = (s: string) =>
+  ({ pending: '待开始', running: '进行中', finished: '已完成' })[s] || s
+const statusColor = (
+  s: string,
+): 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral' => {
+  return (
+    ({ pending: 'neutral', running: 'primary', finished: 'success' } as Record<string, any>)[s] ||
+    'neutral'
+  )
 }
 
 // ── 解析 description 中的扩展信息 ──
@@ -46,7 +52,9 @@ const extendedInfo = computed(() => {
   <div v-if="standaloneMatch" class="space-y-6">
     <!-- 基本信息卡片 -->
     <div class="glass-card p-6">
-      <h2 class="text-base font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+      <h2
+        class="text-base font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2"
+      >
         <UIcon name="i-lucide-info" class="w-4 h-4 text-[var(--color-text-muted)]" />
         赛事概览
       </h2>
@@ -54,9 +62,20 @@ const extendedInfo = computed(() => {
       <!-- 状态徽章 -->
       <div class="flex items-center gap-3 mb-5 pb-4 border-b border-[var(--color-border)]">
         <span class="text-sm text-[var(--color-text-muted)]">当前状态：</span>
-        <UBadge :label="statusLabel(standaloneMatch.status)" :color="statusColor(standaloneMatch.status)" size="sm" variant="soft" />
+        <UBadge
+          :label="statusLabel(standaloneMatch.status)"
+          :color="statusColor(standaloneMatch.status)"
+          size="sm"
+          variant="soft"
+        />
         <span v-if="standaloneMatch.scheduledAt" class="text-sm text-[var(--color-text-muted)]">
-          · {{ new Date(standaloneMatch.scheduledAt).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' }) }}
+          ·
+          {{
+            new Date(standaloneMatch.scheduledAt).toLocaleDateString('zh-CN', {
+              year: 'numeric',
+              month: 'long',
+            })
+          }}
         </span>
       </div>
 
@@ -64,25 +83,40 @@ const extendedInfo = computed(() => {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div class="bg-[var(--color-bg-secondary)] rounded-md p-4">
           <p class="text-xs text-[var(--color-text-muted)] mb-1">赛事名称</p>
-          <p class="text-sm font-medium text-[var(--color-text-primary)]">{{ standaloneMatch.name }}</p>
+          <p class="text-sm font-medium text-[var(--color-text-primary)]">
+            {{ standaloneMatch.name }}
+          </p>
         </div>
         <div class="bg-[var(--color-bg-secondary)] rounded-md p-4">
           <p class="text-xs text-[var(--color-text-muted)] mb-1">举办地点</p>
-          <p class="text-sm font-medium text-[var(--color-text-primary)]">{{ standaloneMatch.venue || '未设置' }}</p>
+          <p class="text-sm font-medium text-[var(--color-text-primary)]">
+            {{ standaloneMatch.venue || '未设置' }}
+          </p>
         </div>
         <div class="bg-[var(--color-bg-secondary)] rounded-md p-4">
           <p class="text-xs text-[var(--color-text-muted)] mb-1">比赛时间</p>
           <p class="text-sm font-medium text-[var(--color-text-primary)]">
-            {{ standaloneMatch.scheduledAt ? new Date(standaloneMatch.scheduledAt).toLocaleString('zh-CN') : '未设置' }}
+            {{
+              standaloneMatch.scheduledAt
+                ? new Date(standaloneMatch.scheduledAt).toLocaleString('zh-CN')
+                : '未设置'
+            }}
           </p>
         </div>
         <div class="bg-[var(--color-bg-secondary)] rounded-md p-4">
           <p class="text-xs text-[var(--color-text-muted)] mb-1">当前状态</p>
-          <UBadge :label="statusLabel(standaloneMatch.status)" :color="statusColor(standaloneMatch.status)" size="xs" variant="soft" />
+          <UBadge
+            :label="statusLabel(standaloneMatch.status)"
+            :color="statusColor(standaloneMatch.status)"
+            size="xs"
+            variant="soft"
+          />
         </div>
         <div class="bg-[var(--color-bg-secondary)] rounded-md p-4">
           <p class="text-xs text-[var(--color-text-muted)] mb-1">创建时间</p>
-          <p class="text-sm font-medium text-[var(--color-text-primary)]">{{ new Date(standaloneMatch.createdAt).toLocaleDateString('zh-CN') }}</p>
+          <p class="text-sm font-medium text-[var(--color-text-primary)]">
+            {{ new Date(standaloneMatch.createdAt).toLocaleDateString('zh-CN') }}
+          </p>
         </div>
       </div>
 
@@ -94,7 +128,8 @@ const extendedInfo = computed(() => {
             v-for="info in extendedInfo"
             :key="info"
             class="px-3 py-1 text-xs text-[var(--color-text-primary)] bg-[var(--color-bg-tertiary)] rounded-full"
-          >{{ info }}</span>
+            >{{ info }}</span
+          >
         </div>
       </div>
     </div>

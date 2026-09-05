@@ -57,22 +57,24 @@ export default defineEventHandler(async (event) => {
       try {
         const rows: any = await prisma.$queryRawUnsafe(
           `SELECT "id", "originalChannelName" FROM "BotArena" WHERE "id" IN (${arenas.map(() => '?').join(',')})`,
-          ...arenas.map(a => a.id),
+          ...arenas.map((a) => a.id),
         )
         for (const r of rows) origMap[r.id] = r.originalChannelName || null
-      } catch { /* 列不存在时忽略 */ }
+      } catch {
+        /* 列不存在时忽略 */
+      }
     }
 
     return {
       success: true,
       total: arenas.length,
-      arenas: arenas.map(arena => ({
+      arenas: arenas.map((arena) => ({
         id: arena.id,
         name: arena.name,
         matchFormat: arena.matchFormat,
         status: arena.status,
-        channelId: arena.channelId,  // 子频道ID（赛场主阵地）
-        guildId: arena.guildId,      // 频道ID（容器）
+        channelId: arena.channelId, // 子频道ID（赛场主阵地）
+        guildId: arena.guildId, // 频道ID（容器）
         originalChannelName: origMap[arena.id] || null, // 语音子频道原名（赛场期间被改名，结束后还原）
         roleCount: arena._count.roles,
         totalClaims: arena.roles.reduce((sum, r) => sum + r._count.claims, 0),

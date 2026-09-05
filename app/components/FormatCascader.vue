@@ -29,9 +29,9 @@ const emit = defineEmits<{
 
 // 赛制选项的数据结构
 interface FormatOption {
-  value: string                                      // 选项值（用于回写）
-  label: string                                      // 选项展示文本
-  children?: { value: string; label: string }[]      // 二级子选项列表（可选）
+  value: string // 选项值（用于回写）
+  label: string // 选项展示文本
+  children?: { value: string; label: string }[] // 二级子选项列表（可选）
 }
 
 const formatOptions: FormatOption[] = [
@@ -99,8 +99,12 @@ const hasValue = computed(() => {
 })
 
 // 面包屑文本
-const primaryLabel = computed(() => formatOptions.find((x) => x.value === props.primary)?.label ?? '请选择赛制')
-const secondaryLabel = computed(() => currentChildren.value.find((x) => x.value === props.secondary)?.label ?? '请选择')
+const primaryLabel = computed(
+  () => formatOptions.find((x) => x.value === props.primary)?.label ?? '请选择赛制',
+)
+const secondaryLabel = computed(
+  () => currentChildren.value.find((x) => x.value === props.secondary)?.label ?? '请选择',
+)
 
 // ── 面板定位 ──
 function updatePanelPosition() {
@@ -172,7 +176,10 @@ onBeforeUnmount(() => {
       @click.stop="openDropdown"
       :class="{ 'is-active': open, 'has-value': hasValue }"
     >
-      <span class="cascader-text" :class="hasValue ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'">
+      <span
+        class="cascader-text"
+        :class="hasValue ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'"
+      >
         {{ displayText }}
       </span>
       <UIcon name="i-lucide-chevron-down" class="cascader-icon" :class="{ 'is-open': open }" />
@@ -193,15 +200,16 @@ onBeforeUnmount(() => {
               @click.stop="pickPrimary(o.value)"
             >
               <span>{{ o.label }}</span>
-              <UIcon v-if="o.children && o.children.length > 0" name="i-lucide-chevron-right" class="cascader-arrow" />
+              <UIcon
+                v-if="o.children && o.children.length > 0"
+                name="i-lucide-chevron-right"
+                class="cascader-arrow"
+              />
             </div>
           </div>
           <!-- 二级 -->
           <div v-else class="cascader-list-inner">
-            <div
-              class="cascader-option cascader-option-back"
-              @click.stop="backToPrimary"
-            >
+            <div class="cascader-option cascader-option-back" @click.stop="backToPrimary">
               <UIcon name="i-lucide-chevron-left" class="cascader-arrow" />
               <span>返回 {{ primaryLabel }}</span>
             </div>
@@ -285,7 +293,9 @@ onBeforeUnmount(() => {
   border-radius: 6px;
   background: var(--fc-trigger-bg);
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
   width: 100%;
   box-sizing: border-box;
 }
@@ -343,8 +353,14 @@ onBeforeUnmount(() => {
 }
 
 @keyframes cascader-fade-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── 面包屑 ── */
@@ -363,7 +379,9 @@ onBeforeUnmount(() => {
   cursor: pointer;
   padding: 2px 4px;
   border-radius: 4px;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
   color: var(--fc-text-muted);
 }
 
@@ -422,7 +440,9 @@ onBeforeUnmount(() => {
   color: var(--fc-option);
   border-radius: 4px;
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
 }
 
 .cascader-option:hover {

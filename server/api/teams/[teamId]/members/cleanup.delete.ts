@@ -25,14 +25,14 @@ export default defineEventHandler(async (event) => {
     })
 
     // 过滤出子账号成员（排除管理员）
-    const subaccounts = subaccountMembers.filter(m => m.user.role === 'subaccount')
+    const subaccounts = subaccountMembers.filter((m) => m.user.role === 'subaccount')
 
     if (subaccounts.length === 0) {
       return { deleted: 0, message: '没有子账号需要清理' }
     }
 
     // 删除所有子账号的 TeamMember 和 User 记录
-    const userIds = subaccounts.map(m => m.userId)
+    const userIds = subaccounts.map((m) => m.userId)
 
     // 删除 TeamMember 记录
     await prisma.teamMember.deleteMany({

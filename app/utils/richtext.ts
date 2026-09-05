@@ -13,8 +13,26 @@
  */
 
 const ALLOWED_TAGS = new Set([
-  'P', 'BR', 'STRONG', 'B', 'EM', 'I', 'U', 'S', 'STRIKE',
-  'SPAN', 'DIV', 'A', 'UL', 'OL', 'LI', 'H1', 'H2', 'H3', 'H4', 'CODE',
+  'P',
+  'BR',
+  'STRONG',
+  'B',
+  'EM',
+  'I',
+  'U',
+  'S',
+  'STRIKE',
+  'SPAN',
+  'DIV',
+  'A',
+  'UL',
+  'OL',
+  'LI',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'CODE',
 ])
 
 const ALLOWED_ATTRS: Record<string, Set<string>> = {
@@ -29,7 +47,13 @@ export function isRich(html: string): boolean {
 }
 
 export function escapeHtml(s: string): string {
-  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }
   // c 是正则匹配的字符，一定是 map 中的 key
   return (s || '').replace(/[&<>"']/g, (c) => map[c]!)
 }
@@ -37,7 +61,10 @@ export function escapeHtml(s: string): string {
 /** 服务端兜底：移除危险标签与事件属性，不做结构级解析 */
 function stripDangerousServer(html: string): string {
   return (html || '')
-    .replace(/<\s*(script|iframe|object|embed|style|link|meta|form|input|button)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
+    .replace(
+      /<\s*(script|iframe|object|embed|style|link|meta|form|input|button)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi,
+      '',
+    )
     .replace(/<\s*(script|iframe|object|embed|style|link|meta|form|input|button)[^>]*\/?>/gi, '')
     .replace(/\s+on\w+\s*=\s*"[^"]*"/gi, '')
     .replace(/\s+on\w+\s*=\s*'[^']*'/gi, '')

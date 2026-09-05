@@ -50,7 +50,7 @@ export default defineEventHandler(async (event) => {
       // 管理员可代录任何评委的评分，直接放行
     } else {
       // 策略2：评委身份校验 —— 必须在赛事评委名单中
-      const judgeNames = tournament.judges.map(j => j.name)
+      const judgeNames = tournament.judges.map((j) => j.name)
       if (!judgeNames.includes(judgeName)) {
         throw createError({
           statusCode: 403,
@@ -65,7 +65,10 @@ export default defineEventHandler(async (event) => {
     const { dimensions, reason, scoreTeamA, scoreTeamB, winner, bestDebaterA, bestDebaterB } = body
 
     if (!matchId || !judgeName || !dimensions) {
-      throw createError({ statusCode: 400, message: '缺少必要参数：matchId、judgeName、dimensions' })
+      throw createError({
+        statusCode: 400,
+        message: '缺少必要参数：matchId、judgeName、dimensions',
+      })
     }
 
     if (typeof scoreTeamA !== 'number' || typeof scoreTeamB !== 'number') {
@@ -90,7 +93,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 通过 Bot 发送评分提交通知（异步，不阻塞响应）
-    notifyScoreSubmitted(prisma, matchId, judgeName).catch(err => {
+    notifyScoreSubmitted(prisma, matchId, judgeName).catch((err) => {
       console.error('[Scores] Bot 通知发送失败:', err)
     })
 

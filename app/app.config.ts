@@ -13,7 +13,8 @@ export default defineAppConfig({
     } as any,
     // 模态框组件：使用 CSS 变量，支持深浅色模式
     modal: {
-      content: 'bg-[var(--color-surface-elevated)] backdrop-blur-xl border border-[var(--color-border-accented)] rounded-2xl text-[var(--color-text-primary)] shadow-[var(--shadow-xl)]',
+      content:
+        'bg-[var(--color-surface-elevated)] backdrop-blur-xl border border-[var(--color-border-accented)] rounded-2xl text-[var(--color-text-primary)] shadow-[var(--shadow-xl)]',
       header: 'text-[var(--color-text-primary)]',
       title: 'text-[var(--color-text-primary)] font-bold',
       description: 'text-[var(--color-text-muted)]',
@@ -25,19 +26,22 @@ export default defineAppConfig({
     button: {
       neutral: {
         color: 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]',
-        outline: 'border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',
+        outline:
+          'border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',
       },
     } as any,
     // 下拉菜单组件：使用 CSS 变量，支持深浅色模式
     dropdownMenu: {
-      content: 'bg-[var(--color-surface-elevated)] backdrop-blur-xl border border-[var(--color-border-accented)] rounded-xl text-[var(--color-text-primary)] shadow-[var(--shadow-xl)]',
+      content:
+        'bg-[var(--color-surface-elevated)] backdrop-blur-xl border border-[var(--color-border-accented)] rounded-xl text-[var(--color-text-primary)] shadow-[var(--shadow-xl)]',
       item: 'text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-bg)]',
       itemActive: 'bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)]',
       separator: 'border-[var(--color-border)]',
     } as any,
     // 选择菜单组件（SelectMenu）：使用 CSS 变量，支持深浅色模式
     selectMenu: {
-      content: 'bg-[var(--color-surface-elevated)] backdrop-blur-xl border border-[var(--color-border-accented)] rounded-xl text-[var(--color-text-primary)] shadow-[var(--shadow-xl)]',
+      content:
+        'bg-[var(--color-surface-elevated)] backdrop-blur-xl border border-[var(--color-border-accented)] rounded-xl text-[var(--color-text-primary)] shadow-[var(--shadow-xl)]',
       item: 'text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-bg)]',
       itemActive: 'bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)]',
       label: 'text-[var(--color-text-muted)]',
@@ -45,7 +49,8 @@ export default defineAppConfig({
     } as any,
     // Select 组件：使用 CSS 变量，支持深浅色模式
     select: {
-      content: 'bg-[var(--color-surface-elevated)] backdrop-blur-xl border border-[var(--color-border-accented)] rounded-xl text-[var(--color-text-primary)] shadow-[var(--shadow-xl)]',
+      content:
+        'bg-[var(--color-surface-elevated)] backdrop-blur-xl border border-[var(--color-border-accented)] rounded-xl text-[var(--color-text-primary)] shadow-[var(--shadow-xl)]',
       viewport: 'p-1',
       item: 'text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-bg)] rounded-lg',
       itemActive: 'bg-[var(--color-accent-bg)] text-[var(--color-accent-primary)]',
@@ -73,7 +78,11 @@ export default defineAppConfig({
       // neutral soft 用 text-default bg-elevated 本身可读，无需处理；solid/outline 不受影响。
       compoundVariants: [
         { color: 'primary', variant: 'soft', class: 'text-primary-700! dark:text-primary-200!' },
-        { color: 'secondary', variant: 'soft', class: 'text-secondary-700! dark:text-secondary-200!' },
+        {
+          color: 'secondary',
+          variant: 'soft',
+          class: 'text-secondary-700! dark:text-secondary-200!',
+        },
         { color: 'success', variant: 'soft', class: 'text-success-700! dark:text-success-300!' },
         { color: 'info', variant: 'soft', class: 'text-info-700! dark:text-info-300!' },
         { color: 'warning', variant: 'soft', class: 'text-warning-700! dark:text-warning-300!' },

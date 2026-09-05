@@ -167,7 +167,5 @@ export function buildVoterFingerprint(ip: string | null, userAgent: string | und
 export function parseTopics(topicsJson: string): TopicItem[] {
   const arr = safeJsonParse<any[] | null>(topicsJson, null)
   if (!Array.isArray(arr)) return []
-  return arr
-    .map(normalizeTopicItem)
-    .filter((t): t is TopicItem => t !== null)
+  return arr.map(normalizeTopicItem).filter((t): t is TopicItem => t !== null)
 }

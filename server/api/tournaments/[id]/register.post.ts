@@ -25,8 +25,14 @@ export default defineEventHandler(async (event) => {
     }>(event)
 
     const {
-      type, teamName, submitterName, contactPhone,
-      contactEmail, notes, customData, members,
+      type,
+      teamName,
+      submitterName,
+      contactPhone,
+      contactEmail,
+      notes,
+      customData,
+      members,
     } = body
 
     // 3. 可选鉴权：尝试获取当前登录用户，未登录时 user 为 null（不抛错）

@@ -10,8 +10,14 @@ export default defineEventHandler(async (event) => {
 
     // 读取请求体
     const body = await readBody<{
-      name?: string; description?: string; format?: string; status?: string; scheduledAt?: string; venue?: string;
-      teams?: string[]; judges?: string[];
+      name?: string
+      description?: string
+      format?: string
+      status?: string
+      scheduledAt?: string
+      venue?: string
+      teams?: string[]
+      judges?: string[]
     }>(event)
 
     const { name, description, format, status, scheduledAt, venue, teams, judges } = body
@@ -20,8 +26,13 @@ export default defineEventHandler(async (event) => {
     const { tournament } = await requireWriteTournament(event, prisma, id)
 
     // 更新基础信息
-    const hasBasicUpdate = name !== undefined || description !== undefined || format !== undefined
-      || status !== undefined || scheduledAt !== undefined || venue !== undefined
+    const hasBasicUpdate =
+      name !== undefined ||
+      description !== undefined ||
+      format !== undefined ||
+      status !== undefined ||
+      scheduledAt !== undefined ||
+      venue !== undefined
     if (hasBasicUpdate) {
       await prisma.tournament.update({
         where: { id },
@@ -30,7 +41,12 @@ export default defineEventHandler(async (event) => {
           description: description !== undefined ? description : tournament.description,
           format: format ?? tournament.format,
           status: status ?? tournament.status,
-          scheduledAt: scheduledAt !== undefined ? (scheduledAt ? new Date(scheduledAt) : null) : tournament.scheduledAt,
+          scheduledAt:
+            scheduledAt !== undefined
+              ? scheduledAt
+                ? new Date(scheduledAt)
+                : null
+              : tournament.scheduledAt,
           venue: venue !== undefined ? venue : tournament.venue,
         },
       })

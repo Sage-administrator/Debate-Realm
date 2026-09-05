@@ -35,7 +35,9 @@ export async function logPermissionChange(
   },
 ): Promise<void> {
   const timestamp = new Date().toISOString()
-  console.log(`[PermissionLog][${timestamp}] ${params.action} | ${params.targetType}:${params.targetName}(${params.targetId}) | 操作者: ${params.operator} | ${params.detail}`)
+  console.log(
+    `[PermissionLog][${timestamp}] ${params.action} | ${params.targetType}:${params.targetName}(${params.targetId}) | 操作者: ${params.operator} | ${params.detail}`,
+  )
 
   // 持久化到数据库
   try {

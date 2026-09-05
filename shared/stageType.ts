@@ -10,10 +10,10 @@
 
 // 老值 → 新值映射（summary 保留独立类型）
 const TYPE_MAP: Record<string, string> = {
-  'speech': 'single_speech',
-  'question': 'single_question',
+  speech: 'single_speech',
+  question: 'single_question',
   'dual-timer': 'bilateral_debate',
-  'special': 'no_timer',
+  special: 'no_timer',
   // summary / 新值原样返回
 }
 
@@ -80,15 +80,15 @@ export function hasTimer(t: string | null | undefined): boolean {
 export function typeLabel(t: string | null | undefined): string {
   const n = normalizeStageType(t)
   const map: Record<string, string> = {
-    'single_speech': '单方发言',
-    'single_question': '单方发问',
-    'summary': '小结/总结',
-    'bilateral_debate': '双边对辩',
-    'free_debate': '自由辩论',
-    'single_timer': '单计时器',
-    'double_timer': '双计时器',
-    'no_timer': '无计时器',
-    'ppt_replace': 'PPT图片',
+    single_speech: '单方发言',
+    single_question: '单方发问',
+    summary: '小结/总结',
+    bilateral_debate: '双边对辩',
+    free_debate: '自由辩论',
+    single_timer: '单计时器',
+    double_timer: '双计时器',
+    no_timer: '无计时器',
+    ppt_replace: 'PPT图片',
   }
   return map[n] || n
 }

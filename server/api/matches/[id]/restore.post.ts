@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, 'id')!
 
     // 读取请求体的 currentVersion
-    const body = await readBody<{ currentVersion?: number }>(event) || {}
+    const body = (await readBody<{ currentVersion?: number }>(event)) || {}
 
     // 2. 读取比赛，确保 deletedAt 不为 null（已删除）
     const match = await prisma.match.findUnique({

@@ -18,7 +18,18 @@ definePageMeta({ layout: 'tournament' })
 const route = useRoute()
 const toast = useToast()
 const authStore = useAuthStore()
-const { updateTournamentTeams, updateTournamentJudges, getMatches, createMatch, updateMatch, deleteMatch, restoreMatch, submitResult, generateMatches, drawLots } = useTournament()
+const {
+  updateTournamentTeams,
+  updateTournamentJudges,
+  getMatches,
+  createMatch,
+  updateMatch,
+  deleteMatch,
+  restoreMatch,
+  submitResult,
+  generateMatches,
+  drawLots,
+} = useTournament()
 
 // ─── 基本数据 ────────────────────────────────────────────────────────
 // 从布局注入赛事数据
@@ -28,10 +39,10 @@ const loading = ref(false)
 const tournamentId = computed(() => route.params.id as string)
 
 // ─── 参赛队伍 / 评委 在线编辑（替代原先"创建时设置"的逻辑） ─────────────
-const editingTeams = ref(false)          // 是否处于编辑状态
+const editingTeams = ref(false) // 是否处于编辑状态
 const editingJudges = ref(false)
-const newTeamInput = ref('')             // 新增队伍的输入框
-const newJudgeInput = ref('')            // 新增评委的输入框
+const newTeamInput = ref('') // 新增队伍的输入框
+const newJudgeInput = ref('') // 新增评委的输入框
 const savingTeams = ref(false)
 const savingJudges = ref(false)
 
@@ -50,13 +61,11 @@ const teamList = computed<string[]>(() => extractNameList(tournament.value?.team
 const judgeList = computed<string[]>(() => extractNameList(tournament.value?.judges))
 
 // 队伍选项（用于 USelect）
-const teamItems = computed(() =>
-  teamList.value.map(name => ({ label: name, value: name }))
-)
+const teamItems = computed(() => teamList.value.map((name) => ({ label: name, value: name })))
 
 // ponytail: 显式声明 j 类型，避免隐式 any
 const judgeItems = computed(() =>
-  (tournament.value?.judges || []).map((j: { name: string }) => ({ label: j.name, value: j.name }))
+  (tournament.value?.judges || []).map((j: { name: string }) => ({ label: j.name, value: j.name })),
 )
 
 // 添加队伍
@@ -92,9 +101,9 @@ async function saveTeams() {
     toast.add({ title: '队伍已保存', color: 'success' })
     editingTeams.value = false
   } catch (e: any) {
-      toast.add({ title: e?.data?.statusMessage || '保存失败', color: 'error' })
-    } finally {
-      savingTeams.value = false
+    toast.add({ title: e?.data?.statusMessage || '保存失败', color: 'error' })
+  } finally {
+    savingTeams.value = false
   }
 }
 
@@ -151,14 +160,24 @@ function cancelEditJudges() {
 // ─── 前端乐观锁：单场比赛的写入操作串行化 ─────────────────────────────────
 const matchLocks = ref<Set<string>>(new Set())
 
-function isMatchLocked(matchId: string): boolean { return matchLocks.value.has(matchId) }
-function lockMatch(matchId: string) { matchLocks.value.add(matchId) }
-function unlockMatch(matchId: string) { matchLocks.value.delete(matchId) }
+function isMatchLocked(matchId: string): boolean {
+  return matchLocks.value.has(matchId)
+}
+function lockMatch(matchId: string) {
+  matchLocks.value.add(matchId)
+}
+function unlockMatch(matchId: string) {
+  matchLocks.value.delete(matchId)
+}
 
 /**
  * 包裹写操作：确保同场比赛的写操作串行执行
  */
-async function withMatchLock<T>(matchId: string, fn: () => Promise<T>, opName: string): Promise<T | null> {
+async function withMatchLock<T>(
+  matchId: string,
+  fn: () => Promise<T>,
+  opName: string,
+): Promise<T | null> {
   lockMatch(matchId)
   try {
     const result = await fn()
@@ -230,7 +249,7 @@ const bracketMatches = computed(() => {
     .map((m: any) => {
       let roundNum = 1
       const roundStr = String(m.round)
-      
+
       // 尝试从字符串中提取第一个数字
       const digitMatch = roundStr.match(/\d+/)
       if (digitMatch) {
@@ -240,7 +259,7 @@ const bracketMatches = computed(() => {
         if (roundStr.includes('轮')) roundNum = 1
         else roundNum = 1
       }
-      
+
       return { ...m, round: roundNum }
     })
 })
@@ -283,15 +302,19 @@ async function handleCreateMatch() {
     toast.add({ title: '两支队伍不能相同', color: 'error' })
     return
   }
-  const result = await withMatchLock(`create_${Date.now()}`, async () => {
-    return await createMatch(tournamentId.value, {
-      round: createForm.value.round,
-      orderNum: createForm.value.orderNum,
-      teamA: createForm.value.teamA,
-      teamB: createForm.value.teamB,
-      scheduledAt: createForm.value.scheduledAt || undefined,
-    })
-  }, '创建比赛')
+  const result = await withMatchLock(
+    `create_${Date.now()}`,
+    async () => {
+      return await createMatch(tournamentId.value, {
+        round: createForm.value.round,
+        orderNum: createForm.value.orderNum,
+        teamA: createForm.value.teamA,
+        teamB: createForm.value.teamB,
+        scheduledAt: createForm.value.scheduledAt || undefined,
+      })
+    },
+    '创建比赛',
+  )
 
   if (result) {
     toast.add({ title: '比赛创建成功', color: 'success' })
@@ -303,7 +326,13 @@ async function handleCreateMatch() {
 // ─── 编辑比赛 Modal ───────────────────────────────────────────────────
 const showEditModal = ref(false)
 const editingMatch = ref<any>(null)
-const editForm = ref({ round: '', orderNum: 1, teamA: undefined as string | undefined, teamB: undefined as string | undefined, scheduledAt: '' })
+const editForm = ref({
+  round: '',
+  orderNum: 1,
+  teamA: undefined as string | undefined,
+  teamB: undefined as string | undefined,
+  scheduledAt: '',
+})
 
 function openEditModal(match: any) {
   if (isMatchLocked(match.id)) {
@@ -323,20 +352,28 @@ function openEditModal(match: any) {
 
 async function handleEditMatch() {
   // ⭐ 新增：队伍不能相同
-  if (editForm.value.teamA && editForm.value.teamB && editForm.value.teamA.trim() === editForm.value.teamB.trim()) {
+  if (
+    editForm.value.teamA &&
+    editForm.value.teamB &&
+    editForm.value.teamA.trim() === editForm.value.teamB.trim()
+  ) {
     toast.add({ title: '两支队伍不能相同', color: 'error' })
     return
   }
   const matchId = editingMatch.value.id
-  const result = await withMatchLock(matchId, async () => {
-    return await updateMatch(matchId, {
-      round: editForm.value.round,
-      orderNum: editForm.value.orderNum,
-      teamA: editForm.value.teamA || null,
-      teamB: editForm.value.teamB || null,
-      scheduledAt: editForm.value.scheduledAt || undefined,
-    })
-  }, '更新比赛')
+  const result = await withMatchLock(
+    matchId,
+    async () => {
+      return await updateMatch(matchId, {
+        round: editForm.value.round,
+        orderNum: editForm.value.orderNum,
+        teamA: editForm.value.teamA || null,
+        teamB: editForm.value.teamB || null,
+        scheduledAt: editForm.value.scheduledAt || undefined,
+      })
+    },
+    '更新比赛',
+  )
 
   if (result) {
     toast.add({ title: '比赛信息已更新', color: 'success' })
@@ -350,9 +387,12 @@ async function handleEditMatch() {
 const showResultModal = ref(false)
 const resultMatch = ref<any>(null)
 const resultForm = ref({
-  scoreA: 0, scoreB: 0, winner: 'A',
-  bestDebaterA: '', bestDebaterB: '',
-  judge: '',  // 评委姓名
+  scoreA: 0,
+  scoreB: 0,
+  winner: 'A',
+  bestDebaterA: '',
+  bestDebaterB: '',
+  judge: '', // 评委姓名
 })
 
 function openResultModal(match: any) {
@@ -367,7 +407,7 @@ function openResultModal(match: any) {
     winner: match.winner ? (match.winner === match.teamA ? 'A' : 'B') : 'A',
     bestDebaterA: match.bestDebaterA || '',
     bestDebaterB: match.bestDebaterB || '',
-    judge: match.judge || '',  // 评委姓名
+    judge: match.judge || '', // 评委姓名
   }
   showResultModal.value = true
 }
@@ -381,9 +421,21 @@ async function handleSubmitResult() {
   if (scoreA > scoreB) finalWinner = 'A'
   else if (scoreB > scoreA) finalWinner = 'B'
 
-  const result = await withMatchLock(matchId, async () => {
-    return await submitResult(matchId, finalWinner, scoreA, scoreB, bestDebaterA || null, bestDebaterB || null, judge || null)
-  }, '录入比分')
+  const result = await withMatchLock(
+    matchId,
+    async () => {
+      return await submitResult(
+        matchId,
+        finalWinner,
+        scoreA,
+        scoreB,
+        bestDebaterA || null,
+        bestDebaterB || null,
+        judge || null,
+      )
+    },
+    '录入比分',
+  )
 
   if (result) {
     let message = '比分录入成功'
@@ -415,10 +467,14 @@ async function handleDeleteMatch(match: any) {
     if (!secondConfirm) return
   }
 
-  await withMatchLock(match.id, async () => {
-    await deleteMatch(match.id, match.version || 1)
-    return true
-  }, '删除比赛')
+  await withMatchLock(
+    match.id,
+    async () => {
+      await deleteMatch(match.id, match.version || 1)
+      return true
+    },
+    '删除比赛',
+  )
 
   toast.add({ title: '比赛已删除', color: 'success' })
   await loadMatches()
@@ -432,9 +488,13 @@ async function handleRestoreMatch(match: any) {
   }
   if (!confirm(`确定恢复比赛 "${match.teamA} vs ${match.teamB}"？`)) return
 
-  const result = await withMatchLock(match.id, async () => {
-    return await restoreMatch(match.id, match.version || 1)
-  }, '恢复比赛')
+  const result = await withMatchLock(
+    match.id,
+    async () => {
+      return await restoreMatch(match.id, match.version || 1)
+    },
+    '恢复比赛',
+  )
 
   if (result) {
     toast.add({ title: '比赛已恢复', color: 'success' })
@@ -504,7 +564,7 @@ const TOURNAMENT_FORMATS = [
 
 // 表单状态（参赛队伍直接共用顶部的 teamList，Modal 内只读不可编辑）
 const generateForm = ref({
-  format: 'single_elimination' as typeof TOURNAMENT_FORMATS[number]['value'],
+  format: 'single_elimination' as (typeof TOURNAMENT_FORMATS)[number]['value'],
   // 种子排序
   seedMethod: 'rating' as 'random' | 'rating' | 'name',
   // 循环赛
@@ -526,7 +586,6 @@ function openGenerateModal() {
   // 要添加/删除队伍，去赛程页顶部的参赛队伍编辑区操作
   showGenerateModal.value = true
 }
-
 
 // 赛制中文名称映射（用于头部显示）
 function getFormatDisplay(): { text: string; style: string } {
@@ -673,7 +732,11 @@ function exportSchedule() {
   const header = ['轮次', '场次', '队伍A', '队伍B', '比分A', '比分B', '胜者', '状态', '开始时间']
 
   // 行数据
-  const statusMap: Record<string, string> = { pending: '未开始', finished: '已完赛', canceled: '已取消' }
+  const statusMap: Record<string, string> = {
+    pending: '未开始',
+    finished: '已完赛',
+    canceled: '已取消',
+  }
   const rows = matches.value
     .sort((a, b) => {
       if (String(a.round) !== String(b.round)) return String(a.round).localeCompare(String(b.round))
@@ -694,7 +757,8 @@ function exportSchedule() {
   // 组合 CSV（简单实现，支持中文字符）
   const escape = (v: any) => {
     const s = String(v ?? '')
-    if (s.includes(',') || s.includes('"') || s.includes('\n')) return '"' + s.replace(/"/g, '""') + '"'
+    if (s.includes(',') || s.includes('"') || s.includes('\n'))
+      return '"' + s.replace(/"/g, '""') + '"'
     return s
   }
   const csvLines = [header.map(escape).join(',')].concat(rows.map((r) => r.map(escape).join(',')))
@@ -721,7 +785,7 @@ function exportSchedule() {
 const showDrawLotsModal = ref(false)
 const topicCsvInput = ref<HTMLInputElement | null>(null)
 const drawLotsForm = ref({
-  topicPool: [] as { pro: string, con: string }[],
+  topicPool: [] as { pro: string; con: string }[],
   newTopicPro: '',
   newTopicCon: '',
   groupCount: 2,
@@ -766,7 +830,7 @@ async function saveResultSettings() {
 function openDrawLotsModal() {
   // 从赛事中读取已有配置
   const t = tournament.value
-  let topics: { pro: string, con: string }[] = []
+  let topics: { pro: string; con: string }[] = []
   try {
     if (t?.topicPool) {
       const parsed = JSON.parse(t.topicPool)
@@ -845,7 +909,7 @@ function handleTopicCsvUpload(event: Event) {
   reader.onload = (e) => {
     const text = e.target?.result as string
     try {
-      const lines = text.split(/\r?\n/).filter(line => line.trim())
+      const lines = text.split(/\r?\n/).filter((line) => line.trim())
       if (lines.length === 0) {
         toast.add({ title: 'CSV文件为空', color: 'error' })
         return
@@ -854,7 +918,12 @@ function handleTopicCsvUpload(event: Event) {
       let startIdx = 0
       // ponytail: 前面已判断 lines.length > 0，lines[0] 一定存在
       const firstLine = lines[0]!.toLowerCase()
-      if (firstLine.includes('正方') || firstLine.includes('pro') || firstLine.includes('affirmative') || firstLine.includes('正方辩题')) {
+      if (
+        firstLine.includes('正方') ||
+        firstLine.includes('pro') ||
+        firstLine.includes('affirmative') ||
+        firstLine.includes('正方辩题')
+      ) {
         startIdx = 1
       }
       let addedCount = 0
@@ -873,7 +942,7 @@ function handleTopicCsvUpload(event: Event) {
           continue
         }
         // 去重
-        const exists = drawLotsForm.value.topicPool.some(t => t.pro === pro)
+        const exists = drawLotsForm.value.topicPool.some((t) => t.pro === pro)
         if (exists) {
           skipCount++
           continue
@@ -883,7 +952,7 @@ function handleTopicCsvUpload(event: Event) {
       }
       toast.add({
         title: `导入完成：新增 ${addedCount} 道${skipCount > 0 ? `，跳过 ${skipCount} 道` : ''}`,
-        color: addedCount > 0 ? 'success' : 'warning'
+        color: addedCount > 0 ? 'success' : 'warning',
       })
     } catch (err) {
       toast.add({ title: 'CSV解析失败', color: 'error' })
@@ -958,457 +1027,601 @@ onMounted(() => loadMatches())
 
 <template>
   <template v-if="tournament">
-  <!-- 赛程内容区域（使用 tournament 布局，外层容器和导航由布局提供） -->
-  <div class="space-y-6">
-
-          <!-- ═══════════════════════ 辩题投票快捷入口 ═══════════════════════ -->
-          <!-- 赛前可通过此入口跳转到辩题投票管理页，发起辩题征集投票 -->
-          <NuxtLink
-            :to="`/tournaments/${tournamentId}/topic-votes`"
-            class="block glass-card p-4 hover:bg-[var(--color-bg-tertiary)] transition-colors group"
+    <!-- 赛程内容区域（使用 tournament 布局，外层容器和导航由布局提供） -->
+    <div class="space-y-6">
+      <!-- ═══════════════════════ 辩题投票快捷入口 ═══════════════════════ -->
+      <!-- 赛前可通过此入口跳转到辩题投票管理页，发起辩题征集投票 -->
+      <NuxtLink
+        :to="`/tournaments/${tournamentId}/topic-votes`"
+        class="block glass-card p-4 hover:bg-[var(--color-bg-tertiary)] transition-colors group"
+      >
+        <div class="flex items-center gap-4">
+          <div
+            class="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center shrink-0"
           >
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center shrink-0">
-                <UIcon name="i-lucide-vote" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <h3 class="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                  辩题投票
-                  <span class="text-xs font-normal text-[var(--color-text-muted)]">赛前征集辩题</span>
-                </h3>
-                <p class="text-xs text-[var(--color-text-muted)] mt-0.5">
-                  创建投票让辩手、评委、管理员或公众从候选辩题中投票选定，支持赛事级与场次级
-                </p>
-              </div>
-              <UIcon
-                name="i-lucide-arrow-right"
-                class="w-5 h-5 text-[var(--color-text-muted)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0"
-              />
-            </div>
-          </NuxtLink>
+            <UIcon name="i-lucide-vote" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3
+              class="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+            >
+              辩题投票
+              <span class="text-xs font-normal text-[var(--color-text-muted)]">赛前征集辩题</span>
+            </h3>
+            <p class="text-xs text-[var(--color-text-muted)] mt-0.5">
+              创建投票让辩手、评委、管理员或公众从候选辩题中投票选定，支持赛事级与场次级
+            </p>
+          </div>
+          <UIcon
+            name="i-lucide-arrow-right"
+            class="w-5 h-5 text-[var(--color-text-muted)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0"
+          />
+        </div>
+      </NuxtLink>
 
-          <!-- ═══════════════════════ ⭐ 参赛队伍 / 评委 设置（在线编辑） ═══════════════════════ -->
-          <!-- ─── 参赛队伍 ─── -->
-          <UCard class="mb-6">
-            <template #header>
-              <div class="flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                  <UIcon name="i-lucide-users" class="w-4 h-4 text-[var(--color-text-muted)]" /> 参赛队伍
-                  <span class="text-xs font-normal text-[var(--color-text-muted)]">({{ teamList.length }} 支，支持在线添加 / 删除)</span>
-                </h3>
-              <button
-                v-if="!editingTeams"
-                @click="() => { editingTeams = true }"
-                class="px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-500/15 rounded hover:bg-purple-500/25 transition-colors flex items-center gap-1"
+      <!-- ═══════════════════════ ⭐ 参赛队伍 / 评委 设置（在线编辑） ═══════════════════════ -->
+      <!-- ─── 参赛队伍 ─── -->
+      <UCard class="mb-6">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3
+              class="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+            >
+              <UIcon name="i-lucide-users" class="w-4 h-4 text-[var(--color-text-muted)]" />
+              参赛队伍
+              <span class="text-xs font-normal text-[var(--color-text-muted)]"
+                >({{ teamList.length }} 支，支持在线添加 / 删除)</span
               >
-                <UIcon name="i-lucide-pencil" class="w-3 h-3" /> 编辑
-              </button>
-              <template v-else>
-                <div class="flex gap-2">
-                  <button
-                    @click="saveTeams"
-                    :disabled="savingTeams"
-                    class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors flex items-center gap-1 disabled:opacity-50"
-                  >
-                    <UIcon name="i-lucide-check" class="w-3 h-3" /> 保存
-                  </button>
-                  <button
-                    @click="cancelEditTeams"
-                    class="px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] rounded hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                  >
-                    取消
-                  </button>
-                </div>
-              </template>
-              </div>
-            </template>
-
-            <!-- 查看模式：展示队伍标签 -->
-            <div v-if="!editingTeams">
-              <div v-if="teamList.length === 0" class="text-sm text-[var(--color-text-muted)] py-2">暂无队伍，点击右上角「编辑」添加参赛队伍</div>
-              <div v-else class="flex flex-wrap gap-2">
-                <span
-                  v-for="(name, idx) in teamList"
-                  :key="`${name}-${idx}`"
-                  class="px-3 py-1 text-sm text-[var(--color-text-primary)] bg-blue-500/15 rounded-full"
-                >
-                  {{ name }}
-                </span>
-              </div>
-            </div>
-
-            <!-- 编辑模式：添加 / 删除队伍 -->
-            <div v-else class="space-y-3">
-              <!-- 新增输入框 -->
+            </h3>
+            <button
+              v-if="!editingTeams"
+              @click="
+                () => {
+                  editingTeams = true
+                }
+              "
+              class="px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-500/15 rounded hover:bg-purple-500/25 transition-colors flex items-center gap-1"
+            >
+              <UIcon name="i-lucide-pencil" class="w-3 h-3" /> 编辑
+            </button>
+            <template v-else>
               <div class="flex gap-2">
-                <input
-                  v-model="newTeamInput"
-                  @keyup.enter="addTeam"
-                  type="text"
-                  placeholder="输入队伍名称，按回车添加"
-                  class="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
-                />
                 <button
-                  @click="addTeam"
-                  class="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-1"
+                  @click="saveTeams"
+                  :disabled="savingTeams"
+                  class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors flex items-center gap-1 disabled:opacity-50"
                 >
-                  <UIcon name="i-lucide-plus" class="w-4 h-4" /> 添加
+                  <UIcon name="i-lucide-check" class="w-3 h-3" /> 保存
+                </button>
+                <button
+                  @click="cancelEditTeams"
+                  class="px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] rounded hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                >
+                  取消
                 </button>
               </div>
-              <!-- 已添加队伍列表 -->
-              <div v-if="teamList.length === 0" class="text-sm text-[var(--color-text-muted)] py-2 text-center border border-dashed border-[var(--color-border)] rounded-lg">
-                请在上方添加参赛队伍
-              </div>
-              <div v-else class="flex flex-wrap gap-2">
-                <span
-                  v-for="(name, idx) in teamList"
-                  :key="`edit-${name}-${idx}`"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 text-sm text-[var(--color-text-primary)] bg-purple-500/15 rounded-full"
-                >
-                  {{ name }}
-                  <button
-                    @click="removeTeam(idx)"
-                    class="text-[var(--color-text-muted)] hover:text-red-500 transition-colors"
-                  >
-                    <UIcon name="i-lucide-x" class="w-3.5 h-3.5" />
-                  </button>
-                </span>
-              </div>
-              <p class="text-xs text-[var(--color-text-muted)]">💡 提示：点击 × 删除队伍，保存后生效。建议至少 2 支队伍。</p>
-            </div>
-          </UCard>
-
-          <!-- ─── 评委 ─── -->
-          <UCard class="mb-6">
-            <template #header>
-              <div class="flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                  <UIcon name="i-lucide-gavel" class="w-4 h-4 text-[var(--color-text-muted)]" /> 评委
-                  <span class="text-xs font-normal text-[var(--color-text-muted)]">({{ judgeList.length }} 位，支持在线添加 / 删除)</span>
-                </h3>
-              <button
-                v-if="!editingJudges"
-                @click="() => { editingJudges = true }"
-                class="px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-500/15 rounded hover:bg-purple-500/25 transition-colors flex items-center gap-1"
-              >
-                <UIcon name="i-lucide-pencil" class="w-3 h-3" /> 编辑
-              </button>
-              <template v-else>
-                <div class="flex gap-2">
-                  <button
-                    @click="saveJudges"
-                    :disabled="savingJudges"
-                    class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors flex items-center gap-1 disabled:opacity-50"
-                  >
-                    <UIcon name="i-lucide-check" class="w-3 h-3" /> 保存
-                  </button>
-                  <button
-                    @click="cancelEditJudges"
-                    class="px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] rounded hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                  >
-                    取消
-                  </button>
-                </div>
-              </template>
-              </div>
             </template>
+          </div>
+        </template>
 
-            <!-- 查看模式 -->
-            <div v-if="!editingJudges">
-              <div v-if="judgeList.length === 0" class="text-sm text-[var(--color-text-muted)] py-2">暂无评委，点击右上角「编辑」添加</div>
-              <div v-else class="flex flex-wrap gap-2">
-                <span
-                  v-for="(name, idx) in judgeList"
-                  :key="`j-${name}-${idx}`"
-                  class="px-3 py-1 text-sm text-[var(--color-text-primary)] bg-amber-500/15 rounded-full"
-                >
-                  {{ name }}
-                </span>
-              </div>
-            </div>
+        <!-- 查看模式：展示队伍标签 -->
+        <div v-if="!editingTeams">
+          <div v-if="teamList.length === 0" class="text-sm text-[var(--color-text-muted)] py-2">
+            暂无队伍，点击右上角「编辑」添加参赛队伍
+          </div>
+          <div v-else class="flex flex-wrap gap-2">
+            <span
+              v-for="(name, idx) in teamList"
+              :key="`${name}-${idx}`"
+              class="px-3 py-1 text-sm text-[var(--color-text-primary)] bg-blue-500/15 rounded-full"
+            >
+              {{ name }}
+            </span>
+          </div>
+        </div>
 
-            <!-- 编辑模式 -->
-            <div v-else class="space-y-3">
+        <!-- 编辑模式：添加 / 删除队伍 -->
+        <div v-else class="space-y-3">
+          <!-- 新增输入框 -->
+          <div class="flex gap-2">
+            <input
+              v-model="newTeamInput"
+              @keyup.enter="addTeam"
+              type="text"
+              placeholder="输入队伍名称，按回车添加"
+              class="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
+            />
+            <button
+              @click="addTeam"
+              class="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-1"
+            >
+              <UIcon name="i-lucide-plus" class="w-4 h-4" /> 添加
+            </button>
+          </div>
+          <!-- 已添加队伍列表 -->
+          <div
+            v-if="teamList.length === 0"
+            class="text-sm text-[var(--color-text-muted)] py-2 text-center border border-dashed border-[var(--color-border)] rounded-lg"
+          >
+            请在上方添加参赛队伍
+          </div>
+          <div v-else class="flex flex-wrap gap-2">
+            <span
+              v-for="(name, idx) in teamList"
+              :key="`edit-${name}-${idx}`"
+              class="inline-flex items-center gap-1.5 px-3 py-1 text-sm text-[var(--color-text-primary)] bg-purple-500/15 rounded-full"
+            >
+              {{ name }}
+              <button
+                @click="removeTeam(idx)"
+                class="text-[var(--color-text-muted)] hover:text-red-500 transition-colors"
+              >
+                <UIcon name="i-lucide-x" class="w-3.5 h-3.5" />
+              </button>
+            </span>
+          </div>
+          <p class="text-xs text-[var(--color-text-muted)]">
+            💡 提示：点击 × 删除队伍，保存后生效。建议至少 2 支队伍。
+          </p>
+        </div>
+      </UCard>
+
+      <!-- ─── 评委 ─── -->
+      <UCard class="mb-6">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3
+              class="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+            >
+              <UIcon name="i-lucide-gavel" class="w-4 h-4 text-[var(--color-text-muted)]" /> 评委
+              <span class="text-xs font-normal text-[var(--color-text-muted)]"
+                >({{ judgeList.length }} 位，支持在线添加 / 删除)</span
+              >
+            </h3>
+            <button
+              v-if="!editingJudges"
+              @click="
+                () => {
+                  editingJudges = true
+                }
+              "
+              class="px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-500/15 rounded hover:bg-purple-500/25 transition-colors flex items-center gap-1"
+            >
+              <UIcon name="i-lucide-pencil" class="w-3 h-3" /> 编辑
+            </button>
+            <template v-else>
               <div class="flex gap-2">
-                <input
-                  v-model="newJudgeInput"
-                  @keyup.enter="addJudge"
-                  type="text"
-                  placeholder="输入评委姓名，按回车添加"
-                  class="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
-                />
                 <button
-                  @click="addJudge"
-                  class="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-1"
+                  @click="saveJudges"
+                  :disabled="savingJudges"
+                  class="px-3 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 transition-colors flex items-center gap-1 disabled:opacity-50"
                 >
-                  <UIcon name="i-lucide-plus" class="w-4 h-4" /> 添加
+                  <UIcon name="i-lucide-check" class="w-3 h-3" /> 保存
+                </button>
+                <button
+                  @click="cancelEditJudges"
+                  class="px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] rounded hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                >
+                  取消
                 </button>
               </div>
-              <div v-if="judgeList.length === 0" class="text-sm text-[var(--color-text-muted)] py-2 text-center border border-dashed border-[var(--color-border)] rounded-lg">
-                请在上方添加评委
-              </div>
-              <div v-else class="flex flex-wrap gap-2">
-                <span
-                  v-for="(name, idx) in judgeList"
-                  :key="`j-edit-${name}-${idx}`"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 text-sm text-[var(--color-text-primary)] bg-amber-500/15 rounded-full"
-                >
-                  {{ name }}
-                  <button
-                    @click="removeJudge(idx)"
-                    class="text-[var(--color-text-muted)] hover:text-red-500 transition-colors"
-                  >
-                    <UIcon name="i-lucide-x" class="w-3.5 h-3.5" />
-                  </button>
-                </span>
-              </div>
-              <p class="text-xs text-[var(--color-text-muted)]">💡 提示：保存后，录入比赛结果时可从评委列表中快速选择。</p>
-            </div>
-          </UCard>
+            </template>
+          </div>
+        </template>
 
-          <!-- ─── 空状态 ─── -->
-          <div v-if="matches.length === 0" class="glass-card-strong p-12 text-center">
-            <UIcon name="i-lucide-calendar-days" class="w-16 h-16 text-[var(--color-text-muted)] mx-auto mb-4" />
-            <h3 class="text-base font-semibold text-[var(--color-text-primary)] mb-2">暂无赛程安排</h3>
-            <p class="text-sm text-[var(--color-text-muted)] mb-6">点击下方按钮，快速生成赛程或手动添加比赛</p>
-            <div class="flex justify-center gap-3">
+        <!-- 查看模式 -->
+        <div v-if="!editingJudges">
+          <div v-if="judgeList.length === 0" class="text-sm text-[var(--color-text-muted)] py-2">
+            暂无评委，点击右上角「编辑」添加
+          </div>
+          <div v-else class="flex flex-wrap gap-2">
+            <span
+              v-for="(name, idx) in judgeList"
+              :key="`j-${name}-${idx}`"
+              class="px-3 py-1 text-sm text-[var(--color-text-primary)] bg-amber-500/15 rounded-full"
+            >
+              {{ name }}
+            </span>
+          </div>
+        </div>
+
+        <!-- 编辑模式 -->
+        <div v-else class="space-y-3">
+          <div class="flex gap-2">
+            <input
+              v-model="newJudgeInput"
+              @keyup.enter="addJudge"
+              type="text"
+              placeholder="输入评委姓名，按回车添加"
+              class="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
+            />
+            <button
+              @click="addJudge"
+              class="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-1"
+            >
+              <UIcon name="i-lucide-plus" class="w-4 h-4" /> 添加
+            </button>
+          </div>
+          <div
+            v-if="judgeList.length === 0"
+            class="text-sm text-[var(--color-text-muted)] py-2 text-center border border-dashed border-[var(--color-border)] rounded-lg"
+          >
+            请在上方添加评委
+          </div>
+          <div v-else class="flex flex-wrap gap-2">
+            <span
+              v-for="(name, idx) in judgeList"
+              :key="`j-edit-${name}-${idx}`"
+              class="inline-flex items-center gap-1.5 px-3 py-1 text-sm text-[var(--color-text-primary)] bg-amber-500/15 rounded-full"
+            >
+              {{ name }}
               <button
-                @click="openGenerateModal"
-                class="px-5 py-2.5 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2"
+                @click="removeJudge(idx)"
+                class="text-[var(--color-text-muted)] hover:text-red-500 transition-colors"
               >
-                <UIcon name="i-lucide-sparkles" class="w-4 h-4" /> 自动生成赛程
+                <UIcon name="i-lucide-x" class="w-3.5 h-3.5" />
               </button>
-              <button
-                @click="openCreateModal"
-                class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
-              >
-                <UIcon name="i-lucide-plus" class="w-4 h-4" /> 手动添加比赛
-              </button>
-            </div>
+            </span>
+          </div>
+          <p class="text-xs text-[var(--color-text-muted)]">
+            💡 提示：保存后，录入比赛结果时可从评委列表中快速选择。
+          </p>
+        </div>
+      </UCard>
+
+      <!-- ─── 空状态 ─── -->
+      <div v-if="matches.length === 0" class="glass-card-strong p-12 text-center">
+        <UIcon
+          name="i-lucide-calendar-days"
+          class="w-16 h-16 text-[var(--color-text-muted)] mx-auto mb-4"
+        />
+        <h3 class="text-base font-semibold text-[var(--color-text-primary)] mb-2">暂无赛程安排</h3>
+        <p class="text-sm text-[var(--color-text-muted)] mb-6">
+          点击下方按钮，快速生成赛程或手动添加比赛
+        </p>
+        <div class="flex justify-center gap-3">
+          <button
+            @click="openGenerateModal"
+            class="px-5 py-2.5 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center gap-2"
+          >
+            <UIcon name="i-lucide-sparkles" class="w-4 h-4" /> 自动生成赛程
+          </button>
+          <button
+            @click="openCreateModal"
+            class="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+          >
+            <UIcon name="i-lucide-plus" class="w-4 h-4" /> 手动添加比赛
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── 有数据：根据 viewMode 切换视图 ─── -->
+      <template v-else>
+        <!-- 视图切换（仅在淘汰赛模式下显示两个选项） -->
+        <div v-if="viewMode === 'bracket'" class="flex gap-2 mb-2">
+          <button
+            @click="
+              () => {
+                forceListView = false
+              }
+            "
+            class="px-3 py-1.5 text-xs font-medium rounded transition-colors"
+            :class="
+              !forceListView
+                ? 'bg-purple-600 text-white'
+                : 'bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+            "
+          >
+            对阵图
+          </button>
+          <button
+            @click="
+              () => {
+                forceListView = true
+              }
+            "
+            class="px-3 py-1.5 text-xs font-medium rounded transition-colors"
+            :class="
+              forceListView
+                ? 'bg-purple-600 text-white'
+                : 'bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+            "
+          >
+            列表视图
+          </button>
+        </div>
+
+        <!-- 淘汰赛对阵图 -->
+        <div v-if="viewMode === 'bracket' && !forceListView" class="glass-card p-6">
+          <h2
+            class="text-base font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2"
+          >
+            <UIcon name="i-lucide-brackets" class="w-4 h-4 text-[var(--color-text-muted)]" /> 对阵图
+          </h2>
+          <BracketView :matches="bracketMatches" />
+        </div>
+
+        <!-- 列表视图（所有模式通用） -->
+        <div v-if="viewMode !== 'bracket' || forceListView" class="space-y-4">
+          <!-- 循环赛积分榜（仅在非淘汰赛模式下显示） -->
+          <div v-if="viewMode === 'list'" class="glass-card p-6">
+            <h2
+              class="text-base font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2"
+            >
+              <UIcon name="i-lucide-trophy" class="w-4 h-4 text-[var(--color-text-muted)]" /> 积分榜
+            </h2>
+            <StandingsTable :matches="matches" />
           </div>
 
-          <!-- ─── 有数据：根据 viewMode 切换视图 ─── -->
-          <template v-else>
-
-            <!-- 视图切换（仅在淘汰赛模式下显示两个选项） -->
-            <div v-if="viewMode === 'bracket'" class="flex gap-2 mb-2">
-              <button
-                @click="() => { forceListView = false }"
-                class="px-3 py-1.5 text-xs font-medium rounded transition-colors"
-                :class="!forceListView ? 'bg-purple-600 text-white' : 'bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'"
-              >
-                对阵图
-              </button>
-              <button
-                @click="() => { forceListView = true }"
-                class="px-3 py-1.5 text-xs font-medium rounded transition-colors"
-                :class="forceListView ? 'bg-purple-600 text-white' : 'bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'"
-              >
-                列表视图
-              </button>
-            </div>
-
-            <!-- 淘汰赛对阵图 -->
-            <div
-              v-if="viewMode === 'bracket' && !forceListView"
-              class="glass-card p-6"
+          <!-- 比赛列表（按轮次分组） -->
+          <div class="glass-card p-6">
+            <h2
+              class="text-base font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2"
             >
-              <h2 class="text-base font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
-                <UIcon name="i-lucide-brackets" class="w-4 h-4 text-[var(--color-text-muted)]" /> 对阵图
-              </h2>
-              <BracketView :matches="bracketMatches" />
-            </div>
+              <UIcon name="i-lucide-list" class="w-4 h-4 text-[var(--color-text-muted)]" /> 比赛详情
+            </h2>
 
-            <!-- 列表视图（所有模式通用） -->
-            <div v-if="viewMode !== 'bracket' || forceListView" class="space-y-4">
-
-              <!-- 循环赛积分榜（仅在非淘汰赛模式下显示） -->
-              <div v-if="viewMode === 'list'" class="glass-card p-6">
-                <h2 class="text-base font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
-                  <UIcon name="i-lucide-trophy" class="w-4 h-4 text-[var(--color-text-muted)]" /> 积分榜
-                </h2>
-                <StandingsTable :matches="matches" />
+            <div
+              v-for="[round, roundMatches] in matchesByRound"
+              :key="round"
+              class="mb-8 last:mb-0"
+            >
+              <div class="flex items-center gap-3 mb-3">
+                <span class="text-sm font-bold text-primary bg-blue-50 px-3 py-1 rounded">{{
+                  round
+                }}</span>
+                <span class="text-xs text-[var(--color-text-muted)]"
+                  >{{ (roundMatches as any[]).length }} 场</span
+                >
               </div>
 
-              <!-- 比赛列表（按轮次分组） -->
-              <div class="glass-card p-6">
-                <h2 class="text-base font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
-                  <UIcon name="i-lucide-list" class="w-4 h-4 text-[var(--color-text-muted)]" /> 比赛详情
-                </h2>
-
-                <div v-for="[round, roundMatches] in matchesByRound" :key="round" class="mb-8 last:mb-0">
-                  <div class="flex items-center gap-3 mb-3">
-                    <span class="text-sm font-bold text-primary bg-blue-50 px-3 py-1 rounded">{{ round }}</span>
-                    <span class="text-xs text-[var(--color-text-muted)]">{{ (roundMatches as any[]).length }} 场</span>
+              <div class="space-y-2">
+                <div
+                  v-for="match in roundMatches"
+                  :key="match.id"
+                  class="match-card border border-[var(--color-border)] rounded-lg p-4 hover:border-blue-500/40 hover:shadow-sm transition-all"
+                  :class="{
+                    'opacity-60': isMatchLocked(match.id),
+                    'bg-green-500/10 border-green-500/30': match.status === 'finished',
+                    'opacity-50 grayscale bg-[var(--color-bg-secondary)] border-[var(--color-border)]':
+                      match.deletedAt,
+                  }"
+                >
+                  <!-- 锁定状态指示 -->
+                  <div v-if="isMatchLocked(match.id)" class="absolute top-2 right-2 z-10">
+                    <UIcon name="i-lucide-loader" class="w-4 h-4 animate-spin text-blue-500" />
                   </div>
 
-                  <div class="space-y-2">
-                    <div
-                      v-for="match in roundMatches"
-                      :key="match.id"
-                      class="match-card border border-[var(--color-border)] rounded-lg p-4 hover:border-blue-500/40 hover:shadow-sm transition-all"
-                      :class="{
-                        'opacity-60': isMatchLocked(match.id),
-                        'bg-green-500/10 border-green-500/30': match.status === 'finished',
-                        'opacity-50 grayscale bg-[var(--color-bg-secondary)] border-[var(--color-border)]': match.deletedAt,
-                      }"
+                  <!-- 已删除状态标签 -->
+                  <div v-if="match.deletedAt" class="flex items-center gap-2 mb-2">
+                    <span
+                      class="text-[10px] font-medium text-red-700 bg-red-100 px-2 py-0.5 rounded"
+                      >已删除</span
                     >
-                      <!-- 锁定状态指示 -->
-                      <div v-if="isMatchLocked(match.id)" class="absolute top-2 right-2 z-10">
-                        <UIcon name="i-lucide-loader" class="w-4 h-4 animate-spin text-blue-500" />
+                    <span class="text-[10px] text-[var(--color-text-muted)]">{{
+                      new Date(match.deletedAt).toLocaleString('zh-CN')
+                    }}</span>
+                  </div>
+
+                  <div class="flex items-center justify-between">
+                    <!-- 比赛信息 -->
+                    <div class="flex-1">
+                      <!-- ⭐ 新增：辩题 + 正反方显示 -->
+                      <div v-if="match.topic" class="mb-2">
+                        <div
+                          class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-500/15 rounded"
+                        >
+                          <UIcon name="i-lucide-file-text" class="w-3 h-3" />
+                          {{ match.topic }}
+                        </div>
                       </div>
 
-                      <!-- 已删除状态标签 -->
-                      <div v-if="match.deletedAt" class="flex items-center gap-2 mb-2">
-                        <span class="text-[10px] font-medium text-red-700 bg-red-100 px-2 py-0.5 rounded">已删除</span>
-                        <span class="text-[10px] text-[var(--color-text-muted)]">{{ new Date(match.deletedAt).toLocaleString('zh-CN') }}</span>
-                      </div>
-
-                      <div class="flex items-center justify-between">
-                        <!-- 比赛信息 -->
-                        <div class="flex-1">
-                          <!-- ⭐ 新增：辩题 + 正反方显示 -->
-                          <div v-if="match.topic" class="mb-2">
-                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-500/15 rounded">
-                              <UIcon name="i-lucide-file-text" class="w-3 h-3" />
-                              {{ match.topic }}
-                            </div>
-                          </div>
-
-                          <div class="flex items-center gap-4">
-                            <!-- Team A -->
-                            <div class="text-right min-w-[120px]">
-                              <span
-                                class="font-semibold text-[var(--color-text-primary)]"
-                                :class="{ 'text-green-600 font-bold': match.status === 'finished' && match.winner === match.teamA }"
-                              >{{ match.teamA || '待定' }}</span>
-                              <div v-if="match.affirmativeSide" class="text-[10px] text-[var(--color-text-muted)] mt-0.5">
-                                {{ match.affirmativeSide === 'teamA' ? '正方' : '反方' }}
-                              </div>
-                            </div>
-
-                            <!-- 比分 / VS -->
-                            <div class="text-center min-w-[80px]">
-                              <div v-if="match.status === 'finished'" class="text-xl font-bold text-[var(--color-text-primary)]">
-                                {{ match.scoreA ?? 0 }} : {{ match.scoreB ?? 0 }}
-                              </div>
-                              <div v-else class="text-sm text-[var(--color-text-muted)] font-medium">VS</div>
-                            </div>
-
-                            <!-- Team B -->
-                            <div class="text-left min-w-[120px]">
-                              <span
-                                class="font-semibold text-[var(--color-text-primary)]"
-                                :class="{ 'text-green-600 font-bold': match.status === 'finished' && match.winner === match.teamB }"
-                              >{{ match.teamB || '待定' }}</span>
-                              <div v-if="match.affirmativeSide" class="text-[10px] text-[var(--color-text-muted)] mt-0.5">
-                                {{ match.affirmativeSide === 'teamB' ? '正方' : '反方' }}
-                              </div>
-                            </div>
-                          </div>
-
-                          <!-- ⭐ 最佳辩手显示 -->
-                          <div v-if="match.status === 'finished' && (match.bestDebaterA || match.bestDebaterB)" class="flex items-center gap-2 mt-2">
-                            <span class="text-[10px] text-amber-700 font-medium flex items-center gap-1">
-                              <UIcon name="i-lucide-trophy" class="w-3 h-3" />
-                              最佳辩手：
-                            </span>
-                            <template v-if="match.bestDebaterA">
-                              <span class="text-xs text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] px-2 py-0.5 rounded">
-                                {{ match.teamA || 'A' }} - {{ match.bestDebaterA }}
-                              </span>
-                            </template>
-                            <template v-if="match.bestDebaterB">
-                              <span class="text-xs text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] px-2 py-0.5 rounded">
-                                {{ match.teamB || 'B' }} - {{ match.bestDebaterB }}
-                              </span>
-                            </template>
-                          </div>
-
-                          <!-- 时间和状态 -->
-                          <div class="flex items-center gap-3 mt-2 ml-0 pl-0">
-                            <span
-                              class="text-xs px-2 py-0.5 rounded-full"
-                              :class="match.status === 'finished' ? 'bg-green-500/15 text-green-600 dark:text-green-400' : match.status === 'running' ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]'"
-                            >
-                              {{ match.status === 'finished' ? '已完赛' : match.status === 'running' ? '进行中' : '待开始' }}
-                            </span>
-                            <span v-if="match.scheduledAt" class="text-xs text-[var(--color-text-muted)] flex items-center gap-1">
-                              <UIcon name="i-lucide-clock" class="w-3 h-3" />
-                              {{ new Date(match.scheduledAt).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) }}
-                            </span>
-                            <span class="text-xs text-[var(--color-text-muted)]">#{{ match.orderNum }}</span>
+                      <div class="flex items-center gap-4">
+                        <!-- Team A -->
+                        <div class="text-right min-w-[120px]">
+                          <span
+                            class="font-semibold text-[var(--color-text-primary)]"
+                            :class="{
+                              'text-green-600 font-bold':
+                                match.status === 'finished' && match.winner === match.teamA,
+                            }"
+                            >{{ match.teamA || '待定' }}</span
+                          >
+                          <div
+                            v-if="match.affirmativeSide"
+                            class="text-[10px] text-[var(--color-text-muted)] mt-0.5"
+                          >
+                            {{ match.affirmativeSide === 'teamA' ? '正方' : '反方' }}
                           </div>
                         </div>
 
-                        <!-- 操作按钮 -->
-                        <div class="flex items-center gap-2">
-                          <!-- 已删除比赛：显示恢复按钮，隐藏其他操作 -->
-                          <template v-if="match.deletedAt">
-                            <button
-                              @click="handleRestoreMatch(match)"
-                              :disabled="isMatchLocked(match.id)"
-                              class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                            >
-                              <UIcon name="i-lucide-rotate-ccw" class="w-3.5 h-3.5" /> 恢复
-                            </button>
-                          </template>
+                        <!-- 比分 / VS -->
+                        <div class="text-center min-w-[80px]">
+                          <div
+                            v-if="match.status === 'finished'"
+                            class="text-xl font-bold text-[var(--color-text-primary)]"
+                          >
+                            {{ match.scoreA ?? 0 }} : {{ match.scoreB ?? 0 }}
+                          </div>
+                          <div v-else class="text-sm text-[var(--color-text-muted)] font-medium">
+                            VS
+                          </div>
+                        </div>
 
-                          <!-- 未删除比赛：显示原有操作按钮 -->
-                          <template v-else>
-                            <button
-                              v-if="match.status === 'finished'"
-                              @click="handleReopenMatch(match)"
-                              :disabled="isMatchLocked(match.id)"
-                              class="px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                            >
-                              <UIcon name="i-lucide-undo" class="w-3.5 h-3.5" /> 撤销
-                            </button>
-                            <button
-                              @click="openResultModal(match)"
-                              :disabled="isMatchLocked(match.id)"
-                              class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                            >
-                              <UIcon name="i-lucide-check-circle" class="w-3.5 h-3.5" /> 录分
-                            </button>
-                            <button
-                              @click="openEditModal(match)"
-                              :disabled="isMatchLocked(match.id)"
-                              class="px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded hover:bg-[var(--color-bg-tertiary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                            >
-                              <UIcon name="i-lucide-edit" class="w-3.5 h-3.5" /> 编辑
-                            </button>
-                            <button
-                              @click="handleDeleteMatch(match)"
-                              :disabled="isMatchLocked(match.id)"
-                              class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                            >
-                              <UIcon name="i-lucide-trash-2" class="w-3.5 h-3.5" /> 删除
-                            </button>
-                          </template>
+                        <!-- Team B -->
+                        <div class="text-left min-w-[120px]">
+                          <span
+                            class="font-semibold text-[var(--color-text-primary)]"
+                            :class="{
+                              'text-green-600 font-bold':
+                                match.status === 'finished' && match.winner === match.teamB,
+                            }"
+                            >{{ match.teamB || '待定' }}</span
+                          >
+                          <div
+                            v-if="match.affirmativeSide"
+                            class="text-[10px] text-[var(--color-text-muted)] mt-0.5"
+                          >
+                            {{ match.affirmativeSide === 'teamB' ? '正方' : '反方' }}
+                          </div>
                         </div>
                       </div>
+
+                      <!-- ⭐ 最佳辩手显示 -->
+                      <div
+                        v-if="
+                          match.status === 'finished' && (match.bestDebaterA || match.bestDebaterB)
+                        "
+                        class="flex items-center gap-2 mt-2"
+                      >
+                        <span
+                          class="text-[10px] text-amber-700 font-medium flex items-center gap-1"
+                        >
+                          <UIcon name="i-lucide-trophy" class="w-3 h-3" />
+                          最佳辩手：
+                        </span>
+                        <template v-if="match.bestDebaterA">
+                          <span
+                            class="text-xs text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] px-2 py-0.5 rounded"
+                          >
+                            {{ match.teamA || 'A' }} - {{ match.bestDebaterA }}
+                          </span>
+                        </template>
+                        <template v-if="match.bestDebaterB">
+                          <span
+                            class="text-xs text-[var(--color-text-secondary)] bg-[var(--color-bg-tertiary)] px-2 py-0.5 rounded"
+                          >
+                            {{ match.teamB || 'B' }} - {{ match.bestDebaterB }}
+                          </span>
+                        </template>
+                      </div>
+
+                      <!-- 时间和状态 -->
+                      <div class="flex items-center gap-3 mt-2 ml-0 pl-0">
+                        <span
+                          class="text-xs px-2 py-0.5 rounded-full"
+                          :class="
+                            match.status === 'finished'
+                              ? 'bg-green-500/15 text-green-600 dark:text-green-400'
+                              : match.status === 'running'
+                                ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
+                                : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]'
+                          "
+                        >
+                          {{
+                            match.status === 'finished'
+                              ? '已完赛'
+                              : match.status === 'running'
+                                ? '进行中'
+                                : '待开始'
+                          }}
+                        </span>
+                        <span
+                          v-if="match.scheduledAt"
+                          class="text-xs text-[var(--color-text-muted)] flex items-center gap-1"
+                        >
+                          <UIcon name="i-lucide-clock" class="w-3 h-3" />
+                          {{
+                            new Date(match.scheduledAt).toLocaleString('zh-CN', {
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })
+                          }}
+                        </span>
+                        <span class="text-xs text-[var(--color-text-muted)]"
+                          >#{{ match.orderNum }}</span
+                        >
+                      </div>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="flex items-center gap-2">
+                      <!-- 已删除比赛：显示恢复按钮，隐藏其他操作 -->
+                      <template v-if="match.deletedAt">
+                        <button
+                          @click="handleRestoreMatch(match)"
+                          :disabled="isMatchLocked(match.id)"
+                          class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                          <UIcon name="i-lucide-rotate-ccw" class="w-3.5 h-3.5" /> 恢复
+                        </button>
+                      </template>
+
+                      <!-- 未删除比赛：显示原有操作按钮 -->
+                      <template v-else>
+                        <button
+                          v-if="match.status === 'finished'"
+                          @click="handleReopenMatch(match)"
+                          :disabled="isMatchLocked(match.id)"
+                          class="px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                          <UIcon name="i-lucide-undo" class="w-3.5 h-3.5" /> 撤销
+                        </button>
+                        <button
+                          @click="openResultModal(match)"
+                          :disabled="isMatchLocked(match.id)"
+                          class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                          <UIcon name="i-lucide-check-circle" class="w-3.5 h-3.5" /> 录分
+                        </button>
+                        <button
+                          @click="openEditModal(match)"
+                          :disabled="isMatchLocked(match.id)"
+                          class="px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded hover:bg-[var(--color-bg-tertiary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                          <UIcon name="i-lucide-edit" class="w-3.5 h-3.5" /> 编辑
+                        </button>
+                        <button
+                          @click="handleDeleteMatch(match)"
+                          :disabled="isMatchLocked(match.id)"
+                          class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                          <UIcon name="i-lucide-trash-2" class="w-3.5 h-3.5" /> 删除
+                        </button>
+                      </template>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </template>
-  </div>
+          </div>
+        </div>
+      </template>
+    </div>
 
-  <!-- ═══════════════════════ 创建比赛 Modal ═══════════════════════ -->
-    <div v-if="showCreateModal" class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50" @click.self="showCreateModal = false">
+    <!-- ═══════════════════════ 创建比赛 Modal ═══════════════════════ -->
+    <div
+      v-if="showCreateModal"
+      class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50"
+      @click.self="showCreateModal = false"
+    >
       <div class="glass-modal rounded-xl shadow-lg w-full max-w-md p-6">
         <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-4">新增比赛</h3>
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">轮次</label>
-              <input v-model="createForm.round" type="text" class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]" placeholder="例如：第1轮" />
+              <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5"
+                >轮次</label
+              >
+              <input
+                v-model="createForm.round"
+                type="text"
+                class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
+                placeholder="例如：第1轮"
+              />
             </div>
             <div>
-              <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">序号</label>
-              <input v-model.number="createForm.orderNum" type="number" min="1" class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]" />
+              <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5"
+                >序号</label
+              >
+              <input
+                v-model.number="createForm.orderNum"
+                type="number"
+                min="1"
+                class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
+              />
             </div>
           </div>
 
@@ -1416,14 +1629,19 @@ onMounted(() => loadMatches())
           <div>
             <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
               队伍 A（左方） <span class="text-red-500">*</span>
-              <span v-if="teamList.length === 0" class="text-xs text-amber-600 ml-1">（请先在赛程页顶部设置参赛队伍）</span>
+              <span v-if="teamList.length === 0" class="text-xs text-amber-600 ml-1"
+                >（请先在赛程页顶部设置参赛队伍）</span
+              >
             </label>
             <USelect
               v-model="createForm.teamA"
               :items="teamItems"
               placeholder="请选择队伍"
               class="w-full"
-              :class="{ 'border-red-400 bg-red-500/10': createForm.teamA && createForm.teamA === createForm.teamB }"
+              :class="{
+                'border-red-400 bg-red-500/10':
+                  createForm.teamA && createForm.teamA === createForm.teamB,
+              }"
               :ui="{ base: 'input-glass' }"
             />
           </div>
@@ -1438,11 +1656,17 @@ onMounted(() => loadMatches())
               :items="teamItems"
               placeholder="请选择队伍"
               class="w-full"
-              :class="{ 'border-red-400 bg-red-500/10': createForm.teamB && createForm.teamA === createForm.teamB }"
+              :class="{
+                'border-red-400 bg-red-500/10':
+                  createForm.teamB && createForm.teamA === createForm.teamB,
+              }"
               :ui="{ base: 'input-glass' }"
             />
           </div>
-          <p v-if="createForm.teamA && createForm.teamB && createForm.teamA === createForm.teamB" class="text-xs text-red-600 mt-1 text-center col-span-2">
+          <p
+            v-if="createForm.teamA && createForm.teamB && createForm.teamA === createForm.teamB"
+            class="text-xs text-red-600 mt-1 text-center col-span-2"
+          >
             ⚠️ 两支队伍不能相同
           </p>
 
@@ -1455,10 +1679,24 @@ onMounted(() => loadMatches())
           </div>
         </div>
         <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
-          <button @click="() => { showCreateModal = false }" class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors">取消</button>
+          <button
+            @click="
+              () => {
+                showCreateModal = false
+              }
+            "
+            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+          >
+            取消
+          </button>
           <button
             @click="handleCreateMatch"
-            :disabled="!createForm.teamA || !createForm.teamB || !createForm.scheduledAt || createForm.teamA === createForm.teamB"
+            :disabled="
+              !createForm.teamA ||
+              !createForm.teamB ||
+              !createForm.scheduledAt ||
+              createForm.teamA === createForm.teamB
+            "
             class="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             确认创建
@@ -1468,18 +1706,35 @@ onMounted(() => loadMatches())
     </div>
 
     <!-- ═══════════════════════ 编辑比赛 Modal ═══════════════════════ -->
-    <div v-if="showEditModal" class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50" @click.self="showEditModal = false">
+    <div
+      v-if="showEditModal"
+      class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50"
+      @click.self="showEditModal = false"
+    >
       <div class="glass-modal rounded-xl shadow-lg w-full max-w-md p-6">
         <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-4">编辑比赛</h3>
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">轮次</label>
-              <input v-model="editForm.round" type="text" class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]" />
+              <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5"
+                >轮次</label
+              >
+              <input
+                v-model="editForm.round"
+                type="text"
+                class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
+              />
             </div>
             <div>
-              <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">序号</label>
-              <input v-model.number="editForm.orderNum" type="number" min="1" class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]" />
+              <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5"
+                >序号</label
+              >
+              <input
+                v-model.number="editForm.orderNum"
+                type="number"
+                min="1"
+                class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
+              />
             </div>
           </div>
 
@@ -1493,7 +1748,9 @@ onMounted(() => loadMatches())
               :items="teamItems"
               placeholder="请选择队伍"
               class="w-full"
-              :class="{ 'border-red-400 bg-red-500/10': editForm.teamA && editForm.teamA === editForm.teamB }"
+              :class="{
+                'border-red-400 bg-red-500/10': editForm.teamA && editForm.teamA === editForm.teamB,
+              }"
               :ui="{ base: 'input-glass' }"
             />
           </div>
@@ -1508,11 +1765,16 @@ onMounted(() => loadMatches())
               :items="teamItems"
               placeholder="请选择队伍"
               class="w-full"
-              :class="{ 'border-red-400 bg-red-500/10': editForm.teamB && editForm.teamA === editForm.teamB }"
+              :class="{
+                'border-red-400 bg-red-500/10': editForm.teamB && editForm.teamA === editForm.teamB,
+              }"
               :ui="{ base: 'input-glass' }"
             />
           </div>
-          <p v-if="editForm.teamA && editForm.teamB && editForm.teamA === editForm.teamB" class="text-xs text-red-600 mt-1 text-center col-span-2">
+          <p
+            v-if="editForm.teamA && editForm.teamB && editForm.teamA === editForm.teamB"
+            class="text-xs text-red-600 mt-1 text-center col-span-2"
+          >
             ⚠️ 两支队伍不能相同
           </p>
           <!-- 比赛时间：必填 -->
@@ -1524,10 +1786,24 @@ onMounted(() => loadMatches())
           </div>
         </div>
         <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
-          <button @click="() => { showEditModal = false }" class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors">取消</button>
+          <button
+            @click="
+              () => {
+                showEditModal = false
+              }
+            "
+            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+          >
+            取消
+          </button>
           <button
             @click="handleEditMatch"
-            :disabled="!editForm.teamA || !editForm.teamB || !editForm.scheduledAt || editForm.teamA === editForm.teamB"
+            :disabled="
+              !editForm.teamA ||
+              !editForm.teamB ||
+              !editForm.scheduledAt ||
+              editForm.teamA === editForm.teamB
+            "
             class="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             确认保存
@@ -1537,14 +1813,22 @@ onMounted(() => loadMatches())
     </div>
 
     <!-- ═══════════════════════ 录入比分 Modal（扩展：最佳辩手） ═══════════════════════ -->
-    <div v-if="showResultModal" class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50" @click.self="showResultModal = false">
+    <div
+      v-if="showResultModal"
+      class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50"
+      @click.self="showResultModal = false"
+    >
       <div class="glass-modal rounded-xl shadow-lg w-full max-w-lg p-6">
         <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-1">录入比分</h3>
-        <p class="text-sm text-[var(--color-text-muted)] mb-5">{{ resultMatch?.teamA || '待定' }} vs {{ resultMatch?.teamB || '待定' }}</p>
+        <p class="text-sm text-[var(--color-text-muted)] mb-5">
+          {{ resultMatch?.teamA || '待定' }} vs {{ resultMatch?.teamB || '待定' }}
+        </p>
         <div class="space-y-5">
           <div class="grid grid-cols-2 gap-6">
             <div class="text-center">
-              <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">{{ resultMatch?.teamA || '队伍A' }}</label>
+              <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">{{
+                resultMatch?.teamA || '队伍A'
+              }}</label>
               <input
                 v-model.number="resultForm.scoreA"
                 type="number"
@@ -1553,7 +1837,9 @@ onMounted(() => loadMatches())
               />
             </div>
             <div class="text-center">
-              <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">{{ resultMatch?.teamB || '队伍B' }}</label>
+              <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">{{
+                resultMatch?.teamB || '队伍B'
+              }}</label>
               <input
                 v-model.number="resultForm.scoreB"
                 type="number"
@@ -1563,27 +1849,71 @@ onMounted(() => loadMatches())
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">获胜方</label>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2"
+              >获胜方</label
+            >
             <div class="grid grid-cols-3 gap-2">
-              <button @click="() => { resultForm.winner = 'A' }" class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all" :class="resultForm.winner === 'A' ? 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400' : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'">
+              <button
+                @click="
+                  () => {
+                    resultForm.winner = 'A'
+                  }
+                "
+                class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all"
+                :class="
+                  resultForm.winner === 'A'
+                    ? 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400'
+                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                "
+              >
                 {{ resultMatch?.teamA || '队伍A' }} 胜
               </button>
-              <button @click="() => { resultForm.winner = 'draw' }" class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all" :class="resultForm.winner === 'draw' ? 'border-yellow-500 bg-yellow-500/15 text-yellow-600 dark:text-yellow-400' : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'">
+              <button
+                @click="
+                  () => {
+                    resultForm.winner = 'draw'
+                  }
+                "
+                class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all"
+                :class="
+                  resultForm.winner === 'draw'
+                    ? 'border-yellow-500 bg-yellow-500/15 text-yellow-600 dark:text-yellow-400'
+                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                "
+              >
                 平局
               </button>
-              <button @click="() => { resultForm.winner = 'B' }" class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all" :class="resultForm.winner === 'B' ? 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400' : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'">
+              <button
+                @click="
+                  () => {
+                    resultForm.winner = 'B'
+                  }
+                "
+                class="px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all"
+                :class="
+                  resultForm.winner === 'B'
+                    ? 'border-green-500 bg-green-500/15 text-green-600 dark:text-green-400'
+                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                "
+              >
                 {{ resultMatch?.teamB || '队伍B' }} 胜
               </button>
             </div>
-            <p class="text-xs text-[var(--color-text-muted)] mt-2">提示：系统将根据比分自动判定获胜方</p>
+            <p class="text-xs text-[var(--color-text-muted)] mt-2">
+              提示：系统将根据比分自动判定获胜方
+            </p>
           </div>
 
           <!-- ⭐ 新增：最佳辩手 -->
           <div class="border-t border-[var(--color-border)] pt-4">
-            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-3">最佳辩手（选填）</label>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-3"
+              >最佳辩手（选填）</label
+            >
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs text-[var(--color-text-muted)] mb-1">{{ resultMatch?.teamA || '队伍A' }} 最佳辩手</label>
+                <label class="block text-xs text-[var(--color-text-muted)] mb-1"
+                  >{{ resultMatch?.teamA || '队伍A' }} 最佳辩手</label
+                >
                 <input
                   v-model="resultForm.bestDebaterA"
                   type="text"
@@ -1592,7 +1922,9 @@ onMounted(() => loadMatches())
                 />
               </div>
               <div>
-                <label class="block text-xs text-[var(--color-text-muted)] mb-1">{{ resultMatch?.teamB || '队伍B' }} 最佳辩手</label>
+                <label class="block text-xs text-[var(--color-text-muted)] mb-1"
+                  >{{ resultMatch?.teamB || '队伍B' }} 最佳辩手</label
+                >
                 <input
                   v-model="resultForm.bestDebaterB"
                   type="text"
@@ -1602,13 +1934,19 @@ onMounted(() => loadMatches())
               </div>
             </div>
             <p class="text-xs text-[var(--color-text-muted)] mt-2">
-              当前模式：{{ tournament?.bestDebaterMode === 'winner_only' ? '只有一方可以有最佳辩手' : '双方均可有最佳辩手' }}
+              当前模式：{{
+                tournament?.bestDebaterMode === 'winner_only'
+                  ? '只有一方可以有最佳辩手'
+                  : '双方均可有最佳辩手'
+              }}
             </p>
           </div>
 
           <!-- ⭐ 新增：评委姓名 -->
           <div class="border-t border-[var(--color-border)] pt-4">
-            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2">评委姓名</label>
+            <label class="block text-sm font-medium text-[var(--color-text-primary)] mb-2"
+              >评委姓名</label
+            >
             <div class="flex gap-2">
               <input
                 v-model="resultForm.judge"
@@ -1630,25 +1968,51 @@ onMounted(() => loadMatches())
           </div>
         </div>
         <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
-          <button @click="() => { showResultModal = false }" class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors">取消</button>
-          <button @click="handleSubmitResult" class="px-5 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">确认比分</button>
+          <button
+            @click="
+              () => {
+                showResultModal = false
+              }
+            "
+            class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+          >
+            取消
+          </button>
+          <button
+            @click="handleSubmitResult"
+            class="px-5 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+          >
+            确认比分
+          </button>
         </div>
       </div>
     </div>
 
     <!-- ═══════════════════════ 🔴 抽签管理 Modal ═══════════════════════ -->
-    <div v-if="showDrawLotsModal" class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50" @click.self="showDrawLotsModal = false">
-      <div class="glass-modal rounded-xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+    <div
+      v-if="showDrawLotsModal"
+      class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50"
+      @click.self="showDrawLotsModal = false"
+    >
+      <div
+        class="glass-modal rounded-xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto"
+      >
         <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-1">抽签管理</h3>
-        <p class="text-sm text-[var(--color-text-muted)] mb-5">配置辩题库、分组数量、最佳辩手模式，然后执行抽签</p>
+        <p class="text-sm text-[var(--color-text-muted)] mb-5">
+          配置辩题库、分组数量、最佳辩手模式，然后执行抽签
+        </p>
 
         <div class="space-y-6">
           <!-- 1. 辩题库 -->
           <div class="bg-amber-500/10 rounded-lg p-4 border border-amber-500/20">
             <div class="flex items-center justify-between mb-2">
-              <h4 class="text-sm font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+              <h4
+                class="text-sm font-bold text-[var(--color-text-primary)] flex items-center gap-1.5"
+              >
                 <UIcon name="i-lucide-file-text" class="w-4 h-4 text-amber-600" /> 辩题库
-                <span class="text-xs font-normal text-[var(--color-text-muted)]">({{ drawLotsForm.topicPool.length }} 道题)</span>
+                <span class="text-xs font-normal text-[var(--color-text-muted)]"
+                  >({{ drawLotsForm.topicPool.length }} 道题)</span
+                >
               </h4>
               <div class="flex gap-1.5">
                 <button
@@ -1673,7 +2037,10 @@ onMounted(() => loadMatches())
             </div>
             <div class="space-y-2 mb-3">
               <div class="flex gap-2">
-                <span class="inline-flex items-center justify-center px-2 text-xs font-bold bg-green-600 text-white rounded">正</span>
+                <span
+                  class="inline-flex items-center justify-center px-2 text-xs font-bold bg-green-600 text-white rounded"
+                  >正</span
+                >
                 <input
                   v-model="drawLotsForm.newTopicPro"
                   @keyup.enter="addTopic"
@@ -1683,7 +2050,10 @@ onMounted(() => loadMatches())
                 />
               </div>
               <div class="flex gap-2">
-                <span class="inline-flex items-center justify-center px-2 text-xs font-bold bg-red-600 text-[var(--color-text-primary)] rounded">反</span>
+                <span
+                  class="inline-flex items-center justify-center px-2 text-xs font-bold bg-red-600 text-[var(--color-text-primary)] rounded"
+                  >反</span
+                >
                 <input
                   v-model="drawLotsForm.newTopicCon"
                   @keyup.enter="addTopic"
@@ -1694,7 +2064,10 @@ onMounted(() => loadMatches())
               </div>
             </div>
             <div class="flex justify-end mb-3">
-              <button @click="addTopic" class="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap">
+              <button
+                @click="addTopic"
+                class="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap"
+              >
                 + 添加
               </button>
             </div>
@@ -1705,20 +2078,40 @@ onMounted(() => loadMatches())
                 class="inline-flex items-start gap-1.5 px-3 py-1.5 text-xs bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg max-w-full"
               >
                 <div class="flex flex-col gap-0.5 flex-1">
-                  <span class="flex items-center gap-1.5"><span class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold bg-green-600 text-white rounded shrink-0">正方</span> <span class="text-[var(--color-text-primary)]">{{ topic.pro }}</span></span>
-                  <span class="flex items-center gap-1.5"><span class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold bg-red-600 text-white rounded shrink-0">反方</span> <span class="text-[var(--color-text-primary)]">{{ topic.con }}</span></span>
+                  <span class="flex items-center gap-1.5"
+                    ><span
+                      class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold bg-green-600 text-white rounded shrink-0"
+                      >正方</span
+                    >
+                    <span class="text-[var(--color-text-primary)]">{{ topic.pro }}</span></span
+                  >
+                  <span class="flex items-center gap-1.5"
+                    ><span
+                      class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold bg-red-600 text-white rounded shrink-0"
+                      >反方</span
+                    >
+                    <span class="text-[var(--color-text-primary)]">{{ topic.con }}</span></span
+                  >
                 </div>
-                <button @click="removeTopic(idx)" class="text-[var(--color-text-muted)] hover:text-red-500 transition-colors ml-1 shrink-0">×
+                <button
+                  @click="removeTopic(idx)"
+                  class="text-[var(--color-text-muted)] hover:text-red-500 transition-colors ml-1 shrink-0"
+                >
+                  ×
                   <UIcon name="i-lucide-x" class="w-3 h-3" />
                 </button>
               </div>
             </div>
-            <p v-else class="text-xs text-[var(--color-text-muted)] italic">暂无辩题，请添加或导入CSV</p>
+            <p v-else class="text-xs text-[var(--color-text-muted)] italic">
+              暂无辩题，请添加或导入CSV
+            </p>
           </div>
 
           <!-- 2. 分组配置 -->
           <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4">
-            <label class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5">
+            <label
+              class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5"
+            >
               <UIcon name="i-lucide-users" class="w-4 h-4 text-blue-600" /> 分组数量
             </label>
             <div class="flex items-center gap-3">
@@ -1729,7 +2122,9 @@ onMounted(() => loadMatches())
                 max="8"
                 class="w-24 px-3 py-2 text-sm text-center font-bold border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
               />
-              <span class="text-xs text-[var(--color-text-muted)]">个小组（适用于循环赛 / 小组+淘汰赛）</span>
+              <span class="text-xs text-[var(--color-text-muted)]"
+                >个小组（适用于循环赛 / 小组+淘汰赛）</span
+              >
             </div>
           </div>
         </div>
@@ -1756,7 +2151,14 @@ onMounted(() => loadMatches())
               一键全部抽签
             </button>
           </div>
-          <button @click="() => { showDrawLotsModal = false }" class="w-full mt-2 px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors">
+          <button
+            @click="
+              () => {
+                showDrawLotsModal = false
+              }
+            "
+            class="w-full mt-2 px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
+          >
             关闭
           </button>
         </div>
@@ -1764,33 +2166,59 @@ onMounted(() => loadMatches())
     </div>
 
     <!-- ═══════════════════════ 🔴 佳辩设置 Modal ═══════════════════════ -->
-    <div v-if="showResultSettingsModal" class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50" @click.self="showResultSettingsModal = false">
-      <div class="glass-modal rounded-xl shadow-lg w-full max-w-xl p-6 max-h-[90vh] overflow-y-auto">
+    <div
+      v-if="showResultSettingsModal"
+      class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50"
+      @click.self="showResultSettingsModal = false"
+    >
+      <div
+        class="glass-modal rounded-xl shadow-lg w-full max-w-xl p-6 max-h-[90vh] overflow-y-auto"
+      >
         <!-- 头部 -->
         <div class="flex items-center gap-2 mb-2">
           <UIcon name="i-lucide-trophy" class="w-5 h-5 text-rose-600" />
           <h3 class="text-lg font-bold text-[var(--color-text-primary)]">佳辩设置</h3>
         </div>
-        <p class="text-sm text-[var(--color-text-muted)] mb-6">配置赛果录入时的规则，包括最佳辩手的评选方式</p>
+        <p class="text-sm text-[var(--color-text-muted)] mb-6">
+          配置赛果录入时的规则，包括最佳辩手的评选方式
+        </p>
 
         <div class="space-y-6">
           <!-- 最佳辩手模式 -->
           <div class="bg-[var(--color-bg-secondary)] rounded-lg p-4">
-            <label class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5">
+            <label
+              class="block text-sm font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5"
+            >
               <UIcon name="i-lucide-award" class="w-4 h-4 text-amber-600" /> 最佳辩手评选方式
             </label>
             <div class="grid grid-cols-2 gap-2">
               <button
-                @click="() => { resultSettingsForm.bestDebaterMode = 'both' }"
+                @click="
+                  () => {
+                    resultSettingsForm.bestDebaterMode = 'both'
+                  }
+                "
                 class="px-4 py-3 text-sm font-medium rounded-lg border-2 transition-all text-left"
-                :class="resultSettingsForm.bestDebaterMode === 'both' ? 'border-rose-500 bg-rose-500/15 text-rose-400' : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'"
+                :class="
+                  resultSettingsForm.bestDebaterMode === 'both'
+                    ? 'border-rose-500 bg-rose-500/15 text-rose-400'
+                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                "
               >
                 双方均可有最佳辩手
               </button>
               <button
-                @click="() => { resultSettingsForm.bestDebaterMode = 'winner_only' }"
+                @click="
+                  () => {
+                    resultSettingsForm.bestDebaterMode = 'winner_only'
+                  }
+                "
                 class="px-4 py-3 text-sm font-medium rounded-lg border-2 transition-all text-left"
-                :class="resultSettingsForm.bestDebaterMode === 'winner_only' ? 'border-rose-500 bg-rose-500/15 text-rose-400' : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'"
+                :class="
+                  resultSettingsForm.bestDebaterMode === 'winner_only'
+                    ? 'border-rose-500 bg-rose-500/15 text-rose-400'
+                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                "
               >
                 只有一方可以有最佳辩手
               </button>
@@ -1798,18 +2226,32 @@ onMounted(() => loadMatches())
           </div>
 
           <!-- 说明 -->
-          <div class="p-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-xs text-[var(--color-text-secondary)] leading-relaxed">
-            <p class="mb-1"><strong>双方均可有最佳辩手：</strong>胜方和败方都可以评选最佳辩手，用于展示双方优秀选手的表现。</p>
-            <p><strong>只有一方可以有最佳辩手：</strong>只有一方可以评选最佳辩手，另一方不设置最佳辩手字段。</p>
+          <div
+            class="p-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-xs text-[var(--color-text-secondary)] leading-relaxed"
+          >
+            <p class="mb-1">
+              <strong>双方均可有最佳辩手：</strong
+              >胜方和败方都可以评选最佳辩手，用于展示双方优秀选手的表现。
+            </p>
+            <p>
+              <strong>只有一方可以有最佳辩手：</strong
+              >只有一方可以评选最佳辩手，另一方不设置最佳辩手字段。
+            </p>
           </div>
         </div>
 
         <!-- 底部操作 -->
         <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
           <button
-            @click="() => { showResultSettingsModal = false }"
+            @click="
+              () => {
+                showResultSettingsModal = false
+              }
+            "
             class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
-          >取消</button>
+          >
+            取消
+          </button>
           <button
             @click="saveResultSettings"
             class="px-5 py-2 text-sm font-medium text-white bg-rose-600 rounded-lg hover:bg-rose-700 transition-colors flex items-center gap-2"
@@ -1822,16 +2264,26 @@ onMounted(() => loadMatches())
 
     <!-- ═══════════════════════ ⭐ 自动赛程生成 Modal ═══════════════════════ -->
     <!-- ═══════════════════ 自动赛程生成 Modal ═══════════════════ -->
-    <div v-if="showGenerateModal" class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50" @click.self="showGenerateModal = false">
-      <div class="glass-modal rounded-xl shadow-lg w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto">
+    <div
+      v-if="showGenerateModal"
+      class="fixed inset-0 bg-[var(--overlay-overlay)] flex items-center justify-center z-50"
+      @click.self="showGenerateModal = false"
+    >
+      <div
+        class="glass-modal rounded-xl shadow-lg w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto"
+      >
         <!-- 头部 -->
         <div class="flex items-center gap-2 mb-2">
           <UIcon name="i-lucide-sparkles" class="w-5 h-5 text-purple-600" />
           <h3 class="text-lg font-bold text-[var(--color-text-primary)]">自动生成赛程</h3>
         </div>
-        <p class="text-sm text-[var(--color-text-muted)] mb-4">选择赛制，输入参赛队伍，系统将自动生成完整对阵表并按轮次分组</p>
+        <p class="text-sm text-[var(--color-text-muted)] mb-4">
+          选择赛制，输入参赛队伍，系统将自动生成完整对阵表并按轮次分组
+        </p>
         <!-- 切换到手动添加入口 -->
-        <div class="mb-6 p-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-sm flex items-center justify-between">
+        <div
+          class="mb-6 p-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-sm flex items-center justify-between"
+        >
           <span class="text-[var(--color-text-secondary)]">想要自己逐场添加？</span>
           <button
             @click="switchToManualAdd"
@@ -1844,22 +2296,40 @@ onMounted(() => loadMatches())
         <div class="space-y-6">
           <!-- ═══ 1. 赛制卡片选择（6 种） ═══ -->
           <div>
-            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3">① 选择赛制</label>
+            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3"
+              >① 选择赛制</label
+            >
             <div class="grid grid-cols-3 gap-3">
               <button
                 v-for="(fmt, idx) in TOURNAMENT_FORMATS"
                 :key="fmt.value"
-                @click="() => { generateForm.format = fmt.value }"
+                @click="
+                  () => {
+                    generateForm.format = fmt.value
+                  }
+                "
                 class="p-4 text-sm rounded-lg border-2 transition-all text-left"
-                :class="generateForm.format === fmt.value
-                  ? 'border-purple-500 bg-purple-500/15 text-purple-700 dark:text-purple-300 shadow-sm'
-                  : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] hover:border-[var(--color-border)]'"
+                :class="
+                  generateForm.format === fmt.value
+                    ? 'border-purple-500 bg-purple-500/15 text-purple-700 dark:text-purple-300 shadow-sm'
+                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] hover:border-[var(--color-border)]'
+                "
               >
                 <div class="flex items-center gap-2 mb-2">
-                  <UIcon :name="fmt.icon" class="w-4 h-4" :class="generateForm.format === fmt.value ? 'text-purple-600' : 'text-[var(--color-text-muted)]'" />
+                  <UIcon
+                    :name="fmt.icon"
+                    class="w-4 h-4"
+                    :class="
+                      generateForm.format === fmt.value
+                        ? 'text-purple-600'
+                        : 'text-[var(--color-text-muted)]'
+                    "
+                  />
                   <span class="font-bold text-[var(--color-text-primary)]">{{ fmt.name }}</span>
                 </div>
-                <p class="text-xs text-[var(--color-text-muted)] leading-relaxed mb-2">{{ fmt.desc }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] leading-relaxed mb-2">
+                  {{ fmt.desc }}
+                </p>
                 <p class="text-xs text-[var(--color-text-muted)]">推荐：{{ fmt.recommend }}</p>
               </button>
             </div>
@@ -1870,13 +2340,18 @@ onMounted(() => loadMatches())
             <div class="flex items-center justify-between mb-2">
               <label class="block text-sm font-semibold text-[var(--color-text-primary)]">
                 ② 参赛队伍（与顶部设置一致，需改队伍请先关闭本弹窗到顶部操作）
-                <span v-if="teamList.length > 0" class="text-xs text-green-600 font-normal ml-1">✓ 已同步顶部设置</span>
+                <span v-if="teamList.length > 0" class="text-xs text-green-600 font-normal ml-1"
+                  >✓ 已同步顶部设置</span
+                >
               </label>
               <span class="text-xs font-medium text-purple-600">{{ teamList.length }} 支</span>
             </div>
 
             <!-- 队伍列表展示（只读，chip 标签，无删除按钮） -->
-            <div v-if="teamList.length === 0" class="py-3 text-center text-sm text-[var(--color-text-muted)] border border-dashed border-[var(--color-border)] rounded-lg">
+            <div
+              v-if="teamList.length === 0"
+              class="py-3 text-center text-sm text-[var(--color-text-muted)] border border-dashed border-[var(--color-border)] rounded-lg"
+            >
               暂未设置参赛队伍，请先关闭本弹窗，到赛程页顶部的「参赛队伍」区添加
             </div>
             <div v-else class="flex flex-wrap gap-2 py-1">
@@ -1902,76 +2377,130 @@ onMounted(() => loadMatches())
 
           <!-- ═══ 3. 通用参数（种子排序） ═══ -->
           <div>
-            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3">③ 种子排序方式</label>
+            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3"
+              >③ 种子排序方式</label
+            >
             <div class="grid grid-cols-3 gap-3">
               <button
-                @click="() => { generateForm.seedMethod = 'rating' }"
+                @click="
+                  () => {
+                    generateForm.seedMethod = 'rating'
+                  }
+                "
                 class="px-3 py-2 text-sm rounded-lg border transition-all"
-                :class="generateForm.seedMethod === 'rating'
-                  ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
-                  : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'"
-              >按输入顺序（默认）</button>
+                :class="
+                  generateForm.seedMethod === 'rating'
+                    ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
+                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                "
+              >
+                按输入顺序（默认）
+              </button>
               <button
-                @click="() => { generateForm.seedMethod = 'random' }"
+                @click="
+                  () => {
+                    generateForm.seedMethod = 'random'
+                  }
+                "
                 class="px-3 py-2 text-sm rounded-lg border transition-all"
-                :class="generateForm.seedMethod === 'random'
-                  ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
-                  : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'"
-              >随机</button>
+                :class="
+                  generateForm.seedMethod === 'random'
+                    ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
+                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                "
+              >
+                随机
+              </button>
               <button
-                @click="() => { generateForm.seedMethod = 'name' }"
+                @click="
+                  () => {
+                    generateForm.seedMethod = 'name'
+                  }
+                "
                 class="px-3 py-2 text-sm rounded-lg border transition-all"
-                :class="generateForm.seedMethod === 'name'
-                  ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
-                  : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'"
-              >按名称字典序</button>
+                :class="
+                  generateForm.seedMethod === 'name'
+                    ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
+                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                "
+              >
+                按名称字典序
+              </button>
             </div>
           </div>
 
           <!-- ═══ 4. 赛制专属参数（按选中格式动态显示） ═══ -->
           <!-- 4-1. 循环赛：单/双循环 -->
           <div v-if="generateForm.format === 'round_robin'">
-            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3">④ 循环赛参数</label>
+            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3"
+              >④ 循环赛参数</label
+            >
             <div class="space-y-2">
               <div class="flex items-center gap-3">
                 <button
-                  @click="() => { generateForm.roundRobinMode = 'single' }"
+                  @click="
+                    () => {
+                      generateForm.roundRobinMode = 'single'
+                    }
+                  "
                   class="px-4 py-2 text-sm rounded-lg border transition-all"
-                  :class="generateForm.roundRobinMode === 'single'
-                    ? 'border-purple-500 bg-purple-500/15 text-purple-600 dark:text-purple-400 font-semibold'
-                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'"
-                >单循环（推荐）</button>
+                  :class="
+                    generateForm.roundRobinMode === 'single'
+                      ? 'border-purple-500 bg-purple-500/15 text-purple-600 dark:text-purple-400 font-semibold'
+                      : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                  "
+                >
+                  单循环（推荐）
+                </button>
                 <button
-                  @click="() => { generateForm.roundRobinMode = 'double' }"
+                  @click="
+                    () => {
+                      generateForm.roundRobinMode = 'double'
+                    }
+                  "
                   class="px-4 py-2 text-sm rounded-lg border transition-all"
-                  :class="generateForm.roundRobinMode === 'double'
-                    ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
-                    : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'"
-                >双循环（主客场）</button>
+                  :class="
+                    generateForm.roundRobinMode === 'double'
+                      ? 'border-purple-500 bg-purple-50 text-purple-700 font-semibold'
+                      : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
+                  "
+                >
+                  双循环（主客场）
+                </button>
               </div>
-              <p class="text-xs text-[var(--color-text-muted)] ml-1">双循环比赛场次是单循环的 2 倍，每支队伍相遇两次（主客场各一次）</p>
+              <p class="text-xs text-[var(--color-text-muted)] ml-1">
+                双循环比赛场次是单循环的 2 倍，每支队伍相遇两次（主客场各一次）
+              </p>
             </div>
           </div>
 
           <!-- 4-2. 双败淘汰赛：是否启用复活赛决赛 -->
           <div v-if="generateForm.format === 'double_elimination'">
-            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3">④ 双败淘汰参数</label>
+            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3"
+              >④ 双败淘汰参数</label
+            >
             <div class="flex items-center gap-2 p-3 bg-[var(--color-bg-secondary)] rounded-lg">
               <input
                 v-model="generateForm.enableRevivalFinal"
                 type="checkbox"
                 class="rounded border-[var(--color-border)] text-purple-500 focus:ring-purple-500"
               />
-              <label class="text-sm text-[var(--color-text-primary)]">启用「复活赛决赛」（败者组冠军若击败胜者组冠军，再赛一场）</label>
+              <label class="text-sm text-[var(--color-text-primary)]"
+                >启用「复活赛决赛」（败者组冠军若击败胜者组冠军，再赛一场）</label
+              >
             </div>
           </div>
 
           <!-- 4-3. 瑞士制：总轮数 + 配对算法 -->
           <div v-if="generateForm.format === 'swiss'">
-            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3">④ 瑞士制参数</label>
+            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3"
+              >④ 瑞士制参数</label
+            >
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1.5">总轮数</label>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1.5"
+                  >总轮数</label
+                >
                 <input
                   type="number"
                   v-model.number="generateForm.rounds"
@@ -1979,10 +2508,14 @@ onMounted(() => loadMatches())
                   max="20"
                   class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
                 />
-                <p class="text-xs text-[var(--color-text-muted)] mt-1.5">推荐：⌈log₂(队伍数)⌉ 轮（如 8 队 → 3 轮）</p>
+                <p class="text-xs text-[var(--color-text-muted)] mt-1.5">
+                  推荐：⌈log₂(队伍数)⌉ 轮（如 8 队 → 3 轮）
+                </p>
               </div>
               <div>
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1.5">配对算法</label>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1.5"
+                  >配对算法</label
+                >
                 <USelect
                   v-model="generateForm.pairingAlgo"
                   :items="[
@@ -1998,10 +2531,14 @@ onMounted(() => loadMatches())
 
           <!-- 4-4. 小组+淘汰赛：每组队伍数 + 晋级数 -->
           <div v-if="generateForm.format === 'group_knockout'">
-            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3">④ 小组+淘汰赛参数</label>
+            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3"
+              >④ 小组+淘汰赛参数</label
+            >
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1.5">每组队伍数</label>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1.5"
+                  >每组队伍数</label
+                >
                 <USelect
                   v-model.number="generateForm.groupSize"
                   :items="[
@@ -2016,7 +2553,9 @@ onMounted(() => loadMatches())
                 />
               </div>
               <div>
-                <label class="block text-xs text-[var(--color-text-secondary)] mb-1.5">每组晋级数</label>
+                <label class="block text-xs text-[var(--color-text-secondary)] mb-1.5"
+                  >每组晋级数</label
+                >
                 <USelect
                   v-model.number="generateForm.promotePerGroup"
                   :items="[
@@ -2030,27 +2569,41 @@ onMounted(() => loadMatches())
               </div>
             </div>
             <p class="text-xs text-[var(--color-text-muted)] mt-2">
-              ① 先按蛇形分组进行循环赛；② 每组前 {{ generateForm.promotePerGroup }} 名进入单败淘汰赛，按交叉对阵规则决出冠军
+              ① 先按蛇形分组进行循环赛；② 每组前
+              {{ generateForm.promotePerGroup }} 名进入单败淘汰赛，按交叉对阵规则决出冠军
             </p>
           </div>
 
           <!-- 4-5. 佩寄制 / 单败淘汰赛：专用提示 -->
           <div v-if="generateForm.format === 'page_playoff'">
-            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3">④ 佩寄制说明</label>
-            <div class="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg text-xs text-purple-700 dark:text-purple-300 leading-relaxed">
+            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3"
+              >④ 佩寄制说明</label
+            >
+            <div
+              class="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg text-xs text-purple-700 dark:text-purple-300 leading-relaxed"
+            >
               <p class="font-semibold mb-1">经典 4 队 5 场流程：</p>
               <p>• R1：第 1 名 vs 第 4 名，第 2 名 vs 第 3 名</p>
               <p>• R2：R1 两位胜者对决（胜者直接进入 R4 决赛）</p>
               <p>• R3：R2 败者 vs R1 败者中获胜的队伍</p>
               <p>• R4 决赛：R2 胜者 vs R3 胜者</p>
-              <p class="mt-1 text-purple-700">⚠️ 佩寄制只在恰好 4 支队伍时有效，否则将降级为单败淘汰赛</p>
+              <p class="mt-1 text-purple-700">
+                ⚠️ 佩寄制只在恰好 4 支队伍时有效，否则将降级为单败淘汰赛
+              </p>
             </div>
           </div>
 
           <div v-if="generateForm.format === 'single_elimination'">
-            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3">④ 单败淘汰赛提示</label>
-            <div class="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg text-xs text-purple-700 dark:text-purple-300 leading-relaxed">
-              <p>• 当前 {{ teamList.length }} 支队伍，预计生成 {{ estimateMatches('single_elimination', teamList.length) }}</p>
+            <label class="block text-sm font-semibold text-[var(--color-text-primary)] mb-3"
+              >④ 单败淘汰赛提示</label
+            >
+            <div
+              class="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg text-xs text-purple-700 dark:text-purple-300 leading-relaxed"
+            >
+              <p>
+                • 当前 {{ teamList.length }} 支队伍，预计生成
+                {{ estimateMatches('single_elimination', teamList.length) }}
+              </p>
               <p>• 若队伍数不是 2 的幂，首轮将自动生成轮空位（BYE），让种子高的队伍直接晋级</p>
               <p>• 录入比赛结果后，胜者将自动填入下一轮对阵位置</p>
             </div>
@@ -2063,16 +2616,24 @@ onMounted(() => loadMatches())
               type="checkbox"
               class="rounded border-[var(--color-border)] text-purple-500 focus:ring-purple-500"
             />
-            <label class="text-sm text-[var(--color-text-primary)]">覆盖当前已有赛程（推荐选中，避免与旧赛程混合）</label>
+            <label class="text-sm text-[var(--color-text-primary)]"
+              >覆盖当前已有赛程（推荐选中，避免与旧赛程混合）</label
+            >
           </div>
         </div>
 
         <!-- 底部操作 -->
         <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-[var(--color-border)]">
           <button
-            @click="() => { showGenerateModal = false }"
+            @click="
+              () => {
+                showGenerateModal = false
+              }
+            "
             class="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors"
-          >取消</button>
+          >
+            取消
+          </button>
           <button
             @click="handleGenerate"
             class="px-5 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
@@ -2089,5 +2650,7 @@ onMounted(() => loadMatches())
 <style scoped>
 /* Dark glass morphism - tab styles from global .tab-dark-* */
 
-.match-card { position: relative; }
+.match-card {
+  position: relative;
+}
 </style>

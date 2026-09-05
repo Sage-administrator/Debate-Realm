@@ -31,11 +31,14 @@ const qSubmitText = computed(() => props.settings?.submitText || '提交')
 const qThankYou = computed(() => props.settings?.thankYouText || '')
 const qShowNumber = computed(() => props.settings?.showNumber !== false)
 const qDescHtml = computed(() => sanitizeHtml(qDesc.value))
-const qAlignClass = computed(() => ({
-  left: 'text-left',
-  center: 'text-center',
-  right: 'text-right',
-}[qAlign.value]))
+const qAlignClass = computed(
+  () =>
+    ({
+      left: 'text-left',
+      center: 'text-center',
+      right: 'text-right',
+    })[qAlign.value],
+)
 
 const submitting = ref(false)
 const finished = ref(false)
@@ -57,7 +60,9 @@ const questions = computed(() =>
     })),
 )
 
-const visibleQuestions = computed(() => questions.value.filter((q) => !['divider', 'heading'].includes(q.questionType)))
+const visibleQuestions = computed(() =>
+  questions.value.filter((q) => !['divider', 'heading'].includes(q.questionType)),
+)
 const isEmpty = computed(() => visibleQuestions.value.length === 0)
 
 // 为普通题目顺次编号（分割线/分组标题不计入）
@@ -77,11 +82,17 @@ function parseFieldOptions(raw: string | null | undefined): { label: string; val
     const parsed = JSON.parse(raw)
     if (Array.isArray(parsed)) {
       return parsed.map((item: any) =>
-        typeof item === 'string' ? { label: item, value: item } : { label: item.label, value: item.value },
+        typeof item === 'string'
+          ? { label: item, value: item }
+          : { label: item.label, value: item.value },
       )
     }
   } catch {
-    return String(raw).split(',').map((s) => s.trim()).filter(Boolean).map((s) => ({ label: s, value: s }))
+    return String(raw)
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((s) => ({ label: s, value: s }))
   }
   return []
 }
@@ -162,13 +173,21 @@ function resetForm() {
   <div class="qprev">
     <!-- 试答成功态 -->
     <div v-if="finished" class="qprev-done">
-      <div class="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3">
+      <div
+        class="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3"
+      >
         <UIcon name="i-lucide-check" class="w-8 h-8 text-green-600 dark:text-green-400" />
       </div>
-      <h3 class="text-base font-semibold text-[var(--color-text-primary)] mb-1 text-center">试答完成</h3>
-      <p v-if="qThankYou" class="text-sm text-[var(--color-text-secondary)] text-center mb-2">{{ qThankYou }}</p>
+      <h3 class="text-base font-semibold text-[var(--color-text-primary)] mb-1 text-center">
+        试答完成
+      </h3>
+      <p v-if="qThankYou" class="text-sm text-[var(--color-text-secondary)] text-center mb-2">
+        {{ qThankYou }}
+      </p>
       <p class="text-sm text-[var(--color-text-muted)] text-center mb-5">
-        这是一次模拟提交，测试数据<strong class="text-[var(--color-text-secondary)]">不会保存</strong>，也不计入正式统计。
+        这是一次模拟提交，测试数据<strong class="text-[var(--color-text-secondary)]"
+          >不会保存</strong
+        >，也不计入正式统计。
       </p>
       <div class="flex items-center justify-center gap-3">
         <UButton color="neutral" variant="outline" @click="resetForm">再试一次</UButton>
@@ -177,11 +196,16 @@ function resetForm() {
 
     <!-- 空状态 -->
     <div v-else-if="isEmpty" class="py-12 text-center">
-      <UIcon name="i-lucide-inbox" class="w-10 h-10 text-[var(--color-border-muted)] mx-auto mb-3" />
-      <p class="text-sm text-[var(--color-text-muted)]">当前问卷还没有可作答的题目，请先在设计器中添加题型。</p>
+      <UIcon
+        name="i-lucide-inbox"
+        class="w-10 h-10 text-[var(--color-border-muted)] mx-auto mb-3"
+      />
+      <p class="text-sm text-[var(--color-text-muted)]">
+        当前问卷还没有可作答的题目，请先在设计器中添加题型。
+      </p>
     </div>
 
-      <!-- 作答态 -->
+    <!-- 作答态 -->
     <template v-else>
       <!-- 问卷标题与说明 -->
       <div class="mb-5" :class="qAlignClass">
@@ -190,7 +214,7 @@ function resetForm() {
         <div
           v-if="qDescHtml"
           class="qprev-rich mt-2 text-sm text-[var(--color-text-secondary)] leading-relaxed inline-block text-left"
-          :class="qAlign === 'center' ? 'mx-auto' : (qAlign === 'right' ? 'ml-auto' : '')"
+          :class="qAlign === 'center' ? 'mx-auto' : qAlign === 'right' ? 'ml-auto' : ''"
           v-html="qDescHtml"
         ></div>
       </div>
@@ -198,25 +222,43 @@ function resetForm() {
       <div class="space-y-5">
         <template v-for="(q, idx) in numberedQuestions" :key="q.id || idx">
           <!-- 分割线 -->
-          <div v-if="q.questionType === 'divider'" class="border-t border-[var(--color-border)] my-2"></div>
+          <div
+            v-if="q.questionType === 'divider'"
+            class="border-t border-[var(--color-border)] my-2"
+          ></div>
           <!-- 分组标题 -->
-          <h3 v-else-if="q.questionType === 'heading'" class="text-base font-bold text-[var(--color-text-primary)] mt-2">
+          <h3
+            v-else-if="q.questionType === 'heading'"
+            class="text-base font-bold text-[var(--color-text-primary)] mt-2"
+          >
             {{ q.title }}
           </h3>
 
           <!-- 量表题 -->
           <UCard v-else-if="q.questionType === 'scale'">
             <template #header>
-              <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+              <h2
+                class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+              >
                 <UIcon name="i-lucide-star" class="w-4 h-4 text-[var(--color-accent-primary)]" />
-                <span v-if="qShowNumber && q.no" class="text-[var(--color-text-muted)] font-normal">{{ q.no }}.</span>
+                <span v-if="qShowNumber && q.no" class="text-[var(--color-text-muted)] font-normal"
+                  >{{ q.no }}.</span
+                >
                 {{ q.title }}
                 <span v-if="q.required" class="text-red-500 text-sm">*</span>
-                <span v-else class="text-xs font-normal text-[var(--color-text-muted)]">（选填）</span>
+                <span v-else class="text-xs font-normal text-[var(--color-text-muted)]"
+                  >（选填）</span
+                >
               </h2>
             </template>
-            <p v-if="q.description" class="text-xs text-[var(--color-text-muted)] mb-3" v-html="q.description"></p>
-            <div class="flex items-center justify-between mb-2 text-xs text-[var(--color-text-muted)]">
+            <p
+              v-if="q.description"
+              class="text-xs text-[var(--color-text-muted)] mb-3"
+              v-html="q.description"
+            ></p>
+            <div
+              class="flex items-center justify-between mb-2 text-xs text-[var(--color-text-muted)]"
+            >
               <span>{{ scaleMeta(q).leftLabel }}</span>
               <span>{{ scaleMeta(q).rightLabel }}</span>
             </div>
@@ -232,40 +274,99 @@ function resetForm() {
                     : 'border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:border-indigo-400',
                 ]"
                 @click="selectScale(q, v)"
-              >{{ v }}</button>
+              >
+                {{ v }}
+              </button>
             </div>
           </UCard>
 
           <!-- 普通字段 -->
           <UCard v-else>
             <template #header>
-              <h2 class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+              <h2
+                class="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2"
+              >
                 <UIcon name="i-lucide-square" class="w-4 h-4 text-[var(--color-text-muted)]" />
-                <span v-if="qShowNumber && q.no" class="text-[var(--color-text-muted)] font-normal">{{ q.no }}.</span>
+                <span v-if="qShowNumber && q.no" class="text-[var(--color-text-muted)] font-normal"
+                  >{{ q.no }}.</span
+                >
                 {{ q.title }}
                 <span v-if="q.required" class="text-red-500 text-sm">*</span>
-                <span v-else class="text-xs font-normal text-[var(--color-text-muted)]">（选填）</span>
+                <span v-else class="text-xs font-normal text-[var(--color-text-muted)]"
+                  >（选填）</span
+                >
               </h2>
             </template>
-            <p v-if="q.description" class="text-xs text-[var(--color-text-muted)] mb-2" v-html="q.description"></p>
+            <p
+              v-if="q.description"
+              class="text-xs text-[var(--color-text-muted)] mb-2"
+              v-html="q.description"
+            ></p>
 
             <!-- 单行文本 -->
-            <UInput v-if="q.questionType === 'text'" v-model="formData[q.fieldKey]" class="w-full" :ui="{ base: 'input-glass' }" :placeholder="`请输入${q.title}`" />
+            <UInput
+              v-if="q.questionType === 'text'"
+              v-model="formData[q.fieldKey]"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+              :placeholder="`请输入${q.title}`"
+            />
             <!-- 多行文本 -->
-            <UTextarea v-else-if="q.questionType === 'textarea'" v-model="formData[q.fieldKey]" :rows="3" class="w-full" :ui="{ base: 'input-glass' }" :placeholder="`请输入${q.title}`" />
+            <UTextarea
+              v-else-if="q.questionType === 'textarea'"
+              v-model="formData[q.fieldKey]"
+              :rows="3"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+              :placeholder="`请输入${q.title}`"
+            />
             <!-- 数字 -->
-            <UInput v-else-if="q.questionType === 'number'" v-model="formData[q.fieldKey]" type="number" class="w-full" :ui="{ base: 'input-glass' }" :placeholder="`请输入${q.title}`" />
+            <UInput
+              v-else-if="q.questionType === 'number'"
+              v-model="formData[q.fieldKey]"
+              type="number"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+              :placeholder="`请输入${q.title}`"
+            />
             <!-- 日期 -->
-            <BaseDateTimePicker v-else-if="q.questionType === 'date'" v-model="formData[q.fieldKey]" mode="date" placeholder="选择日期" />
+            <BaseDateTimePicker
+              v-else-if="q.questionType === 'date'"
+              v-model="formData[q.fieldKey]"
+              mode="date"
+              placeholder="选择日期"
+            />
             <!-- 电话 -->
-            <UInput v-else-if="q.questionType === 'phone'" v-model="formData[q.fieldKey]" type="tel" class="w-full" :ui="{ base: 'input-glass' }" placeholder="请输入手机号或电话" />
+            <UInput
+              v-else-if="q.questionType === 'phone'"
+              v-model="formData[q.fieldKey]"
+              type="tel"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+              placeholder="请输入手机号或电话"
+            />
             <!-- 邮箱 -->
-            <UInput v-else-if="q.questionType === 'email'" v-model="formData[q.fieldKey]" type="email" class="w-full" :ui="{ base: 'input-glass' }" placeholder="请输入邮箱地址" />
+            <UInput
+              v-else-if="q.questionType === 'email'"
+              v-model="formData[q.fieldKey]"
+              type="email"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+              placeholder="请输入邮箱地址"
+            />
             <!-- 下拉 / 单选 -->
             <ClientOnly v-else-if="q.questionType === 'select' || q.questionType === 'radio'">
-              <USelect v-model="formData[q.fieldKey]" :items="parseFieldOptions(q.options)" class="w-full" :ui="{ base: 'input-glass' }" :placeholder="`请选择${q.title}`" />
+              <USelect
+                v-model="formData[q.fieldKey]"
+                :items="parseFieldOptions(q.options)"
+                class="w-full"
+                :ui="{ base: 'input-glass' }"
+                :placeholder="`请选择${q.title}`"
+              />
               <template #fallback>
-                <div class="w-full h-8 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"></div>
+                <div
+                  class="w-full h-8 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
+                ></div>
               </template>
             </ClientOnly>
             <!-- 多选 -->
@@ -286,15 +387,28 @@ function resetForm() {
               </label>
             </div>
             <!-- 成员信息（试答降级为只读提示） -->
-            <p v-else-if="q.questionType === 'members'" class="text-xs text-[var(--color-text-muted)]">成员信息（试答不可用）</p>
+            <p
+              v-else-if="q.questionType === 'members'"
+              class="text-xs text-[var(--color-text-muted)]"
+            >
+              成员信息（试答不可用）
+            </p>
             <!-- 兜底 -->
-            <UInput v-else v-model="formData[q.fieldKey]" class="w-full" :ui="{ base: 'input-glass' }" :placeholder="`请输入${q.title}`" />
+            <UInput
+              v-else
+              v-model="formData[q.fieldKey]"
+              class="w-full"
+              :ui="{ base: 'input-glass' }"
+              :placeholder="`请输入${q.title}`"
+            />
           </UCard>
         </template>
 
         <!-- 提交按钮 -->
         <div class="flex items-center justify-end gap-3 pt-1">
-          <span class="text-xs text-[var(--color-text-muted)] mr-auto">试答为模拟提交，不会保存数据</span>
+          <span class="text-xs text-[var(--color-text-muted)] mr-auto"
+            >试答为模拟提交，不会保存数据</span
+          >
           <UButton
             color="primary"
             size="lg"

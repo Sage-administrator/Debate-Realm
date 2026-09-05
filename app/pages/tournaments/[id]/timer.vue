@@ -10,9 +10,5 @@ const hostId = computed(() => route.params.id as string)
 </script>
 
 <template>
-  <TimerRunner
-    host-type="tournament"
-    :host-id="hostId"
-    :show-setup-panel="true"
-  />
+  <TimerRunner host-type="tournament" :host-id="hostId" :show-setup-panel="true" />
 </template>

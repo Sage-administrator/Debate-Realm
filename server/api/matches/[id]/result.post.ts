@@ -27,13 +27,16 @@ export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, 'id')!
     // 新增：bestDebaterA / bestDebaterB + judge 支持评委姓名
     // currentVersion：前端传入的乐观锁版本号
-    const { winner, scoreA, scoreB, bestDebaterA, bestDebaterB, judge, currentVersion } = await readBody<{
-      winner: string; scoreA: number; scoreB: number
-      bestDebaterA?: string | null
-      bestDebaterB?: string | null
-      judge?: string | null
-      currentVersion?: number
-    }>(event)
+    const { winner, scoreA, scoreB, bestDebaterA, bestDebaterB, judge, currentVersion } =
+      await readBody<{
+        winner: string
+        scoreA: number
+        scoreB: number
+        bestDebaterA?: string | null
+        bestDebaterB?: string | null
+        judge?: string | null
+        currentVersion?: number
+      }>(event)
 
     if (!winner || scoreA === undefined || scoreB === undefined) {
       throw createError({ statusCode: 400, message: '40010赛果信息不完整' })
@@ -75,7 +78,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 计算胜者队伍名
-    const resolvedWinner = winner === 'draw' ? null : (winner === 'A' ? match.teamA : match.teamB)
+    const resolvedWinner = winner === 'draw' ? null : winner === 'A' ? match.teamA : match.teamB
 
     // ====== 新增：根据 bestDebaterMode 校验最佳辩手合法性 ======
     const tournament = match.tournament
@@ -95,10 +98,12 @@ export default defineEventHandler(async (event) => {
       where: { id, deletedAt: null, version: match.version },
       data: {
         winner: resolvedWinner,
-        scoreA, scoreB, status: 'finished',
+        scoreA,
+        scoreB,
+        status: 'finished',
         bestDebaterA: finalBestA ?? null,
         bestDebaterB: finalBestB ?? null,
-        judge: judge ?? null,  // 评委姓名
+        judge: judge ?? null, // 评委姓名
         version: { increment: 1 },
       },
     })
@@ -119,7 +124,13 @@ export default defineEventHandler(async (event) => {
     }
 
     // ── 自动晋级：根据赛事 format 选择不同的晋级策略 ──
-    const advanceResult: { advanced: boolean; targetMatchId?: string; error?: string; info?: string; extra?: any } = { advanced: false }
+    const advanceResult: {
+      advanced: boolean
+      targetMatchId?: string
+      error?: string
+      info?: string
+      extra?: any
+    } = { advanced: false }
 
     // 4.4 佩寄制晋级支持
     if (format === 'page_playoff' && winner !== 'draw') {
@@ -179,7 +190,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 通过 Bot 发送比赛结果通知（异步，不阻塞响应）
-    notifyMatchResult(prisma, id).catch(err => {
+    notifyMatchResult(prisma, id).catch((err) => {
       console.error('[Result] Bot 通知发送失败:', err)
     })
 
@@ -247,7 +258,8 @@ async function handlePagePlayoffPromotion(
 
   if (isR2) {
     // R2 胜者 → R4 决赛；R2 败者 → R3
-    const r2Loser = finishedMatch.winner === finishedMatch.teamA ? finishedMatch.teamB : finishedMatch.teamA
+    const r2Loser =
+      finishedMatch.winner === finishedMatch.teamA ? finishedMatch.teamB : finishedMatch.teamA
 
     // R2 胜者晋级到 R4
     const finalMatch = await prisma.match.findFirst({

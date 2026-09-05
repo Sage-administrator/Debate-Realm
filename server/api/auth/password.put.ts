@@ -7,7 +7,10 @@ export default defineEventHandler(async (event) => {
   try {
     // 修复：使用 getUserFromEventWithSession 校验 tokenVersion
     const user = await getUserFromEventWithSession(event, prisma)
-    const { oldPassword, newPassword } = await readBody<{ oldPassword: string; newPassword: string }>(event)
+    const { oldPassword, newPassword } = await readBody<{
+      oldPassword: string
+      newPassword: string
+    }>(event)
 
     if (!oldPassword || !newPassword) {
       throw createError({ statusCode: 400, message: '旧密码和新密码不能为空' })

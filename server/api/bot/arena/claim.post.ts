@@ -19,7 +19,10 @@ export default defineEventHandler(async (event) => {
     const { arenaId, roleId, userId, username, guildId } = body
 
     if (!arenaId || !roleId || !userId || !username) {
-      throw createError({ statusCode: 400, message: '缺少必要参数：arenaId、roleId、userId、username' })
+      throw createError({
+        statusCode: 400,
+        message: '缺少必要参数：arenaId、roleId、userId、username',
+      })
     }
 
     // 越权修复：必须校验 arena.teamId === currentUser.teamId，
@@ -54,7 +57,10 @@ export default defineEventHandler(async (event) => {
 
     // 检查是否已满员
     if (role.claims.length >= role.maxCount) {
-      throw createError({ statusCode: 400, message: `身份「${role.label}」已满员（${role.claims.length}/${role.maxCount}）` })
+      throw createError({
+        statusCode: 400,
+        message: `身份「${role.label}」已满员（${role.claims.length}/${role.maxCount}）`,
+      })
     }
 
     // 检查是否重复认领

@@ -68,7 +68,7 @@ export default defineEventHandler(async (event) => {
     // 5. 按优先辩位分桶，尽量让每支队伍辩位不重复
     // 使用 Map 避免下标访问在 noUncheckedIndexedAccess 下产生 undefined 类型
     const positionBuckets = new Map<string, MemberInfo[]>(
-      STANDARD_POSITIONS.map((p) => [p, [] as MemberInfo[]])
+      STANDARD_POSITIONS.map((p) => [p, [] as MemberInfo[]]),
     )
     positionBuckets.set('不限', [])
     const otherPositions: MemberInfo[] = [] // 不在标准辩位中的成员

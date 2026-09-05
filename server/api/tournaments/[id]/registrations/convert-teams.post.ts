@@ -96,7 +96,10 @@ export default defineEventHandler(async (event) => {
       passwordHash: string
     }
 
-    const planByItem: { item: { name: string; registrationIds: string[] }; accounts: PendingAccount[] }[] = []
+    const planByItem: {
+      item: { name: string; registrationIds: string[] }
+      accounts: PendingAccount[]
+    }[] = []
 
     for (const item of body.items) {
       const accounts: PendingAccount[] = []
@@ -137,7 +140,12 @@ export default defineEventHandler(async (event) => {
     }
 
     // 明文账号信息（仅此一次返回）
-    const createdAccounts: { teamName: string; username: string; password: string; name: string }[] = []
+    const createdAccounts: {
+      teamName: string
+      username: string
+      password: string
+      name: string
+    }[] = []
 
     // 5. 事务：建队伍 + 聊天房 + 子账号，全部原子完成
     const created = await prisma.$transaction(async (tx) => {

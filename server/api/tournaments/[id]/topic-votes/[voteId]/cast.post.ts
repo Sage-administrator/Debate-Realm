@@ -3,7 +3,10 @@ import { prisma } from '../../../../../lib/prisma'
 import { getUserFromEventWithSession, type JWTPayload } from '../../../../../utils/auth'
 import { canReadTournament } from '../../../../../utils/tournament-auth'
 import {
-  parseTopics, parseAllowedVoters, determineLoginVoterType, buildVoterFingerprint,
+  parseTopics,
+  parseAllowedVoters,
+  determineLoginVoterType,
+  buildVoterFingerprint,
 } from '../../../../../utils/topic-vote'
 import {
   recordTopicVoteQuestionnaireSubmission,
@@ -29,9 +32,9 @@ export default defineEventHandler(async (event) => {
 
     // 2. 读取请求体
     const body = await readBody<{
-      topicIndices: number[]   // 选中的辩题索引列表
-      voterName?: string       // 公开投票时的标识/昵称
-      voterType?: string       // 未登录用户可自报身份：judge / debater（需 allowedVoters 允许）
+      topicIndices: number[] // 选中的辩题索引列表
+      voterName?: string // 公开投票时的标识/昵称
+      voterType?: string // 未登录用户可自报身份：judge / debater（需 allowedVoters 允许）
     }>(event)
 
     // 3. 查询投票详情
@@ -45,7 +48,10 @@ export default defineEventHandler(async (event) => {
 
     // 4. 校验：投票状态必须为 open
     if (vote.status !== 'open') {
-      throw createError({ statusCode: 400, message: '该投票当前不可提交（状态：' + vote.status + '）' })
+      throw createError({
+        statusCode: 400,
+        message: '该投票当前不可提交（状态：' + vote.status + '）',
+      })
     }
 
     // 5. 校验：截止时间
@@ -94,7 +100,11 @@ export default defineEventHandler(async (event) => {
       // 未登录用户
       // 若自报身份（judge/debater）且 allowedVoters 允许，则使用该类型；否则默认 public
       const selfDeclared = body.voterType
-      if (selfDeclared && ['judge', 'debater'].includes(selfDeclared) && allowedVoters.includes(selfDeclared)) {
+      if (
+        selfDeclared &&
+        ['judge', 'debater'].includes(selfDeclared) &&
+        allowedVoters.includes(selfDeclared)
+      ) {
         voterType = selfDeclared
       } else {
         voterType = 'public'

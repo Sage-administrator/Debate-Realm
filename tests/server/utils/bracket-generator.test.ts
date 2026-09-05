@@ -52,15 +52,15 @@ describe('generateSingleElimination', () => {
 
   it('should produce correct structure for 4 teams (seeded)', () => {
     const matches = generateSingleElimination(FOUR_TEAMS_SEEDED)
-    const round1 = matches.filter(m => m.round === '第1轮')
-    const final = matches.filter(m => m.round === '决赛')
+    const round1 = matches.filter((m) => m.round === '第1轮')
+    const final = matches.filter((m) => m.round === '决赛')
     expect(round1).toHaveLength(2)
     expect(final).toHaveLength(1)
     // 决赛 teamA/teamB 为空（等晋级填充）
     expect(final[0]!.teamA).toBeNull()
     expect(final[0]!.teamB).toBeNull()
     // 首轮种子保护: (1,4) (3,2) — 4 teams with seeds → bracket size 4
-    const teamNames = round1.map(m => [m.teamA, m.teamB]).flat()
+    const teamNames = round1.map((m) => [m.teamA, m.teamB]).flat()
     expect(teamNames).toContain('冠军队伍')
     expect(teamNames).toContain('殿军队伍')
     expect(teamNames).toContain('亚军队伍')
@@ -69,7 +69,7 @@ describe('generateSingleElimination', () => {
 
   it('should produce correct structure for 8 teams', () => {
     const matches = generateSingleElimination(EIGHT_TEAMS_SEEDED)
-    const rounds = new Set(matches.map(m => m.round))
+    const rounds = new Set(matches.map((m) => m.round))
     expect(rounds.has('第1轮')).toBe(true)
     expect(rounds.has('半决赛')).toBe(true)
     expect(rounds.has('决赛')).toBe(true)
@@ -80,7 +80,7 @@ describe('generateSingleElimination', () => {
 
   it('should create BYE matches for 3 teams (bracket size = 4)', () => {
     const matches = generateSingleElimination(THREE_TEAMS)
-    const byeMatches = matches.filter(m => m.isBye)
+    const byeMatches = matches.filter((m) => m.isBye)
     expect(byeMatches.length).toBeGreaterThan(0)
   })
 
@@ -95,8 +95,8 @@ describe('generateSingleElimination', () => {
     const matches = generateSingleElimination(FOUR_TEAMS_SEEDED, { seedMethod: 'rating' })
     // Determistic with seed ordering
     const round1Names = matches
-      .filter(m => m.round === '第1轮')
-      .flatMap(m => [m.teamA, m.teamB])
+      .filter((m) => m.round === '第1轮')
+      .flatMap((m) => [m.teamA, m.teamB])
     // Seeds: 1,2,3,4 → seeding bracket [1,4,3,2] → pairs: (1,4) (3,2)
     expect(round1Names).toContain('冠军队伍') // seed 1
     expect(round1Names).toContain('殿军队伍') // seed 4
@@ -110,7 +110,7 @@ describe('generateSingleElimination', () => {
 describe('generateDoubleElimination', () => {
   it('should generate winner/loser/grand_final stages', () => {
     const matches = generateDoubleElimination(FOUR_TEAMS_SEEDED)
-    const stages = new Set(matches.map(m => m.stage))
+    const stages = new Set(matches.map((m) => m.stage))
     expect(stages.has('winner')).toBe(true)
     expect(stages.has('loser')).toBe(true)
     expect(stages.has('grand_final')).toBe(true)
@@ -118,7 +118,7 @@ describe('generateDoubleElimination', () => {
 
   it('should generate W- labels for winner bracket', () => {
     const matches = generateDoubleElimination(EIGHT_TEAMS_SEEDED)
-    const winnerBracket = matches.filter(m => m.stage === 'winner')
+    const winnerBracket = matches.filter((m) => m.stage === 'winner')
     expect(winnerBracket.length).toBeGreaterThan(0)
     for (const m of winnerBracket) {
       expect(m.round.startsWith('W-')).toBe(true)
@@ -127,7 +127,7 @@ describe('generateDoubleElimination', () => {
 
   it('should generate L- labels for loser bracket', () => {
     const matches = generateDoubleElimination(EIGHT_TEAMS_SEEDED)
-    const loserBracket = matches.filter(m => m.stage === 'loser')
+    const loserBracket = matches.filter((m) => m.stage === 'loser')
     expect(loserBracket.length).toBeGreaterThan(0)
     for (const m of loserBracket) {
       expect(m.round.startsWith('L-')).toBe(true)
@@ -136,20 +136,20 @@ describe('generateDoubleElimination', () => {
 
   it('should include grand final', () => {
     const matches = generateDoubleElimination(FOUR_TEAMS_SEEDED)
-    expect(matches.some(m => m.round === '总决赛')).toBe(true)
+    expect(matches.some((m) => m.round === '总决赛')).toBe(true)
   })
 
   it('should add revival final when enableRevivalFinal=true', () => {
     const withRevival = generateDoubleElimination(FOUR_TEAMS_SEEDED, { enableRevivalFinal: true })
     const withoutRevival = generateDoubleElimination(FOUR_TEAMS_SEEDED)
     expect(withRevival.length).toBe(withoutRevival.length + 1)
-    expect(withRevival.some(m => m.stage === 'revival')).toBe(true)
-    expect(withoutRevival.some(m => m.stage === 'revival')).toBe(false)
+    expect(withRevival.some((m) => m.stage === 'revival')).toBe(true)
+    expect(withoutRevival.some((m) => m.stage === 'revival')).toBe(false)
   })
 
   it('should not have revival by default', () => {
     const matches = generateDoubleElimination(FOUR_TEAMS_SEEDED)
-    expect(matches.some(m => m.stage === 'revival')).toBe(false)
+    expect(matches.some((m) => m.stage === 'revival')).toBe(false)
   })
 })
 
@@ -159,7 +159,7 @@ describe('generateRoundRobin', () => {
   it('should produce n*(n-1)/2 matches for single mode', () => {
     const n = 4
     const matches = generateRoundRobin(FOUR_TEAMS_SEEDED)
-    expect(matches.length).toBe(n * (n - 1) / 2) // 6
+    expect(matches.length).toBe((n * (n - 1)) / 2) // 6
   })
 
   it('should produce n*(n-1) matches for double mode', () => {
@@ -176,7 +176,7 @@ describe('generateRoundRobin', () => {
 
   it('should name rounds as 第N轮', () => {
     const matches = generateRoundRobin(FOUR_TEAMS_SEEDED)
-    const roundLabels = [...new Set(matches.map(m => m.round))]
+    const roundLabels = [...new Set(matches.map((m) => m.round))]
     expect(roundLabels).toEqual(['第1轮', '第2轮', '第3轮'])
   })
 
@@ -211,13 +211,13 @@ describe('generatePagePlayoff', () => {
   it('should fallback to single elimination for < 4 teams', () => {
     const matches = generatePagePlayoff(THREE_TEAMS)
     // Fallback → single elimination style
-    const rounds = new Set(matches.map(m => m.round))
+    const rounds = new Set(matches.map((m) => m.round))
     expect(rounds.has('决赛')).toBe(true)
   })
 
   it('should have R1 with team names assigned', () => {
     const matches = generatePagePlayoff(FOUR_TEAMS_SEEDED)
-    const r1 = matches.filter(m => m.round === 'R1')
+    const r1 = matches.filter((m) => m.round === 'R1')
     expect(r1).toHaveLength(2)
     expect(r1[0]!.teamA).toBeTruthy()
     expect(r1[0]!.teamB).toBeTruthy()
@@ -231,33 +231,36 @@ describe('generatePagePlayoff', () => {
 describe('generateSwiss', () => {
   it('should generate ceil(log2(N)) rounds by default', () => {
     const matches = generateSwiss(SIX_TEAMS)
-    const rounds = new Set(matches.map(m => m.round))
+    const rounds = new Set(matches.map((m) => m.round))
     // ceil(log2(6)) = 3
     expect(rounds.size).toBe(3)
   })
 
   it('should respect explicit rounds parameter', () => {
     const matches = generateSwiss(EIGHT_TEAMS_SEEDED, { rounds: 5 })
-    const rounds = new Set(matches.map(m => m.round))
+    const rounds = new Set(matches.map((m) => m.round))
     expect(rounds.size).toBe(5)
   })
 
   it('should use simplified pairing (1vs2, 3vs4...) for round 1 by default', () => {
     const matches = generateSwiss(FOUR_TEAMS_SEEDED, { pairingAlgo: 'simplified' })
-    const round1 = matches.filter(m => m.round === '第1轮')
+    const round1 = matches.filter((m) => m.round === '第1轮')
     expect(round1).toHaveLength(2)
     // simplified: 1vs2, 3vs4
-    const names = round1.flatMap(m => [m.teamA, m.teamB])
+    const names = round1.flatMap((m) => [m.teamA, m.teamB])
     expect(names).toContain('冠军队伍')
     expect(names).toContain('亚军队伍')
   })
 
   it('should use standard pairing (1vs4, 2vs3...) when specified', () => {
     const matches = generateSwiss(FOUR_TEAMS_SEEDED, { pairingAlgo: 'standard' })
-    const round1 = matches.filter(m => m.round === '第1轮')
+    const round1 = matches.filter((m) => m.round === '第1轮')
     expect(round1).toHaveLength(2)
     // All 4 names should appear exactly once
-    const names = round1.flatMap(m => [m.teamA, m.teamB]).filter(Boolean).sort()
+    const names = round1
+      .flatMap((m) => [m.teamA, m.teamB])
+      .filter(Boolean)
+      .sort()
     expect(names).toHaveLength(4)
     expect(names).toContain('冠军队伍')
     expect(names).toContain('亚军队伍')
@@ -267,7 +270,7 @@ describe('generateSwiss', () => {
 
   it('should leave subsequent rounds empty (null teams)', () => {
     const matches = generateSwiss(SIX_TEAMS)
-    const afterRound1 = matches.filter(m => m.round !== '第1轮')
+    const afterRound1 = matches.filter((m) => m.round !== '第1轮')
     for (const m of afterRound1) {
       expect(m.teamA).toBeNull()
       expect(m.teamB).toBeNull()
@@ -412,7 +415,7 @@ describe('drawGroups', () => {
 
   it('should use correct group labels', () => {
     const result = drawGroups(['A', 'B', 'C', 'D'], 2)
-    const groups = new Set(result.map(r => r.group))
+    const groups = new Set(result.map((r) => r.group))
     expect(groups.has('A组')).toBe(true)
     expect(groups.has('B组')).toBe(true)
   })
@@ -483,7 +486,13 @@ describe('runDrawLots', () => {
   ]
 
   it('should handle groups draw type', () => {
-    const result = runDrawLots({ teams, topicPool: pool, matches, groupCount: 2, drawType: 'groups' })
+    const result = runDrawLots({
+      teams,
+      topicPool: pool,
+      matches,
+      groupCount: 2,
+      drawType: 'groups',
+    })
     expect(result.groupAssignments).toHaveLength(4)
     expect(result.info).toContain('分组抽签')
   })
@@ -502,7 +511,12 @@ describe('runDrawLots', () => {
 
   it('should skip unpaired matches', () => {
     const unpaired = [{ id: 'm3', teamA: null, teamB: null, round: '第2轮' }]
-    const result = runDrawLots({ teams, topicPool: pool, matches: unpaired, drawType: 'topics_sides' })
+    const result = runDrawLots({
+      teams,
+      topicPool: pool,
+      matches: unpaired,
+      drawType: 'topics_sides',
+    })
     expect(result.matchAssignments).toHaveLength(0)
   })
 })

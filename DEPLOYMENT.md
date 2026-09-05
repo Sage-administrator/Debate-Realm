@@ -1,6 +1,7 @@
 # 🗄️ 数据库迁移与部署说明书
 
 > **适用范围**：部署含以下新增字段的数据库版本
+>
 > - `Match` 表：`version`、`deletedAt`、`deletedBy`、`deleteReason`、`promotedFromA`、`promotedFromB`、`isBye`
 > - `Match` 表：`judge`（评委姓名字段）
 > - `TournamentTeam` 表：`points`、`wins`、`draws`、`losses`、`scoreFor`、`scoreAgainst`
@@ -27,10 +28,10 @@
 
 ### 用哪种方式？
 
-| 方式 | 适用场景 | 命令 |
-|------|----------|------|
-| `prisma db push` | **开发环境 / 首次部署 / SQLite** | `npx prisma db push` |
-| `prisma migrate dev` | **团队协作 / 需保留迁移历史** | `npx prisma migrate dev --name add_match_metadata_and_standings` |
+| 方式                 | 适用场景                         | 命令                                                             |
+| -------------------- | -------------------------------- | ---------------------------------------------------------------- |
+| `prisma db push`     | **开发环境 / 首次部署 / SQLite** | `npx prisma db push`                                             |
+| `prisma migrate dev` | **团队协作 / 需保留迁移历史**    | `npx prisma migrate dev --name add_match_metadata_and_standings` |
 
 > **本项目当前是 SQLite 数据库，推荐优先使用 `db push`**。SQLite 对 ALTER TABLE 的支持有限，`db push` 会自动处理表重建和数据迁移。
 
@@ -53,6 +54,7 @@ npx prisma --version
 ```
 
 应输出类似：
+
 ```
 prisma                  : 5.x.x
 @prisma/client          : 5.x.x
@@ -75,6 +77,7 @@ npx prisma db push
 ```
 
 **预期输出**（首次执行）：
+
 ```
 Environment variables loaded from .env
 Prisma schema loaded from prisma/schema.prisma
@@ -88,6 +91,7 @@ Your database is now in sync with your schema. Done in 2.19s
 ```
 
 **或这样输出**（有字段变更时）：
+
 ```
 ...
 Added 6 new columns and 2 indexes to the tables "Match" and "TournamentTeam".
@@ -100,6 +104,7 @@ npx prisma studio
 ```
 
 浏览器会打开数据库可视化工具，检查：
+
 - **Match** 表：能看到 `version`、`deletedAt`、`deletedBy`、`deleteReason`、`promotedFromA`、`promotedFromB`、`isBye`、`judge` 字段
 - **TournamentTeam** 表：能看到 `points`、`wins`、`draws`、`losses`、`scoreFor`、`scoreAgainst` 字段
 - 已有的比赛记录 `version` 自动为 `1`，`isBye` 自动为 `false`
@@ -113,6 +118,7 @@ npm run dev
 ```
 
 打开 `http://localhost:3000`，测试：
+
 1. 创建一场赛事 → 进入赛程管理
 2. 添加几场比赛 → 点击"录分"
 3. 删除一场比赛 → 比赛变灰显示"已删除"徽章 → 点击"恢复"能恢复
@@ -136,6 +142,7 @@ Get-ChildItem prisma\*.db* | Sort-Object LastWriteTime -Descending | Select-Obje
 ```
 
 **预期输出**：
+
 ```
 Mode    LastWriteTime         Name
 ----    -------------         ----
@@ -148,6 +155,7 @@ Mode    LastWriteTime         Name
 ### 步骤 1：停止生产服务
 
 根据你的部署方式停止应用：
+
 - **PM2**：`pm2 stop debate-timer`
 - **Systemd**：`sudo systemctl stop debate-timer`
 - **进程管理**：找到并结束 Nuxt 进程
@@ -177,6 +185,7 @@ npx prisma db pull  # 从数据库反向同步 schema，确认不会报错
 ```
 
 输出应包含：
+
 ```
 The database introspection was successful.
 ```
@@ -191,6 +200,7 @@ npm run build
 ### 步骤 5：冒烟测试
 
 启动后快速验证以下功能：
+
 - [ ] 登录正常
 - [ ] 赛事列表正常加载
 - [ ] 进入某场赛事的赛程管理，旧比赛记录正常显示
@@ -205,14 +215,15 @@ npm run build
 
 **不需要回滚**，解决报错后重新执行即可。常见报错及解决：
 
-| 报错信息 | 原因 | 解决 |
-|----------|------|------|
-| `Error: P1001: Can't reach database server` | 数据库文件路径错误或权限问题 | 检查 `.env` 中 `DATABASE_URL` 路径是否正确 |
-| `Error: Schema parsing` | schema.prisma 语法错误 | 检查文件中 `model Match` 和 `model TournamentTeam` 的字段定义是否正确 |
+| 报错信息                                    | 原因                         | 解决                                                                  |
+| ------------------------------------------- | ---------------------------- | --------------------------------------------------------------------- |
+| `Error: P1001: Can't reach database server` | 数据库文件路径错误或权限问题 | 检查 `.env` 中 `DATABASE_URL` 路径是否正确                            |
+| `Error: Schema parsing`                     | schema.prisma 语法错误       | 检查文件中 `model Match` 和 `model TournamentTeam` 的字段定义是否正确 |
 
 ### 场景 B：db push 已执行，但应用启动后报错
 
 **立即回滚**：
+
 1. 停止应用服务
 2. 从备份恢复数据库文件：
    ```powershell
@@ -229,6 +240,7 @@ npm run build
 ### 场景 C：旧数据显示异常但没报错
 
 如果旧的比赛记录在赛程页显示异常（如某些字段缺失）：
+
 1. 这通常是**前端兼容性问题**，不是数据库损坏
 2. 打开浏览器开发者工具（F12）→ Console 查看 JavaScript 报错
 3. 截图报错信息发给开发人员
@@ -256,6 +268,7 @@ npm run build
 ### Q5：新增字段对已有数据有影响吗？
 
 **A**：**没有破坏性影响**：
+
 - `version` 默认值 `1` → 所有旧记录自动获得 version=1
 - `deletedAt`、`deletedBy`、`deleteReason` 默认为 `null` → 旧记录视为"未删除"
 - `promotedFromA`、`promotedFromB` 默认为 `null` → 旧记录没有晋级溯源信息（但不影响读取，仅新晋级的比赛会记录）
@@ -265,6 +278,7 @@ npm run build
 ### Q6：以后再改 schema 怎么办？
 
 **A**：每次新增/修改字段后，按如下流程：
+
 1. 更新 `prisma/schema.prisma`
 2. 备份数据库
 3. 执行 `npx prisma db push`
@@ -342,6 +356,7 @@ DATABASE_URL=file:./prisma/data/dev.db
 ```
 
 挂载方式（`docker-compose.yml` 已预配置）：
+
 ```yaml
 # 取消注释以下行
 # - ./.env:/app/.env:ro

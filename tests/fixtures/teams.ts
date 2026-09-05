@@ -38,9 +38,7 @@ export const TWO_TEAMS: TeamInput[] = [
 ]
 
 /** 1 队（边界） */
-export const ONE_TEAM: TeamInput[] = [
-  { name: '独苗队', seed: 1 },
-]
+export const ONE_TEAM: TeamInput[] = [{ name: '独苗队', seed: 1 }]
 
 /** 0 队（边界） */
 export const ZERO_TEAMS: TeamInput[] = []

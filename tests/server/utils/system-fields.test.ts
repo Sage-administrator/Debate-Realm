@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { isSystemFieldKey, getSystemFieldDef, SYSTEM_FIELDS, SYSTEM_FIELD_KEYS } from '../../../server/utils/system-fields'
+import {
+  isSystemFieldKey,
+  getSystemFieldDef,
+  SYSTEM_FIELDS,
+  SYSTEM_FIELD_KEYS,
+} from '../../../server/utils/system-fields'
 
 describe('system-fields', () => {
   describe('SYSTEM_FIELDS', () => {
@@ -8,7 +13,7 @@ describe('system-fields', () => {
     })
 
     it('should have required fieldKeys', () => {
-      const keys = SYSTEM_FIELDS.map(f => f.fieldKey)
+      const keys = SYSTEM_FIELDS.map((f) => f.fieldKey)
       expect(keys).toContain('submitterName')
       expect(keys).toContain('contactPhone')
       expect(keys).toContain('contactEmail')
@@ -18,14 +23,14 @@ describe('system-fields', () => {
     })
 
     it('should have unique fieldKeys', () => {
-      const keys = SYSTEM_FIELDS.map(f => f.fieldKey)
+      const keys = SYSTEM_FIELDS.map((f) => f.fieldKey)
       expect(new Set(keys).size).toBe(keys.length)
     })
   })
 
   describe('SYSTEM_FIELD_KEYS', () => {
     it('should match SYSTEM_FIELDS keys', () => {
-      expect(SYSTEM_FIELD_KEYS).toEqual(SYSTEM_FIELDS.map(f => f.fieldKey))
+      expect(SYSTEM_FIELD_KEYS).toEqual(SYSTEM_FIELDS.map((f) => f.fieldKey))
     })
   })
 

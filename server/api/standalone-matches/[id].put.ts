@@ -7,7 +7,11 @@ export default defineEventHandler(async (event) => {
     const user = await getUserFromEventWithSession(event, prisma)
     const id = getRouterParam(event, 'id')!
     const { name, description, venue, status, scheduledAt } = await readBody<{
-      name?: string; description?: string; venue?: string; status?: string; scheduledAt?: string
+      name?: string
+      description?: string
+      venue?: string
+      status?: string
+      scheduledAt?: string
     }>(event)
 
     const match = await prisma.standaloneMatch.findUnique({ where: { id } })
@@ -21,13 +25,23 @@ export default defineEventHandler(async (event) => {
         description: description !== undefined ? description : match.description,
         venue: venue !== undefined ? venue : match.venue,
         status: status ?? match.status,
-        scheduledAt: scheduledAt !== undefined ? (scheduledAt ? new Date(scheduledAt) : null) : match.scheduledAt,
+        scheduledAt:
+          scheduledAt !== undefined
+            ? scheduledAt
+              ? new Date(scheduledAt)
+              : null
+            : match.scheduledAt,
       },
     })
 
     return {
-      id: updated.id, name: updated.name, description: updated.description, venue: updated.venue,
-      status: updated.status, scheduledAt: updated.scheduledAt, createdAt: updated.createdAt,
+      id: updated.id,
+      name: updated.name,
+      description: updated.description,
+      venue: updated.venue,
+      status: updated.status,
+      scheduledAt: updated.scheduledAt,
+      createdAt: updated.createdAt,
     }
   } catch (error: any) {
     if (error.statusCode) throw error

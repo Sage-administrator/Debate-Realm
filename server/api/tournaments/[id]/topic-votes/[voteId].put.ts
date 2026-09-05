@@ -58,7 +58,8 @@ export default defineEventHandler(async (event) => {
           where: { id: body.matchId, tournamentId: id, deletedAt: null },
           select: { id: true },
         })
-        if (!match) throw createError({ statusCode: 400, message: '指定的比赛不存在或不属于本赛事' })
+        if (!match)
+          throw createError({ statusCode: 400, message: '指定的比赛不存在或不属于本赛事' })
       }
       data.matchId = body.matchId || null
     }

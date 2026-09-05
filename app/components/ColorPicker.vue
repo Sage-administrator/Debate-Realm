@@ -20,15 +20,38 @@ const props = withDefaults(defineProps<Props>(), {
   label: '',
   presetColors: () => [
     // 蓝色系
-    '#3B82F6', '#2563EB', '#1D4ED8', '#0EA5E9', '#06B6D4',
+    '#3B82F6',
+    '#2563EB',
+    '#1D4ED8',
+    '#0EA5E9',
+    '#06B6D4',
     // 绿色系
-    '#10B981', '#059669', '#22C55E', '#14B8A6', '#84CC16',
+    '#10B981',
+    '#059669',
+    '#22C55E',
+    '#14B8A6',
+    '#84CC16',
     // 紫色系
-    '#8B5CF6', '#7C3AED', '#A855F7', '#EC4899', '#F472B6',
+    '#8B5CF6',
+    '#7C3AED',
+    '#A855F7',
+    '#EC4899',
+    '#F472B6',
     // 暖色系
-    '#F59E0B', '#EF4444', '#F97316', '#EAB308', '#FB923C',
+    '#F59E0B',
+    '#EF4444',
+    '#F97316',
+    '#EAB308',
+    '#FB923C',
     // 中性色
-    '#FFFFFF', '#E5E7EB', '#9CA3AF', '#6B7280', '#374151', '#1F2937', '#111827', '#000000',
+    '#FFFFFF',
+    '#E5E7EB',
+    '#9CA3AF',
+    '#6B7280',
+    '#374151',
+    '#1F2937',
+    '#111827',
+    '#000000',
   ],
   showInput: true,
   placement: 'bottom-left',
@@ -43,9 +66,13 @@ const triggerRef = ref<HTMLElement | null>(null)
 const pickerRef = ref<HTMLElement | null>(null)
 
 // 同步外部值
-watch(() => props.modelValue, (val) => {
-  inputValue.value = val
-}, { immediate: true })
+watch(
+  () => props.modelValue,
+  (val) => {
+    inputValue.value = val
+  },
+  { immediate: true },
+)
 
 // 计算弹出位置，避免被裁剪（fixed 定位，使用视口坐标）
 function updatePosition() {
@@ -149,8 +176,10 @@ function onColorPickerChange(e: Event) {
 // 点击外部关闭
 function onClickOutside(e: MouseEvent) {
   if (
-    triggerRef.value && !triggerRef.value.contains(e.target as Node) &&
-    pickerRef.value && !pickerRef.value.contains(e.target as Node)
+    triggerRef.value &&
+    !triggerRef.value.contains(e.target as Node) &&
+    pickerRef.value &&
+    !pickerRef.value.contains(e.target as Node)
   ) {
     showPicker.value = false
   }
@@ -161,9 +190,13 @@ onMounted(() => {
   window.addEventListener('resize', () => {
     if (showPicker.value) updatePosition()
   })
-  window.addEventListener('scroll', () => {
-    if (showPicker.value) updatePosition()
-  }, true)
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (showPicker.value) updatePosition()
+    },
+    true,
+  )
 })
 
 onUnmounted(() => {
@@ -185,7 +218,9 @@ onUnmounted(() => {
         :style="{ backgroundColor: modelValue || '#3B82F6' }"
       ></div>
       <!-- 边框高亮效果 -->
-      <div class="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/10 group-hover:ring-white/20 pointer-events-none"></div>
+      <div
+        class="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/10 group-hover:ring-white/20 pointer-events-none"
+      ></div>
     </button>
 
     <!-- 弹出面板 -->
@@ -257,10 +292,21 @@ onUnmounted(() => {
                 title="取色器"
                 @click="openColorPicker"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m2 22 1-1h3l9-9"/>
-                  <path d="M3 21v-3l9-9"/>
-                  <path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m2 22 1-1h3l9-9" />
+                  <path d="M3 21v-3l9-9" />
+                  <path
+                    d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"
+                  />
                 </svg>
               </button>
               <!-- 隐藏的原生取色器（仅在不支持 EyeDropper 时作为回退方案） -->

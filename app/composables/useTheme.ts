@@ -13,7 +13,9 @@ export const useTheme = () => {
   // 当前模式（light/dark/system）
   const mode = computed<ThemeMode>({
     get: () => colorMode.preference as ThemeMode,
-    set: (val) => { colorMode.preference = val },
+    set: (val) => {
+      colorMode.preference = val
+    },
   })
 
   // 当前实际应用的主题
@@ -32,7 +34,10 @@ export const useTheme = () => {
     }, 350)
   }
   // 监听模式变化（含直接赋值 mode = 'x'），统一触发过渡窗口
-  watch(() => mode.value, () => flashThemeTransition())
+  watch(
+    () => mode.value,
+    () => flashThemeTransition(),
+  )
 
   // 切换主题：light → dark → system → light
   const toggleTheme = () => {
@@ -48,9 +53,9 @@ export const useTheme = () => {
   }
 
   return {
-    mode,           // 当前主题模式
-    resolvedTheme,  // 解析后的实际主题
-    toggleTheme,    // 切换主题
-    setTheme,       // 设置指定主题
+    mode, // 当前主题模式
+    resolvedTheme, // 解析后的实际主题
+    toggleTheme, // 切换主题
+    setTheme, // 设置指定主题
   }
 }

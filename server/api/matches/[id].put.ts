@@ -9,11 +9,21 @@ export default defineEventHandler(async (event) => {
     const user = await getUserFromEventWithSession(event, prisma)
     const id = getRouterParam(event, 'id')!
     const {
-      round, orderNum, teamA, teamB, scheduledAt, status,
+      round,
+      orderNum,
+      teamA,
+      teamB,
+      scheduledAt,
+      status,
       currentVersion, // 新增：乐观锁版本号，由前端传入当前持有的 version
     } = await readBody<{
-      round?: string; orderNum?: number; teamA?: string; teamB?: string
-      scheduledAt?: string; status?: string; currentVersion?: number
+      round?: string
+      orderNum?: number
+      teamA?: string
+      teamB?: string
+      scheduledAt?: string
+      status?: string
+      currentVersion?: number
     }>(event)
 
     // 修复：使用 findFirst 配合 deletedAt: null 过滤软删除记录
@@ -45,7 +55,12 @@ export default defineEventHandler(async (event) => {
         orderNum: orderNum ?? match.orderNum,
         teamA: teamA !== undefined ? teamA : match.teamA,
         teamB: teamB !== undefined ? teamB : match.teamB,
-        scheduledAt: scheduledAt !== undefined ? (scheduledAt ? new Date(scheduledAt) : null) : match.scheduledAt,
+        scheduledAt:
+          scheduledAt !== undefined
+            ? scheduledAt
+              ? new Date(scheduledAt)
+              : null
+            : match.scheduledAt,
         status: status ?? match.status,
         version: { increment: 1 },
       },
@@ -61,10 +76,17 @@ export default defineEventHandler(async (event) => {
     const updated = await prisma.match.findUnique({ where: { id } })
 
     return {
-      id: updated!.id, round: updated!.round, orderNum: updated!.orderNum,
-      teamA: updated!.teamA, teamB: updated!.teamB, winner: updated!.winner,
-      scoreA: updated!.scoreA, scoreB: updated!.scoreB, status: updated!.status,
-      scheduledAt: updated!.scheduledAt, version: updated!.version,
+      id: updated!.id,
+      round: updated!.round,
+      orderNum: updated!.orderNum,
+      teamA: updated!.teamA,
+      teamB: updated!.teamB,
+      winner: updated!.winner,
+      scoreA: updated!.scoreA,
+      scoreB: updated!.scoreB,
+      status: updated!.status,
+      scheduledAt: updated!.scheduledAt,
+      version: updated!.version,
     }
   } catch (error: any) {
     if (error.statusCode) throw error

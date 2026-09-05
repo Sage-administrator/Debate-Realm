@@ -16,10 +16,7 @@ export default defineEventHandler(async (event) => {
     // 构建查询条件
     const where: any = { isPublic: true }
     if (keyword) {
-      where.OR = [
-        { name: { contains: keyword } },
-        { description: { contains: keyword } },
-      ]
+      where.OR = [{ name: { contains: keyword } }, { description: { contains: keyword } }]
     }
     if (status && status !== 'all') {
       where.status = status

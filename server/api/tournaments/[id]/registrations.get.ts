@@ -17,7 +17,10 @@ export default defineEventHandler(async (event) => {
     const type = typeof query.type === 'string' ? query.type : undefined
     // 分页参数：page 从 1 开始，pageSize 默认 50，最大 200（防止一次拉取过多）
     const page = Math.max(1, parseInt((query.page as string) || '1', 10) || 1)
-    const pageSize = Math.min(200, Math.max(1, parseInt((query.pageSize as string) || '50', 10) || 50))
+    const pageSize = Math.min(
+      200,
+      Math.max(1, parseInt((query.pageSize as string) || '50', 10) || 50),
+    )
 
     // 4. 构建查询条件：必须属于该赛事，可叠加可选筛选
     const where: { tournamentId: string; status?: string; type?: string } = {

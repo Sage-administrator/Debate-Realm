@@ -7,7 +7,9 @@ export default defineEventHandler(async (event) => {
     const match = await prisma.match.findUnique({
       where: { id },
       include: {
-        tournament: true, standaloneMatch: true, timer: true,
+        tournament: true,
+        standaloneMatch: true,
+        timer: true,
         assignedMembers: { include: { member: { include: { user: true } } } },
       },
     })
@@ -15,13 +17,27 @@ export default defineEventHandler(async (event) => {
     if (!match) throw createError({ statusCode: 404, message: '场次不存在' })
 
     return {
-      id: match.id, round: match.round, orderNum: match.orderNum,
-      teamA: match.teamA, teamB: match.teamB, winner: match.winner,
-      scoreA: match.scoreA, scoreB: match.scoreB, status: match.status, scheduledAt: match.scheduledAt,
-      tournament: match.tournament ? { id: match.tournament.id, name: match.tournament.name } : null,
-      standaloneMatch: match.standaloneMatch ? { id: match.standaloneMatch.id, name: match.standaloneMatch.name } : null,
+      id: match.id,
+      round: match.round,
+      orderNum: match.orderNum,
+      teamA: match.teamA,
+      teamB: match.teamB,
+      winner: match.winner,
+      scoreA: match.scoreA,
+      scoreB: match.scoreB,
+      status: match.status,
+      scheduledAt: match.scheduledAt,
+      tournament: match.tournament
+        ? { id: match.tournament.id, name: match.tournament.name }
+        : null,
+      standaloneMatch: match.standaloneMatch
+        ? { id: match.standaloneMatch.id, name: match.standaloneMatch.name }
+        : null,
       timer: match.timer,
-      assignedUsers: match.assignedMembers.map((am) => ({ userId: am.member.user.id, username: am.member.user.username })),
+      assignedUsers: match.assignedMembers.map((am) => ({
+        userId: am.member.user.id,
+        username: am.member.user.username,
+      })),
     }
   } catch (error: any) {
     if (error.statusCode) throw error

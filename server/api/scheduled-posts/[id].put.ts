@@ -39,14 +39,19 @@ export default defineEventHandler(async (event) => {
     if (body.channelId !== undefined) data.channelId = body.channelId.trim()
     if (body.tags !== undefined) data.tags = body.tags.trim() || null
     if (body.pollOptions !== undefined) {
-      data.pollOptions = Array.isArray(body.pollOptions) && body.pollOptions.length
-        ? JSON.stringify(body.pollOptions) : null
+      data.pollOptions =
+        Array.isArray(body.pollOptions) && body.pollOptions.length
+          ? JSON.stringify(body.pollOptions)
+          : null
     }
 
     // 调度字段变更 → 重新计算 nextRunAt
     const scheduleChanged =
-      body.scheduleType !== undefined || body.runAt !== undefined ||
-      body.timeHHMM !== undefined || body.weekday !== undefined || body.timezone !== undefined
+      body.scheduleType !== undefined ||
+      body.runAt !== undefined ||
+      body.timeHHMM !== undefined ||
+      body.weekday !== undefined ||
+      body.timezone !== undefined
     if (scheduleChanged) {
       const scheduleType = body.scheduleType || existing.scheduleType
       if (!['once', 'daily', 'weekly'].includes(scheduleType)) {
@@ -55,7 +60,8 @@ export default defineEventHandler(async (event) => {
       const timezone = body.timezone?.trim() || existing.timezone || 'Asia/Shanghai'
       let nextRunAt: Date | null = null
       if (scheduleType === 'once') {
-        const runAtStr = body.runAt || (existing.runAt ? new Date(existing.runAt).toISOString() : '')
+        const runAtStr =
+          body.runAt || (existing.runAt ? new Date(existing.runAt).toISOString() : '')
         if (!runAtStr) throw createError({ statusCode: 400, message: '单次任务需指定触发时间' })
         const runAt = localToUtc(runAtStr, timezone)
         data.runAt = runAt

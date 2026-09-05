@@ -30,7 +30,11 @@ export function useCertificate(tournamentId: string) {
       // 这同时清掉历史可能残留的竖向(a4-portrait)配置
       if (parsed.version !== CONFIG_VERSION) return null
       // 合并默认值，防止旧配置缺字段
-      return { ...defaultConfig(), ...parsed, style: { ...defaultConfig().style, ...(parsed.style || {}) } }
+      return {
+        ...defaultConfig(),
+        ...parsed,
+        style: { ...defaultConfig().style, ...(parsed.style || {}) },
+      }
     } catch {
       return null
     }
@@ -89,7 +93,7 @@ export function useCertificate(tournamentId: string) {
       config.recipientName = d.name
       config.recipientLogo = ''
       config.template = 'best-debater'
-      const tpl = TEMPLATES.find(t => t.key === 'best-debater')!
+      const tpl = TEMPLATES.find((t) => t.key === 'best-debater')!
       config.awardText = (tpl.apply.awardText || '').replace('{tournament}', tName)
       if (tpl.apply.style) Object.assign(config.style, tpl.apply.style)
       return
@@ -97,12 +101,19 @@ export function useCertificate(tournamentId: string) {
     const idx = kind === 'champion' ? 0 : kind === 'runnerup' ? 1 : kind === 'third' ? 2 : 0
     const team = standings.value[idx]
     if (!team) return
-    const tplKey = kind === 'champion' ? 'champion' : kind === 'runnerup' ? 'runnerup' : kind === 'third' ? 'third' : 'participant'
+    const tplKey =
+      kind === 'champion'
+        ? 'champion'
+        : kind === 'runnerup'
+          ? 'runnerup'
+          : kind === 'third'
+            ? 'third'
+            : 'participant'
     config.recipientType = 'team'
     config.recipientName = team.name
     config.recipientLogo = ''
     config.template = tplKey
-    const tpl = TEMPLATES.find(t => t.key === tplKey)!
+    const tpl = TEMPLATES.find((t) => t.key === tplKey)!
     config.awardText = (tpl.apply.awardText || '').replace('{tournament}', tName)
     if (tpl.apply.style) Object.assign(config.style, tpl.apply.style)
   }
@@ -123,7 +134,10 @@ export function useCertificate(tournamentId: string) {
       // 不强制 backgroundColor，纸张自身有背景
     })
     const a = document.createElement('a')
-    const safe = (config.recipientName || config.title || 'certificate').replace(/[\\/:*?"<>|]/g, '_')
+    const safe = (config.recipientName || config.title || 'certificate').replace(
+      /[\\/:*?"<>|]/g,
+      '_',
+    )
     a.href = dataUrl
     a.download = `${safe}.png`
     a.click()
@@ -146,9 +160,9 @@ export function useCertificate(tournamentId: string) {
     const title = config.title || '荣誉证书'
     w.document.write(
       `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>` +
-      `<style>@page{size:${printSize};margin:0}html,body{margin:0;padding:0}` +
-      `img{display:block;width:100%;height:100%;object-fit:contain}</style></head>` +
-      `<body><img src="${dataUrl}"/></body></html>`,
+        `<style>@page{size:${printSize};margin:0}html,body{margin:0;padding:0}` +
+        `img{display:block;width:100%;height:100%;object-fit:contain}</style></head>` +
+        `<body><img src="${dataUrl}"/></body></html>`,
     )
     w.document.close()
     w.focus()

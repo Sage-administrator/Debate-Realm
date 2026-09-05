@@ -12,11 +12,11 @@
 import type { ExistingSessionInfo } from '~/composables/useAuth'
 
 // ─── 状态管理 ───
-const open = ref(false)                  // 弹窗是否显示
-const otherSessions = ref<ExistingSessionInfo[]>([])  // 其他设备的会话列表
-const currentSession = ref<ExistingSessionInfo | null>(null)  // 当前设备的会话信息
-const terminating = ref(false)            // 操作中状态（强制下线进行中）
-const toast = useToast()                 // 通知提示工具
+const open = ref(false) // 弹窗是否显示
+const otherSessions = ref<ExistingSessionInfo[]>([]) // 其他设备的会话列表
+const currentSession = ref<ExistingSessionInfo | null>(null) // 当前设备的会话信息
+const terminating = ref(false) // 操作中状态（强制下线进行中）
+const toast = useToast() // 通知提示工具
 
 // ─── 暴露给父组件的 API ───
 function show(sessions: ExistingSessionInfo[], current: ExistingSessionInfo | null) {
@@ -145,21 +145,12 @@ async function handleTerminateOthers() {
         aria-describedby="modal-description"
       >
         <!-- 半透明背景遮罩层：点击可关闭 -->
-        <div
-          class="modal-backdrop"
-          @click.self="closeModal"
-          aria-hidden="true"
-        />
+        <div class="modal-backdrop" @click.self="closeModal" aria-hidden="true" />
 
         <!-- 对话框内容容器：居中定位 + 过渡动画 -->
         <div class="modal-container">
           <Transition name="modal-content" appear>
-            <div
-              v-if="open"
-              class="modal-dialog"
-              role="document"
-              @click.stop
-            >
+            <div v-if="open" class="modal-dialog" role="document" @click.stop>
               <!-- 关闭按钮（右上角 X） -->
               <button
                 type="button"
@@ -173,13 +164,8 @@ async function handleTerminateOthers() {
               <!-- 弹窗头部：标题 + 警示图标 -->
               <div class="modal-header">
                 <div class="flex items-center gap-2">
-                  <UIcon
-                    name="i-lucide-shield-alert"
-                    class="w-5 h-5 text-amber-500"
-                  />
-                  <h3 id="modal-title" class="modal-title">
-                    多设备登录检测
-                  </h3>
+                  <UIcon name="i-lucide-shield-alert" class="w-5 h-5 text-amber-500" />
+                  <h3 id="modal-title" class="modal-title">多设备登录检测</h3>
                 </div>
               </div>
 
@@ -195,28 +181,20 @@ async function handleTerminateOthers() {
                     <p class="font-medium text-[var(--color-text-primary)]">
                       检测到您的账号同时在其他设备登录
                     </p>
-                    <p
-                      id="modal-description"
-                      class="text-sm text-[var(--color-text-muted)] mt-1"
-                    >
+                    <p id="modal-description" class="text-sm text-[var(--color-text-muted)] mt-1">
                       以下是其他设备的登录信息。您可以选择忽略，或强制下线其他设备以保障账号安全。
                     </p>
                   </div>
                 </div>
 
                 <!-- 当前设备信息（绿色标识） -->
-                <div
-                  v-if="currentSession"
-                  class="session-card session-card-current"
-                >
+                <div v-if="currentSession" class="session-card session-card-current">
                   <div class="flex items-center gap-2 mb-1">
                     <UIcon
                       name="i-lucide-check-circle-2"
                       class="w-4 h-4 text-emerald-600 dark:text-emerald-400"
                     />
-                    <span class="session-card-label session-card-label-current">
-                      当前设备
-                    </span>
+                    <span class="session-card-label session-card-label-current"> 当前设备 </span>
                   </div>
                   <div class="text-sm text-[var(--color-text-secondary)] pl-6 space-y-0.5">
                     <p>
@@ -245,9 +223,7 @@ async function handleTerminateOthers() {
                       name="i-lucide-alert-circle"
                       class="w-4 h-4 text-amber-600 dark:text-amber-400"
                     />
-                    <span class="session-card-label session-card-label-other">
-                      其他设备
-                    </span>
+                    <span class="session-card-label session-card-label-other"> 其他设备 </span>
                   </div>
                   <div class="text-sm text-[var(--color-text-secondary)] pl-6 space-y-0.5">
                     <p>
@@ -378,7 +354,7 @@ async function handleTerminateOthers() {
   justify-content: center;
   border-radius: 0.5rem;
   background: transparent;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.5);
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -386,9 +362,9 @@ async function handleTerminateOthers() {
 }
 
 .modal-close-btn:hover {
-  background-color: rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.7);
-  border-color: rgba(255,255,255,0.15);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .modal-close-btn:focus-visible {
@@ -398,39 +374,39 @@ async function handleTerminateOthers() {
 
 @media (prefers-color-scheme: dark) {
   .modal-close-btn {
-    color: rgba(255,255,255,0.5);
+    color: rgba(255, 255, 255, 0.5);
   }
   .modal-close-btn:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: rgba(255,255,255,0.7);
-    border-color: rgba(255,255,255,0.15);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.15);
   }
 }
 
 /* 弹窗头部 */
 .modal-header {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(255,255,255,0.15);
-  background-color: rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 @media (prefers-color-scheme: dark) {
   .modal-header {
-    border-bottom-color: rgba(255,255,255,0.15);
-    background-color: rgba(255,255,255,0.05);
+    border-bottom-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.05);
   }
 }
 
 .modal-title {
   font-size: 1.125rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
 }
 
 @media (prefers-color-scheme: dark) {
   .modal-title {
-    color: rgba(255,255,255,0.9);
+    color: rgba(255, 255, 255, 0.9);
   }
 }
 
@@ -498,8 +474,8 @@ async function handleTerminateOthers() {
 /* 弹窗底部 */
 .modal-footer {
   padding: 1rem 1.25rem;
-  border-top: 1px solid rgba(255,255,255,0.15);
-  background-color: rgba(255,255,255,0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.05);
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
@@ -508,8 +484,8 @@ async function handleTerminateOthers() {
 
 @media (prefers-color-scheme: dark) {
   .modal-footer {
-    border-top-color: rgba(255,255,255,0.15);
-    background-color: rgba(255,255,255,0.05);
+    border-top-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -542,25 +518,25 @@ async function handleTerminateOthers() {
 
 /* 次要按钮（取消/忽略） */
 .btn-outline {
-  background-color: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.7);
-  border-color: rgba(255,255,255,0.15);
+  background-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .btn-outline:hover:not(:disabled) {
-  background-color: rgba(255,255,255,0.15);
-  border-color: rgba(255,255,255,0.25);
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 @media (prefers-color-scheme: dark) {
   .btn-outline {
-    background-color: rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.7);
-    border-color: rgba(255,255,255,0.15);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.15);
   }
   .btn-outline:hover:not(:disabled) {
-    background-color: rgba(255,255,255,0.15);
-    border-color: rgba(255,255,255,0.25);
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
   }
 }
 
@@ -591,7 +567,9 @@ async function handleTerminateOthers() {
 
 .modal-content-enter-active,
 .modal-content-leave-active {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.2s ease;
 }
 
 .modal-content-enter-from,

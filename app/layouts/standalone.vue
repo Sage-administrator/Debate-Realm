@@ -10,11 +10,12 @@ const route = useRoute()
 const store = useAuthStore()
 const { get: getStandaloneMatch } = useStandaloneMatches()
 
-const { sidebarOpen, closeSidebarOnMobile, roleLabel, navItems, isActive, logout } = useSidebarLayout({
-  dashboardPath: '/',
-  includeTournamentCreate: false,
-  includeBotManagement: false,
-})
+const { sidebarOpen, closeSidebarOnMobile, roleLabel, navItems, isActive, logout } =
+  useSidebarLayout({
+    dashboardPath: '/',
+    includeTournamentCreate: false,
+    includeBotManagement: false,
+  })
 
 // ═══════════ 独立赛事数据 ═══════════
 const standaloneMatch = ref<any>(null)
@@ -22,14 +23,14 @@ const matchId = computed(() => route.params.id as string)
 
 // 二级 tab 对应的一级 tab 分组（用于高亮一级 tab）
 const primaryTabMap: Record<string, 'basic' | 'audiovisual' | 'advanced'> = {
-  '': 'basic',               // 概览
-  'info': 'basic',           // 比赛信息
-  'timing': 'basic',         // 计时器环节
-  'skin': 'audiovisual',     // 背景
-  'details': 'audiovisual',  // 界面
-  'audio': 'audiovisual',    // 提示音
-  'teams': 'audiovisual',    // 队徽
-  'offline': 'advanced',     // 离线版
+  '': 'basic', // 概览
+  info: 'basic', // 比赛信息
+  timing: 'basic', // 计时器环节
+  skin: 'audiovisual', // 背景
+  details: 'audiovisual', // 界面
+  audio: 'audiovisual', // 提示音
+  teams: 'audiovisual', // 队徽
+  offline: 'advanced', // 离线版
 }
 
 // 当前页面路径的最后一段（用于判断激活哪个二级 tab）
@@ -52,9 +53,13 @@ async function loadStandaloneMatch() {
 }
 
 // 监听赛事 ID 变化，切换赛事时重新加载
-watch(matchId, () => {
-  loadStandaloneMatch()
-}, { immediate: true })
+watch(
+  matchId,
+  () => {
+    loadStandaloneMatch()
+  },
+  { immediate: true },
+)
 
 // 向子页面 provide 赛事数据，子页面可直接 inject 使用
 provide('standaloneMatch', standaloneMatch)
@@ -63,7 +68,6 @@ provide('standaloneMatch', standaloneMatch)
 <template>
   <!-- 整体布局：左侧侧边栏 + 右侧主内容区 -->
   <div class="layout-root flex h-screen overflow-hidden relative">
-
     <!-- ════════════════════════════════════════════
          移动端遮罩层：点击关闭侧边栏
          放在 layout-root 内，与侧边栏共享同一个层叠上下文
@@ -74,7 +78,11 @@ provide('standaloneMatch', standaloneMatch)
         <div
           v-if="sidebarOpen"
           class="sidebar-overlay fixed inset-0 z-40 bg-[var(--overlay-overlay)] lg:hidden"
-          @click="() => { sidebarOpen = false }"
+          @click="
+            () => {
+              sidebarOpen = false
+            }
+          "
         />
       </Transition>
     </ClientOnly>
@@ -96,7 +104,9 @@ provide('standaloneMatch', standaloneMatch)
     >
       <!-- ── Logo 区域 ── -->
       <div class="flex items-center gap-3 px-6 py-5">
-        <div class="gradient-icon w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+        <div
+          class="gradient-icon w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20"
+        >
           <UIcon name="i-lucide-trophy" class="w-5 h-5 text-white" />
         </div>
         <div class="flex flex-col leading-tight">
@@ -132,7 +142,11 @@ provide('standaloneMatch', standaloneMatch)
         </template>
         <!-- 未加载完成时显示骨架屏 -->
         <div v-else class="space-y-2 px-3">
-          <div v-for="i in 3" :key="i" class="h-10 rounded-lg bg-[var(--color-bg-tertiary)] animate-pulse" />
+          <div
+            v-for="i in 3"
+            :key="i"
+            class="h-10 rounded-lg bg-[var(--color-bg-tertiary)] animate-pulse"
+          />
         </div>
       </nav>
 
@@ -140,11 +154,15 @@ provide('standaloneMatch', standaloneMatch)
       <div class="border-t border-[var(--color-border)] px-4 py-4 pointer-events-auto">
         <template v-if="store.user">
           <div class="flex items-center gap-3 mb-3">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
+            <div
+              class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold shrink-0"
+            >
               {{ store.user.username?.charAt(0)?.toUpperCase() }}
             </div>
             <div class="flex-1 min-w-0">
-              <div class="text-sm font-medium text-[var(--color-text-primary)] truncate">{{ store.user.username }}</div>
+              <div class="text-sm font-medium text-[var(--color-text-primary)] truncate">
+                {{ store.user.username }}
+              </div>
               <div class="text-xs text-[var(--color-text-muted)]">{{ roleLabel }}</div>
             </div>
           </div>
@@ -185,12 +203,23 @@ provide('standaloneMatch', standaloneMatch)
     <!-- relative z-0 让主内容区形成独立 stacking context 且层级低于侧边栏(z-50) -->
     <div class="flex-1 flex flex-col overflow-hidden relative z-0">
       <!-- 移动端顶栏（768px以下显示） -->
-      <header class="mobile-header lg:hidden flex items-center justify-between px-4 h-14 bg-[var(--color-bg-secondary)] backdrop-blur-md border-b border-[var(--color-border)]">
-        <button class="hamburger-btn p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-all duration-200" @click="() => { sidebarOpen = true }">
+      <header
+        class="mobile-header lg:hidden flex items-center justify-between px-4 h-14 bg-[var(--color-bg-secondary)] backdrop-blur-md border-b border-[var(--color-border)]"
+      >
+        <button
+          class="hamburger-btn p-2 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-all duration-200"
+          @click="
+            () => {
+              sidebarOpen = true
+            }
+          "
+        >
           <UIcon name="i-lucide-menu" class="w-5 h-5" />
         </button>
         <NuxtLink to="/" class="flex items-center gap-2">
-          <div class="gradient-icon w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <div
+            class="gradient-icon w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center"
+          >
             <UIcon name="i-lucide-trophy" class="w-3.5 h-3.5 text-white" />
           </div>
           <span class="text-sm font-bold text-[var(--color-text-primary)]">辩境</span>
@@ -201,7 +230,6 @@ provide('standaloneMatch', standaloneMatch)
       <!-- 页面主体 -->
       <main class="main-content flex-1 overflow-y-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
           <!-- ═══ 头部区域（始终显示，数据加载前显示占位） ═══ -->
           <header class="flex items-end justify-between pt-10 pb-5">
             <div>
@@ -217,14 +245,22 @@ provide('standaloneMatch', standaloneMatch)
                 color="neutral"
                 variant="outline"
                 size="sm"
-                @click="() => { navigateTo(`/standalone/${matchId}/offline`) }"
+                @click="
+                  () => {
+                    navigateTo(`/standalone/${matchId}/offline`)
+                  }
+                "
               >
                 离线版下载
               </UButton>
               <UButton
                 color="primary"
                 size="sm"
-                @click="() => { navigateTo(`/standalone/${matchId}/timer`) }"
+                @click="
+                  () => {
+                    navigateTo(`/standalone/${matchId}/timer`)
+                  }
+                "
               >
                 打开在线版计时器
               </UButton>
@@ -233,19 +269,77 @@ provide('standaloneMatch', standaloneMatch)
 
           <!-- ═══ 双层 Tab 导航（始终显示） ═══ -->
           <div class="tab-dark-row1">
-            <span :class="['tab-dark-primary', { 'tab-dark-primary--active': activePrimary === 'basic' }]">基础配置</span>
-            <span :class="['tab-dark-primary', { 'tab-dark-primary--active': activePrimary === 'audiovisual' }]">视听设计</span>
-            <span :class="['tab-dark-primary', { 'tab-dark-primary--active': activePrimary === 'advanced' }]">进阶功能</span>
+            <span
+              :class="[
+                'tab-dark-primary',
+                { 'tab-dark-primary--active': activePrimary === 'basic' },
+              ]"
+              >基础配置</span
+            >
+            <span
+              :class="[
+                'tab-dark-primary',
+                { 'tab-dark-primary--active': activePrimary === 'audiovisual' },
+              ]"
+              >视听设计</span
+            >
+            <span
+              :class="[
+                'tab-dark-primary',
+                { 'tab-dark-primary--active': activePrimary === 'advanced' },
+              ]"
+              >进阶功能</span
+            >
           </div>
           <div class="tab-dark-row2">
-            <NuxtLink :to="`/standalone/${matchId}`" class="tab-dark-secondary" :class="{ 'tab-dark-secondary--active': currentPage === '' }">概览</NuxtLink>
-            <NuxtLink :to="`/standalone/${matchId}/info`" class="tab-dark-secondary" :class="{ 'tab-dark-secondary--active': currentPage === 'info' }">比赛信息</NuxtLink>
-            <NuxtLink :to="`/standalone/${matchId}/timing`" class="tab-dark-secondary" :class="{ 'tab-dark-secondary--active': currentPage === 'timing' }">计时器环节</NuxtLink>
-            <NuxtLink :to="`/standalone/${matchId}/skin`" class="tab-dark-secondary" :class="{ 'tab-dark-secondary--active': currentPage === 'skin' }">背景</NuxtLink>
-            <NuxtLink :to="`/standalone/${matchId}/details`" class="tab-dark-secondary" :class="{ 'tab-dark-secondary--active': currentPage === 'details' }">界面</NuxtLink>
-            <NuxtLink :to="`/standalone/${matchId}/audio`" class="tab-dark-secondary" :class="{ 'tab-dark-secondary--active': currentPage === 'audio' }">提示音</NuxtLink>
-            <NuxtLink :to="`/standalone/${matchId}/teams`" class="tab-dark-secondary" :class="{ 'tab-dark-secondary--active': currentPage === 'teams' }">队徽</NuxtLink>
-            <NuxtLink :to="`/standalone/${matchId}/offline`" class="tab-dark-secondary" :class="{ 'tab-dark-secondary--active': currentPage === 'offline' }">离线版</NuxtLink>
+            <NuxtLink
+              :to="`/standalone/${matchId}`"
+              class="tab-dark-secondary"
+              :class="{ 'tab-dark-secondary--active': currentPage === '' }"
+              >概览</NuxtLink
+            >
+            <NuxtLink
+              :to="`/standalone/${matchId}/info`"
+              class="tab-dark-secondary"
+              :class="{ 'tab-dark-secondary--active': currentPage === 'info' }"
+              >比赛信息</NuxtLink
+            >
+            <NuxtLink
+              :to="`/standalone/${matchId}/timing`"
+              class="tab-dark-secondary"
+              :class="{ 'tab-dark-secondary--active': currentPage === 'timing' }"
+              >计时器环节</NuxtLink
+            >
+            <NuxtLink
+              :to="`/standalone/${matchId}/skin`"
+              class="tab-dark-secondary"
+              :class="{ 'tab-dark-secondary--active': currentPage === 'skin' }"
+              >背景</NuxtLink
+            >
+            <NuxtLink
+              :to="`/standalone/${matchId}/details`"
+              class="tab-dark-secondary"
+              :class="{ 'tab-dark-secondary--active': currentPage === 'details' }"
+              >界面</NuxtLink
+            >
+            <NuxtLink
+              :to="`/standalone/${matchId}/audio`"
+              class="tab-dark-secondary"
+              :class="{ 'tab-dark-secondary--active': currentPage === 'audio' }"
+              >提示音</NuxtLink
+            >
+            <NuxtLink
+              :to="`/standalone/${matchId}/teams`"
+              class="tab-dark-secondary"
+              :class="{ 'tab-dark-secondary--active': currentPage === 'teams' }"
+              >队徽</NuxtLink
+            >
+            <NuxtLink
+              :to="`/standalone/${matchId}/offline`"
+              class="tab-dark-secondary"
+              :class="{ 'tab-dark-secondary--active': currentPage === 'offline' }"
+              >离线版</NuxtLink
+            >
           </div>
 
           <!-- ═══ 页面内容区域（子页面内容，切换时平滑过渡） ═══ -->

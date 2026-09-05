@@ -8,5 +8,5 @@ import { randomBytes } from 'node:crypto'
 export function generateShortId(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
   // ponytail: 直接从 randomBytes 生成 id，简洁且安全
-  return Array.from(randomBytes(8), b => chars[b % chars.length]).join('')
+  return Array.from(randomBytes(8), (b) => chars[b % chars.length]).join('')
 }

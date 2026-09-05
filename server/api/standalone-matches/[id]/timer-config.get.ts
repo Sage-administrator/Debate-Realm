@@ -40,10 +40,10 @@ export default defineEventHandler(async (event) => {
       negativeTopic: null,
       teamPositiveName: null,
       teamNegativeName: null,
-      uiConfig: null,     // 界面元素配置
-      skinConfig: null,    // 背景配置
-      audioConfig: null,   // 提示音配置
-      teamLogoConfig: null,// 队徽配置
+      uiConfig: null, // 界面元素配置
+      skinConfig: null, // 背景配置
+      audioConfig: null, // 提示音配置
+      teamLogoConfig: null, // 队徽配置
       stages: [],
       createdAt: null,
       updatedAt: null,

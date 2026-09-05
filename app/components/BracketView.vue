@@ -4,22 +4,22 @@
 
 // 组件入参定义
 interface Props {
-  matches: MatchItem[]   // 所有比赛对阵列表
-  showScores?: boolean   // 是否显示比分
+  matches: MatchItem[] // 所有比赛对阵列表
+  showScores?: boolean // 是否显示比分
 }
 
 // 单场对阵项的数据结构
 interface MatchItem {
-  id: string                 // 对阵唯一标识
-  round: number              // 所属轮次（1 为第一轮，逐级递增）
-  teamA?: string | null      // A 方队伍标识
-  teamB?: string | null      // B 方队伍标识
-  scoreA?: number | null     // A 方得分
-  scoreB?: number | null     // B 方得分
-  winner?: string | null     // 胜出的队伍标识
-  status: string             // 对阵状态：finished/running/pending
-  teamAName?: string         // A 方展示名
-  teamBName?: string         // B 方展示名
+  id: string // 对阵唯一标识
+  round: number // 所属轮次（1 为第一轮，逐级递增）
+  teamA?: string | null // A 方队伍标识
+  teamB?: string | null // B 方队伍标识
+  scoreA?: number | null // A 方得分
+  scoreB?: number | null // B 方得分
+  winner?: string | null // 胜出的队伍标识
+  status: string // 对阵状态：finished/running/pending
+  teamAName?: string // A 方展示名
+  teamBName?: string // B 方展示名
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -71,19 +71,13 @@ const totalRounds = computed(() => rounds.value.length)
 
 <template>
   <div class="bracket-view">
-    <div v-if="rounds.length === 0" class="text-center py-8 text-gray-400">
-      暂无对阵数据
-    </div>
+    <div v-if="rounds.length === 0" class="text-center py-8 text-gray-400">暂无对阵数据</div>
 
     <!-- 淘汰赛对阵树 -->
     <div v-else class="bracket-tree">
       <!-- 每一列代表一轮 -->
       <div class="bracket-rounds">
-        <div
-          v-for="(round, roundIdx) in rounds"
-          :key="round[0]"
-          class="bracket-round"
-        >
+        <div v-for="(round, roundIdx) in rounds" :key="round[0]" class="bracket-round">
           <!-- 轮次标题 -->
           <div class="bracket-round-title">
             {{ roundLabel(round[0], totalRounds) }}
@@ -91,11 +85,7 @@ const totalRounds = computed(() => rounds.value.length)
 
           <!-- 该轮的所有对阵 -->
           <div class="bracket-matches">
-            <div
-              v-for="match in round[1]"
-              :key="match.id"
-              class="bracket-match"
-            >
+            <div v-for="match in round[1]" :key="match.id" class="bracket-match">
               <!-- 球队A -->
               <div
                 class="bracket-slot"
@@ -134,8 +124,20 @@ const totalRounds = computed(() => rounds.value.length)
               <!-- 状态标签 -->
               <UBadge
                 class="match-status-badge"
-                :label="match.status === 'finished' ? '已完' : match.status === 'running' ? '进行中' : '待开'"
-                :color="match.status === 'finished' ? 'success' : match.status === 'running' ? 'primary' : 'neutral'"
+                :label="
+                  match.status === 'finished'
+                    ? '已完'
+                    : match.status === 'running'
+                      ? '进行中'
+                      : '待开'
+                "
+                :color="
+                  match.status === 'finished'
+                    ? 'success'
+                    : match.status === 'running'
+                      ? 'primary'
+                      : 'neutral'
+                "
                 size="xs"
                 variant="soft"
               />
@@ -198,7 +200,7 @@ const totalRounds = computed(() => rounds.value.length)
 
 .bracket-match:hover {
   border-color: var(--ui-primary);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .bracket-slot {

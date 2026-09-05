@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
     const body = await readBody(event)
     const channelId = body.channelId || '' // 子频道 ID（赛场主阵地）
-    const guildId = body.guildId || ''      // 频道 ID（仅用于 QQ API）
+    const guildId = body.guildId || '' // 频道 ID（仅用于 QQ API）
 
     if (!channelId) {
       throw createError({ statusCode: 400, message: '请提供子频道 ID（channelId）' })

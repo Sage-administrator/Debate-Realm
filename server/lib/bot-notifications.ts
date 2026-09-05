@@ -10,11 +10,11 @@ import { getBotInstance } from './bot-ws'
  * 通知类型
  */
 export type NotificationType =
-  | 'match_start'       // 比赛开始
-  | 'match_result'      // 比赛结果公布
+  | 'match_start' // 比赛开始
+  | 'match_result' // 比赛结果公布
   | 'tournament_create' // 赛事创建
-  | 'round_change'       // 环节切换
-  | 'score_submitted'   // 评委提交评分
+  | 'round_change' // 环节切换
+  | 'score_submitted' // 评委提交评分
 
 /**
  * 尝试向团队的 Bot 频道发送通知
@@ -45,10 +45,7 @@ async function trySendNotification(
 /**
  * 比赛开始通知
  */
-export async function notifyMatchStart(
-  prisma: PrismaClient,
-  matchId: string,
-): Promise<void> {
+export async function notifyMatchStart(prisma: PrismaClient, matchId: string): Promise<void> {
   const match = await prisma.match.findUnique({
     where: { id: matchId },
     include: {
@@ -85,10 +82,7 @@ export async function notifyMatchStart(
 /**
  * 比赛结果通知
  */
-export async function notifyMatchResult(
-  prisma: PrismaClient,
-  matchId: string,
-): Promise<void> {
+export async function notifyMatchResult(prisma: PrismaClient, matchId: string): Promise<void> {
   const match = await prisma.match.findUnique({
     where: { id: matchId },
     include: {
@@ -120,7 +114,9 @@ export async function notifyMatchResult(
     match.bestDebaterA ? `\nA队最佳辩手：${match.bestDebaterA}` : '',
     match.bestDebaterB ? `B队最佳辩手：${match.bestDebaterB}` : '',
     '━━━━━━━━━━━━━━━━',
-  ].filter(Boolean).join('\n')
+  ]
+    .filter(Boolean)
+    .join('\n')
 
   await trySendNotification(match.tournament.teamId, team?.botChannelId || '', content)
 }
@@ -151,7 +147,9 @@ export async function notifyTournamentCreate(
     tournament.description ? `描述：${tournament.description}` : '',
     '━━━━━━━━━━━━━━━━',
     '请各参赛队伍做好准备！',
-  ].filter(Boolean).join('\n')
+  ]
+    .filter(Boolean)
+    .join('\n')
 
   await trySendNotification(tournament.teamId, tournament.team?.botChannelId || '', content)
 }
@@ -215,11 +213,7 @@ export async function notifyRoundChange(
 
   const label = sideLabels[targetSide] || targetSide
 
-  const content = [
-    `环节切换`,
-    `赛事：${tournamentName}`,
-    `当前环节：${label}`,
-  ].join('\n')
+  const content = [`环节切换`, `赛事：${tournamentName}`, `当前环节：${label}`].join('\n')
 
   await trySendNotification(teamId, team?.botChannelId || '', content)
 }

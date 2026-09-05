@@ -9,7 +9,10 @@ import { isSpeech, isQuestion, isBilateral, isNoTimer, isPpt } from './stageType
 // DB 列：speakerMode / questionerMode / respondersMode（Int, 默认 0）
 
 /** 根据选中值和 mode 标记，格式化为展示字符串 */
-export function formatSpeakerDisplay(value: string | null | undefined, mode: number | null | undefined): string {
+export function formatSpeakerDisplay(
+  value: string | null | undefined,
+  mode: number | null | undefined,
+): string {
   if (!value) return ''
   if (mode === 1) return formatReverseDisplay(value)
   // 正常模式：直接展示
@@ -19,25 +22,30 @@ export function formatSpeakerDisplay(value: string | null | undefined, mode: num
 /** 反向展示：根据选中的辩手值，生成 "正方除一辩外任意辩手" 文本 */
 export function formatReverseDisplay(raw: string): string {
   // 从选中值中提取阵营和被排除辩手
-  const values = raw.split(/[、，/]/).map(s => s.trim()).filter(Boolean)
+  const values = raw
+    .split(/[、，/]/)
+    .map((s) => s.trim())
+    .filter(Boolean)
   if (!values.length) return raw
   // 取第一条确定阵营
   const first = values[0]!.replace(/[·\s]/g, '')
   const side = first.startsWith('正方') ? '正方' : first.startsWith('反方') ? '反方' : null
   if (!side) return raw
   // 提取被排除的辩手位（如一辩、二辩）
-  const excludedLabels = values.map(v => {
-    const cleaned = v.replace(/[·\s]/g, '')
-    if (cleaned.startsWith('正方')) return cleaned.slice(2)
-    if (cleaned.startsWith('反方')) return cleaned.slice(2)
-    return cleaned
-  }).join('')
+  const excludedLabels = values
+    .map((v) => {
+      const cleaned = v.replace(/[·\s]/g, '')
+      if (cleaned.startsWith('正方')) return cleaned.slice(2)
+      if (cleaned.startsWith('反方')) return cleaned.slice(2)
+      return cleaned
+    })
+    .join('')
   return `${side}除${excludedLabels}外任意辩手`
 }
 
 // 辩手 label → id（如 "一辩" → "de1"）
 function debaterIdFromLabel(label: string): string | null {
-  const map: Record<string, string> = { '一辩': 'de1', '二辩': 'de2', '三辩': 'de3', '四辩': 'de4' }
+  const map: Record<string, string> = { 一辩: 'de1', 二辩: 'de2', 三辩: 'de3', 四辩: 'de4' }
   return map[label] || null
 }
 
@@ -71,7 +79,12 @@ export function normRoleName(name?: string | null): string {
   return (name || '').replace(/[·\s]/g, '')
 }
 
-export function expandReverseSpeaker(_raw: string | null | undefined, _mode: number | null | undefined): null { return null }
+export function expandReverseSpeaker(
+  _raw: string | null | undefined,
+  _mode: number | null | undefined,
+): null {
+  return null
+}
 
 // 解析"发言方"字段为角色 label 列表（供 getStageSpeakerPlan 使用）
 // mode 不影响实际发言方（只影响前端展示），故始终按选中值解析
@@ -79,7 +92,12 @@ export function parseSpeakerRoles(raw: any, _mode?: number | null): string[] {
   const items: string[] = []
   if (Array.isArray(raw)) items.push(...raw.map(String))
   else if (typeof raw === 'string' && raw) {
-    items.push(...raw.split(/[、，/]/).map(s => s.trim()).filter(Boolean))
+    items.push(
+      ...raw
+        .split(/[、，/]/)
+        .map((s) => s.trim())
+        .filter(Boolean),
+    )
   }
   if (!items.length) return []
   return items.map(normRoleName)
@@ -115,7 +133,9 @@ export function getStageSpeakerPlan(stage: any): SpeakerPlan {
   if (isNoTimer(t)) {
     const speakers: string[] = Array.isArray(stage.speakers)
       ? stage.speakers
-      : (typeof stage.speakers === 'string' && stage.speakers ? JSON.parse(stage.speakers) : [])
+      : typeof stage.speakers === 'string' && stage.speakers
+        ? JSON.parse(stage.speakers)
+        : []
     if (speakers.length) return { mode: 'roles', roles: speakers }
     return { mode: 'default' }
   }
@@ -124,7 +144,9 @@ export function getStageSpeakerPlan(stage: any): SpeakerPlan {
     // PPT/图片展示环节：以多选 speakers 联动发言权限（与无计时器环节一致）；兼容旧数据曾用单 speaker 字段
     const speakers: string[] = Array.isArray(stage.speakers)
       ? stage.speakers
-      : (typeof stage.speakers === 'string' && stage.speakers ? JSON.parse(stage.speakers) : [])
+      : typeof stage.speakers === 'string' && stage.speakers
+        ? JSON.parse(stage.speakers)
+        : []
     if (speakers.length) return { mode: 'roles', roles: speakers.map(normRoleName) }
     const spRoles = parseSpeakerRoles(stage.speaker, stage.speakerMode)
     return spRoles.length ? { mode: 'roles', roles: spRoles } : { mode: 'default' }
@@ -137,9 +159,10 @@ export function getStageSpeakerPlan(stage: any): SpeakerPlan {
   if (isQuestion(t)) {
     const qRoles = parseSpeakerRoles(stage.questioner, stage.questionerMode)
     // 接受人：优先用 responders（数组），fallback 到 responder（单值），传入 respondersMode
-    const rRaw = Array.isArray(stage.responders) && stage.responders.length
-      ? stage.responders.join('、')
-      : stage.responder || ''
+    const rRaw =
+      Array.isArray(stage.responders) && stage.responders.length
+        ? stage.responders.join('、')
+        : stage.responder || ''
     const rRoles = parseSpeakerRoles(rRaw, stage.respondersMode)
     const roles = [...qRoles, ...rRoles]
     return roles.length ? { mode: 'roles', roles } : { mode: 'default' }

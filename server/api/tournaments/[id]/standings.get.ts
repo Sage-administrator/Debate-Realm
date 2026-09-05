@@ -46,11 +46,7 @@ export default defineEventHandler(async (event) => {
       // 1. 积分榜（按积分排序）
       prisma.tournamentTeam.findMany({
         where: { tournamentId },
-        orderBy: [
-          { points: 'desc' },
-          { wins: 'desc' },
-          { scoreFor: 'desc' },
-        ],
+        orderBy: [{ points: 'desc' }, { wins: 'desc' }, { scoreFor: 'desc' }],
         select: {
           id: true,
           name: true,
@@ -127,7 +123,7 @@ export default defineEventHandler(async (event) => {
       .sort((a, b) => b.count - a.count)
 
     // ════════ 5. 分组积分榜（如有分组） ════════
-    type StandingItem = typeof standings[number]
+    type StandingItem = (typeof standings)[number]
     const groups = new Map<string, StandingItem[]>()
     for (const team of standings) {
       if (team.groupLabel) {
