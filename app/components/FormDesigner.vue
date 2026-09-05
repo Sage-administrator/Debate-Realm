@@ -1059,8 +1059,10 @@ const activeFieldType = computed(() => selectedField.value?.fieldType || '')
                 class="fd-input resize-none"
                 placeholder="每行一个选项"
                 @input="
-                  setOptionsFromString(selectedField, ($event.target as HTMLTextAreaElement).value)
-                  onFieldUpdate()
+                  (e: Event) => {
+                    setOptionsFromString(selectedField, (e.target as HTMLTextAreaElement).value)
+                    onFieldUpdate()
+                  }
                 "
               />
             </div>

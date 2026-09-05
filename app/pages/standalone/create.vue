@@ -178,12 +178,16 @@ async function handleCreate() {
                   :province="form.regionProvince"
                   :city="form.regionCity"
                   @update:province="
-                    form.regionProvince = $event
-                    clearError('region')
+                    (v: string) => {
+                      form.regionProvince = v
+                      clearError('region')
+                    }
                   "
                   @update:city="
-                    form.regionCity = $event
-                    clearError('region')
+                    (v: string) => {
+                      form.regionCity = v
+                      clearError('region')
+                    }
                   "
                 />
               </div>

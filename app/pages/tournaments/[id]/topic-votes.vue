@@ -853,8 +853,10 @@ onMounted(() => {
               color="primary"
               icon="i-lucide-plus"
               @click="
-                resetForm()
-                activeTab = 'create'
+                () => {
+                  resetForm()
+                  activeTab = 'create'
+                }
               "
             >
               创建投票问卷

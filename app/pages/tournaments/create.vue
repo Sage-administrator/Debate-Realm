@@ -219,12 +219,16 @@ async function handleCreate() {
                   :start-date="form.startDate"
                   :end-date="form.endDate"
                   @update:start-date="
-                    form.startDate = $event
-                    clearError('period')
+                    (v: string | null) => {
+                      form.startDate = v
+                      clearError('period')
+                    }
                   "
                   @update:end-date="
-                    form.endDate = $event
-                    clearError('period')
+                    (v: string | null) => {
+                      form.endDate = v
+                      clearError('period')
+                    }
                   "
                 />
               </div>
@@ -242,12 +246,16 @@ async function handleCreate() {
                 :province="form.regionProvince"
                 :city="form.regionCity"
                 @update:province="
-                  form.regionProvince = $event
-                  clearError('region')
+                  (v: string) => {
+                    form.regionProvince = v
+                    clearError('region')
+                  }
                 "
                 @update:city="
-                  form.regionCity = $event
-                  clearError('region')
+                  (v: string) => {
+                    form.regionCity = v
+                    clearError('region')
+                  }
                 "
               />
               <p v-if="errors.region" class="text-red-500 dark:text-red-400 text-xs mt-1.5">
