@@ -88,7 +88,7 @@ interface UIConfig {
 }
 
 interface SkinConfig {
-  backgroundType?: 'default' | 'gradient' | 'image' | 'solid'
+  backgroundType?: string         // 'default' | 'gradient' | 'image' | 'solid'；放开为 string 以兼容 useTimerConfig 推断的宽类型
   gradientStart?: string
   gradientEnd?: string
   solidColor?: string
