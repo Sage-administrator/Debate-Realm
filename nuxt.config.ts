@@ -199,6 +199,10 @@ export default defineNuxtConfig({
         '@vue/runtime-dom',
         '@vue/shared',
         '@vue/reactivity',
+        // devtools 客户端为运行时动态发现的依赖（virtual:nuxt 模块引用），
+        // 不预构建会触发 "Vite discovered new dependencies at runtime" → 整页 reload
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
       ],
       // 排除不会在客户端使用的服务端依赖
       exclude: ['@prisma/client', 'ws', 'jsonwebtoken', 'bcryptjs'],
