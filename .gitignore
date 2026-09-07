@@ -68,6 +68,7 @@ Thumbs.db
 .codebuddy/*
 !.codebuddy/skills/
 .codebuddy/skills/*.zip
+.codebuddy/skills/debate-timer-sop/
 .workbuddy/
 
 # ============ 设计文档归档 ============
